@@ -217,18 +217,20 @@ class LoopExpr(Block):
         self.postIter:Expression = None
         
     def setExpr(self, **kwargs):
-        expMap = {
-            'init': self,
-            'cond': self,
-            'pre': self,
-            'post': self,
-        }
+        # expMap = {
+        #     'init': lambda exp: self.initExpr = exp,
+        #     'cond': lambda (exp): self.initExpr = exp,
+        #     'pre': lambda (exp): self.initExpr = exp,
+        #     'post': lambda (exp): self.initExpr = exp,
+        # }
         for name,exp in kwargs.items():
             print('-- LoopExpr.setExpr', name, exp )
-            if name in expMap:
-                expMap[name] = exp
-            else:
-                raise InerpretErr('LoopExpr doesn`t have expression `%s` ' % name)
+            match name:
+                case 'init': self.initExpr = exp
+                case 'cond': self.cond = exp
+                case 'pre': self.preIter = exp
+                case 'post': self.postIter = exp
+                case _: raise InerpretErr('LoopExpr doesn`t have expression `%s` ' % name)
 
     # def setIter(self, iter:IterAssignExpr):
     #     pass

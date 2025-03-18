@@ -65,11 +65,15 @@ class TastParse(TestCase):
     def test_for_expr(self):
         code = '''
         y = 0
+        a = 100
+        b = 0
         @debug 1
         for i=0; i < 5; i = i + 1
-            y = y + 1
-            # for j=0; j > 0; 5
-            #     1
+            y = y + 2
+            for j=-3; j <= 0; j = j + 1
+                a = a - j ** 2
+                if a % 2 == 0
+                    b = b + 1
         res = y
         '''
         code = norm(code[1:])
@@ -86,8 +90,9 @@ class TastParse(TestCase):
             ctx.addSet({'x': Var(x, 'x', TypeInt)})
             print('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
-            ress.append(ctx.get('res').get())
-            ress.append(ctx.get('a').get())
+            rr = [ctx.get('res').get(), ctx.get('a').get() , ctx.get('b').get()]
+            ress.append(rr)
+            # ress.append(ctx.get('a').get())
             print('##################t-IF1:', ctx.get('res').get())
         print('all:', ress)
 
