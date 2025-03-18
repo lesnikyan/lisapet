@@ -59,7 +59,6 @@ class CaseFor(BlockCase, SubCase):
             return True
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        exp = LoopExpr()
         subs = []
         start = 1
         elen = len(elems)
@@ -75,7 +74,12 @@ class CaseFor(BlockCase, SubCase):
                 subs.append(elems[start:])
         # if start > len(elems) - 1:
         #     subs.append()
-        print('# CaseFor.split-', elen,  exp)
+        exp:LoopBlock = None
+        match len(subs):
+            case 1: exp = LoopIterExpr()
+            case 2|3: exp = LoopExpr()
+            case _ :pass
+        print('# CaseFor.split-', elen,  exp, 'len-subs=', len(subs))
         for ees in subs:
             prels('>>', ees)
         return exp, subs
@@ -83,15 +87,14 @@ class CaseFor(BlockCase, SubCase):
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
         ''' nothing in minimal impl''' 
         slen = len(subs)
-        if slen == 1:
+        print('# CaseFor.setSub-', slen, subs)
+        match slen:
             # iterator case
-            base.setIter(subs)
-        elif slen == 2:
+            case 1 if isinstance(base, LoopIterExpr): base.setIter(subs[0])
             # pre, cond
-            base.setExpr(pre=subs[0], cond=subs[1])
-        elif slen == 3:
+            case 2 if isinstance(base, LoopExpr): base.setExpr(pre=subs[0], cond=subs[1])
             # init, cond, post
-            base.setExpr(init=subs[0], cond=subs[1], post=subs[2])
+            case 3 if isinstance(base, LoopExpr): base.setExpr(init=subs[0], cond=subs[1], post=subs[2])
         print('# CaseFor.setSub-', base)
         return base
 
@@ -154,6 +157,9 @@ class CaseIterOper(SubCase):
         elif CaseArray().match(elems):
             iter = elems2expr(elems)
             # TODO: other iter cases
+        elif len(elems) == 1 and elems[0].type == Lt.word:
+            # TODO: varExpr for array-var
+            pass
         return iter
 
     def iterGen(self, elems:list[Elem]):
@@ -179,7 +185,7 @@ class CaseIterOper(SubCase):
         return exp
     
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
-        pass
+        print('IterOper: ', base, subs)
 
 class CaseMatch(BlockCase):
     ''' very specaial case. 
@@ -262,11 +268,13 @@ def lex2tree(src:list[CLine]) -> Block:
     for cline in src:
         print('  -  -  -')
         indent = cline.indent
-        print('#code-src: `%s`' % cline.src.src, '$ind=',  indent)
+        print('#code-src: `%s`' % cline.src.src, '$ind=',  indent, '; curInd=', curInd)
         prels('#cline-code:', cline.code)
         if len(cline.code) == 0:
             continue
         expr = line2expr(cline)
+        
+        # print('lex2tree-14:', expr, expr.__class__.__name__, type(expr))
         if isinstance(expr, CaseComment):
             # nothing for comment now
             continue
@@ -281,6 +289,7 @@ def lex2tree(src:list[CLine]) -> Block:
             print('lex2tree-3#stepsUp=', stepsUp, parents)
             for _ in range(stepsUp):
                 curBlock = parents.pop()
+                curInd -= 1
                 print('lex2tree-pop parents =', parents)
                 print('lex2tree-pop curBlock =', curBlock)
         if isinstance(curBlock, IfExpr) and isinstance(expr, ElseExpr):
@@ -288,6 +297,7 @@ def lex2tree(src:list[CLine]) -> Block:
             curBlock.toElse(expr)
             # TODO: for `else if` case we need additional logic with parent and nested `if` expr
             continue
+        # print('lex2tree-4:', expr, expr.__class__.__name__, type(expr))
         if expr.isBlock():
             # start new sub-level
             # if definition of func, type: add to upper level context
@@ -296,11 +306,12 @@ def lex2tree(src:list[CLine]) -> Block:
                 
             #     # `else if` case need additional logic
             #     continue
-            print('!! in-block', parents, curBlock, expr)
+            # print('!! in-block', parents, curBlock, expr)
             curBlock.add(expr)
             parents.append(curBlock)
             curBlock = expr
             curInd += 1
+            print('-=-= indent cur:', curInd)
             continue
         curBlock.add(expr)
         # curBlock.ctx.add(ctx)

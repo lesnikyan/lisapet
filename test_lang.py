@@ -52,17 +52,36 @@ class TastParse(TestCase):
             for n <- arrVar
         '''
 
-    def _test_for_iter(self):
+    def test_for_iter(self):
         code = '''
         x = 0
-        @debug 1
+        a = 0
+        b = 0
+        @debug 2
+        if x < 1
+            a = 111
         for n <- iter(10)
             x = x + n
+            b = b + 1
         res = x
         '''
         code = norm(code[1:])
+        # data = [6]
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ress = []
+        ctx = Context(None)
+        # ctx.addSet({'x': Var(x, 'x', TypeInt)})
+        # print('~~~~ test case: %d ~~~~' % x)
+        ex.do(ctx)
+        rr = [ctx.get('res').get(), ctx.get('a').get() , ctx.get('b').get()]
+        ress.append(rr)
+        # ress.append(ctx.get('a').get())
+        print('##################t-IF1:', ctx.get('res').get())
+        print('all:', ress)
 
-    def test_for_expr(self):
+    def _test_for_expr(self):
         code = '''
         y = 0
         a = 100
@@ -77,8 +96,6 @@ class TastParse(TestCase):
         res = y
         '''
         code = norm(code[1:])
-        # print('!!')
-        # print(code)
         # data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
         data = [6]
         tlines = splitLexems(code)

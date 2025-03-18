@@ -65,35 +65,6 @@ class IfExpr(Block):
         return self.lastRes
 
 
-class WhileExpr(Block):
-    ''' while var == true 
-        TODO: think about pre-iteration expression 
-        while x += 1; x < 10
-        while stat.recalc(); stat.isCorrect()
-    '''
-    def __init__(self, cond=None):
-        self.block:Block = Block() # empty block on start
-        self.cond:Expression = cond
-        
-    def setCond(self, cond:Expression):
-        self.cond = cond
-        
-    def add(self, exp:Expression):
-        print('WhileExpr.add', exp)
-        self.block.add(exp)
-
-    def do(self, ctx:Context):
-        self.cond.do(ctx)
-        c = 0
-        while self.cond.get().get():
-            # TODO: remove debug counter
-            c +=1
-            if c > 100:
-                break
-            print('# while iter ----------------------------------')
-            self.block.do(ctx)
-            self.cond.do(ctx)
-
 class IterGen(Expression):
     ''' '''
     
@@ -112,13 +83,13 @@ class IterGen(Expression):
     def start(self):
         self.index = self.startIndex
     
-    def step(self, ctx:Context):
+    def step(self):
         self.index += self.diff
         
     def hasNext(self):
         return self.index < self.over
     
-    def get(self, ctx:Context):
+    def get(self):
         if self.src is None:
             return Var(self.index,None, TypeInt)
         elif isinstance(self.src, list):
@@ -135,6 +106,8 @@ class IterAssignExpr(Expression):
         self.itExp:IterGen = None
     
     def setTarget(self, vars:list[Var]):
+        if len(vars) == 1:
+            vars = [Var_(), vars[0]]
         self.target = vars
     
     def setIter(self, exp:IterGen):
@@ -143,6 +116,8 @@ class IterAssignExpr(Expression):
     def start(self, ctx:Context):
         self.itExp.start()
         for vv in self.target:
+            if isinstance(vv, Var_):
+                continue
             ctx.addVar(vv)
     
     def cond(self)->bool:
@@ -168,13 +143,11 @@ class IterAssignExpr(Expression):
     # def get(self):
     #     res = self.itExp
 
+class LoopBlock(Block):
+    ''' '''
 
-class LoopIterExpr(Block):
+class LoopIterExpr(LoopBlock):
     '''
-    - pre, cond:
-    for a -= 1; a > 0
-    - init, cond, post:
-    for i=0; i < 10; i += 1
     - iterator
     for n <- names
     for n <- iter(10)
@@ -198,8 +171,7 @@ class LoopIterExpr(Block):
             self.iter.step()
 
 
-
-class LoopExpr(Block):
+class LoopExpr(LoopBlock):
     '''
     - pre, cond:
     for a -= 1; a > 0
@@ -253,4 +225,34 @@ class LoopExpr(Block):
             self.block.do(ctx)
             if self.postIter:
                 self.postIter.do(ctx)
+
+
+class WhileExpr(LoopBlock):
+    ''' while var == true 
+        TODO: think about pre-iteration expression 
+        while x += 1; x < 10
+        while stat.recalc(); stat.isCorrect()
+    '''
+    def __init__(self, cond=None):
+        self.block:Block = Block() # empty block on start
+        self.cond:Expression = cond
+        
+    def setCond(self, cond:Expression):
+        self.cond = cond
+        
+    def add(self, exp:Expression):
+        print('WhileExpr.add', exp)
+        self.block.add(exp)
+
+    def do(self, ctx:Context):
+        self.cond.do(ctx)
+        c = 0
+        while self.cond.get().get():
+            # TODO: remove debug counter
+            c +=1
+            if c > 100:
+                break
+            print('# while iter ----------------------------------')
+            self.block.do(ctx)
+            self.cond.do(ctx)
 

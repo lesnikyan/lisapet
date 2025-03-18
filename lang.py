@@ -37,7 +37,7 @@ class Lt:
     none = 0
     space = 1 #white space
     word = 2
-    # lang = 3 # special words
+    lang = 3 # special words
     num = 4
     oper = 5
     comm = 6
@@ -51,7 +51,9 @@ class Lt:
     
     _names:str = 'none space word lang num oper comm text quot esc . block close endline indent'
     
-    def name(val):
+    @classmethod
+    def name(c, val):
+        ''' get str name of Lt-values '''
         ns = Lt._names.split(' ')
         if val >= 0 and  val < len(ns):
             return ns[val]
@@ -85,7 +87,7 @@ class CLine:
     
     BaseIndent = 0 # Base count of spaces  in the one indent  in the start of line.
     
-    def __init__(self, src:TLine, code:list[Elem]=[], indent:int=0):
+    def __init__(self, src:TLine=None, code:list[Elem]=[], indent:int=0):
         self.src:TLine = src
         self.code:list[Elem] = code
         self.indent = indent

@@ -301,23 +301,9 @@ def elemLine(src:TLine)->CLine:
             CLine.BaseIndent = indLen
         if indLen % CLine.BaseIndent > 0:
             raise ParseErr('Incorrect indent size %d with base indent = %d'% (indLen, CLine.BaseIndent))
-        ind = indLen / CLine.BaseIndent
-        
-    # for x in src.lexems:
-    #     # Num fix
-    #     if x.ltype == Lt.num and x.val.find('..') > -1:
-    #         xparts = x.val.split('..')
-    #         print('~', xparts)
-    #         prep.append(lex(xparts[0], Mk.lex, type=Lt.num))
-    #         prep.append(lex('..', Mk.lex, type=Lt.oper))
-    #         x = lex(xparts[1], Mk.lex, type=Lt.num)
-    #     elif x.ltype == Lt.oper:
-    #         # Fix operators
-    #         ops = splitOper(x.val)
-    #         prep.extend(ops)
-    #         continue
-    #     prep.append(x)
-    # src.src = prep
+        print('indent: cur/ base:', indLen , CLine.BaseIndent, ' = ', indLen / CLine.BaseIndent)
+        ind = int(indLen / CLine.BaseIndent)
+
     res:list[Elem] = []
     for lx in src.lexems:
         el = lex2Elem(lx)
