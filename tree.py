@@ -55,24 +55,29 @@ class CaseArray(SubCase):
 class CaseFor(BlockCase, SubCase):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
-        if elems[0] == 'for':
+        if elems[0].text == 'for':
             return True
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         exp = LoopExpr()
         subs = []
-        start = 0
+        start = 1
         elen = len(elems)
-        for i in range(elen):
+        for i in range(1, elen):
+            prels('>>> %d ' % i, elems[i:])
             ee = elems[i]
             if ee.type == Lt.oper and ee.text == ';':
-                
-                i = start + 1
-            if i == elen - 1 and start > elen - 1:
+                subs.append(elems[start:i])
+                start = i + 1
+            if i == elen - 1 and start < elen - 1:
                 # last elem
+                print('Last elem')
                 subs.append(elems[start:])
         # if start > len(elems) - 1:
         #     subs.append()
+        print('# CaseFor.split-', elen,  exp)
+        for ees in subs:
+            prels('>>', ees)
         return exp, subs
     
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
@@ -87,6 +92,7 @@ class CaseFor(BlockCase, SubCase):
         elif slen == 3:
             # init, cond, post
             base.setExpr(init=subs[0], cond=subs[1], post=subs[2])
+        print('# CaseFor.setSub-', base)
         return base
 
 
@@ -250,12 +256,13 @@ def lex2tree(src:list[CLine]) -> Block:
     ''' '''
     root = Module()
     curBlock = root
-    parents:list[Block] = [root]
+    parents:list[Block] = []
     curInd = 0 # indent
     print('~~~~~~~~~~~` start tree builder ~~~~~~~~~~~~')
     for cline in src:
         print('  -  -  -')
-        print('#code-src: `%s`' % cline.src.src, '$ind=',  cline.indent)
+        indent = cline.indent
+        print('#code-src: `%s`' % cline.src.src, '$ind=',  indent)
         prels('#cline-code:', cline.code)
         if len(cline.code) == 0:
             continue
@@ -263,12 +270,11 @@ def lex2tree(src:list[CLine]) -> Block:
         if isinstance(expr, CaseComment):
             # nothing for comment now
             continue
-        indent = cline.indent
-        print('lex2tree-2', expr, '; parents:', parents, curBlock)
-        if cline.indent < curInd:
+        print('lex2tree-2 expr:', expr, '; parents:', parents, curBlock)
+        if indent < curInd:
             # end of block
-            stepsUp = curInd - cline.indent
-            print('-- ind:', curInd, cline.indent)
+            stepsUp = curInd - indent
+            print('-- ind:', curInd, indent)
             if isinstance(expr, ElseExpr):
                 # the same indent/parent level as `if` opener
                 stepsUp -= 1
@@ -284,14 +290,14 @@ def lex2tree(src:list[CLine]) -> Block:
             continue
         if expr.isBlock():
             # start new sub-level
+            # if definition of func, type: add to upper level context
             # if isinstance(expr, ElseExpr):
             #     # specific `else` case.
                 
             #     # `else if` case need additional logic
             #     continue
+            print('!! in-block', parents, curBlock, expr)
             curBlock.add(expr)
-            # if definition of func, type: add to upper level context
-            # curBlock.ctx.add()
             parents.append(curBlock)
             curBlock = expr
             curInd += 1

@@ -1,4 +1,6 @@
-
+'''
+Base expression objects.
+'''
 
 from vars import *
 

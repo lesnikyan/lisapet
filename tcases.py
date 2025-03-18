@@ -43,7 +43,7 @@ class CaseComment(ExpCase):
     ''' possibly will be used for meta-coding'''
     def match(self, elems:list[Elem])-> bool:
         s = ''.join([n.text for n in elems]).lstrip()
-        print('#== CaseComment.match:', s)
+        # print('#== CaseComment.match:', s)
         return s.startswith('#')
     
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
@@ -292,7 +292,7 @@ class CaseUnar(SubCase):
     def match(self, elems:list[Elem]) -> bool:
         ''' -123, -0xabc, ~num, -sum([1,2,3]), !valid, !foo(1,2,3) '''
         # print('#unaryOpers ',unaryOpers)
-        prels('#unary-match1: ', elems)
+        # prels('#unary-match1: ', elems)
         if elems[0].type != Lt.oper or elems[0].text not in unaryOpers:
             # print('# -- not in unaryOpers', elems[0].text)
             return False

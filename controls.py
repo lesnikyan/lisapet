@@ -224,13 +224,14 @@ class LoopExpr(Block):
             'post': self,
         }
         for name,exp in kwargs.items():
+            print('-- LoopExpr.setExpr', name, exp )
             if name in expMap:
                 expMap[name] = exp
             else:
                 raise InerpretErr('LoopExpr doesn`t have expression `%s` ' % name)
 
-    def setIter(self, iter:IterAssignExpr):
-        pass
+    # def setIter(self, iter:IterAssignExpr):
+    #     pass
 
     def add(self, exp:Expression):
         # print('LoopExpr.add', exp)
@@ -251,152 +252,3 @@ class LoopExpr(Block):
             if self.postIter:
                 self.postIter.do(ctx)
 
-
-
-# class Iter:
-#     ''' base iter'''
-    
-#     def start(self, ctx:Context):
-#         self.index = 0
-        
-#     def hasNext(self)->bool:
-#         ''' show status by state '''
-#         pass
-    
-#     def step(self, ctx:Context):
-#         ''' change state '''
-#         pass
-
-# class IterList:
-#     ''' for x <- [1,2,3]'''
-#     def __init__(self, src=None):
-#         self.src:list = None # list or iterator
-#         self.over = 0
-#         if src is not None:
-#             self.setSrc(src)
-        
-#     def setSrc(self, src):
-#         self.src = src
-#         self.over = len(self.src)
-#         # self.index = 0
-    
-#     def hasNext(self)->bool:
-#         ''' check before next'''
-#         return self.index < self.over
-
-#     def step(self, ctx:Context):
-#         ''' call after iteration '''
-#         self.index += 1
-
-#     def next(self, ctx:Context):
-#         ''' return current value '''
-#         val = self.src[self.index]
-
-
-# class IterCounter(Iter):
-#     '''
-#         iter(10) >> 1 - 9
-#         iter(5, 10) >> 5 - 9
-#         iter(5, 10, 20) >> [5,7,9]
-#         for i <- iter(10)
-#     '''
-#     def __init__(self, num, arg2=None, step=1):
-#         self.over = num
-#         self.start = 0
-#         self.step = step
-#         if arg2 is not None:
-#             self.start = num
-#             self.over = arg2
-#         self.index = self.start
-#         self.assignExpr:Expression = None
-#         # self.src = range(self.start, self.over, self.step)
-    
-#     def setAssign(self, exp:Expression):
-#         ''' x <- iter(1)'''
-#         self.assignExpr = exp
-    
-#     def hasNext(self)->bool:
-#         ''' check before next'''
-#         return self.index < self.over
-
-#     def step(self, ctx:Context):
-#         ''' call after iteration '''
-#         self.index += self.step
-#         self.assignExpr
-
-#     # def next(self, ctx:Context):
-#     #     ''' return current value '''
-#     #     return self.index
-
-# class IterExpr(Iter):
-#     ''' custom loop
-#         for initExpr; conditionExpr; stepExpr
-#         exm: for i = 0; i < 10; i += 1
-#         exp: for it = iter(10); it.hasNext(); it.step()
-#     '''
-    
-#     def __init__(self, init= None, cond=None, step=None):
-#         # super().__init__()
-#         self.initExpr:Expression = init
-#         self.stepExpr: Expression = step
-#         self.condExpr:Expression = cond
-
-#     def start(self, ctx:Context):
-#         self.initExpr.do(ctx)
-
-#     def hasNext(self, ctx:Context)->bool:
-#         ''' check before next'''
-#         self.condExpr.do(ctx)
-#         return self.condExpr.get().get()
-
-#     def step(self, ctx:Context):
-#         ''' call after iteration '''
-#         # self.index += self.step
-#         self.stepExpr.do(ctx)
-
-#     def next(self, ctx:Context):
-#         ''' return current value '''
-#         # return self.index
-        
-
-# class IterAssignExpr(Expression):
-#     ''' n <- iter(10) '''
-
-# class ForExpr(Block):
-
-#     def __init__(self, iter:Iter):
-#         # super().__init__()
-#         self.block = Block() # empty block on start
-#         self.iter:Iter = iter
-#         # self.lastRes = None
-        
-#     def setIter(self, iter:Iter):
-#         self.iter = iter
-        
-#     def add(self, exp:Expression):
-#         self.block.add(exp)
-        
-#     # цикл как прокрутка итератора, 
-#     # или цикл как старт ; блок() + постБлок() - проверка условия
-#     '''
-#         for init(); cond(); step()
-#         for i = 0; i < 10; i += 1
-#         for it = iter(10); it.hasNext(); it.step()
-#         for i <- iter(1, 10, 2)
-#         for x <- [1,2,3]
-        
-#         iter(10) >> 1 - 9
-#         iter(5, 10) >> 5 - 9
-#         iter(5, 10, 20) >> [5,7,9]
-#     '''
-#     def do(self, ctx:Context):
-#         self.iter.start(ctx)
-#         # TODO: implement all cases of `for`
-#         while self.iter.hasNext():
-#             self.block.do(ctx)
-#             # self.lastRes = self.block.get()
-#             self.iter.step(ctx)
-        
-#     def get(self):
-#         ''' if we use block-result case '''
-#         return self.block.get()

@@ -18,8 +18,8 @@ for i to 15
 
 for i << 1..5
     print i
-
-for a=10,b=3; i << 10..20
+# for x <- 5..20, 3 | x % 3 > 0 ???
+for a=10,b=3; i <- 10..20
      c = a + b + i
     if n=i*2+1; if n != c
         print c
@@ -27,6 +27,8 @@ for a=10,b=3; i << 10..20
 '''
 
 def norm(code):
+    ''' Normalize input code: 
+    - cut extra indent'''
     ind = 0
     for s in code:
         # print('`%s`' % s)
@@ -36,6 +38,7 @@ def norm(code):
             break
     return '\n'.join([s[ind:] for s in code.splitlines()])
 
+
 class TastParse(TestCase):
     
     def _test_tree(self):
@@ -43,6 +46,11 @@ class TastParse(TestCase):
         res = buildLexems(splitLexems(code_input1))
         for n in res:
             print('%s, %s'%(Lt.name(n.type), n.text))
+
+    def _test_for_array(self):
+        ''' for n <- [1,2,x] 
+            for n <- arrVar
+        '''
 
     def _test_for_iter(self):
         code = '''
@@ -60,6 +68,8 @@ class TastParse(TestCase):
         @debug 1
         for i=0; i < 5; i = i + 1
             y = y + 1
+            # for j=0; j > 0; 5
+            #     1
         res = y
         '''
         code = norm(code[1:])
