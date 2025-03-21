@@ -443,3 +443,93 @@ class CaseElse(BlockCase, SubCase):
         ''' nothing in minimal impl''' 
         # base.setCond(subs[0])
         return base
+
+
+
+class CaseSeq(ExpCase):
+    ''' sequence of expressions in one line '''
+    
+    def __init__(self, delim=' '):
+        self.delim = delim
+        self.brs = {'(':')', '[':']', '{':'}'}
+        self.opens = self.brs.keys()
+        self.closs = self.brs.values()
+
+    def match(self, elems:list[Elem]) -> bool:
+        # parents = []
+        obr = 0 # bracket counter
+        # check without control of nesting, just count open and close brackets
+        for ee in elems:
+            if ee.type != Lt.oper:
+                continue
+            if ee.text in self.opens:
+                obr += 1
+                continue
+            if ee.text in self.closs:
+                obr -= 1
+                continue
+            if obr > 0:
+                # in brackets, ignore internal elems
+                continue
+            if ee.text == self.delim:
+                return True
+        return False
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        res = []
+        sub = []
+        obr = 0
+        start = 0
+        for i in range(len(elems)):
+            ee = elems[i]
+            if ee.text in self.opens:
+                obr += 1
+                continue
+            if ee.text in self.closs:
+                obr -= 1
+                continue
+            if obr > 0:
+                # in brackets, ignore internal elems
+                # sub.append(ee)
+                continue
+            if ee.type == Lt.oper and ee.text == self.delim:
+                sub = elems[start: i]
+                prels('# start= %d, i= %d sub:' % (start, i), sub)
+                start = i + 1
+                # if len(sub) == 0:
+                #     continue
+                res.append(sub)
+                # sub = []
+                continue
+            # sub.append(ee)
+        # print('Seq.split, start =', start, 'len-elems =', len(elems))
+        if start < len(elems):
+            # print('- - post-append')
+            res.append(elems[start:])
+        return None, res
+
+
+class CaseSemic(CaseSeq, SubCase):
+    ''' Semicolons out of controls cases. The same as one-line block
+        a=5; b = 7 + foo(); c = a * b
+        uses if not control structure like: if, for, etc
+    '''
+
+    def __init__(self):
+        super().__init__(';')
+
+    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
+        print('IterOper: ', base, subs)
+
+
+class CaseCommas(CaseSeq):
+    ''' a, b, foo(), 1+5  '''
+    def __init__(self):
+        super().__init__(',')
+
+
+class CaseColon(CaseSeq):
+    ''' key: val  '''
+    def __init__(self):
+        super().__init__(':')
+

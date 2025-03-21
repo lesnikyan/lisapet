@@ -10,7 +10,7 @@ from lang import *
 c_space = [' ', '\t', '\n', '\r' ]
 c_esc = '\'\"ntr\\/`'
 c_nums = [n for n in '1234567890']
-c_oper = '+~-*/=%^&!?<>()[]:.;|{}\\'
+c_oper = '+~-*/=%^&!?<>()[]:.;,|{}\\'
 c_comm = '#'
 rxChar = re.compile(r'[a-zA-Z_\$@]')
 c_quot = "\'\""
@@ -83,7 +83,7 @@ def quoting(s, curType, sType, curLex, openQuote):
             rType = Lt.text
     return finStr, curLex, rType
 
-opers = [n for n in ('; .. ** ++ -- += -= *= /=  && || == != <= >= << >> => -> <- :='
+opers = [n for n in ('; , .. ** ++ -- += -= *= /=  && || == != <= >= << >> => -> <- :='
 ' < > = + - * / | { } [ ] . , : ~ ! % ^ & * ( )').split(' ') if n]
 
 # if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text != ')'

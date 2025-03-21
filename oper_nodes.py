@@ -42,26 +42,27 @@ class OpAssign(OperCommand):
 
         # 1 or more asignments: a, b, c = 1, 2, 3
         ctx.print()
-        print('#b3-s', src[0])
-        print('#b3-d', self.left[0])
+        print('#b3-srs0', src[0])
+        print('#b3-dtcn', self.left[0])
         resSet:list[Var] = [None]*size
         for i in range(size):
             src[i].do(ctx)
             tVal:Var = src[i].get() # val (anon var obj) from expression
-            print('## op-assign, val = ', tVal.get(), tVal.name, tVal.getType())
+            print('## op-assign, src.get() -> ', tVal, ':', tVal.name, tVal.get(), tVal.getType())
             resSet[i] = tVal
         for  i in range(size):
             if isinstance(self.left[i], VarExpr_):
                 # skip _ var
                 continue
-            # self.left[i].set(resSet[i].get()) # internal val from var obj
-            # resSet[i].name = self.left[i].name
-            self.left[i].set(resSet[i].get()) # internal val from var obj
-            # dinamic typing
-            self.left[i].setType(resSet[i].getType()) # type from var obj
-            ctx.update(self.left[i].name, self.left[i]) # update context
-            
-        # TODO: think about multiresult expressions: a, b, c = trival(); // return 11, 22, 'ccc'
+            self.left[i].set(resSet[i].get()) # update value
+            if not isinstance(self.left[i], ContVar):
+                print('# op-assign set, var:', self.left[i],' val = ', resSet[i])
+                # dinamic typing
+                self.left[i].setType(resSet[i].getType())
+                # update context
+                ctx.update(self.left[i].name, resSet[i])
+
+        # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
         # TODO: thik about one way of assignment: (something) = (something)
 
         # if len(self.left) == 1:

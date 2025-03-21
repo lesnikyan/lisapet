@@ -16,13 +16,80 @@ class Node:
 
 # Expression
 
-class ListExpr(Expression):
-    ''' [1,2,3]
+class CollectionExpr(Expression):
+    ''''''
+    def addVal(self, val:Var):
+        pass
+    
+    def setVal(self, index:Var, val:Var):
+        pass
+
+    def getVal(self, index:Var):
+        pass
+
+
+class ListExpr(CollectionExpr):
+    ''' [1,2,3, var, foo(), []]
     Make `list` object 
     '''
+    def __init__(self):
+        self.valsExprList:list[Expression] = []
+        self.listObj:ListVar = None
 
-    def add(self):
+    def add(self, exp:Expression):
         ''' add next elem of list'''
+        self.valsExprList.append(exp)
+
+    def do(self, ctx:Context):
+        self.listObj = ListVar(None)
+        print('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
+        for exp in self.valsExprList:
+            exp.do(ctx)
+            self.listObj.addVal(exp.get())
+        print('## ListExpr.do2 self.listObj:', self.listObj)
+
+    def get(self):
+        print('## ListExpr.get self.listObj:', self.listObj)
+        return self.listObj
+
+
+class CollectElemExpr(Expression):
+    
+    def __init__(self):
+        self.target:ContVar = None
+        self.varExpr:Expression = None
+        self.keyExpr = None
+        
+    def setVarExpr(self, exp:Expression):
+        self.varExpr = exp
+
+    def setKeyExpr(self, exp:Expression):
+        self.keyExpr = exp
+
+    def do(self, ctx:Context):
+        self.target = None
+        self.varExpr.do(ctx) # before []
+        self.target = self.varExpr.get() # found collection
+        print('## self.target', self.target)
+        self.keyExpr.do(ctx) #  [ into ]
+
+    def set(self, val:Var):
+        ''' '''
+        key = self.keyExpr.get()
+        self.target.setVal(key, val)
+
+    def get(self)->Var:
+        key = self.keyExpr.get()
+        elem = self.target.getVal(key)
+        return elem
+
+
+class DictExpr(CollectionExpr):
+    ''' {'key': val, keyVar: 13, foo():bar()} '''
+
+
+class TupleExpr(CollectionExpr):
+    ''' res = (a, b, c); res = a, b, c '''
 
 
 class Matching(Expression):

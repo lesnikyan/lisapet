@@ -34,6 +34,9 @@ class TypeComplex(TypeNum):
 class TypeBool(VType):
     name = 'bool'
 
+class TypeList(VType):
+    name = 'list'
+
 class TypeTuple(VType):
     name = 'tuple'
 
@@ -69,9 +72,25 @@ class Var(Base):
             n = '#noname'
         return 'Var(%s, %s)' % (n, self.val)
 
-class Var_(Base):
+class Var_(Var):
     ''' expr: _ '''
-    pass
+    def __init__(self):
+        self.vtype:VType = TypeNull
+
+class VarNull(Var):
+    ''' None|null'''
+
+    def __init__(self, name=None):
+        self.name = name
+
+    def get(self):
+        return None
+
+    def setType(self, t:VType):
+        pass
+
+def value(val, vtype:VType)->Var:
+    return Var(val, None, vtype)
 
 # type: Comparable, Container, Numeric 
 
@@ -81,6 +100,69 @@ class CompVar(Var):
         if a == b:
             return 0
         return a - b
+
+# Collections
+
+class ContVar(Var):
+    ''' Contaiter Var list, dict, etc '''
+    
+    def setVal(self, key:Var, val:Var):
+        pass
+
+    def getVal(self, key:Var):
+        pass
+
+
+class ListVar(ContVar):
+    ''' classic List / Array object'''
+    
+    def __init__(self, name):
+        super().__init__(None, name, TypeList)
+        self.elems:list[Var] = []
+    
+    def addVal(self, val:Var):
+        # not sure, we need whole Var or just internal value?
+        self.elems.append(val)
+    
+    def setVal(self, key:Var, val:Var):
+        i = key.get()
+        if i not in self.elems:
+            raise EvalErr('List out of range by index %d ' % i)
+        self.elems[i] = val
+
+    def getVal(self, key:Var):
+        print('ListVar.getVal1, key:', key)
+        print('ListVar.getVal1, elems:', self.elems)
+        i = key.get()
+        print('@ i=', i)
+        if i < len(self.elems):
+            return self.elems[i]
+        raise EvalErr('List out of range by index %d ' % i)
+
+    def __str__(self):
+        n = self.name
+        if not n:
+            n = '#list-noname'
+        return 'ListVar(%s, [%s])' % (n, ', '.join([str(n.get()) for n in self.elems[:10]]))
+
+
+class DictVar(ContVar):
+    ''' classic List / Array object'''
+    
+    def __init__(self, name):
+        super().__init__(None, name, TypeList)
+        self.data:dict[Var,Var] = {}
+
+    def setVal(self, key:Var, val:Var):
+        k = key.get()
+        self.data[k] = val
+
+    def getVal(self, key:Var):
+        i = key.get()
+        if i in self.data:
+            return self.data[i]
+        raise EvalErr('List out of range by index %d ' % i)
+
 
 # Context
 
@@ -100,6 +182,8 @@ class Context:
             vars = {vars.name: vars}
         print('x.addSet ---------1',  {(k, v.name, v.get()) for k, v in self.vars.items()})
         print('x.addSet ---------2', {(k, v.name, v.get()) for k, v in vars.items()})
+        print('x.addSet ---------3', vars)
+        
         self.vars.update(vars)
         
     def update(self, name, val:Var):
@@ -112,8 +196,10 @@ class Context:
                 print('x.upd:found', name)
                 val.name = name
                 src.vars[name] = val
-                src.vars[name].set(val.get())
+                # src.vars[name].set(val.get())
             if src.upper == None:
+                print('-- src.upper == None --', name, val)
+                val.name = name
                 self.addVar(val)
                 break
             src = src.upper
@@ -126,7 +212,7 @@ class Context:
             var = Var(None, varName, vtype)
         else:
             name = var.name
-        print('x.addVar2 ====> :', name, var.get(), var.getType().__class__.__name__)
+        print('x.addVar2 ====> :', name, var, ':', var.get(), var.getType().__class__.__name__)
         self.addSet({name:var})
 
     # for user types

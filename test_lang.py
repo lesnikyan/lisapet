@@ -7,7 +7,7 @@ from parser import splitLine, splitLexems, charType, splitOper, buildLexems, ele
 from vars import *
 from vals import numLex
 from tnodes import Var, Context
-from tree import line2expr, elems2expr, lex2tree, CaseBinOper, CaseUnar
+from tree import *
 
 
 
@@ -52,15 +52,98 @@ class TastParse(TestCase):
             for n <- arrVar
         '''
 
-    def test_for_iter(self):
+    def test_array(self):
+        data = [
+            '''
+            arr = [1,2,3]
+            res = arr[0]
+            r2 = 1000
+            for i <- iter(3)
+                r2 = r2 + arr[i]
+            ''',
+            # ''' ''',
+            # ''' ''',
+        ]
+        # ctdata = {
+        #     'a': 1,
+        #     'b':2,
+        #     'c':3
+        # }
+        for code in data:
+            code = norm(code[1:])
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            ex = lex2tree(clines)
+            ress = []
+            ctx = Context(None)
+            # for k, v in ctdata.items():
+            #     ctx.addSet({k: Var(v, k, TypeInt)})
+            print('~~~~ test case: %s ~~~~' % code)
+            ex.do(ctx)
+            rr = [ctx.get('res').get() , ctx.get('r2').get()]
+            print('Test res = ', rr)
+
+    def _test_array_expr(self):
+        data = [
+            '[1,2,3]', 
+            '[a, b, c]',
+            # '[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]',
+        ]
+        ctdata = {
+            'a': 1,
+            'b':2,
+            'c':3
+        }
+        for code in data:
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            ex = lex2tree(clines)
+            ress = []
+            ctx = Context(None)
+            for k, v in ctdata.items():
+                ctx.addSet({k: Var(v, k, TypeInt)})
+            print('~~~~ test case: %s ~~~~' % code)
+            ex.do(ctx)
+            # rr = [ctx.get('res').get()]
+            # print('Test res = ', rr)
+
+    def _test_seq_split(self):
+        data = [
+            '1 ,2 ,3',
+            'aa, bb, cc',
+            '11, aa, foo(1)', 
+            '1,22, name, ["aa", "rr", zzz], (one, two, three), foo(bar(1,2,3))', 
+            '11, [a,b,c], f() + b(), {a:b, c:d}'
+        ]
+        for src in data:
+            tlines = splitLexems(src)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            cs = CaseSeq(',')
+        
+        
+        for src in data:
+            tlines = splitLexems(src)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            cs = CaseSeq(',')
+            # prels('CaseSeq.match: ', elems)
+            if cs.match(elems):
+                prels('CaseSeq.match: TRUE', elems)
+                _, subs = cs.split(elems)
+                for sub in subs:
+                    prels('tt>', sub)
+
+    def _test_for_iter(self):
         code = '''
         x = 0
         a = 0
         b = 0
+        size = 10
         @debug 2
         if x < 1
             a = 111
-        for n <- iter(10)
+        for n <- iter(size)
             x = x + n
             b = b + 1
         res = x

@@ -10,10 +10,10 @@ from controls import *
 from vals import isDefConst, elem2val
 from tcases import *
 import re
-    
 
-class CaseBinAssign(SubCase):
-    ''' += -= *= /= %=  '''
+
+def isLex(ee:Elem, xtype, text):
+    return ee.type == xtype and ee.text == text
 
 
 class FunCallCase(SubCase):
@@ -34,23 +34,6 @@ class FunCallCase(SubCase):
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression: 
         ''' base - FuncExpr '''
         
-
-class CaseArray(SubCase):
-    ''' [num, word, expr] '''
-    def match(self, elems:list[Elem]) -> bool:
-        # TODO: fix match condition
-        if elems[0].type == Lt.oper and elems[0].text == '[':
-            return True
-    
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        exp = ListExpr()
-        return exp, [elems[1:-1]]
-    
-    def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression: 
-        for exp in subs:
-            base.add(exp)
-        return base
-
 
 class CaseFor(BlockCase, SubCase):
     ''' '''
@@ -152,7 +135,7 @@ class CaseIterOper(SubCase):
         '''
         iter = None
         if elems[0].text == 'iter':
-            # dev manual impl
+            # dev manual impl with numbers (not vars)
             iter = self.iterGen(elems[1:])
         elif CaseArray().match(elems):
             iter = elems2expr(elems)
@@ -166,20 +149,19 @@ class CaseIterOper(SubCase):
         elargs = elems
         if elems[0] == '(':
             elargs = elems[1:-1]
-        # TODO: implement usage of Var cases
+        # TODO: implement usage of Var cases iter(var1, var2, var2)
         argLexems = [ee for ee in elargs if ee.type == Lt.num]
         args = [elem2val(ee) for ee in argLexems]
         start, over, step = 0,0,1
         alen = len(args)
         if alen == 1:
             over = args[0].get()
-        elif alen == 2:
+        if alen > 1:
             start = args[0].get()
             over = args[1].get()
-            over = args[0].get()
-        elif alen == 3:
-            start = args[0].get()
-            over = args[1].get()
+        if alen == 3:
+            # start = args[0].get()
+            # over = args[1].get()
             step = args[2].get()
         exp = IterGen(start, over, step)
         return exp
@@ -187,12 +169,95 @@ class CaseIterOper(SubCase):
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
         print('IterOper: ', base, subs)
 
-class CaseMatch(BlockCase):
+class CaseMatch(SubCase):
     ''' very specaial case. 
          1. step: match(expr): case 1; case 2: case 3;
          2. case type.
          3. case pattern.
     '''
+
+
+class CaseArray(SubCase):
+    ''' [num, word, expr] '''
+    
+    def match(self, elems:list[Elem]) -> bool:
+        # trivial check
+        # TODO: add check for complex cases like [] + []
+        if isLex(elems[0], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']'):
+            return True
+        return False
+        
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        exp = ListExpr()
+        sub = elems[1:-1]
+        cs = CaseCommas()
+        subs = [sub]
+        if cs.match(sub):
+            _, subs = cs.split(sub)
+        return exp, subs
+
+    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
+        print('CaseArray.setSub: ', base, subs)
+        for exp in subs:
+            base.add(exp)
+        return base
+
+class CaseCollectElem(SubCase):
+    ''' 
+    case array[index-expr]
+    case dict[key-expr]
+    usage:
+    get: a = arr[expr]; 
+    set: arr[expr] = expr
+    varName_Expression [ indexVal_Expression ]
+    [] - access to array operator
+    '''
+
+    def match(self, elems:list[Elem]) -> bool:
+        '''
+        simplest: varName[indexVar|intVal]
+        elems[0]: varName, funcName + (expr), 
+        more complex: obj.field, obj.method(expr)
+        '''
+        if len(elems) < 4:
+            return False
+        # assign to no-key case var[] = 123
+        
+        # simple case: varName [ any ]
+        if len(elems) == 4 and elems[0].type == Lt.word and isLex(elems[1], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']'):
+            # check internal brackets to avoide a[]...b[]
+            return True
+        # TODO: match complex cases: var.meth(arg, arg, arg)[foo(var.field + smth) - arr[index + var]]
+        
+        return False
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        '''
+        execution plan:
+        1. get Var in context
+        2. eval key|index expr
+        3. get val from collection by index|key
+        '''
+        varElems = []
+        keyElems = []
+        for ee in elems:
+            if isLex(ee, Lt.oper, '['):
+                keyElems = elems[len(varElems)+1: -1]
+                break
+            varElems.append(ee)
+        exp = CollectElemExpr()
+        return exp, [varElems, keyElems]
+            
+    def setSub(self, base:CollectElemExpr, subs:Expression|list[Expression])->Expression:
+        base.setVarExpr(subs[0])
+        base.setKeyExpr(subs[1])
+        return base
+
+
+class CaseBinAssign(SubCase):
+    ''' += -= *= /= %=  '''
+
+
 
 class CaseDebug(ExpCase):
     def match(self, elems:list[Elem])-> bool:
@@ -205,7 +270,9 @@ class CaseDebug(ExpCase):
 
 expCaseList = [ CaseComment(), CaseDebug(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), 
-    CaseAssign(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
+    CaseSemic(), CaseAssign(), 
+    CaseArray(), CaseCollectElem(),
+    CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:
     return expCaseList
@@ -217,7 +284,7 @@ def simpleExpr(expCase:ExpCase, elems)->Expression:
 def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     base, subs = expCase.split(elems)
     # print('#complex-case:', expCase)
-    # print('#111', subs)
+    print('#complexExpr', base, subs)
     if isinstance(subs, list):
         for ee in subs:
             prels('#cml-exp1:', ee)
@@ -240,7 +307,7 @@ def makeExpr(expCase:ExpCase, elems:list[Elem])->Expression:
     return simpleExpr(expCase, elems)
 
 def elems2expr(elems:list[Elem])->Expression:
-    print('#b1', [n.text for n in elems])
+    print('#elems2expr #b1', [n.text for n in elems])
     for expCase in getCases():
         if expCase.match(elems):
             # if expCase.sub():
