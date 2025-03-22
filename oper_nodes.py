@@ -26,7 +26,7 @@ class OpAssign(OperCommand):
         super().__init__('=')
         # self.oper = '='
         print('OpAssign__init', left, right)
-        self.left:Var|list[Var] = left
+        self.left:Var|list[Var]|Expression = left
         self.right:Expression|list[Expression] = right # maybe 1 only, tuple Expression with several subs inside
 
     def do(self, ctx:Context):
@@ -54,9 +54,13 @@ class OpAssign(OperCommand):
             if isinstance(self.left[i], VarExpr_):
                 # skip _ var
                 continue
-            self.left[i].set(resSet[i].get()) # update value
-            if not isinstance(self.left[i], ContVar):
-                print('# op-assign set, var:', self.left[i],' val = ', resSet[i])
+            if isinstance(self.left[i], CollectElemExpr):
+                self.left[i].do(ctx)
+            print('# op-assign set, var:', self.left[i],' val = ', resSet[i])
+            self.left[i].set(resSet[i]) # update value
+
+            if not isinstance(self.left[i], CollectElemExpr):
+                # print('# op-assign set, var:', self.left[i],' val = ', resSet[i])
                 # dinamic typing
                 self.left[i].setType(resSet[i].getType())
                 # update context

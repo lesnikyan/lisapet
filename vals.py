@@ -17,8 +17,14 @@ rxComplex = re.compile(r'^[0-9]+(?:\.[0-9]*)?j(?:[0-9]+(?:\.[0-9]*)?)?$')
 rxExp = re.compile(r'^[0-9]+(?:\.[0-9]*)?e\-?[0-9]+$')
 
 
+
+def isLex(ee:Elem, xtype, text):
+    return ee.type == xtype and ee.text == text
+
+
 def val(data, vtype):
     return Var(data, None, vtype)
+
 
 def numLex(tx:str)->Var:
     ''' 123, 12.3, 1.2e3, 0b1001, 0o137, 0xabc01, 1.5j2.3 '''

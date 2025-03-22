@@ -36,10 +36,11 @@ def norm(code):
             ind += 1
         else:
             break
+    print('norm ind=', ind)
     return '\n'.join([s[ind:] for s in code.splitlines()])
 
 
-class TastParse(TestCase):
+class TestParse(TestCase):
     
     def _test_tree(self):
         '''' '''
@@ -52,7 +53,170 @@ class TastParse(TestCase):
             for n <- arrVar
         '''
 
-    def test_array(self):
+    def test_CaseBinAssign(self):
+        init = '''
+        x = 0
+        varr = 2*3*5*7*100
+        barr = 2*3*5*7*100
+        arr = [0,1,2,32,4,5]
+        data = [10,20,30,40,50]
+        key = 2
+        a = 1
+        b = 2
+        '''
+        srcT = '''
+        x *= 0; res = x
+        varr += 1; res = varr
+        arr[2] += 2; res = arr[2]
+        arr[a + b] += 3; res = arr[a + b]
+        data[key] += 4; res = data[key]
+        varr -= 6; res = varr
+        varr /= 7; res = varr
+        arr[3] %= 11; res = arr[3]
+        '''
+        init = norm(init[1:]).splitlines()
+        src = norm(srcT[1:])
+        data = src.splitlines()
+        rrs = []
+        for code in data:
+            print('$$ run test ------------------')
+            lines = code.split('; ')
+            code = '\n'.join(init+lines)
+            print('CODE:','\n'+code)
+            # code = lines[0]
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            # elems = clines[0].code
+            # exp, subs = cs.split(elems)
+            # print('# tt>>>', exp, subs)
+            exp = lex2tree(clines)
+            ctx = Context(None)
+            print('$$ eval expr ------------------')
+            exp.do(ctx)
+            res = ctx.get('res').get()
+            barr = ctx.get('barr').get()
+            rrs.append((res, barr,))
+            
+            # ind = afterNameBr(elems)
+            # res = elems[ind]
+            # res = cs.match(elems)
+            # print('## t:', code, '>>>', res, elems[res])
+            # self.assertTrue(res)
+        print('# tt>> ', rrs)
+
+    def _test_array_set(self):
+        src = '''
+        a = 1
+        b = 2
+        val = 10
+        arr = [1,2,3,4,5]
+        arr[1] = 20
+        arr[a+b] = val + arr[1]
+        res = arr[a+b]
+        '''
+        code = norm(src[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        exp = lex2tree(clines)
+        ctx = Context(None)
+        print('$$ run test ------------------')
+        exp.do(ctx)
+        res = ctx.get('res')
+        print('# tt>> ', res)
+        
+
+    def _test_CaseBinAssign_split(self):
+        srcT = '''
+        x *= 0; res = x
+        varr += 1; res = varr
+        arr[2] += 2; res = arr[2]
+        arr[a + b] += 3; res = arr[a + b]
+        data[key] += 4; res = data[key]
+        varr -= 6; res = varr
+        varr /= 7; res = varr
+        arr[1] %= 8; res = arr[1]
+        '''
+        src = norm(srcT[1:])
+        data = src.splitlines()
+        cs = CaseBinAssign()
+        for code in data:
+            lines = code.split('; ')
+            code = lines[0]
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            exp, subs = cs.split(elems)
+            print('# tt>>>', exp, subs)
+
+    def _test_CaseBinAssign_match(self):
+        srcT = '''
+        x *= 0
+        varr += 1
+        arr[2] += 2
+        arr[a + b] += 3
+        data[key] += 4
+        data[foo(arg, arg)] += 5
+        varr -= 6
+        varr /= 7
+        arr[foo(arg)] %= 8
+        '''
+        src = norm(srcT[1:])
+        data = src.splitlines()
+        cs = CaseBinAssign()
+        for code in data:
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            # ind = afterNameBr(elems)
+            # res = elems[ind]
+            res = cs.match(elems)
+            print('## t:', code, '>>>', res, elems[res])
+            self.assertTrue(res)
+        
+        srcF = '''
+        x = 10
+        y - 11
+        varr =-12
+        arr[] = 13
+        data[key] = 14
+        varr
+        12 + 10
+        foo(...)
+        [2, 3, 4]
+        '''
+        src = norm(srcF[1:])
+        data = src.splitlines()
+        cs = CaseBinAssign()
+        for code in data:
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            # ind = afterNameBr(elems)
+            # res = elems[ind]
+            res = cs.match(elems)
+            print('## t:', code, '>>>', res, elems[res])
+            self.assertFalse(res)
+
+    def _test_afterNameBr(self):
+        data = [
+            ('arr[1] + ','+'),
+            ('arr[index] = foo(123)','='),
+            ('var = 11','='),
+            ('var += 12','+='),
+            ('var -= 13','-='),
+            ('var[ii] += 14','+='),
+        ]
+        
+        for code, exp in data:
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            ind = afterNameBr(elems)
+            res = elems[ind]
+            print('## t:', code, exp, '>>>', res.text)
+            self.assertEqual(res.text, exp)
+
+    def _test_array(self):
         data = [
             '''
             arr = [1,2,3]

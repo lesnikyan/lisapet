@@ -53,36 +53,6 @@ class ListExpr(CollectionExpr):
         return self.listObj
 
 
-class CollectElemExpr(Expression):
-    
-    def __init__(self):
-        self.target:ContVar = None
-        self.varExpr:Expression = None
-        self.keyExpr = None
-        
-    def setVarExpr(self, exp:Expression):
-        self.varExpr = exp
-
-    def setKeyExpr(self, exp:Expression):
-        self.keyExpr = exp
-
-    def do(self, ctx:Context):
-        self.target = None
-        self.varExpr.do(ctx) # before []
-        self.target = self.varExpr.get() # found collection
-        print('## self.target', self.target)
-        self.keyExpr.do(ctx) #  [ into ]
-
-    def set(self, val:Var):
-        ''' '''
-        key = self.keyExpr.get()
-        self.target.setVal(key, val)
-
-    def get(self)->Var:
-        key = self.keyExpr.get()
-        elem = self.target.getVal(key)
-        return elem
-
 
 class DictExpr(CollectionExpr):
     ''' {'key': val, keyVar: 13, foo():bar()} '''

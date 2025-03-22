@@ -126,7 +126,8 @@ class ListVar(ContVar):
     
     def setVal(self, key:Var, val:Var):
         i = key.get()
-        if i not in self.elems:
+        print('ListVar.setVal', i, val, 'Len=', len(self.elems), i < len(self.elems), self.elems)
+        if i >= len(self.elems):
             raise EvalErr('List out of range by index %d ' % i)
         self.elems[i] = val
 
@@ -140,10 +141,10 @@ class ListVar(ContVar):
         raise EvalErr('List out of range by index %d ' % i)
 
     def __str__(self):
-        n = self.name
-        if not n:
-            n = '#list-noname'
-        return 'ListVar(%s, [%s])' % (n, ', '.join([str(n.get()) for n in self.elems[:10]]))
+        nm = self.name
+        if not nm:
+            nm = '#list-noname'
+        return 'ListVar(%s, [%s])' % (nm, ', '.join([str(n.get()) for n in self.elems[:10]]))
 
 
 class DictVar(ContVar):

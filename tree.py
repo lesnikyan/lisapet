@@ -7,13 +7,9 @@ from vars import *
 from tnodes import *
 from oper_nodes import *
 from controls import *
-from vals import isDefConst, elem2val
+from vals import isDefConst, elem2val, isLex
 from tcases import *
 import re
-
-
-def isLex(ee:Elem, xtype, text):
-    return ee.type == xtype and ee.text == text
 
 
 class FunCallCase(SubCase):
@@ -175,6 +171,8 @@ class CaseMatch(SubCase):
          2. case type.
          3. case pattern.
     '''
+class CaseCase(SubCase):
+    ''' Sub element of CaseMatch '''
 
 
 class CaseArray(SubCase):
@@ -219,6 +217,14 @@ class CaseCollectElem(SubCase):
         elems[0]: varName, funcName + (expr), 
         more complex: obj.field, obj.method(expr)
         '''
+        prels('CaseCollectElem.match1', elems)
+        opIndex = afterNameBr(elems)
+        oper = elems[opIndex]
+        print('CaseCollectElem, oper =', oper.text, 'index=', opIndex)
+        if opIndex == -1 and isLex(elems[-1], Lt.oper, ']'):
+            # case: var[key]
+            return True
+        
         if len(elems) < 4:
             return False
         # assign to no-key case var[] = 123
@@ -254,9 +260,49 @@ class CaseCollectElem(SubCase):
         return base
 
 
-class CaseBinAssign(SubCase):
-    ''' += -= *= /= %=  '''
 
+
+SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
+EXT_ASSIGN_OPERS = '+= -= *= /= %='.split(' ')
+
+# class CaseBinAssign(SubCase):
+class CaseBinAssign(CaseAssign):
+    ''' += -= *= /= %=  
+    var += val -> var = (var + val)
+    
+    '''
+
+    def match(self, elems:list[Elem]) -> bool:
+        '''  '''
+        if elems[0].type != Lt.word or elems[0].text in SPEC_WORDS:
+            return False
+        afterInd = afterNameBr(elems)
+        # prels('>>>', elems)
+        # print('=== afterInd:', afterInd)# , elems[afterInd].text)
+        if afterInd == -1:
+            return False
+        elem = elems[afterInd]
+        if elem.type != Lt.oper or elem.text not in EXT_ASSIGN_OPERS:
+            return False
+        return True
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        ''' Reusing OpAssign expression object'''
+        opIndex = afterNameBr(elems)
+        biOper = elems[opIndex]
+        prels('CaseBinAssign.split1', elems)
+        print('biOper:', biOper.text)
+        mOper = biOper.text[0] # get math oper, e.g.: + from +=
+        left = elems[:opIndex]
+        right = elems[opIndex+1:]
+        oper = Elem(Lt.oper, mOper)
+        asgn = Elem(Lt.oper, '=')
+        # new Assign-like sequence: (x += 2) -> (x = x + 2)
+        assignElems = left + [asgn] + left + [oper] + right
+        return super().split(assignElems)
+    
+    def setSub(self, base:Expression, subs:list[Expression])->Expression:
+        return super().setSub(base, subs)
 
 
 class CaseDebug(ExpCase):
@@ -269,10 +315,10 @@ class CaseDebug(ExpCase):
         return DebugExpr(' '.join([e.text for e in elems]))
 
 expCaseList = [ CaseComment(), CaseDebug(),
-    CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), 
-    CaseSemic(), CaseAssign(), 
+    CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseCase(),
+    CaseSemic(), CaseAssign(), CaseBinAssign(),
     CaseArray(), CaseCollectElem(),
-    CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
+    CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:
     return expCaseList

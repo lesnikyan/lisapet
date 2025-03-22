@@ -7,7 +7,7 @@ from vars import *
 from tnodes import *
 from oper_nodes import *
 from controls import *
-from vals import isDefConst, elem2val
+from vals import isDefConst, elem2val, isLex
 
 
 class ExpCase:
@@ -39,6 +39,66 @@ type User struct name:str, age: int # ?
 '''
 
 
+def afterLeft(elems:list[Elem])->int:
+    ''' find index of elem after var, vars and possible brackets of collections elem
+    cases:
+        var ...
+        a, b, c ...
+        arr[expr] ... 
+    '''
+    res = 0
+    inBr = 0
+    opers = ''.split('= += -= *= /= %=')
+    for i in range(len(elems)):
+        ee = elems[i]
+        if inBr:
+            if ee.text == ']':
+                # close brackets
+                inBr -= 1
+            continue
+        if ee.type == Lt.oper and  ee.text == '[':
+            # enter into brackets
+            inBr += 1
+            continue
+        if i > 0 and ee.type != Lt.word and (ee.type == Lt.oper and ee.text != ','):
+            res = i
+            break
+    return res
+
+def afterNameBr(elems:list[Elem])->int:
+    ''' find index of elem after var/func Name and possible brackets
+    cases:
+        var ...
+        foo(arg, arg, arg) ...
+        arr[expr] ... 
+    '''
+    res = 0
+    inBr = ''
+    obr = '([{'
+    cbr = ')]}'
+    for i in range(len(elems)):
+        ee = elems[i]
+        if inBr:
+            if ee.text in cbr and obr.index(inBr) == cbr.index(ee.text):
+                # close brackets
+                if i + 1 < len(elems):
+                    return i + 1
+                return -1
+            continue
+        if ee.type == Lt.oper and  ee.text in obr:
+            # enter into brackets
+            inBr = ee.text
+            continue
+        if i > 0:
+            res = i
+            break
+    return res
+    
+
+def prels(pref, elems:list[Elem]):
+    print(pref, [n.text for n in elems])
+
+
 class CaseComment(ExpCase):
     ''' possibly will be used for meta-coding'''
     def match(self, elems:list[Elem])-> bool:
@@ -49,10 +109,7 @@ class CaseComment(ExpCase):
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
         CommentExpr(''.join([n.text for n in elems]).lstrip())
-    
 
-def prels(pref, elems:list[Elem]):
-    print(pref, [n.text for n in elems])
 
 class CaseVal(ExpCase):
     ''' '''
@@ -122,15 +179,16 @@ class SubCase(ExpCase):
 
 class CaseAssign(SubCase):
     
-    def __init__(self):
-        self.left = None # TODO: for uni-mode 
-        self.right = None
+    # def __init__(self):
+    #     self.left = None # TODO: for uni-mode 
+    #     self.right = None
         
     def match(self, elems:list[Elem]) -> bool:
         '''
         abc123 = 123.123
-        var1 = foo(123, [1,2,3])
-        a,b,c = 1, var1, foo(10, 20)'''
+        var1 = foo(123, [1,2,3]), 
+        arr[index] = 2
+        a,b,c = 1, var1, foo(10, 20) '''
         # print('#a5::', [n.text for n in elems])
         # print('#a5::', [Lt.name(n.type) for n in elems])
         if elems[0].type != Lt.word:
@@ -149,22 +207,27 @@ class CaseAssign(SubCase):
             if el.type == Lt.oper and el.text == '=':
                 return True
         return False
-    
+
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         # simple case a = expr
         left:list[Elem] = [] # vars only
         right:list[Elem] = [] # vars, vals, funcs, methods
         # slice
-        for i, el in enumerate(elems):
-            if el.type != Lt.oper or el.type == Lt.space or el.text != '=':
-                # left.append(el)
-                continue
-            # = found
-            left = elems[0:i]
-            if len(elems) > i:
-                # `=` not last
-                right = elems[i+1:]
-        left = [el for el in left if el.type != Lt.space]
+        prels('# OpAsgn split1: ', elems)
+        # for i, el in enumerate(elems):
+        #     if el.type != Lt.oper or el.type == Lt.space or el.text != '=':
+        #         # left.append(el)
+        #         continue
+        #     # = found
+        #     left = elems[0:i]
+        #     if len(elems) > i:
+        #         # `=` not last
+        #         right = elems[i+1:]
+        # left = [el for el in left if el.type != Lt.space]
+        opInd = afterLeft(elems)
+        print('Assign-split opInd:', opInd, elems[opInd].text)
+        left = elems[:opInd]
+        right = elems[opInd+1:]
         # TODO: Implement multi-assign case
         if len(left) == 1:
             dest = Var_()
@@ -172,13 +235,25 @@ class CaseAssign(SubCase):
                 dest = Var(None, left[0].text, Undefined)
             expr = OpAssign(dest,None) 
             return expr, [right]
+        # if collection[index]
+        if isLex(left[1], Lt.oper, '['):
+            expr = OpAssign(None,None)
+            return expr,[left, right]
+
         # print('#a50:', [n.text for n in elems])
         return 2,[[]]
         
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         # waiting: OpAssign, [right]
         # print('#b4', subs)
-        base.right = subs
+        left = subs[:-1]
+        right = subs[-1]
+        base.right = right
+        if len(left) == 1:
+            base.left = left
+        else:
+            # multi-assignment
+            pass
         return base
 
 
@@ -209,10 +284,10 @@ class CaseBinOper(SubCase):
             el = elems[i]
         # for el in elems:
             # skip parts in brackets: math or function calls
-            if el.text == '(':
+            if el.text in '([{':
                 inBr += 1
                 continue
-            if el.text == ')':
+            if el.text in ')]}':
                 inBr -= 1
             if inBr > 0:
                 continue
@@ -233,21 +308,39 @@ class CaseBinOper(SubCase):
         lowesPrior = len(self.priorGroups) - 1
         inBr = 0
         maxInd = len(elems)-1
+        obr='([{'
+        cbr = ')]}'
+        inBrs = [] # brackets which was opened from behind
+        # prels('~~ CaseBinOper', elems)
         for prior in range(lowesPrior, -1, -1):
+            skip = -1
+            # print('prior=', prior, self.priorGroups[prior] )
             for i in range(maxInd, -1, -1):
                 el = elems[i]
+                etx = el.text
                 # counting brackets from tne end, closed is first
-                if el.text == ')':
-                    inBr += 1
+                if etx in cbr:
+                    inBrs.append(etx)
+                    # print(' >> ',etx)
                     continue
-                if el.text == '(':
-                    inBr -= 1
-                if inBr > 0:
+                if etx in obr:
+                    last = inBrs.pop()
+                    # print(' << ', etx, last)
                     continue
+                    # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
+                if len(inBrs) > 0:
+                    continue
+                # if el.text == ')':
+                #     inBr += 1
+                #     continue
+                # if el.text == '(':
+                #     inBr -= 1
+                # if inBr > 0:
+                #     continue
                 if el.type != Lt.oper:
                     continue
                 # TODO: fix unary cases, like: 5 * -3,  7 ** -2, x == ! true, (-12)
-                if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text != ')':
+                if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
                     # unary case found, skip current pos
                     continue
                 if el.text in self.priorGroups[prior]:
@@ -256,7 +349,7 @@ class CaseBinOper(SubCase):
                     return exp, [elems[0:i], elems[i+1:]]
         # print('#a52:', [n.text for n in elems])
         # return 1,[[]]
-        raise InerpretErr('Matched case didnt find key Item')
+        raise InerpretErr('Matched case didnt find key Item in [%s]' % ','.join([n.text for n in elems]))
 
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         ''' base - top-level (very right oper with very small priority) 
