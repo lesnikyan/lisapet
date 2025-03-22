@@ -7,25 +7,131 @@ from lang import *
 from vars import *
 from expression import *
 
-class Node:
-    def __init__(self):
-        command = 0
-        arg = 0
+# class Node:
+#     def __init__(self):
+#         command = 0
+#         arg = 0
         
 
 
 # Expression
 
-class CollectionExpr(Expression):
-    ''''''
-    def addVal(self, val:Var):
-        pass
+class Function(FuncInst):
+    ''' user-defined function object 
+    args:
+        foo(a, b, c)
+        func foo(arg1, arg2, arg3)
+        blok:
+            arg1 + arg2 + arg3
     
-    def setVal(self, index:Var, val:Var):
-        pass
+    '''
 
-    def getVal(self, index:Var):
-        pass
+    def __init__(self, name):
+        super().__init__(None)
+        # self.argExpr:list[Expression] = None # like ListExpression: expr, expr, expr
+        self.name = name
+        self.vtype = TypeFunc
+        self.argNum = 0
+        self.argVars:list[Var] = []
+        self.block:Block = None
+        self.defCtx:Context = None # for future: definition context (closure - ctx of module or upper block if function is local or lambda)
+
+    def addArg(self, arg:Var):
+        self.argVars.append(arg)
+        self.argNum += 1
+        print('Fuuu, addArg', arg, self.argNum)
+
+    def setArgVals(self, args:list[Var]):
+        if self.argNum != len(args):
+            raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self.name, self.argNum, len(args)))
+        for i in range(len(args)):
+            self.argVars[i].set(args[i].get())
+
+    def do(self, ctx: Context):
+        self.block.storeRes = True # save last expr value
+        inCtx = Context(None) # inner context, empty new for each call
+        inCtx.addVar(Var(1000001, 'debVal', TypeInt))
+        for arg in self.argVars:
+            inCtx.addVar(arg)
+        inCtx.get('debVal')
+        inCtx.upper = ctx
+        self.block.do(inCtx)
+
+    def get(self)->Var:
+        return self.block.get()
+
+
+class FuncCallExpr(Expression):
+    ''' foo(agr1, 2, foo(3))  '''
+
+    def __init__(self, name):
+        super().__init__(name)
+        self.func:Function = None
+        self.argExpr:list[Expression] = []
+
+    def addArgExpr(self, exp:Expression):
+        self.argExpr.append(exp)
+
+    def do(self, ctx: Context):
+        # inne rcontext
+        args:list[Var] = []
+        for exp in self.argExpr:
+            exp.do(ctx)
+            args.append(exp.get())
+        self.func.setArgVals(args)
+        # TODO: add usage of Definishion Context instead of None
+        callCtx = Context(None)
+        self.func.do(callCtx)
+
+    def get(self):
+        return self.func.get()
+
+
+class FuncDefExpr(DefinitionExpr, Block):
+    ''' Expression of definition of function
+        func foo(arg1, arg2)
+            expr
+            [return] expr
+        make Function object
+        make arg vars for internal context
+        set Function to current context by name
+        
+    '''
+
+    def __init__(self, name):
+        # print('FuncDefExpr.__inint 1:', name)
+        self.name = name
+        self.res:Function
+        self.blockLines:list[Expression] = []
+        self.argVars:list[Var] = []
+        self.signExp:Expression = None # func signature : name (arg set) ???
+
+    def addArg(self, arg:VarExpr):
+        ''' arg Var(noval|default, name, type)'''
+        self.argVars.append(arg.get())
+
+    def add(self, exp:Expression):
+        ''' collect inner sequence of expressions'''
+        print('Func-Def-Exp. add ', exp)
+        self.blockLines.append(exp)
+    
+    def do(self, ctx:Context):
+        ''''''
+        # print('FuncDefExpr.do 1:', self.name)
+        func = Function(self.name)
+        for arg in self.argVars:
+            func.addArg(arg)
+        func.block = Block()
+        # build inner block of function
+        for exp in self.blockLines:
+            func.block.add(exp)
+        self.res = func
+        print('FuncDefExpr.do 2:', func.name)
+        
+        ctx.addVar(func)
+    
+    def get(self)->Function:
+        return self.res
 
 
 class ListExpr(CollectionExpr):
@@ -52,6 +158,17 @@ class ListExpr(CollectionExpr):
         print('## ListExpr.get self.listObj:', self.listObj)
         return self.listObj
 
+
+class StructDefExpr(Block):
+    ''' struct User
+            name: string
+            age: int
+            weight: float
+    '''
+
+
+class StructFieldExpr(VarExpr):
+    ''' inst.field = val; var = inst.field '''
 
 
 class DictExpr(CollectionExpr):

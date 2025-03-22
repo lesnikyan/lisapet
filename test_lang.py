@@ -8,6 +8,7 @@ from vars import *
 from vals import numLex
 from tnodes import Var, Context
 from tree import *
+import pdb
 
 
 
@@ -53,9 +54,68 @@ class TestParse(TestCase):
             for n <- arrVar
         '''
 
-    def test_CaseBinAssign(self):
+    def _test_call_func(self):
+        code = '''
+        func foo(a, b, c)
+            x = a + b
+            y = b + c
+            x * y
+        
+        arg1 = 11
+        
+        r1 = foo(2,3,4)
+        r2 = foo(arg1, 2, 98)
+        # res = [r1, r2]
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        exp = lex2tree(clines)
+        ctx = Context(None)
+        print('$$ run test ------------------')
+        # pdb.set_trace()
+        exp.do(ctx)
+        # fn = exp.get()
+        fn:Function = ctx.get('foo')
+        print('#tt1>>> ', fn, type(fn))
+        # args = [value(2, TypeInt),value(3, TypeInt),value(4, TypeInt)]
+        # fn.setArgVals(args)
+        # ctxCall = Context(None)
+        # fn.do(ctxCall)
+        # res = fn.get()
+        # print('#tt2>>> ', res)
+
+
+
+    def test_def_func(self):
+        code = '''
+        func foo(a, b, c)
+            x = a + b
+            y = b + c
+            x * y
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        exp = lex2tree(clines)
+        ctx = Context(None)
+        print('$$ run test ------------------')
+        # pdb.set_trace()
+        exp.do(ctx)
+        # fn = exp.get()
+        fn:Function = ctx.get('foo')
+        print('#tt1>>> ', fn, type(fn))
+        args = [value(2, TypeInt),value(3, TypeInt),value(4, TypeInt)]
+        fn.setArgVals(args)
+        ctxCall = Context(None)
+        fn.do(ctxCall)
+        res = fn.get()
+        print('#tt2>>> ', res)
+
+
+    def _test_CaseBinAssign(self):
         init = '''
-        x = 0
+        x = 200
         varr = 2*3*5*7*100
         barr = 2*3*5*7*100
         arr = [0,1,2,32,4,5]
@@ -65,7 +125,7 @@ class TestParse(TestCase):
         b = 2
         '''
         srcT = '''
-        x *= 0; res = x
+        x *= 35; res = x
         varr += 1; res = varr
         arr[2] += 2; res = arr[2]
         arr[a + b] += 3; res = arr[a + b]

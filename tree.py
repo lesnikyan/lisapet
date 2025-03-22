@@ -12,13 +12,39 @@ from tcases import *
 import re
 
 
-class FunCallCase(SubCase):
+class CaseFuncDef(BlockCase, SubCase):
+    ''' func foo(arg-expressions over comma) '''
+    def match(self, elems:list[Elem]) -> bool:
+        if isLex(elems[0], Lt.word, 'func'):
+            return True
+        return False
+    
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        ''' func name (arg, arg, arg, ..) '''
+        fname = elems[1].text
+        sub = elems[3:-1]
+        cs = CaseCommas()
+        subs = [sub]
+        if cs.match(sub):
+            _, subs = cs.split(sub)
+        func = FuncDefExpr(fname)
+        return func, subs
+    
+    def setSub(self, base:FuncDefExpr, subs:Expression|list[Expression])->Expression:
+        for exp in subs:
+            base.addArg(exp)
+
+class CaseFunCall(SubCase):
     ''' foo(agrs)'''
     
     def match(self, elems:list[Elem]) -> bool:
         ''' foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))'''
+        prels('', elems)
+        if len(elems) < 3:
+            return False
         if elems[0].type != Lt.word:
             return False
+        # TODO: use word(...) pattern
         if elems[1].type != Lt.oper or elems[-1].type != Lt.oper or elems[1].text != '(' or elems[-1].text != ')':
             return False
     
@@ -315,9 +341,10 @@ class CaseDebug(ExpCase):
         return DebugExpr(' '.join([e.text for e in elems]))
 
 expCaseList = [ CaseComment(), CaseDebug(),
+    CaseFuncDef(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseCase(),
     CaseSemic(), CaseAssign(), CaseBinAssign(),
-    CaseArray(), CaseCollectElem(),
+    CaseArray(), CaseCollectElem(), CaseFunCall(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:

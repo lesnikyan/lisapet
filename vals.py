@@ -5,6 +5,7 @@ import cmath
 import re
 
 from lang import *
+from base import *
 from tnodes import *
 
 # rxNum = re.compile('^[0-9\.]$')
@@ -15,7 +16,6 @@ rxHex = re.compile(r'^0x[0-9a-f]+$')
 rxOct = re.compile(r'^0o[0-7]+$')
 rxComplex = re.compile(r'^[0-9]+(?:\.[0-9]*)?j(?:[0-9]+(?:\.[0-9]*)?)?$')
 rxExp = re.compile(r'^[0-9]+(?:\.[0-9]*)?e\-?[0-9]+$')
-
 
 
 def isLex(ee:Elem, xtype, text):
@@ -54,11 +54,14 @@ def strLex(tx:str)->Var:
     ''' "abc" '''
     return val(tx, TypeString())
 
+
 default_constants = ['false','true', 'null']
 bool_constants = ['false','true']
 
+
 def isDefConst(tx:str)->bool:
     return tx in default_constants
+
 
 def elem2val(elem:Elem)->Var:
     ''' numbers, string, bool '''

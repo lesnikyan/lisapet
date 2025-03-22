@@ -133,6 +133,19 @@ class Block(Expression):
         return True
 
 
+
+class CollectionExpr(Expression):
+    ''''''
+    def addVal(self, val:Var):
+        pass
+    
+    def setVal(self, index:Var, val:Var):
+        pass
+
+    def getVal(self, index:Var):
+        pass
+
+
 class CollectElemExpr(Expression):
     
     def __init__(self):
@@ -163,4 +176,45 @@ class CollectElemExpr(Expression):
         elem = self.target.getVal(key)
         return elem
 
+class TypeExpr(Expression):
+    ''' int, string, bool, list, struct '''
+    
+    def __init__(self, val=None):
+        # super().__init__(val)
+        self.type:VType = Undefined
+    
+    def do(self, ctx:Context):
+        ''' '''
+    
+    def get(self)->VType:
+        ''' return '''
+
+class DeclarationExpr(Expression):
+    ''' var:type declaration '''
+    
+    def __init__(self):
+        # super().__init__(val)
+        self.var:Var = None
+        self.varExpr:VarExpr = None
+        self.typeExpr:TypeExpr = None
+    
+    def do(self, ctx:Context):
+        self.typeExpr.do(ctx)
+        self.var = self.varExpr.do(ctx)
+        self.var.setType(self.typeExpr.get())
+    
+    def get(self)->Var:
+        ''' return '''
+
+class DefinitionExpr(Expression):
+    ''' base for struct, function, alias
+        func foo(arg1, arg2)
+            expr
+            expr
+
+        struct User
+            name: string
+            age: int
+            address: Address
+    '''
 
