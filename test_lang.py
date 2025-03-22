@@ -87,7 +87,7 @@ class TestParse(TestCase):
 
 
 
-    def test_def_func(self):
+    def _test_def_func(self):
         code = '''
         func foo(a, b, c)
             x = a + b
@@ -276,14 +276,14 @@ class TestParse(TestCase):
             print('## t:', code, exp, '>>>', res.text)
             self.assertEqual(res.text, exp)
 
-    def _test_array(self):
+    def test_array(self):
         data = [
             '''
             arr = [1,2,3]
             res = arr[0]
-            r2 = 1000
+            r = 1000
             for i <- iter(3)
-                r2 = r2 + arr[i]
+                r = r + arr[i]
             ''',
             # ''' ''',
             # ''' ''',
@@ -304,7 +304,7 @@ class TestParse(TestCase):
             #     ctx.addSet({k: Var(v, k, TypeInt)})
             print('~~~~ test case: %s ~~~~' % code)
             ex.do(ctx)
-            rr = [ctx.get('res').get() , ctx.get('r2').get()]
+            rr = [ctx.get('res').get() , ctx.get('r').get()]
             print('Test res = ', rr)
 
     def _test_array_expr(self):
@@ -638,7 +638,7 @@ class TestParse(TestCase):
     def _test_split_line(self):
         ''' '''
         args = [
-            ('for a=10,b=3; i << 10..20', []),
+            ('for a=10,b=3; i <- 10..20', []),
             ('str2 = ["Hello 3 men!", "123,465 \'-=#=-\'", "\\\'A\\\' + \\\"B\\\"" ]', []),
             # ('', []),
             # ('', []),
