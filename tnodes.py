@@ -66,6 +66,7 @@ class FuncCallExpr(Expression):
 
     def __init__(self, name):
         super().__init__(name)
+        self.name = name
         self.func:Function = None
         self.argExpr:list[Expression] = []
 
@@ -75,6 +76,7 @@ class FuncCallExpr(Expression):
     def do(self, ctx: Context):
         # inne rcontext
         args:list[Var] = []
+        self.func = ctx.get(self.name)
         for exp in self.argExpr:
             exp.do(ctx)
             args.append(exp.get())
@@ -179,10 +181,100 @@ class TupleExpr(CollectionExpr):
     ''' res = (a, b, c); res = a, b, c '''
 
 
-class Matching(Expression):
+class CaseExpr(Block):
+    ''' case in `match` block
+    '''
+    
+    # TODO: do we need result from `match` blok?
+
+    def __init__(self):
+        # super().__init__()
+        self.block = Block()
+        self.expect:Expression = None
+
+    def add(self, exp:Expression):
+        self.block.add(exp)
+
+    def setExp(self, exp:Exception):
+        self.expect = exp
+
+    def doExp(self, ctx:Context):
+        self.expect.do(ctx)
+
+    def matches(self, val:Var):
+        # simple equal
+        print('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
+        if self.expect.get().get() == val.get():
+            return True
+
+        # TODO: list case
+        
+        # tuple case
+
+        # type case
+        et = self.expect.get()
+        if isinstance(et, VType) and et == val.getType():
+            return True
+        
+        # struct-val case
+        
+        return False
+    
+    def do(self, ctx:Context):
+        self.block.do(ctx)
+
+
+class MatchExpr(Block):
     ''' 
     1. for unpack multiresults.
-    2. for pattern matching like switch/case '''
+    2. for pattern matching like switch/case 
+    match expr
+        123 -> expr
+        234 ->
+            expr1
+            expr2
+        # type
+        nums:list | len(nums) > 0 -> nums[0]
+        x:int -> x + 2
+        # sub condition
+        u:User | u.name = 'Vasya' -> print(u.lastName)
+        # constructor-patters
+        u:User('Vasya') -> print(u.lastName)
+        _ -> expr
+    '''
+
+    def __init__(self):
+        self.match:Expression = None
+        self.cases:list[CaseExpr] = []
+        self.defaultCase:CaseExpr = None
+
+    def add(self, xcase:CaseExpr):
+        if not isinstance(xcase, CaseExpr):
+            raise InerpretErr('Trying add not-case sub-expression (%s) to `match` block' % xcase.__class__.__name__)
+        if isinstance(xcase.expect, VarExpr_):
+            self.defaultCase = xcase
+            return
+        self.cases.append(xcase)
+
+    def setMatch(self, exp:Expression):
+        self.match = exp
+    
+    def do(self, ctx:Context):
+        self.match.do(ctx)
+        mctx = Context(ctx)
+        done = self.doCases(mctx)
+        if not done:
+            self.defaultCase.do(mctx)
+
+    def doCases(self, mctx:Context):
+        for cs in self.cases:
+            cs.doExp(mctx)
+            mval = self.match.get()
+            if cs.matches(mval):
+                cs.do(mctx)
+                return True
+        return False
+            
 
 
 class Module(Block):

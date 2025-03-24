@@ -108,6 +108,9 @@ class Block(Expression):
             seqs = [seqs]
         self.subs.extend(seqs)
     
+    def isEmpty(self):
+        return len(self.subs)
+    
     def do(self, ctx:Context):
         self.lastVal = None
         # eval sequences one by one, store result of each line, change vars in contexts

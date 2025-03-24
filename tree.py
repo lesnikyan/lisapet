@@ -12,98 +12,6 @@ from tcases import *
 import re
 
 
-class CaseFuncDef(BlockCase, SubCase):
-    ''' func foo(arg-expressions over comma) '''
-    def match(self, elems:list[Elem]) -> bool:
-        if isLex(elems[0], Lt.word, 'func'):
-            return True
-        return False
-    
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        ''' func name (arg, arg, arg, ..) '''
-        fname = elems[1].text
-        sub = elems[3:-1]
-        cs = CaseCommas()
-        subs = [sub]
-        if cs.match(sub):
-            _, subs = cs.split(sub)
-        func = FuncDefExpr(fname)
-        return func, subs
-    
-    def setSub(self, base:FuncDefExpr, subs:Expression|list[Expression])->Expression:
-        for exp in subs:
-            base.addArg(exp)
-
-class CaseFunCall(SubCase):
-    ''' foo(agrs)'''
-    
-    def match(self, elems:list[Elem]) -> bool:
-        ''' foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))'''
-        prels('', elems)
-        if len(elems) < 3:
-            return False
-        if elems[0].type != Lt.word:
-            return False
-        # TODO: use word(...) pattern
-        if elems[1].type != Lt.oper or elems[-1].type != Lt.oper or elems[1].text != '(' or elems[-1].text != ')':
-            return False
-    
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        ''' '''
-        # 1. func name, in next phase: method call: inst.foo() ? separated case for objects with members: obj.field, obj.method()
-        # 2. arg-expressions
-    
-    def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression: 
-        ''' base - FuncExpr '''
-        
-
-class CaseFor(BlockCase, SubCase):
-    ''' '''
-    def match(self, elems:list[Elem]) -> bool:
-        if elems[0].text == 'for':
-            return True
-
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        subs = []
-        start = 1
-        elen = len(elems)
-        for i in range(1, elen):
-            prels('>>> %d ' % i, elems[i:])
-            ee = elems[i]
-            if ee.type == Lt.oper and ee.text == ';':
-                subs.append(elems[start:i])
-                start = i + 1
-            if i == elen - 1 and start < elen - 1:
-                # last elem
-                print('Last elem')
-                subs.append(elems[start:])
-        # if start > len(elems) - 1:
-        #     subs.append()
-        exp:LoopBlock = None
-        match len(subs):
-            case 1: exp = LoopIterExpr()
-            case 2|3: exp = LoopExpr()
-            case _ :pass
-        print('# CaseFor.split-', elen,  exp, 'len-subs=', len(subs))
-        for ees in subs:
-            prels('>>', ees)
-        return exp, subs
-    
-    def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
-        ''' nothing in minimal impl''' 
-        slen = len(subs)
-        print('# CaseFor.setSub-', slen, subs)
-        match slen:
-            # iterator case
-            case 1 if isinstance(base, LoopIterExpr): base.setIter(subs[0])
-            # pre, cond
-            case 2 if isinstance(base, LoopExpr): base.setExpr(pre=subs[0], cond=subs[1])
-            # init, cond, post
-            case 3 if isinstance(base, LoopExpr): base.setExpr(init=subs[0], cond=subs[1], post=subs[2])
-        print('# CaseFor.setSub-', base)
-        return base
-
-
 class CaseIterOper(SubCase):
     '''
     <- operator is an iterative assignment from collection or iterator to local var
@@ -160,7 +68,7 @@ class CaseIterOper(SubCase):
             # dev manual impl with numbers (not vars)
             iter = self.iterGen(elems[1:])
         elif CaseArray().match(elems):
-            iter = elems2expr(elems)
+            iter = elems2expr(elems) # TODO: change to returning subs with latest build in class.setSub
             # TODO: other iter cases
         elif len(elems) == 1 and elems[0].type == Lt.word:
             # TODO: varExpr for array-var
@@ -191,144 +99,120 @@ class CaseIterOper(SubCase):
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
         print('IterOper: ', base, subs)
 
+
 class CaseMatch(SubCase):
     ''' very specaial case. 
          1. step: match(expr): case 1; case 2: case 3;
          2. case type.
          3. case pattern.
     '''
-class CaseCase(SubCase):
+
+    def match(self, elems:list[Elem]) -> bool:
+        ''' match expr '''
+        if len(elems) < 2:
+            return False
+        if isLex(elems[0], Lt.word, 'match'):
+            return True
+        return False
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        return MatchExpr(), [elems[1:]]
+
+
+    def setSub(self, base:MatchExpr, subs:list[Expression])->Expression:
+        base.setMatch(subs[0])
+        return base
+
+
+class _CaseCase(SubCase):
     ''' Sub element of CaseMatch '''
 
-
-class CaseArray(SubCase):
-    ''' [num, word, expr] '''
-    
     def match(self, elems:list[Elem]) -> bool:
-        # trivial check
-        # TODO: add check for complex cases like [] + []
-        if isLex(elems[0], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']'):
+        ''' 
+        first sub-level into match block
+        expr -> expr '''
+        if len(elems) < 3:
+            return False
+        
+        if isLex(elems[0], Lt.word, ''):
             return True
         return False
-        
+
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        exp = ListExpr()
-        sub = elems[1:-1]
-        cs = CaseCommas()
-        subs = [sub]
-        if cs.match(sub):
-            _, subs = cs.split(sub)
+        subs = elems[1:]
+        
+
+    def setSub(self, base:Expression, subs:list[Expression])->Expression:
+        pass
+
+class RawCase:
+    ''' case we need do some post-operation '''
+
+class ArrOper(RawCase):
+    def __init__(self, left=None, right=None):
+        self.left:Expression = left
+        self.right:Expression = right
+
+def findOper(elems:list[Elem], oper:str):
+    ''' find first oper between words and brackets'''
+
+    inBr = 0
+    obr = '([{'
+    cbr = '}])'
+    
+    for i in range(len(elems)):
+        ee = elems[i]
+        # if ee.type != Lt.oper:
+        #     continue
+        if ee.type == Lt.oper and ee.text in obr:
+            inBr += 1
+            continue
+        if ee.type == Lt.oper and ee.text in cbr:
+            inBr -= 1
+            continue
+        if inBr:
+            continue
+        if ee.text == oper:
+            return i
+        if i > 0:
+            return i
+    return -1
+    
+
+class CaseArrowR(SubCase):
+    ''' multi pattern 
+        1. lambda case
+            \arg -> expr
+        2. case of match:
+            expr -> expr
+        3. put elem to collection (?)
+            12 -> array
+    '''
+
+    def match(self, elems:list[Elem]) -> bool:
+        '''
+        expr -> expr '''
+        if len(elems) < 2:
+            return False
+        oper = '->'
+        oind = findOper(elems, oper)
+        print('# match-found: ', oind)
+        if oind < 1:
+            return False
+        
+        return elems[oind].text == oper
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        arrInd = findOper(elems, '->')
+        exp = ArrOper()
+        subs = [elems[:arrInd], elems[arrInd+1:]]
         return exp, subs
 
-    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        print('CaseArray.setSub: ', base, subs)
-        for exp in subs:
-            base.add(exp)
-        return base
-
-class CaseCollectElem(SubCase):
-    ''' 
-    case array[index-expr]
-    case dict[key-expr]
-    usage:
-    get: a = arr[expr]; 
-    set: arr[expr] = expr
-    varName_Expression [ indexVal_Expression ]
-    [] - access to array operator
-    '''
-
-    def match(self, elems:list[Elem]) -> bool:
-        '''
-        simplest: varName[indexVar|intVal]
-        elems[0]: varName, funcName + (expr), 
-        more complex: obj.field, obj.method(expr)
-        '''
-        prels('CaseCollectElem.match1', elems)
-        opIndex = afterNameBr(elems)
-        oper = elems[opIndex]
-        print('CaseCollectElem, oper =', oper.text, 'index=', opIndex)
-        if opIndex == -1 and isLex(elems[-1], Lt.oper, ']'):
-            # case: var[key]
-            return True
-        
-        if len(elems) < 4:
-            return False
-        # assign to no-key case var[] = 123
-        
-        # simple case: varName [ any ]
-        if len(elems) == 4 and elems[0].type == Lt.word and isLex(elems[1], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']'):
-            # check internal brackets to avoide a[]...b[]
-            return True
-        # TODO: match complex cases: var.meth(arg, arg, arg)[foo(var.field + smth) - arr[index + var]]
-        
-        return False
-
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        '''
-        execution plan:
-        1. get Var in context
-        2. eval key|index expr
-        3. get val from collection by index|key
-        '''
-        varElems = []
-        keyElems = []
-        for ee in elems:
-            if isLex(ee, Lt.oper, '['):
-                keyElems = elems[len(varElems)+1: -1]
-                break
-            varElems.append(ee)
-        exp = CollectElemExpr()
-        return exp, [varElems, keyElems]
-            
-    def setSub(self, base:CollectElemExpr, subs:Expression|list[Expression])->Expression:
-        base.setVarExpr(subs[0])
-        base.setKeyExpr(subs[1])
-        return base
-
-
-
-
-SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
-EXT_ASSIGN_OPERS = '+= -= *= /= %='.split(' ')
-
-# class CaseBinAssign(SubCase):
-class CaseBinAssign(CaseAssign):
-    ''' += -= *= /= %=  
-    var += val -> var = (var + val)
+    def setSub(self, base:ArrOper, subs:list[Expression])->Expression:
+        base.left = subs[0]
+        if len(subs) > 1 and isinstance(subs[1], Expression):
+            base.right = subs[1]
     
-    '''
-
-    def match(self, elems:list[Elem]) -> bool:
-        '''  '''
-        if elems[0].type != Lt.word or elems[0].text in SPEC_WORDS:
-            return False
-        afterInd = afterNameBr(elems)
-        # prels('>>>', elems)
-        # print('=== afterInd:', afterInd)# , elems[afterInd].text)
-        if afterInd == -1:
-            return False
-        elem = elems[afterInd]
-        if elem.type != Lt.oper or elem.text not in EXT_ASSIGN_OPERS:
-            return False
-        return True
-
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        ''' Reusing OpAssign expression object'''
-        opIndex = afterNameBr(elems)
-        biOper = elems[opIndex]
-        prels('CaseBinAssign.split1', elems)
-        print('biOper:', biOper.text)
-        mOper = biOper.text[0] # get math oper, e.g.: + from +=
-        left = elems[:opIndex]
-        right = elems[opIndex+1:]
-        oper = Elem(Lt.oper, mOper)
-        asgn = Elem(Lt.oper, '=')
-        # new Assign-like sequence: (x += 2) -> (x = x + 2)
-        assignElems = left + [asgn] + left + [oper] + right
-        return super().split(assignElems)
-    
-    def setSub(self, base:Expression, subs:list[Expression])->Expression:
-        return super().setSub(base, subs)
 
 
 class CaseDebug(ExpCase):
@@ -342,7 +226,7 @@ class CaseDebug(ExpCase):
 
 expCaseList = [ CaseComment(), CaseDebug(),
     CaseFuncDef(),
-    CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseCase(),
+    CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseArrowR(),
     CaseSemic(), CaseAssign(), CaseBinAssign(),
     CaseArray(), CaseCollectElem(), CaseFunCall(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
@@ -398,6 +282,21 @@ def line2expr(cline:CLine)-> Expression:
     expr = elems2expr(cline.code)
     return expr
 
+def raw2done(parent:Expression, raw:RawCase)->Expression:
+    # match-case
+    print('>> raw2done', parent, raw)
+    if isinstance(parent, MatchExpr) and isinstance(raw, ArrOper):
+        # `case` sub-expr in `match`
+        res = CaseExpr()
+        res.setExp(raw.left)
+        if raw.right:
+            # one-line case
+            res.add(raw.right)
+        return res
+    # lambdas ...
+    
+    
+
 def lex2tree(src:list[CLine]) -> Block:
     ''' '''
     root = Module()
@@ -413,6 +312,7 @@ def lex2tree(src:list[CLine]) -> Block:
         if len(cline.code) == 0:
             continue
         expr = line2expr(cline)
+        
         
         # print('lex2tree-14:', expr, expr.__class__.__name__, type(expr))
         if isinstance(expr, CaseComment):
@@ -432,13 +332,26 @@ def lex2tree(src:list[CLine]) -> Block:
                 curInd -= 1
                 print('lex2tree-pop parents =', parents)
                 print('lex2tree-pop curBlock =', curBlock)
+                
+        if isinstance(expr, RawCase):
+            expr = raw2done(curBlock, expr)
+            print('>> after raw:', expr)
+            
         if isinstance(curBlock, IfExpr) and isinstance(expr, ElseExpr):
             # ELSE statement
             curBlock.toElse(expr)
             # TODO: for `else if` case we need additional logic with parent and nested `if` expr
             continue
         # print('lex2tree-4:', expr, expr.__class__.__name__, type(expr))
-        if expr.isBlock():
+        stepBlock = expr.isBlock()
+        # if stepBlock:
+        #     if isinstance(expr, CaseExpr):
+        #         # can be 1-line
+        #         # if 1-line, it just will be reset by next case line 
+        #         if not expr.block.isEmpty():
+        #             stepBlock = False
+        
+        if stepBlock:
             # start new sub-level
             # if definition of func, type: add to upper level context
             # if isinstance(expr, ElseExpr):

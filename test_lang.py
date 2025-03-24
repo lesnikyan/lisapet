@@ -54,14 +54,84 @@ class TestParse(TestCase):
             for n <- arrVar
         '''
 
+    def test_match_val(self):
+        code = '''
+        a = 4
+        r1 = 0
+        b = 3
+        match a
+            1 -> r1 = 100
+            10 -> r1 = 200
+            b -> r1 = 300
+            _ -> r1 = -2
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        exp = lex2tree(clines)
+        ctx = Context(None)
+        # print('$$ run test ------------------')
+        # pdb.set_trace()
+        exp.do(ctx)
+        r1 = ctx.get('r1').get()
+        # r2 = ctx.get('r2').get()
+        print('#t >>> r:', r1)
+        # self.assertEqual(r1, 1035)
+        # self.assertEqual(r2, 2000)
+
+    def _test_CaseArrowR_mattch(self):
+        cs = CaseArrowR()
+        rrs = []
+        def checkRes(code, exp):
+            print('$$ run test ------------------')
+            print('CODE:','\n'+code)
+            # code = lines[0]
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            res = cs.match(elems)
+            print('#tt >>> ', code, res)
+            if exp:
+                self.assertTrue(res)
+            else:
+                self.assertFalse(res)
+            
+        src = ''''
+        val -> expr
+        123 -> a + b
+        234 -> r = 2 + 3
+        3 -> res = 4
+        user(123)-> res
+        '''
+        src = norm(src[1:].rstrip())
+        data = src.splitlines()
+        for code in data:
+            if code.strip() == '':
+                continue
+            checkRes(code, True)
+        
+        src = ''''
+        val 123 -> expr
+        1,2,3 -> a + b
+        x <- src
+        -> expr ...
+        user(123) + 0 -> res
+        '''
+        src = norm(src[1:].rstrip())
+        data = src.splitlines()
+        for code in data:
+            if code.strip() == '':
+                continue
+            checkRes(code, False)
+
     def _test_call_func(self):
         code = '''
         func foo(a, b, c)
             x = a + b
             y = b + c
-            x * y
+            x * y + 1000
         
-        arg1 = 11
+        arg1 = 8
         
         r1 = foo(2,3,4)
         r2 = foo(arg1, 2, 98)
@@ -72,18 +142,14 @@ class TestParse(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = Context(None)
-        print('$$ run test ------------------')
+        # print('$$ run test ------------------')
         # pdb.set_trace()
         exp.do(ctx)
-        # fn = exp.get()
-        fn:Function = ctx.get('foo')
-        print('#tt1>>> ', fn, type(fn))
-        # args = [value(2, TypeInt),value(3, TypeInt),value(4, TypeInt)]
-        # fn.setArgVals(args)
-        # ctxCall = Context(None)
-        # fn.do(ctxCall)
-        # res = fn.get()
-        # print('#tt2>>> ', res)
+        r1 = ctx.get('r1').get()
+        r2 = ctx.get('r2').get()
+        # print('#t >>> r:', r1, r2)
+        self.assertEqual(r1, 1035)
+        self.assertEqual(r2, 2000)
 
 
 
@@ -276,7 +342,31 @@ class TestParse(TestCase):
             print('## t:', code, exp, '>>>', res.text)
             self.assertEqual(res.text, exp)
 
-    def test_array(self):
+
+        data = [
+            ('arr[1]', -1),
+            ('arr[1+2]', -1),
+            ('arr[foo(123)]', -1),
+            ('foo()', -1),
+            ('foo(123)', -1),
+            ('foo(a,b,c)', -1),
+            ('foo(bar())', -1),
+            ('foo(arr[1])', -1),
+            ('foo(arr[2],foo(a, arr[3]), b, c)', -1),
+        ]
+        
+        print('#t ------------- no tail')
+        for code, exp in data:
+            print('#t code: ', code)
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            res = afterNameBr(elems)
+            # res = elems[ind]
+            print('## t:', code, exp, '>>>', res)
+            self.assertEqual(res, exp)
+
+    def _test_array(self):
         data = [
             '''
             arr = [1,2,3]
