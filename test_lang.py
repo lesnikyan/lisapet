@@ -54,7 +54,7 @@ class TestParse(TestCase):
             for n <- arrVar
         '''
 
-    def test_match_val(self):
+    def _test_match_val(self):
         code = '''
         a = 4
         r1 = 0

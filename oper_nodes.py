@@ -85,8 +85,8 @@ class BinOper(OperCommand):
     def __init__(self, oper, left:Expression=None, right:Expression=None):
         super().__init__(oper)
         # self.oper = oper
-        self.left = left
-        self.right = right
+        self.left:Expression = left
+        self.right:Expression = right
     
     def setArgs(self, left:Expression, right:Expression):
         self.left = left
@@ -118,10 +118,10 @@ class OpMath(BinOper):
         self.left.do(ctx)
         self.right.do(ctx)
         # get val objects from expressions
-        # print('#tn1:', self.left, self.right)
-        a, b = self.left.get(), self.right.get()
-        # print('#tn1:', self.left.get(), self.right.get())
-        print('#tn2:', self.oper, a.get(), b.get())
+        print('#tn1:', self.left, self.right) # expressions
+        a, b = self.left.get(), self.right.get() # Var objects
+        print('#tn2', a, b)
+        print('#tn3:', self.oper, a.get(), b.get())
         type = a.getType()
         if type != b.getType():
             # TODO fix different types

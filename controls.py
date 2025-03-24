@@ -226,6 +226,10 @@ class LoopExpr(LoopBlock):
             if self.postIter:
                 self.postIter.do(ctx)
 
+    def get(self):
+        return self.block.get()
+
+
 
 class WhileExpr(LoopBlock):
     ''' while var == true 

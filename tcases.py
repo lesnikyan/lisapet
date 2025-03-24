@@ -878,3 +878,24 @@ class CaseFunCall(SubCase):
             base.addArgExpr(exp)
         return base
 
+class CaseReturn(SubCase):
+    
+    def match(self, elems:list[Elem])-> bool:
+        if len(elems) > 0:
+            if isLex(elems[0], Lt.word, 'return'):
+                return True
+        return False
+    
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        ''' We have to 
+        1. store result of next after return expr
+        2. stop execution next lines'''
+        subs = [elems[1:]]
+        exp = ReturnExpr()
+        return exp, subs
+    
+    def setSub(self, base:ReturnExpr, subs:list[Expression])->Expression:
+        base.setSub(subs[0])
+        return base
+
+

@@ -225,7 +225,7 @@ class CaseDebug(ExpCase):
         return DebugExpr(' '.join([e.text for e in elems]))
 
 expCaseList = [ CaseComment(), CaseDebug(),
-    CaseFuncDef(),
+    CaseFuncDef(), CaseReturn(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseArrowR(),
     CaseSemic(), CaseAssign(), CaseBinAssign(),
     CaseArray(), CaseCollectElem(), CaseFunCall(),

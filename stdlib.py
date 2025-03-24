@@ -3,14 +3,16 @@
 Basic useful functions
 '''
 
-from collections.abc import Collable
+from collections.abc import  Callable
 
-from eval import Func, Block, Var, VType, Undefined, null
+# from eval import Func, Block, Var, VType, Undefined, null
+from expression import Block, Expression, Function
+from vars import *
 
 
 
 class StdBlock(Block):
-    def __init__(self, func:Collable, farg:list[Var], resType:VType):
+    def __init__(self, func:Callable, farg:list[Var], resType:VType):
         self.func = func
         super().__init__()
         self.args = farg
@@ -22,11 +24,11 @@ class StdBlock(Block):
             res = [Var(n) for n in res]
         self.lastVal = res
 
-def stdFunc(func:Collable, args:list[Var]=None)->Func:
+def stdFunc(func:Callable, args:list[Var]=None)->Function:
     ''' '''
-    return Func(StdBlock(func, args, null))
+    return Function(StdBlock(func, args, null))
 
-FUNCTIONS:dict[str,Func] = {
+FUNCTIONS:dict[str,Function] = {
     'print' : stdFunc(print), # console output,
     'fstr' : None, # format string
     'read' : None, # read bytes from reader

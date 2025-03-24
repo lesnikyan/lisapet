@@ -1,0 +1,38 @@
+
+
+func sum(nums)
+    res = 0
+    # for n <- nums:
+    for i=0; i < len(nums); i += 1
+        n = nums[i]
+        res += n
+    res
+
+func prime(x)
+    n = 2
+    while n ** 2 < x
+        if x % n == 0
+            return false
+        n += 1
+    true
+
+func fact(x)
+    r = 1
+    for i=1; i <=x; i += 1
+        r *= i
+    r
+
+func foo(x)
+    return x * x
+
+# tests:
+
+# t1 = prime(10)
+# t2 = prime(23)
+t3 = sum([1000, 200, 30, 4])
+
+hello = "Hello print example!"
+print(hello)
+#print("Hello print example!")
+print(foo(5))
+print(t3)
