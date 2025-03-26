@@ -47,9 +47,11 @@ class Lt:
     block = 11 # open block. start of block if more than shift of prev line
     close = 12 # close block
     endline = 13
-    indent = 14 # set of spaces, 4-th by default, 
+    indent = 14 # set of spaces, 4-th by default,
+    mtcomm = 15 # multiline comment
+    mttext = 16 # multiline string
     
-    _names:str = 'none space word lang num oper comm text quot esc . block close endline indent'
+    _names:str = 'none space word lang num oper comm text quot esc . block close endline indent mtcomm mttext'
     
     @classmethod
     def name(c, val):

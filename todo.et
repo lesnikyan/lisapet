@@ -1,0 +1,64 @@
+
+# TODO:
+# change `iter(args)` magic to inbound function (python function now)
+
+#@ 
+multiline comment
+@#
+x = 2 #@ inline comment @# + sum([10, 20])
+#@
+
+# store content of comments as a runtime metadata
+
+''' 
+multistring
+'''
+
+# multiline expr
+# concat all sublines before make expression process
+
+if (expr1 
+    && expr2)
+
+# possible sugar
+# case if: with no operator between line use && or defined default operator
+#    if (&& ..) if (|| .. ) - definition of default
+# e.g: 
+# if (||
+#     a > 5
+#     a % 2 != 0)
+#
+#
+
+foo( ag1,
+    arg2,
+    bar( a, b, c)
+)
+
+# concat strings
+str = (
+    'Hello '
+    "new string!"
+)
+
+nums = [1, 2, 
+        3, 4]
+
+data = {
+    'a': 1,
+    'b': 2
+}
+
+# sugar for collections - skip commas between lines (auto-complit for interpretation)
+strings = [
+    'Hello world!'
+    'Helo desktop!'
+]
+data = {
+    'a': 1
+    'b': 2
+}
+
+
+
+@#

@@ -3,7 +3,7 @@ import unittest
 from unittest import TestCase, main
 
 from lang import Lt, Mk, CLine
-from parser import splitLine, splitLexems, charType, splitOper, buildLexems, elemStream
+from parser import splitLine, splitLexems, charType, splitOper, elemStream
 from vars import *
 from vals import numLex
 from tnodes import Var, Context
@@ -42,14 +42,37 @@ def norm(code):
 
 
 class TestParse(TestCase):
-    
-    def _test_tree(self):
-        '''' '''
-        res = buildLexems(splitLexems(code_input1))
-        for n in res:
-            print('%s, %s'%(Lt.name(n.type), n.text))
 
-    def test_for_array(self):
+    def test_multiline_commets(self):
+        code = '''
+        # x = 1
+        # one line comment
+        #@ line1
+        multiline comment
+        @#x = 5 + 2
+        print(x)
+        '''
+        code = '''
+        a = 10 # first arg
+        b = 3 #@  second arg  @#
+        x = a + b #@ inline comment @# - 5
+        print(x)
+        '''
+
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        exp = lex2tree(clines)
+        ctx = Context(None)
+        setNativeFunc(ctx, 'print', print, TypeNull)
+        # setNativeFunc(ctx, 'len', len, TypeInt)
+        print('$$ run test ------------------')
+        # pdb.set_trace()
+        exp.do(ctx)
+        # r1 = ctx.get('r1').get()
+        # print('#t >>> r:', r1)
+
+    def _test_for_array(self):
         ''' for n <- [1,2,3] 
             for n <- arrVar
         '''

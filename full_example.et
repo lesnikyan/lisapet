@@ -27,8 +27,8 @@ func foo(x)
 
 # tests:
 
-# t1 = prime(10)
-# t2 = prime(23)
+t1 = prime(10)
+t2 = prime(23)
 t3 = sum([1000, 200, 30, 4])
 
 #hello = "Hello print example!"
@@ -36,3 +36,5 @@ t3 = sum([1000, 200, 30, 4])
 print("Hello print example!" + '!!')
 #print(foo(5))
 #print(t3)
+
+

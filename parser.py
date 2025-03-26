@@ -11,7 +11,11 @@ c_space = [' ', '\t', '\n', '\r' ]
 c_esc = '\'\"ntr\\/`'
 c_nums = [n for n in '1234567890']
 c_oper = '+~-*/=%^&!?<>()[]:.;,|{}\\'
+# single-line comment, to and of line
 c_comm = '#'
+# blok-comment, multiline or inline
+c_opcomm = '#@'
+c_ndcomm = '@#'
 rxChar = re.compile(r'[a-zA-Z_\$@]')
 c_quot = "\'\""
 
@@ -40,8 +44,10 @@ def charType(prev:int, s:str) -> int:
         base = Lt.word
     elif s in c_quot:
         base = Lt.quot
-        
+
     # type correction
+    if prev == Lt.mtcomm:
+        return Lt.mtcomm
     if prev == Lt.comm:
         return Lt.comm
     if prev == Lt.esc:
@@ -127,26 +133,41 @@ def normilizeLexems(src:list[lex])->list[lex]:
     return [s for s in prep if len(s.val) > 0]
 
 
-def splitLine(src: str) -> TLine:
+def splitLine(src: str, prevType:int=Lt.none) -> TLine:
+    '''
+    prevType - for multiline cases:
+    multiline string
+    multiline comment
+    '''
     cur = []
     res = []
-    curType = 0
+    curType = prevType
     openQuote = None
     # esc = False
-    # print('splitLine:', src)
+    print(' --- splitLine:', 'prevType=', Lt.name(prevType), '::', src)
     
     def nextRes(cur, curType, nval):
         wd = ''.join(cur)
-        # print('#3 >> p-cur, `%s`' % wd, ' st = ', curType)
-
+        print('#3 >> p-cur, `%s`' % wd, ' curt = ', Lt.name(curType))
         res.append(lex(wd, Mk.lex, type=curType))
         cur = [nval]
         return [nval]
-
+    i = -1
+    slen = len(src)
     for s in src:
+        i += 1
         # print('#6 ', cur, " s='%s'"%s, curType, '|')
         sType = charType(curType, s)
         # print('#stype:', sType)
+        
+        # close multi-comment
+        if curType == Lt.mtcomm:
+            cur.append(s)
+            # print('>>mtc:: ', cur, ' >> ', cur[-2:])
+            if ''.join(cur[-2:]) == '@#':
+                cur = nextRes(cur, curType, '')
+                curType = Lt.none
+            continue
     
         if curType == Lt.esc:
             # in the string and after esc slash
@@ -172,6 +193,13 @@ def splitLine(src: str) -> TLine:
             cur.append(s)
             continue 
         
+        if curType == Lt.comm and i < slen - 1:
+            if len(cur) == 1 and cur[0] + s == '#@':
+                # start of multiline coment found
+                cur.append(s)
+                curType = Lt.mtcomm
+                continue
+
         # ordinar case
         if sType == curType:
             cur.append(s)
@@ -199,78 +227,28 @@ def splitLine(src: str) -> TLine:
         raise ParseErr('Unclosed string in the and of line `%s`'% s)
     # print('#a3:', src)
     lexems = normilizeLexems(res)
-    return TLine(src, lexems)
+    return TLine(src, lexems), curType
 
 def splitLexems(text: str) -> list[TLine]:
     lines = text.splitlines()
     res:list[TLine] = []
+    lastType = Lt.none
     for s in lines:
         if not s.strip():
             continue # miss empty and spaces line
         # res.append(lex(0, Mk.line))
-        nextLine = splitLine(s)
+        nextLine, endType = splitLine(s, lastType)
+        print([(x.val, Lt.name(x.ltype), x.mark) for x in nextLine.lexems])
         # res.extend(nextLine)
         res.append(nextLine)
+        lastType = Lt.none
+        if len(nextLine.lexems) == 0:
+            continue
+        # lastElemType = nextLine.lexems[-1].ltype
+        if endType in [Lt.mtcomm, Lt.mttext]:
+            lastType = endType
     # res.append(lex(0, Mk.line))
     return res
-
-
-def buildLexems(lexems:list[lex]) -> list[Elem]:
-    ''' From raw lexems to lang Elems
-    numbers: check format, split by: .. 
-    operators: longer set of chars over shorter: 1..5 -> [1(int), .., 5] 1.,0 -> [1.(float), 0]
-    
-    '''
-    res = []
-    prep:list[lex] = []
-    for x in lexems:
-        # TODO: prevent splitted spaces in indent
-        # Num fix
-        # print('#-1: ', x.val)
-        if x.ltype == Lt.num and x.val.find('..') > -1:
-            xparts = x.val.split('..')
-            print('~', xparts)
-            prep.append(lex(xparts[0], Mk.lex, type=Lt.num))
-            prep.append(lex('..', Mk.lex, type=Lt.oper))
-            x = lex(xparts[1], Mk.lex, type=Lt.num)
-        prep.append(x)
-            
-    locInd = 0 # local indent
-    glInd = 0 #global indent
-    lastLex:lex = None
-    curLex:lex = lex()  
-    prLex = lex()
-    for x in prep:
-        # lex to Chunk
-        prLex = curLex
-        curLex = x
-        lastLex = prLex
-        if x.mark == Mk.line:
-            res.append(Elem(Lt.endline, x.val))
-            lastLex = x
-        if lastLex.mark == Mk.line:
-            print('-2:', x.val,':', Lt.name(x.ltype))
-        if lastLex.mark == Mk.line:
-            # here we get indent, convert indent to startBlock or endBlock
-            locInd = 0
-            if x.ltype == Lt.space:
-                locInd = len(x.val)
-            if locInd > glInd:
-                # new block
-                res.append(Elem(Lt.block, x.val))
-            elif locInd < glInd:
-                res.append(Elem(Lt.close, x.val))
-            #TODO: catch and remove blank lines
-            glInd = locInd
-            lastLex = x
-            continue
-        
-        if x.ltype == Lt.space:
-            res.append(Elem(Lt.space, x.val))
-        else:
-            res.append(Elem(x.ltype, x.val))
-    return res
-
 
 
 def lex2Elem(xx:lex)->Elem:
@@ -278,7 +256,8 @@ def lex2Elem(xx:lex)->Elem:
         return Elem(xx.ltype, xx.val)
     if xx.ltype == Lt.oper:
         return Elem(Lt.oper, xx.val)
-    # TODO: other ypes
+    # TODO: other type
+    # TODO: metadata from comments
 
 
 def elemLine(src:TLine)->CLine:

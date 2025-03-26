@@ -276,7 +276,7 @@ def makeExpr(expCase:ExpCase, elems:list[Elem])->Expression:
     return simpleExpr(expCase, elems)
 
 def elems2expr(elems:list[Elem])->Expression:
-    print('#elems2expr #b1', [n.text for n in elems])
+    print('#elems2expr #b1', [(n.text, Lt.name(n.type)) for n in elems])
     for expCase in getCases():
         if expCase.match(elems):
             # if expCase.sub():
