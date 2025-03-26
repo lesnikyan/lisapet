@@ -22,7 +22,7 @@ import pdb
 
 class TestEvalFile(TestCase):
     
-    def _test_full(self):
+    def test_full(self):
         '''' '''
         srcf = 'full_example.et'
         with open(srcf) as f:

@@ -1,14 +1,59 @@
+#@
+Example  of any LP (Lisapet) abilities.
+@intr@exit
+For now we can:
 
+1. loops: 
+    while, 
+    for init; condition; post-expression
+    for val <- iter() # magic for now
+    for val <- [a,r,r,a,y] 
+
+2. if-else statement
+    if expr
+        expr-block
+    else
+        expr-blok
+
+3. compare operators and complex bool-expressions, including unary (!)
+    a < 100 && b > 4 || a + b >= 1
+
+2. match-case
+    match expr
+        a -> expr1
+        b -> expr2
+        _ -> default-expression
+
+3. complex math expressions, including unary (-): 
+    res = a + b * (c -10 ** 2) / (7 - 5 * d)
+
+4. functions 
+    func definition: 
+        func foo(a, b, c)
+            a + b + c
+    function call: res = foo(1, 2, 3) 
+
+1. Lists
+    declaration: nums = [1,2,3]
+    usage:
+        set val: nums[0] = 5
+        get val: print(nums[2])
+
+--
+
+@#
 
 func sum(nums)
+    # for over list
     res = 0
-    # for n <- nums:
-    for i=0; i < len(nums); i += 1
+    #for i=0; i < len(nums); i += 1
+    for n <- nums:
         n = nums[i]
         res += n
     res
 
 func prime(x)
+    # while
     n = 2
     while n ** 2 < x
         if x % n == 0
@@ -17,13 +62,20 @@ func prime(x)
     true
 
 func fact(x)
+    # for over init-, condition-, post- expressions
     r = 1
     for i=1; i <=x; i += 1
         r *= i
     r
 
-func foo(x)
+func fooPow2(x)
+    # simplest math function
     return x * x
+
+func unar(cond1):
+    inv = false
+    if cond1 && ! inv:
+        print('inverted')
 
 # tests:
 
@@ -34,7 +86,8 @@ t3 = sum([1000, 200, 30, 4])
 #hello = "Hello print example!"
 #print(hello)
 print("Hello print example!" + '!!')
-#print(foo(5))
+#print(fooPow2(5))
 #print(t3)
+unar(true)
 
 

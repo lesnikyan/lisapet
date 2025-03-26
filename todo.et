@@ -1,26 +1,30 @@
 
-# TODO:
-# change `iter(args)` magic to inbound function (python function now)
+# TODO List
 
+#== change `iter(args)` magic implementstion to inbound function (custom python function func__iter(args)->IterGen )
+
+#== DONE!
 #@ 
 multiline comment
 @#
 x = 2 #@ inline comment @# + sum([10, 20])
 #@
 
-# store content of comments as a runtime metadata
+#== store content of comments as a runtime metadata
 
+
+#==
 ''' 
 multistring
 '''
 
-# multiline expr
+#== multiline expr
 # concat all sublines before make expression process
 
 if (expr1 
     && expr2)
 
-# possible sugar
+#== possible sugar
 # case if: with no operator between line use && or defined default operator
 #    if (&& ..) if (|| .. ) - definition of default
 # e.g: 
@@ -35,7 +39,7 @@ foo( ag1,
     bar( a, b, c)
 )
 
-# concat strings
+#== concat strings
 str = (
     'Hello '
     "new string!"
@@ -49,7 +53,7 @@ data = {
     'b': 2
 }
 
-# sugar for collections - skip commas between lines (auto-complit for interpretation)
+#== sugar for collections - skip commas between lines (auto-complit for interpretation)
 strings = [
     'Hello world!'
     'Helo desktop!'
@@ -59,6 +63,6 @@ data = {
     'b': 2
 }
 
-
+#== Think about tail-recursion
 
 @#

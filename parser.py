@@ -133,7 +133,7 @@ def normilizeLexems(src:list[lex])->list[lex]:
     return [s for s in prep if len(s.val) > 0]
 
 
-def splitLine(src: str, prevType:int=Lt.none) -> TLine:
+def splitLine(src: str, prevType:int=Lt.none) -> tuple[TLine, int]:
     '''
     prevType - for multiline cases:
     multiline string
@@ -233,13 +233,20 @@ def splitLexems(text: str) -> list[TLine]:
     lines = text.splitlines()
     res:list[TLine] = []
     lastType = Lt.none
+    # TODO: 
     for s in lines:
         if not s.strip():
             continue # miss empty and spaces line
         # res.append(lex(0, Mk.line))
+        # interpretator magic:
+        
+        if s.startswith('@intr@exit'):
+            print('Interpretation exit in splitLexems()')
+            exit(1);
         nextLine, endType = splitLine(s, lastType)
         print([(x.val, Lt.name(x.ltype), x.mark) for x in nextLine.lexems])
         # res.extend(nextLine)
+        print('--- split res --->', [(x.val, x.ltype) for x in nextLine.lexems])
         res.append(nextLine)
         lastType = Lt.none
         if len(nextLine.lexems) == 0:
