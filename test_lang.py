@@ -796,7 +796,7 @@ class TestParse(TestCase):
         for tt in args:
             src, exp = tt
             print('space %d, word %d, num %d, oper %d, text %d, quot %d, esc %d' % (Lt.space, Lt.word, Lt.num, Lt.oper, Lt.text, Lt.quot, Lt.esc))
-            res = splitLine(src)
+            res, etype = splitLine(src)
             print([n.val for n in res.lexems])
             print([(n.val, n.mark, n.ltype) for n in res.lexems])
         
