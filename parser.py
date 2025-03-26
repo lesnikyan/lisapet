@@ -133,6 +133,7 @@ def splitLine(src: str) -> TLine:
     curType = 0
     openQuote = None
     # esc = False
+    # print('splitLine:', src)
     
     def nextRes(cur, curType, nval):
         wd = ''.join(cur)
@@ -143,7 +144,7 @@ def splitLine(src: str) -> TLine:
         return [nval]
 
     for s in src:
-        # print('#6 ', cur, "'%s'"%s, curType, '|')
+        # print('#6 ', cur, " s='%s'"%s, curType, '|')
         sType = charType(curType, s)
         # print('#stype:', sType)
     
@@ -179,9 +180,9 @@ def splitLine(src: str) -> TLine:
         if sType == Lt.quot:
             if openQuote is None:
                 # start string
-                # print('#- open string')
                 st = ''.join(cur)
-                res.append(lex(st,Mk.lex, type=curType))
+                # print('#- open string', st, '; cur: ', cur, '; s=', s)
+                # res.append(lex(st, Mk.lex, type=curType))
                 # cur = []
                 cur = nextRes(cur, curType, '')
                 curType = Lt.text

@@ -6,6 +6,7 @@ from lang import *
 from vars import *
 from tnodes import *
 from oper_nodes import *
+from datanodes import *
 from controls import *
 from vals import isDefConst, elem2val, isLex
 
@@ -804,7 +805,9 @@ class CaseFor(BlockCase, SubCase):
         print('# CaseFor.setSub-', slen, subs)
         match slen:
             # iterator case
-            case 1 if isinstance(base, LoopIterExpr): base.setIter(subs[0])
+            case 1 if isinstance(base, LoopIterExpr):
+                base.setIter(subs[0])
+                print('(=1)', subs[0], subs[0].srcExpr )
             # pre, cond
             case 2 if isinstance(base, LoopExpr): base.setExpr(pre=subs[0], cond=subs[1])
             # init, cond, post

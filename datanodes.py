@@ -1,0 +1,69 @@
+'''
+Expressions of definition and usage of data structures.
+Data structures:
+List, 
+Dict, 
+Struct,
+Tree, 
+
+'''
+
+
+from lang import *
+from vars import *
+from expression import *
+
+# class Node:
+#     def __init__(self):
+#         command = 0
+#         arg = 0
+        
+
+
+# Expression
+
+
+class ListExpr(CollectionExpr):
+    ''' [1,2,3, var, foo(), []]
+    Make `list` object 
+    '''
+    def __init__(self):
+        self.valsExprList:list[Expression] = []
+        self.listObj:ListVar = None
+
+    def add(self, exp:Expression):
+        ''' add next elem of list'''
+        self.valsExprList.append(exp)
+
+    def do(self, ctx:Context):
+        self.listObj = ListVar(None)
+        print('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
+        for exp in self.valsExprList:
+            exp.do(ctx)
+            self.listObj.addVal(exp.get())
+        print('## ListExpr.do2 self.listObj:', self.listObj)
+
+    def get(self):
+        print('## ListExpr.get self.listObj:', self.listObj)
+        return self.listObj
+
+
+class DictExpr(CollectionExpr):
+    ''' {'key': val, keyVar: 13, foo():bar()} '''
+    
+
+class StructDefExpr(Block):
+    ''' struct User
+            name: string
+            age: int
+            weight: float
+    '''
+
+
+class StructFieldExpr(VarExpr):
+    ''' inst.field = val; var = inst.field '''
+
+
+
+class TupleExpr(CollectionExpr):
+    ''' res = (a, b, c); res = a, b, c '''

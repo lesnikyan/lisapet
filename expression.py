@@ -111,7 +111,7 @@ class Block(Expression):
     
     def isEmpty(self):
         return len(self.subs)
-    
+
     def do(self, ctx:Context):
         self.lastVal = None
         # eval sequences one by one, store result of each line, change vars in contexts
@@ -120,14 +120,16 @@ class Block(Expression):
             return
         lastInd = 0
         self.ctx.upper = ctx
-        print('!! Block.do')
+        # print('!! Block.do')
         lastVal = None
         for i in range(elen):
-            print('!! Block.iter ', i, self.subs[i])
+            # print('!! Block.iter ', i, self.subs[i])
             expr = self.subs[i]
             expr.do(ctx)
             lastInd = i
-            lineRes = expr.get()
+            lineRes = None
+            if not isinstance(expr, Block) or expr.storeRes:
+                lineRes = expr.get()
             if isinstance(lineRes, FuncRes):
                 # return expr
                 self.lastVal = lineRes
@@ -143,6 +145,8 @@ class Block(Expression):
         return True
 
 
+class LoopBlock(Block):
+    ''' '''
 
 class CollectionExpr(Expression):
     ''''''
@@ -159,7 +163,7 @@ class CollectionExpr(Expression):
 class CollectElemExpr(Expression):
     
     def __init__(self):
-        self.target:ContVar = None
+        self.target:Collection = None
         self.varExpr:Expression = None
         self.keyExpr = None
         
@@ -173,7 +177,7 @@ class CollectElemExpr(Expression):
         self.target = None
         self.varExpr.do(ctx) # before []
         self.target = self.varExpr.get() # found collection
-        print('## self.target', self.target)
+        # print('## self.target', self.target)
         self.keyExpr.do(ctx) #  [ into ]
 
     def set(self, val:Var):
@@ -252,7 +256,7 @@ class Function(FuncInst):
     def addArg(self, arg:Var):
         self.argVars.append(arg)
         self.argNum += 1
-        print('Fuuu, addArg', arg, self.argNum)
+        # print('Fuuu, addArg', arg, self.argNum)
 
     # TODO: flow-number arguments
     def setArgVals(self, args:list[Var]):
@@ -271,7 +275,7 @@ class Function(FuncInst):
         inCtx = Context(None) # inner context, empty new for each call
         inCtx.addVar(Var(1000001, 'debVal', TypeInt))
         for arg in self.argVars:
-            print('Fudo:', arg)
+            # print('Fudo:', arg)
             inCtx.addVar(arg)
         inCtx.get('debVal')
         inCtx.upper = ctx
@@ -301,7 +305,7 @@ class FuncCallExpr(Expression):
         # inne rcontext
         args:list[Var] = []
         self.func = ctx.get(self.name)
-        print('#1# func-call do: ', self.name, self.func)
+        # print('#1# func-call do: ', self.name, self.func)
         for exp in self.argExpr:
             exp.do(ctx)
             print('FCdo:', exp, exp.get())
@@ -354,7 +358,7 @@ class FuncDefExpr(DefinitionExpr, Block):
         for exp in self.blockLines:
             func.block.add(exp)
         self.res = func
-        print('FuncDefExpr.do 2:', func.name)
+        # print('FuncDefExpr.do 2:', func.name)
         
         ctx.addFunc(func)
     
@@ -393,13 +397,13 @@ class NFunc(Function):
     def setArgVals(self, args:list[Var]):
         self.argVars = []
         for arg in (args):
-            print('~NFsetA', arg)
+            # print('~NFsetA', arg)
             self.argVars.append(arg.get())
 
     def do(self, ctx: Context):
         args = []
         for arg in self.argVars:
-            print('#T arg = ', arg)
+            # print('#T arg = ', arg)
             args.append(arg)
         res = self.callFunc(*args)
         self.res = value(res, self.resType)

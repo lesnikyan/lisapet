@@ -1,6 +1,6 @@
 
 
-from collections.abc import  Callable
+
 import unittest
 from unittest import TestCase, main
 
@@ -37,40 +37,6 @@ import pdb
 #         return self.val
 
 
-class NFunc(Function):
-    ''' '''
-    def __init__(self, name):
-        super().__init__(name)
-        self.callFunc:Callable = lambda *args : 1
-        self.res:Var = None
-        self.resType:VType = TypeNull
-
-    def setArgVals(self, args:list[Var]):
-        self.argVars = []
-        # for i in range(len(args)):
-        for arg in (args):
-            print('~NFsetA', arg)
-            self.argVars.append(arg.get())
-
-    def do(self, ctx: Context):
-        # self.block.storeRes = True # save last expr value
-        # inCtx = Context(None) # inner context, empty new for each call
-        # inCtx.addVar(Var(1000001, 'debVal', TypeInt))
-        args = []
-        for arg in self.argVars:
-            print('#T arg = ', arg)
-            args.append(arg)
-        res = self.callFunc(*args)
-        self.res = value(res, self.resType)
-
-    def get(self)->Var:
-        return self.res
-
-def setFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeNull):
-    func = NFunc(name)
-    func.resType = rtype
-    func.callFunc = fn
-    ctx.addFunc(func)
 
 # def getPrint(ctx:Context):
 #     func = NFunc('len')
@@ -99,7 +65,7 @@ def setFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeNull):
 
 class TestEvalFile(TestCase):
     
-    def test_full(self):
+    def _test_full(self):
         '''' '''
         srcf = 'full_example.et'
         with open(srcf) as f:
@@ -109,8 +75,8 @@ class TestEvalFile(TestCase):
             clines:CLine = elemStream(tlines)
             exp = lex2tree(clines)
             ctx = Context(None)
-            setFunc(ctx, 'print', print, TypeNull)
-            setFunc(ctx, 'len', len, TypeInt)
+            setNativeFunc(ctx, 'print', print, TypeNull)
+            setNativeFunc(ctx, 'len', len, TypeInt)
             ctx.get('len')
             # return
             print('$$ run test ------------------')

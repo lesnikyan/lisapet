@@ -49,10 +49,44 @@ class TestParse(TestCase):
         for n in res:
             print('%s, %s'%(Lt.name(n.type), n.text))
 
-    def _test_for_array(self):
-        ''' for n <- [1,2,x] 
+    def test_for_array(self):
+        ''' for n <- [1,2,3] 
             for n <- arrVar
         '''
+        code = '''
+        for n <- [1,2,3]
+            print('-----------------', n)
+        '''
+        # code = '''
+        # nn = [1,2,3]
+        # for n <- nn
+        #     print(n)
+        # '''
+        # code = '''
+        # for n <- iter(3)
+        #     print( n)
+        # '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        exp = lex2tree(clines)
+        ctx = Context(None)
+        setNativeFunc(ctx, 'print', print, TypeNull)
+        setNativeFunc(ctx, 'len', len, TypeInt)
+        print('$$ run test ------------------')
+        # pdb.set_trace()
+        exp.do(ctx)
+        # r1 = ctx.get('r1').get()
+        # print('#t >>> r:', r1)
+
+
+    def _test_str_in_fun(self):
+        code = 'print("Hello buhlo 123!")'
+        code = 'st =\'aaa\' + "Hello buhlo 123!" + \'bbb\''
+        tlines = splitLexems(code)
+        print('lexems', [x.val for n in tlines for x in n.lexems ])
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
 
     def _test_match_val(self):
         code = '''

@@ -9,6 +9,7 @@ FOR
 from lang import *
 from vars import *
 from expression import *
+from iternodes import *
 
 
 
@@ -65,86 +66,100 @@ class IfExpr(Block):
         return self.lastRes
 
 
-class IterGen(Expression):
-    ''' '''
+class CaseExpr(Block):
+    ''' case in `match` block
+    '''
     
-    def __init__(self, start=0, over=0, step=1, **kw):
-        self.startIndex = start
-        self.index:int = start # val, index of list (src[index]), index of keys of dict (src[keys[index]])
-        self.diff = step
-        self.over = over
-        self.src = None # None, list, dict
-        self.keys = None
-        if 'src' in kw:
-            self.src = kw['src']
-        if isinstance(self.src, dict):
-            self.keys = self.src.keys()
-    
-    def start(self):
-        self.index = self.startIndex
-    
-    def step(self):
-        self.index += self.diff
-        
-    def hasNext(self):
-        return self.index < self.over
-    
-    def get(self):
-        if self.src is None:
-            return Var(self.index,None, TypeInt)
-        elif isinstance(self.src, list):
-            return Var(self.index,None, TypeInt), self.src[self.index]
-        # TODO: for dict implementation
-        # elif isinstance(self.keys, list):
-        #     return self.keys[self.index], self.src[self.keys[self.index]]
+    # TODO: do we need result from `match` blok?
 
-class IterAssignExpr(Expression):
-    ''' target <- iter|collection '''
     def __init__(self):
-        self.target:list[Var] = None
-        self.assignExpr:Expression = None
-        self.itExp:IterGen = None
-    
-    def setTarget(self, vars:list[Var]):
-        if len(vars) == 1:
-            vars = [Var_(), vars[0]]
-        self.target = vars
-    
-    def setIter(self, exp:IterGen):
-        self.itExp = exp
-    
-    def start(self, ctx:Context):
-        self.itExp.start()
-        for vv in self.target:
-            if isinstance(vv, Var_):
-                continue
-            ctx.addVar(vv)
-    
-    def cond(self)->bool:
-        return self.itExp.hasNext()
-    
-    def step(self):
-        self.itExp.step()
+        # super().__init__()
+        self.block = Block()
+        self.expect:Expression = None
+
+    def add(self, exp:Expression):
+        self.block.add(exp)
+
+    def setExp(self, exp:Exception):
+        self.expect = exp
+
+    def doExp(self, ctx:Context):
+        self.expect.do(ctx)
+
+    def matches(self, val:Var):
+        # simple equal
+        print('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
+        if self.expect.get().get() == val.get():
+            return True
+
+        # TODO: list case
+        
+        # tuple case
+
+        # type case
+        et = self.expect.get()
+        if isinstance(et, VType) and et == val.getType():
+            return True
+        
+        # struct-val case
+        
+        return False
     
     def do(self, ctx:Context):
-        ''' put vals into LOCAL context '''
-        self.itExp.do(ctx)
-        val = self.itExp.get()
-        key = Var_()
-        if isinstance(val, tuple):
-            key, val = val
-        # TODO: put key-val into context?
-        k, v = self.target
-        if not isinstance(key, Var_):
-            ctx.update(k.name, key)
-        ctx.update(v.name, val)
-        # self.assignExpr.do(ctx)
-        
-    # def get(self):
-    #     res = self.itExp
+        self.block.do(ctx)
 
-class LoopBlock(Block):
-    ''' '''
+
+class MatchExpr(Block):
+    ''' 
+    1. for unpack multiresults.
+    2. for pattern matching like switch/case 
+    match expr
+        123 -> expr
+        234 ->
+            expr1
+            expr2
+        # type
+        nums:list | len(nums) > 0 -> nums[0]
+        x:int -> x + 2
+        # sub condition
+        u:User | u.name = 'Vasya' -> print(u.lastName)
+        # constructor-patters
+        u:User('Vasya') -> print(u.lastName)
+        _ -> expr
+    '''
+
+    def __init__(self):
+        self.match:Expression = None
+        self.cases:list[CaseExpr] = []
+        self.defaultCase:CaseExpr = None
+
+    def add(self, xcase:CaseExpr):
+        if not isinstance(xcase, CaseExpr):
+            raise InerpretErr('Trying add not-case sub-expression (%s) to `match` block' % xcase.__class__.__name__)
+        if isinstance(xcase.expect, VarExpr_):
+            self.defaultCase = xcase
+            return
+        self.cases.append(xcase)
+
+    def setMatch(self, exp:Expression):
+        self.match = exp
+    
+    def do(self, ctx:Context):
+        self.match.do(ctx)
+        mctx = Context(ctx)
+        done = self.doCases(mctx)
+        if not done:
+            self.defaultCase.do(mctx)
+
+    def doCases(self, mctx:Context):
+        for cs in self.cases:
+            cs.doExp(mctx)
+            mval = self.match.get()
+            if cs.matches(mval):
+                cs.do(mctx)
+                return True
+        return False
+
 
 class LoopIterExpr(LoopBlock):
     '''
@@ -155,6 +170,7 @@ class LoopIterExpr(LoopBlock):
     def __init__(self):
         self.block:Block = Block() # empty block on start
         self.iter:IterAssignExpr = None
+        self.storeRes = False
 
     def setIter(self, iter:IterAssignExpr):
         self.iter = iter

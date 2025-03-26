@@ -50,10 +50,16 @@ class CaseIterOper(SubCase):
                 dest = Var(None, left[0].text, Undefined)
             target.append(dest)
         # expMain = IterAssignExpr()
+        # print('@@@@ CaseIterOper.split')
         expAssign = IterAssignExpr()
         expAssign.setTarget(target)
         expIter = self.iterExpr(right)
-        expAssign.setIter(expIter)
+        print('(=2)', expIter)
+        if isinstance(expIter, IterGen):
+            expAssign.setIter(expIter)
+        if isinstance(expIter, (CollectionExpr, VarExpr, FuncCallExpr)):
+            expAssign.setSrc(expIter)
+        
         return expAssign, []
 
     def iterExpr(self, elems:list[Elem]):
@@ -63,17 +69,23 @@ class CaseIterOper(SubCase):
             [expr, expr, expr]
             {expr:expr, expr:expr}
         '''
-        iter = None
+        res = None
+        
+        print('@@@@ CaseIterOper.iterExpr')
         if elems[0].text == 'iter':
             # dev manual impl with numbers (not vars)
-            iter = self.iterGen(elems[1:])
+            res = self.iterGen(elems[1:])
         elif CaseArray().match(elems):
-            iter = elems2expr(elems) # TODO: change to returning subs with latest build in class.setSub
+            res = elems2expr(elems) # TODO: change to returning subs with latest build in class.setSub
+            print('#$ subExpr', res)
+            # iter = 
             # TODO: other iter cases
         elif len(elems) == 1 and elems[0].type == Lt.word:
             # TODO: varExpr for array-var
-            pass
-        return iter
+            res = elems2expr(elems)
+            print('#$ subExpr', res)
+
+        return res
 
     def iterGen(self, elems:list[Elem]):
         elargs = elems
@@ -97,7 +109,7 @@ class CaseIterOper(SubCase):
         return exp
     
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
-        print('IterOper: ', base, subs)
+        print('CaseIterOper.setSub: ', base, subs)
 
 
 class CaseMatch(SubCase):

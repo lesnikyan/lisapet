@@ -31,8 +31,8 @@ func foo(x)
 # t2 = prime(23)
 t3 = sum([1000, 200, 30, 4])
 
-hello = "Hello print example!"
-print(hello)
-#print("Hello print example!")
-print(foo(5))
-print(t3)
+#hello = "Hello print example!"
+#print(hello)
+print("Hello print example!" + '!!')
+#print(foo(5))
+#print(t3)

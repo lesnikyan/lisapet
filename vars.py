@@ -50,8 +50,10 @@ class TypeFunc(VType):
 
 class Var_(Var):
     ''' expr: _ '''
+    name = '_'
     def __init__(self):
         self.vtype:VType = TypeNull
+        self.val = None
 
 class VarNull(Var):
     ''' None|null'''
@@ -86,22 +88,34 @@ class FuncRes(Var):
 
 # Collections
 
-class ContVar(Var):
+class Container(Var):
     ''' Contaiter Var list, dict, etc '''
     
     def setVal(self, key:Var, val:Var):
         pass
 
-    def getVal(self, key:Var):
+    def getVal(self, key:Var|int):
         pass
 
 
-class ListVar(ContVar):
+class Collection(Container):
+    
+    def len(self)->int:
+        return 0
+
+
+class ListVar(Collection):
     ''' classic List / Array object'''
     
-    def __init__(self, name=None):
+    def __init__(self, name=None, **kw):
         super().__init__(None, name, TypeList)
-        self.elems:list[Var] = []
+        ees = []
+        if 'elems' in kw:
+            ees = kw['elems']
+        self.elems:list[Var] = ees
+
+    def len(self)->int:
+        return len(self.elems)
     
     def addVal(self, val:Var):
         # not sure, we need whole Var or just internal value?
@@ -109,22 +123,25 @@ class ListVar(ContVar):
     
     def setVal(self, key:Var, val:Var):
         i = key.get()
-        print('ListVar.setVal', i, val, 'Len=', len(self.elems), i < len(self.elems), self.elems)
+        # print('ListVar.setVal', i, val, 'Len=', len(self.elems), i < len(self.elems), self.elems)
         if i >= len(self.elems):
             raise EvalErr('List out of range by index %d ' % i)
         self.elems[i] = val
 
-    def getVal(self, key:Var):
-        print('ListVar.getVal1, key:', key)
-        print('ListVar.getVal1, elems:', self.elems)
-        i = key.get()
+    def getVal(self, key:Var|int):
+        # print('ListVar.getVal1, key:', key)
+        # print('ListVar.getVal1, elems:', self.elems)
+        i = key
+        if isinstance(key, Var):
+            i = key.get()
         print('@ i=', i)
         if i < len(self.elems):
             return self.elems[i]
         raise EvalErr('List out of range by index %d ' % i)
 
     def get(self):
-        return self.elems
+        return  'list-no-get' # debug
+        # return self.elems
 
     def __str__(self):
         nm = self.name
@@ -133,12 +150,15 @@ class ListVar(ContVar):
         return 'ListVar(%s, [%s])' % (nm, ', '.join([str(n.get()) for n in self.elems[:10]]))
 
 
-class DictVar(ContVar):
+class DictVar(Collection):
     ''' classic List / Array object'''
     
     def __init__(self, name=None):
         super().__init__(None, name, TypeList)
         self.data:dict[Var,Var] = {}
+
+    def len(self)->int:
+        return len(self.data)
         
     def inKey(self, key:Var)->str:
         return '%s__%s' % (key.get(), key.getType().__class__.__name__)
@@ -146,6 +166,14 @@ class DictVar(ContVar):
     def setVal(self, key:Var, val:Var):
         k = self.inKey(key)
         self.data[k] = val
+
+    def getKeys(self):
+        # res = [ListVar(k) for k in self.data]
+        res = ListVar()
+        for k in self.data:
+            res.addVal(k)
+        return res
+        
 
     def getVal(self, key:Var):
         k = self.inKey(key)
@@ -262,27 +290,27 @@ class Context:
             src = src.upper
 
     def addSet(self, vars:Var|dict[str,Var]):
-        print('x.addSet ---------0', vars)
+        # print('x.addSet ---------0', vars)
         if not isinstance(vars, dict):
             vars = {vars.name: vars}
-        print('x.addSet ------ 1 pre',  {(k, v.name, '%s' %v.get()) for k, v in self.vars.items()})
-        print('x.addSet ------ 2 add', {(k, v.name, '%s' % v.get()) for k, v in vars.items()})
-        print('x.addSet ------ 3 add', vars)
+        # print('x.addSet ------ 1 pre',  {(k, v.name, '%s' %v.get()) for k, v in self.vars.items()})
+        # print('x.addSet ------ 2 add', {(k, v.name, '%s' % v.get()) for k, v in vars.items()})
+        # print('x.addSet ------ 3 add', vars)
         self.vars.update(vars)
         
     def update(self, name, val:Var):
-        print('x.update ====> :', name, val.get(), val.getType().__class__.__name__)
+        # print('x.update ====> :', name, val.get(), val.getType().__class__.__name__)
         src = self
         while True:
-            print('#Ctx-upd,name:', name)
-            print('#Ctx-upd2', src.vars)
+            # print('#Ctx-upd,name:', name)
+            # print('#Ctx-upd2', src.vars)
             if name in src.vars:
-                print('x.upd:found', name)
+                # print('x.upd:found', name)
                 val.name = name
                 src.vars[name] = val
                 # src.vars[name].set(val.get())
             if src.upper is None:
-                print('-- src.upper == None --', name, val)
+                # print('-- src.upper == None --', name, val)
                 val.name = name
                 self.addVar(val)
                 break
@@ -294,17 +322,17 @@ class Context:
         self.funcs[name] = fn
 
     def addVar(self, varName:Var|str, vtype:VType=None):
-        print('x.addVar0 >> var:', varName, varName.name)
+        # print('x.addVar0 >> var:', varName, varName.name)
         var = varName
         name = varName
-        print('x.addVar1 ====> :', varName, varName.__class__.__name__, vtype, vtype.__class__.__name__)
+        # print('x.addVar1 ====> :', varName, varName.__class__.__name__, vtype, vtype.__class__.__name__)
         if isinstance(varName, str):
-            print('! Just name', varName)
+            # print('! Just name', varName)
             var = Var(None, varName, vtype)
         else:
             name = var.name
-            print('#>> var.name:', var.name)
-        print('x.addVar2 ====> :', name, var, ':', var.get(), var.getType().__class__.__name__)
+        #     print('#>> var.name:', var.name)
+        # print('x.addVar2 ====> :', name, var, ':', var.get(), var.getType().__class__.__name__)
         # if isinstance(var, FuncInst):
         #     print('x.addVar ===>  ADD func ====> name:', name, ' var: ', var)
         #     self.funcs[name] = var
@@ -329,10 +357,10 @@ class Context:
             return Context._defaultContextVals[name]
         src = self
         while src is not None:
-            print('#Ctx-get,name:', name)
-            print('#Ctx-get2 vars', src.vars)
-            print('#Ctx-get3 funcs', (name in src.funcs), src.funcs)
-            print('#Ctx-depth', src.depth())
+            # print('#Ctx-get,name:', name)
+            # print('#Ctx-get2 vars', src.vars)
+            # print('#Ctx-get3 funcs', (name in src.funcs), src.funcs)
+            # print('#Ctx-depth', src.depth())
             if name in src.types:
                 return src.types[name]
             if name in src.funcs:
