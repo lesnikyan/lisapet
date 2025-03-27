@@ -1,23 +1,23 @@
 '''
 Controlling structures of execution tree.
+
 IF-ELSE
 WHILE
 FOR
+MATCH
 
 '''
 
 from lang import *
 from vars import *
-from expression import *
-from iternodes import *
-
+from nodes.expression import *
+from nodes.iternodes import *
 
 
 # Structural blocks
 
-# structural constrations: for, if, match
 
-
+# IF-ELSE
 
 class ElseExpr(Block):
     ''' '''
@@ -66,6 +66,8 @@ class IfExpr(Block):
         return self.lastRes
 
 
+# MATCH-CASE
+
 class CaseExpr(Block):
     ''' case in `match` block
     '''
@@ -87,21 +89,25 @@ class CaseExpr(Block):
         self.expect.do(ctx)
 
     def matches(self, val:Var):
-        # simple equal
+        # simple equal value
         print('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
         if self.expect.get().get() == val.get():
             return True
-
-        # TODO: list case
-        
-        # tuple case
 
         # type case
         et = self.expect.get()
         if isinstance(et, VType) and et == val.getType():
             return True
+
+        # TODO: 
         
-        # struct-val case
+        # list case
+        
+        # tuple case
+        
+        # dict case
+        
+        # struct-constructor case
         
         return False
     
@@ -161,12 +167,15 @@ class MatchExpr(Block):
         return False
 
 
+# LOOP-FOR
+
 class LoopIterExpr(LoopBlock):
     '''
     - iterator
     for n <- names
     for n <- iter(10)
     '''
+
     def __init__(self):
         self.block:Block = Block() # empty block on start
         self.iter:IterAssignExpr = None
@@ -205,12 +214,6 @@ class LoopExpr(LoopBlock):
         self.postIter:Expression = None
         
     def setExpr(self, **kwargs):
-        # expMap = {
-        #     'init': lambda exp: self.initExpr = exp,
-        #     'cond': lambda (exp): self.initExpr = exp,
-        #     'pre': lambda (exp): self.initExpr = exp,
-        #     'post': lambda (exp): self.initExpr = exp,
-        # }
         for name,exp in kwargs.items():
             print('-- LoopExpr.setExpr', name, exp )
             match name:
@@ -220,8 +223,6 @@ class LoopExpr(LoopBlock):
                 case 'post': self.postIter = exp
                 case _: raise InerpretErr('LoopExpr doesn`t have expression `%s` ' % name)
 
-    # def setIter(self, iter:IterAssignExpr):
-    #     pass
 
     def add(self, exp:Expression):
         # print('LoopExpr.add', exp)
@@ -246,6 +247,7 @@ class LoopExpr(LoopBlock):
         return self.block.get()
 
 
+# LOOP-WHILE
 
 class WhileExpr(LoopBlock):
     ''' while var == true 
@@ -253,13 +255,14 @@ class WhileExpr(LoopBlock):
         while x += 1; x < 10
         while stat.recalc(); stat.isCorrect()
     '''
+
     def __init__(self, cond=None):
         self.block:Block = Block() # empty block on start
         self.cond:Expression = cond
         
     def setCond(self, cond:Expression):
         self.cond = cond
-        
+
     def add(self, exp:Expression):
         print('WhileExpr.add', exp)
         self.block.add(exp)

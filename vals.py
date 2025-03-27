@@ -6,7 +6,7 @@ import re
 
 from lang import *
 from base import *
-from tnodes import *
+from vars import *
 
 # rxNum = re.compile('^[0-9\.]$')
 rxInt = re.compile(r'^[0-9]+$')

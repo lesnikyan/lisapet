@@ -1,31 +1,31 @@
 
 
 
-import unittest
 from unittest import TestCase, main
 
-
-
-from lang import Lt, Mk, CLine
-from parser import splitLine, splitLexems, charType, splitOper, elemStream
-from vars import *
-from vals import numLex
-from tnodes import Var, Context
-from tree import *
-
-
-
+import os
 import pdb
+from pathlib import Path
 
 
+from lang import CLine
+from parser import splitLexems, elemStream
+from vars import *
+from context import Context
+from tree import *
+from nodes.func_expr import setNativeFunc
+
+
+def filepath(fname):
+    return Path(__file__).with_name(fname)
 
 
 class TestEvalFile(TestCase):
     
     def test_full(self):
         '''' '''
-        srcf = 'full_example.et'
-        with open(srcf) as f:
+        fpath = filepath('full_example.et')
+        with open(fpath) as f:
             code = f.read()
             # print(code)
             tlines = splitLexems(code)

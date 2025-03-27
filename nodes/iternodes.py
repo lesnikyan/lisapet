@@ -1,11 +1,12 @@
 
 '''
-Iteration expressions
+Iteration expressions.
+Mostly for usage into for-loop or generators.
 '''
 
 from lang import *
 from vars import *
-from expression import *
+from nodes.expression import *
 
 
 class IterGen(Expression):

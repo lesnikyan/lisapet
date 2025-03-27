@@ -1,8 +1,8 @@
 ''' '''
 
 from vars import *
-from expression import *
-from func_expr import *
+from nodes.expression import *
+from nodes.func_expr import *
 
 # Definitions
 
@@ -40,11 +40,11 @@ class StructDef(TypeDef):
         return Struct(args)
 
 
-class FuncDef(Definition):
-    def __init__(self, name, fargs:list[Var]=None):
-        super().__init__(name)
-        self.args = fargs
-        self.block = Block()
+# class FuncDef(Definition):
+#     def __init__(self, name, fargs:list[Var]=None):
+#         super().__init__(name)
+#         self.args = fargs
+#         self.block = Block()
 
-    def inst(self, paretnCtx:Context)->Func:
-        return Func(self.block, self.args, paretnCtx)
+#     def inst(self, paretnCtx:Context)->Func:
+#         return Func(self.block, self.args, paretnCtx)

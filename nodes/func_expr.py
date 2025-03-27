@@ -1,7 +1,8 @@
 
-from vars import *
-from expression import *
 from collections.abc import  Callable
+
+from vars import *
+from nodes.expression import *
 
 
 class Function(FuncInst):

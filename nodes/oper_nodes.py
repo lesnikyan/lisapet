@@ -7,7 +7,7 @@ Eval tree nodes: operators.
 
 from lang import *
 from vars import *
-from expression import *
+from nodes.expression import *
 
 
 class OperCommand(Expression):

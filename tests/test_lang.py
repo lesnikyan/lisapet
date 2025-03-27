@@ -6,7 +6,9 @@ from lang import Lt, Mk, CLine
 from parser import splitLine, splitLexems, charType, splitOper, elemStream
 from vars import *
 from vals import numLex
-from tnodes import Var, Context
+from context import Context
+from nodes.tnodes import Var
+from nodes import setNativeFunc, Function
 from tree import *
 import pdb
 

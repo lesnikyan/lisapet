@@ -5,7 +5,7 @@ Structural components of execution tree.
 
 from lang import *
 from vars import *
-from expression import *
+from nodes.expression import *
 
 # class Node:
 #     def __init__(self):
@@ -38,7 +38,7 @@ class Module(Block):
         self.imported[name] = module
         # TODO: merge contexts by resolved names
         
-    def exportOut(self):
-        ''' Call from other module `importIn '''
-        return self.ctx
+    # def exportOut(self):
+    #     ''' Call from other module `importIn '''
+    #     return self.ctx
 

@@ -11,7 +11,7 @@ Tree,
 
 from lang import *
 from vars import *
-from expression import *
+from nodes.expression import *
 
 # class Node:
 #     def __init__(self):

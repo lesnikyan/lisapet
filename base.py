@@ -14,7 +14,7 @@ def inst(self, *args)->Base:
 
 
 class Var(Base):
-    def __init__(self, val, name, vtype:VType=None):
+    def __init__(self, val, name=None, vtype:VType=None):
         self.val = val
         self.name = name # if name is none - here Val, not Var
         self.vtype:VType = vtype

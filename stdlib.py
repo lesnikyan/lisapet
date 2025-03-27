@@ -6,7 +6,8 @@ Basic useful functions
 from collections.abc import  Callable
 
 # from eval import Func, Block, Var, VType, Undefined, null
-from expression import Block, Expression, Function
+from nodes.expression import Block, Expression
+from nodes.func_expr import Function
 from vars import *
 
 
@@ -26,7 +27,7 @@ class StdBlock(Block):
 
 def stdFunc(func:Callable, args:list[Var]=None)->Function:
     ''' '''
-    return Function(StdBlock(func, args, null))
+    return Function(StdBlock(func, args, None))
 
 FUNCTIONS:dict[str,Function] = {
     'print' : stdFunc(print), # console output,
