@@ -4,11 +4,12 @@ ExpCases here for exec tree
 
 from lang import *
 from vars import *
+from vals import isDefConst, elem2val, isLex
 from tnodes import *
 from oper_nodes import *
 from datanodes import *
 from controls import *
-from vals import isDefConst, elem2val, isLex
+from func_expr import *
 
 
 SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
@@ -865,6 +866,7 @@ class CaseFunCall(SubCase):
         ''' '''
         # 1. func name, in next phase: method call: inst.foo() ? separated case for objects with members: obj.field, obj.method()
         # 2. arg-expressions
+        src = ' '.join([ee.text for ee in elems])
         name = elems[0].text
         # argSrc = elems[2:-1]
         sub = elems[2:-1]
@@ -872,7 +874,7 @@ class CaseFunCall(SubCase):
         subs = [sub] # one expression inside by default
         if cs.match(sub):
             _, subs = cs.split(sub)
-        exp = FuncCallExpr(name)
+        exp = FuncCallExpr(name, src)
         return exp, subs
 
     def setSub(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 

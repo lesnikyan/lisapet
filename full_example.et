@@ -1,6 +1,6 @@
 #@
 Example  of any LP (Lisapet) abilities.
-@intr@exit
+# @intr@exit
 For now we can:
 
 1. loops: 
@@ -40,15 +40,13 @@ For now we can:
         get val: print(nums[2])
 
 --
-
 @#
 
 func sum(nums)
     # for over list
     res = 0
-    #for i=0; i < len(nums); i += 1
-    for n <- nums:
-        n = nums[i]
+    print(33, nums)
+    for n <- nums
         res += n
     res
 
@@ -64,7 +62,7 @@ func prime(x)
 func fact(x)
     # for over init-, condition-, post- expressions
     r = 1
-    for i=1; i <=x; i += 1
+    for i=2; i <= x; i += 1
         r *= i
     r
 
@@ -72,9 +70,9 @@ func fooPow2(x)
     # simplest math function
     return x * x
 
-func unar(cond1):
+func unar(cond)
     inv = false
-    if cond1 && ! inv:
+    if cond && ! inv
         print('inverted')
 
 # tests:
@@ -85,9 +83,9 @@ t3 = sum([1000, 200, 30, 4])
 
 #hello = "Hello print example!"
 #print(hello)
-print("Hello print example!" + '!!')
+#print("Hello print example!" + '!!')
 #print(fooPow2(5))
 #print(t3)
-unar(true)
-
+#unar(true)
+print( fact(10) )
 

@@ -140,7 +140,7 @@ class ListVar(Collection):
         raise EvalErr('List out of range by index %d ' % i)
 
     def get(self):
-        return  'list-no-get' # debug
+        return  [n.get() for n in self.elems] # debug
         # return self.elems
 
     def __str__(self):
@@ -231,18 +231,6 @@ class StructVar(Var):
         raise EvalErr('Incorrect field name %s of struct %s ' % (fn, self.type.typeName()))
 
 
-class FuncInst(Var):
-    '''function object is stored in context, callable, returns result '''
-
-    def __init__(self, name):
-        super().__init__(name, TypeFunc)
-
-    def do(self, ctx: 'Context'):
-        pass
-    
-    def get(self)->Var:
-        pass
-
 
 # Context
 
@@ -253,129 +241,3 @@ def instance(tp:VType)->Var:
         case _: return Var(None, None, tp)
 
 
-class Context:
-    _defaultContextVals = {
-        'true': Var(True, 'true', TypeBool),
-        'false': Var(False, 'false', TypeBool),
-    }
-    def __init__(self, parent:'Context'=None):
-        self.vars:dict = dict()
-        self.types:dict[str, VType] = {}
-        self.funcs:dict[str,FuncInst] = {}
-        self.upper:Context = parent # upper level context
-
-    def depth(self):
-        d = []
-        src = self
-        while src is not None:
-            d.append(src.vars.keys())
-            if src.upper is None:
-                break
-            src = src.upper
-        return d
-
-    def addType(self, tp:VType):
-        if tp.name not in self.types:
-            self.types[tp.name] = tp
-
-    def getType(self, name)->Base:
-        if name in Context._defaultContextVals:
-            return Context._defaultContextVals[name]
-        src = self
-        while True:
-            if name in self.types:
-                return self.types[name]
-            if src.upper == None:
-                raise EvalErr('Cant find var|type name `%s` in current context' % name)
-            src = src.upper
-
-    def addSet(self, vars:Var|dict[str,Var]):
-        # print('x.addSet ---------0', vars)
-        if not isinstance(vars, dict):
-            vars = {vars.name: vars}
-        # print('x.addSet ------ 1 pre',  {(k, v.name, '%s' %v.get()) for k, v in self.vars.items()})
-        # print('x.addSet ------ 2 add', {(k, v.name, '%s' % v.get()) for k, v in vars.items()})
-        # print('x.addSet ------ 3 add', vars)
-        self.vars.update(vars)
-        
-    def update(self, name, val:Var):
-        # print('x.update ====> :', name, val.get(), val.getType().__class__.__name__)
-        src = self
-        while True:
-            # print('#Ctx-upd,name:', name)
-            # print('#Ctx-upd2', src.vars)
-            if name in src.vars:
-                # print('x.upd:found', name)
-                val.name = name
-                src.vars[name] = val
-                # src.vars[name].set(val.get())
-            if src.upper is None:
-                # print('-- src.upper == None --', name, val)
-                val.name = name
-                self.addVar(val)
-                break
-            src = src.upper
-
-    def addFunc(self, fn:FuncInst):
-        name = fn.name
-        print('x.addFunc ===>  name:', name, ' var: ', fn)
-        self.funcs[name] = fn
-
-    def addVar(self, varName:Var|str, vtype:VType=None):
-        # print('x.addVar0 >> var:', varName, varName.name)
-        var = varName
-        name = varName
-        # print('x.addVar1 ====> :', varName, varName.__class__.__name__, vtype, vtype.__class__.__name__)
-        if isinstance(varName, str):
-            # print('! Just name', varName)
-            var = Var(None, varName, vtype)
-        else:
-            name = var.name
-        #     print('#>> var.name:', var.name)
-        # print('x.addVar2 ====> :', name, var, ':', var.get(), var.getType().__class__.__name__)
-        # if isinstance(var, FuncInst):
-        #     print('x.addVar ===>  ADD func ====> name:', name, ' var: ', var)
-        #     self.funcs[name] = var
-        #     return
-        self.addSet({name:var})
-
-    def getVar(self, name)->Base:
-        if name in Context._defaultContextVals:
-            return Context._defaultContextVals[name]
-        src = self
-        while True:
-            # print('#Ctx-get,name:', name)
-            # print('#Ctx-get2', src.vars)
-            if name in src.vars:
-                return src.vars[name]
-            if src.upper == None:
-                raise EvalErr('Cant find var|name `%s` in current context' % name)
-            src = src.upper
-
-    def get(self, name)->Base:
-        if name in Context._defaultContextVals:
-            return Context._defaultContextVals[name]
-        src = self
-        while src is not None:
-            # print('#Ctx-get,name:', name)
-            # print('#Ctx-get2 vars', src.vars)
-            # print('#Ctx-get3 funcs', (name in src.funcs), src.funcs)
-            # print('#Ctx-depth', src.depth())
-            if name in src.types:
-                return src.types[name]
-            if name in src.funcs:
-                return src.funcs[name]
-            if name in src.vars:
-                return src.vars[name]
-            if src.upper is None:
-                raise EvalErr('Can`t find var|type name `%s` in current context' % name)
-            src = src.upper
-
-    def print(self, ind=0):
-        c:Context = self
-        while c:
-            for k, v in c.vars.items():
-                print('x>', ' ' * ind, k, ':', v.get())
-            c = c.upper
-            ind += 1
-            

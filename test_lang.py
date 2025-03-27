@@ -80,11 +80,19 @@ class TestParse(TestCase):
         for n <- [1,2,3]
             print('-----------------', n)
         '''
-        # code = '''
-        # nn = [1,2,3]
-        # for n <- nn
-        #     print(n)
-        # '''
+        code = '''
+        nn = [1,2,3]
+        for n <- nn
+            print(n)
+        '''
+        code = '''
+        func sum(nums)
+            res = 0
+            for n <- nums
+                res += n
+            res
+        print(sum([10, 200, 300]))
+        '''
         # code = '''
         # for n <- iter(3)
         #     print( n)

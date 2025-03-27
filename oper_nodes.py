@@ -17,7 +17,7 @@ class OperCommand(Expression):
         self.res = None
 
     def get(self):
-        print('# -> OperCommand.get() ', self.oper, self.res)
+        # print('# -> OperCommand.get() ', self.oper, self.res)
         return self.res
 
 class OpAssign(OperCommand):
@@ -25,7 +25,7 @@ class OpAssign(OperCommand):
     def __init__(self, left:Var|list[Var], right:Expression|list[Expression]):
         super().__init__('=')
         # self.oper = '='
-        print('OpAssign__init', left, right)
+        # print('OpAssign__init', left, right)
         self.left:Var|list[Var]|Expression = left
         self.right:Expression|list[Expression] = right # maybe 1 only, tuple Expression with several subs inside
 
@@ -42,13 +42,13 @@ class OpAssign(OperCommand):
 
         # 1 or more asignments: a, b, c = 1, 2, 3
         ctx.print()
-        print('#b3-srs0', src[0])
-        print('#b3-dtcn', self.left[0])
+        # print('#b3-srs0', src[0])
+        # print('#b3-dtcn', self.left[0])
         resSet:list[Var] = [None]*size
         for i in range(size):
             src[i].do(ctx)
             tVal:Var = src[i].get() # val (anon var obj) from expression
-            print('## op-assign, src.get() -> ', tVal, ':', tVal.name, tVal.get(), tVal.getType())
+            # print('## op-assign, src.get() -> ', tVal, ':', tVal.name, tVal.get(), tVal.getType())
             resSet[i] = tVal
         for  i in range(size):
             if isinstance(self.left[i], VarExpr_):
@@ -56,7 +56,8 @@ class OpAssign(OperCommand):
                 continue
             if isinstance(self.left[i], CollectElemExpr):
                 self.left[i].do(ctx)
-            print('# op-assign set, var:', self.left[i],' val = ', resSet[i])
+            # print('# op-assign set, var:', self.left[i],' val = ', resSet[i])
+            print(' (a = b)', self.left[i],' val = ', resSet[i])
             self.left[i].set(resSet[i]) # update value
 
             if not isinstance(self.left[i], CollectElemExpr):
@@ -118,10 +119,10 @@ class OpMath(BinOper):
         self.left.do(ctx)
         self.right.do(ctx)
         # get val objects from expressions
-        print('#tn1:', self.left, self.right) # expressions
+        # print('#bin-oper1:', self.left, self.right) # expressions
         a, b = self.left.get(), self.right.get() # Var objects
-        print('#tn2', a, b)
-        print('#tn3:', self.oper, a.get(), b.get())
+        # print('#bin-oper2', a, b)
+        print(' ( %s )' % self.oper, a.get(), b.get())
         type = a.getType()
         if type != b.getType():
             # TODO fix different types
@@ -209,10 +210,10 @@ class OpCompare(BinOper):
         self.right.do(ctx)
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
-        print('#--OpCompare.do1', '`%s`'%self.oper,  self.left, self.right)
-        print('#--OpCompare.do2',  a, b)
-        print('#--OpCompare.do3',  a.get(), b.get())
-        print('#--OpCompare.do3',  a.getType(), b.getType())
+        # print('( %s )' % self.oper,  self.left, self.right)
+        # print('#--OpCompare.do2',  a, b)
+        print(' ( %s )' % self.oper,  a.get(), b.get())
+        # print('#--OpCompare.do3',  a.getType(), b.getType())
         type = a.getType()
         if type != b.getType():
             # naive impl: different types are not equal
@@ -220,7 +221,7 @@ class OpCompare(BinOper):
             # TODO: fix type comparison
             pass
         res = ff[self.oper](a.get(), b.get())
-        print('# == == OpCompare.do ', res)
+        # print('# == == OpCompare.do ', res)
         self.res = Var(res, None, TypeBool)
 
 

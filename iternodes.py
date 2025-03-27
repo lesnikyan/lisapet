@@ -75,16 +75,17 @@ class IterAssignExpr(Expression):
         self.itExp = exp
     
     def setSrc(self, exp:Expression):
+        print('> IterAssignExpr setSrc', exp)
         self.srcExpr = exp
     
     def start(self, ctx:Context):
         # print('#iter-asg-expr1 target', self.key, self.val)
-        # print('#iter-asg-expr1 self.srcExpr', self.srcExpr)
+        print('#iter-asg-expr1 self.srcExpr', self.srcExpr)
         if self.srcExpr:
             self.srcExpr.do(ctx) # make collection object
             # print('IterAssignExpr.start', self.srcExpr.get())
             self.itExp = IterCollection(self.srcExpr.get())
-        # print('#iter-asg-expr2 itExp', self.itExp)
+        print('#iter-asg-expr2 itExp', self.itExp)
         self.itExp.start()
         for vv in [self.key, self.val]:
             if not vv or isinstance(vv, Var_):

@@ -71,19 +71,19 @@ class CaseIterOper(SubCase):
         '''
         res = None
         
-        print('@@@@ CaseIterOper.iterExpr')
+        # print('@@@@ CaseIterOper.iterExpr')
         if elems[0].text == 'iter':
             # dev manual impl with numbers (not vars)
             res = self.iterGen(elems[1:])
         elif CaseArray().match(elems):
             res = elems2expr(elems) # TODO: change to returning subs with latest build in class.setSub
-            print('#$ subExpr', res)
+            # print('#$ subExpr array', res)
             # iter = 
             # TODO: other iter cases
         elif len(elems) == 1 and elems[0].type == Lt.word:
             # TODO: varExpr for array-var
             res = elems2expr(elems)
-            print('#$ subExpr', res)
+            # print('#$ subExpr var', res)
 
         return res
 

@@ -193,7 +193,7 @@ def splitLine(src: str, prevType:int=Lt.none) -> tuple[TLine, int]:
             cur.append(s)
             continue 
         
-        if curType == Lt.comm and i < slen - 1:
+        if curType == Lt.comm and i < slen:
             if len(cur) == 1 and cur[0] + s == '#@':
                 # start of multiline coment found
                 cur.append(s)
