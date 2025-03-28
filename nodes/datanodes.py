@@ -12,6 +12,7 @@ Tree,
 from lang import *
 from vars import *
 from nodes.expression import *
+from nodes.oper_nodes import ServPairExpr
 
 # class Node:
 #     def __init__(self):
@@ -37,20 +38,40 @@ class ListExpr(CollectionExpr):
 
     def do(self, ctx:Context):
         self.listObj = ListVar(None)
-        print('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
+        # print('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
         for exp in self.valsExprList:
             exp.do(ctx)
             self.listObj.addVal(exp.get())
-        print('## ListExpr.do2 self.listObj:', self.listObj)
+        # print('## ListExpr.do2 self.listObj:', self.listObj)
 
     def get(self):
-        print('## ListExpr.get self.listObj:', self.listObj)
+        # print('## ListExpr.get self.listObj:', self.listObj)
         return self.listObj
 
 
 class DictExpr(CollectionExpr):
     ''' {'key': val, keyVar: 13, foo():bar()} '''
-    
+    def __init__(self):
+        self.exprList:list[ServPairExpr] = []
+        self.data:DictVar = None
+
+    def add(self, exp:ServPairExpr):
+        ''' add next elem of list'''
+        self.exprList.append(exp)
+
+    def do(self, ctx:Context):
+        self.data = DictVar(None)
+        # print('## DictExpr.do1 self.data:', self.data)
+        for exp in self.exprList:
+            # print('dictExp. next:', exp)
+            exp.do(ctx)
+            key, val = exp.get()
+            self.data.setVal(key, val)
+        # print('## DictExpr.do2 self.data:', self.data)
+
+    def get(self):
+        # print('## DictExpr.get self.data:', self.data)
+        return self.data
 
 class StructDefExpr(Block):
     ''' struct User

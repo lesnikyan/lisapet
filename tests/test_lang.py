@@ -44,6 +44,87 @@ def norm(code):
 
 
 class TestParse(TestCase):
+    
+
+    def _test_dict_construct(self):
+        # # line
+        # code = '''
+        # dd = {'': '',
+        #     '':''}
+        # print(dd)
+        # '''
+        # # multiline
+        # code = '''
+        # dd = dict
+        #     '': ''
+        #     '':''
+        # print(dd)
+        # '''
+        # one-line
+        code = '''
+        dd = {'aa': 'hello AA', 'bb': 123}
+        dd['bb'] = 333
+        dd['cc'] = 555
+        print(dd['aa'], dd['bb'] + dd['cc'])
+        '''
+
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        exp = lex2tree(clines)
+        ctx = Context(None)
+        setNativeFunc(ctx, 'print', print, TypeNull)
+        setNativeFunc(ctx, 'len', len, TypeInt)
+        print('$$ run test ------------------')
+        # pdb.set_trace()
+        exp.do(ctx)
+        # r1 = ctx.get('dd').get()
+        # print('#t >>> r:', r1)
+
+    def _test_CaseDictLine_match(self):
+        data = [
+            ("{}", True),
+            ("{'key':'val'}", True),
+            ("{a:1, b:2}", True),
+            ("{'a':'aa', 'b':22}", True),
+            ("{'a':[1,2,3], 'b c d': 2 + 3 - foo(17)}", True),
+            ("{'b': data['key'], 'b':arr[12] + num / 2}", True),
+            ("(a, b, c)", False),
+            ("{a, b, c}", False),
+            ("[a, b, c]", False),
+            ("{'asd as ds d'}", False),
+            ("{a:b:'c'}", False),
+            ("{'aa': 'hello dd', 'bb': 123}", False)
+        ]
+        cd = CaseDictLine()
+        # tdata = [data[i*2 : i*2+1] for i in range(len(data) / 2)]
+        for code, exp in data:
+            print(code, exp)
+            # continue
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            res = cd.match(elems)
+            # self.assertEqual(res, exp)
+            print('## t:', code, exp, '>>>', res)
+
+    def _test_bracketsPart(self):
+        data = [
+            ('[(a + (b - c)), nn[10], foo()]', ']'),
+            ('[(),[],[[]],([{}])]',']'),
+            ('{'':'','':'',(),'':(),'':[]+[]}','}'),
+            ('{[],[()], {[]},([]),({[]})}', '}'),
+            ("{'aa': 'hello dd', 'bb': 123}", '}'),
+        ]
+
+        for code, exp in data:
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            ind = bracketsPart(elems)
+            res = elems[ind]
+            print('## t:', code, exp, '>>>', ind, res.text)
+            self.assertEqual(res.text, exp)
 
     def _test_multiline_commets(self):
         code = '''
@@ -494,13 +575,14 @@ class TestParse(TestCase):
             'aa, bb, cc',
             '11, aa, foo(1)', 
             '1,22, name, ["aa", "rr", zzz], (one, two, three), foo(bar(1,2,3))', 
-            '11, [a,b,c], f() + b(), {a:b, c:d}'
+            '11, [a,b,c], f() + b(), {a:b, c:d}',
+            "'a:' 1 + 2 - foo() , 'b': 1"
         ]
-        for src in data:
-            tlines = splitLexems(src)
-            clines:CLine = elemStream(tlines)
-            elems = clines[0].code
-            cs = CaseSeq(',')
+        # for src in data:
+        #     tlines = splitLexems(src)
+        #     clines:CLine = elemStream(tlines)
+        #     elems = clines[0].code
+        #     cs = CaseSeq(',')
         
         
         for src in data:
@@ -509,11 +591,12 @@ class TestParse(TestCase):
             elems = clines[0].code
             cs = CaseSeq(',')
             # prels('CaseSeq.match: ', elems)
-            if cs.match(elems):
-                prels('CaseSeq.match: TRUE', elems)
-                _, subs = cs.split(elems)
-                for sub in subs:
-                    prels('tt>', sub)
+            self.assertTrue(cs.match(elems))
+            # if cs.match(elems):
+            prels('CaseSeq.match: TRUE=%s' % cs.match(elems), elems)
+            _, subs = cs.split(elems)
+            for sub in subs:
+                prels('tt>', sub)
 
     def _test_for_iter(self):
         code = '''

@@ -35,6 +35,9 @@ class TypeBool(VType):
 class TypeList(VType):
     name = 'list'
 
+class TypeDict(VType):
+    name = 'dict'
+
 class TypeTuple(VType):
     name = 'tuple'
 
@@ -154,7 +157,7 @@ class DictVar(Collection):
     ''' classic List / Array object'''
     
     def __init__(self, name=None):
-        super().__init__(None, name, TypeList)
+        super().__init__(None, name, TypeDict)
         self.data:dict[Var,Var] = {}
 
     def len(self)->int:
@@ -164,8 +167,8 @@ class DictVar(Collection):
         return '%s__%s' % (key.get(), key.getType().__class__.__name__)
 
     def setVal(self, key:Var, val:Var):
-        k = self.inKey(key)
-        self.data[k] = val
+        # k = self.inKey(key)
+        self.data[key.get()] = val
 
     def getKeys(self):
         # res = [ListVar(k) for k in self.data]
@@ -173,13 +176,13 @@ class DictVar(Collection):
         for k in self.data:
             res.addVal(k)
         return res
-        
 
     def getVal(self, key:Var):
-        k = self.inKey(key)
+        # k = self.inKey(key)
+        k = key.get()
         if k in self.data:
             return self.data[k]
-        raise EvalErr('List out of range by index %d ' % key.get())
+        raise EvalErr('List out of range by key %d ' % k)
 
 
 class UserStruct(TypeStruct):
@@ -229,15 +232,4 @@ class StructVar(Var):
         if fn in self.data:
             return self.data[fn]
         raise EvalErr('Incorrect field name %s of struct %s ' % (fn, self.type.typeName()))
-
-
-
-# Context
-
-def instance(tp:VType)->Var:
-    match tp.name:
-        case 'list': return ListVar()
-        case 'dict': return DictVar()
-        case _: return Var(None, None, tp)
-
 

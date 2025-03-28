@@ -95,3 +95,73 @@ class CaseCollectElem(SubCase):
         base.setVarExpr(subs[0])
         base.setKeyExpr(subs[1])
         return base
+
+
+class CaseDictLine(SubCase):
+    ''' {expr:expr, ...} - here single line case
+        multi-line declaration with { } - another case
+        multiline declaration as val = dict // - another.. not sure 
+    '''
+
+    def match(self, elems:list[Elem]) -> bool:
+        print('CaseDictLine.match')
+        if not isBrPair(elems, '{','}'):
+            return False
+        
+        if len(elems) == 2:
+            # empty dict {}
+            print('case-dict empty')
+            return True
+
+        ind = bracketsPart(elems)
+        print('case-dict ind', ind)
+        if ind != -1:
+            return False
+
+        # check CaseCommas into { }
+        subel = elems[1:-1]
+        cs = CaseCommas()
+        cc = CaseColon()
+        if not cs.match(subel):
+            # guess 1 item, check colon-separeted seq
+            print('CaseDictLine.match2')
+            return self.checkValidSub(subel, cc)
+        print('CaseDictLine.match3')
+        _, parts = cs.split(subel)
+        for pp in parts:
+            print('CaseDictLine.match4:', elemStr(pp))
+            if not self.checkValidSub(pp, cc):
+                print('CaseDictLine.match5 not valid')
+                return False
+        return True
+        # return False
+
+    def checkValidSub(self, elems, cc:CaseColon):
+        if not cc.match(elems):
+            return False
+        _, pair = cc.split(elems)
+        print('CD.checkValidSub', len(pair), [elemStr(n) for n in pair])
+        return len(pair) ==2
+            # # something like {a:b:c}
+            # return False
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        exp = DictExpr()
+        sub = elems[1:-1]
+        cs = CaseCommas()
+        cc = CaseColon()
+        subs = [sub] # 1 elem
+        if cs.match(sub):
+            _, subs = cs.split(sub)
+            # for pair in subs:
+            #     if not cc.match(pair):
+            #         raise InerpretErr('Error while split sub-dict expression: `%s` ' % elemStr(pair))
+            #     psub = cc.split(pair)
+        return exp, subs
+
+    def setSub(self, base:DictExpr, subs:Expression|list[Expression])->Expression:
+        print('CaseDict.setSub: ', base, subs)
+        for exp in subs:
+            base.add(exp)
+        return base
+

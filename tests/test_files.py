@@ -25,7 +25,7 @@ class TestEvalFile(TestCase):
     def test_full(self):
         '''' '''
         fpath = filepath('full_example.et')
-        with open(fpath) as f:
+        with open(fpath, 'r') as f:
             code = f.read()
             # print(code)
             tlines = splitLexems(code)

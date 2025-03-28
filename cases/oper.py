@@ -43,6 +43,7 @@ class CaseAssign(SubCase):
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         # simple case a = expr
+        src = elemStr(elems)
         left:list[Elem] = [] # vars only
         right:list[Elem] = [] # vars, vals, funcs, methods
         # slice
@@ -66,7 +67,7 @@ class CaseAssign(SubCase):
             dest = Var_()
             if not CaseVar_().match(left):
                 dest = Var(None, left[0].text, Undefined)
-            expr = OpAssign(dest,None) 
+            expr = OpAssign(dest,None)
             return expr, [right]
         # if collection[index]
         if isLex(left[1], Lt.oper, '['):
@@ -91,7 +92,7 @@ class CaseAssign(SubCase):
 
 
 
-operPrior = ('() [] . , -x !x ~x , ** , * / % , + - ,'
+operPrior = ('() [] . : , -x !x ~x , ** , * / % , + - ,'
 ' << >> , < <= > >= -> !>, == != , &, ^ , | , && , ||, <-, = += -= *= /= %=  ')
 
 
@@ -138,6 +139,7 @@ class CaseBinOper(SubCase):
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
         # print('#a51:', [n.text for n in elems])
+        src = elemStr(elems)
         lowesPrior = len(self.priorGroups) - 1
         inBr = 0
         maxInd = len(elems)-1
@@ -179,6 +181,8 @@ class CaseBinOper(SubCase):
                 if el.text in self.priorGroups[prior]:
                     # we found current split item
                     exp = makeOperExp(el)
+                    exp.src = src
+                    # print('oper-expr>', '`%s`' % src, elemStr(elems[0:i]), '|=|', elemStr(elems[i+1:]))
                     return exp, [elems[0:i], elems[i+1:]]
         # print('#a52:', [n.text for n in elems])
         # return 1,[[]]
@@ -188,6 +192,7 @@ class CaseBinOper(SubCase):
         ''' base - top-level (very right oper with very small priority) 
             subs - left and right parts
         '''
+        # print('oper-bin seSub', base, subs)
         base.setArgs(subs[0], subs[1])
 
 
@@ -206,6 +211,8 @@ def makeOperExp(elem:Elem)->OperCommand:
     btOpers = '& | ^'.split(' ')
     if oper in btOpers:
         return OpBitwise(oper)
+    if oper == ':':
+        return ServPairExpr()
     # undefined case:
     return OperCommand(elem.text)
 
@@ -346,3 +353,27 @@ class CaseBinAssign(CaseAssign):
     def setSub(self, base:Expression, subs:list[Expression])->Expression:
         return super().setSub(base, subs)
 
+
+# class CaseColonPair(SubCase):
+#     ''' expr : expr '''
+    
+#     def match(self, elems:list[Elem]) -> bool:
+#         if elems[0].type != Lt.oper:
+#             return False
+#         if elems[0].text == '(' and elems[-1].text == ')':
+#             # only if other operator cases was failed
+#             # TODO: test: () smth ()
+#             return True
+#         return False
+    
+#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+#         ''' '''
+#         base = MultiOper()
+#         return base, [elems[1:-1]]
+    
+#     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
+#         ''' base - Multi-oper
+#             subs - just internal part
+#         '''
+#         base.setInner(subs[0])
+#         return base

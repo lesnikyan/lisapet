@@ -18,29 +18,44 @@ For now we can:
 3. compare operators and complex bool-expressions, including unary (!)
     a < 100 && b > 4 || a + b >= 1
 
-2. match-case
+4. match-case
     match expr
         a -> expr1
         b -> expr2
         _ -> default-expression
 
-3. complex math expressions, including unary (-): 
+5. complex math expressions, including unary (-): 
     res = a + b * (c -10 ** 2) / (7 - 5 * d)
 
-4. functions 
+6. functions 
     func definition: 
         func foo(a, b, c)
             a + b + c
     function call: res = foo(1, 2, 3) 
 
-1. Lists
+7. Lists
     declaration: nums = [1,2,3]
     usage:
         set val: nums[0] = 5
         get val: print(nums[2])
 
+8. Dict
+    declaration: dd = {'aa': 'hello', 'bb': 333}
+    set val: dd['cc'] = 555
+    get val: print(dd['aa'])
+
+
 --
 @#
+
+func fooPow2(x)
+    # simplest math function
+    return x * x
+
+func unar(cond)
+    inv = false
+    if cond && ! inv
+        print('inverted')
 
 func sum(nums)
     # for over list
@@ -66,26 +81,23 @@ func fact(x)
         r *= i
     r
 
-func fooPow2(x)
-    # simplest math function
-    return x * x
-
-func unar(cond)
-    inv = false
-    if cond && ! inv
-        print('inverted')
+func printVal(data, key)
+    print(data[key])
 
 # tests:
-
+#@
 t1 = prime(10)
 t2 = prime(23)
 t3 = sum([1000, 200, 30, 4])
 
-#hello = "Hello print example!"
-#print(hello)
-#print("Hello print example!" + '!!')
-#print(fooPow2(5))
-#print(t3)
-#unar(true)
+hello = "Hello print example!"
+print(hello)
+print("Hello print example!" + '!!')
+print(fooPow2(5))
+print(t3)
+unar(true)
 print( fact(10) )
+@#
+colors = {'red':'#ff0000', 'green':'#00ff00', 'blue':'#0000ff'}
+printVal(colors, 'green')
 

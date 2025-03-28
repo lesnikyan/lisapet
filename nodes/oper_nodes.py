@@ -13,6 +13,7 @@ from nodes.expression import *
 class OperCommand(Expression):
     
     def __init__(self, oper):
+        self.src = ''
         self.oper:str = oper
         self.res = None
 
@@ -81,6 +82,7 @@ class OpAssign(OperCommand):
         #     # if  matching of few vals...
         #     pass
 
+
 class BinOper(OperCommand):
     
     def __init__(self, oper, left:Expression=None, right:Expression=None):
@@ -88,8 +90,9 @@ class BinOper(OperCommand):
         # self.oper = oper
         self.left:Expression = left
         self.right:Expression = right
-    
+
     def setArgs(self, left:Expression, right:Expression):
+        # print('BinOper.setArgs', left, right)
         self.left = left
         self.right = right
 
@@ -99,11 +102,7 @@ class OpMath(BinOper):
     
     def __init__(self, oper, left:Expression=None, right:Expression=None):
         super().__init__(oper, left, right)
-        # self.oper = oper
-        # self.left = left
-        # self.right = right
-        # self.res
-        
+
     def do(self, ctx:Context):
         ff = {
             '+': self.plus, 
@@ -246,7 +245,7 @@ class OpCompare(BinOper):
 
 class OpBitwise(BinOper):
     ''' & | ^  '''
-    
+
     def __init__(self, oper, left:Expression=None, right:Expression=None):
         super().__init__(oper, left, right)
 
@@ -361,3 +360,52 @@ class MultiOper(OperCommand):
 
 #     def get(self):
 #         return self.res
+
+
+class ServPairExpr(BinOper):
+    ''' service expression, works accordingly to context:
+        - in dict 
+        {a : b} >> var:var
+        - in var declaration:
+        var with type >> name : type
+        user: User
+        - in func definition
+        func args and res type >> func-expr : type
+        func foo(a:int, b:list): int
+        - in field expression into struct type definition
+        struct User
+            name: string
+            age: int
+    '''
+
+    def __init__(self):
+        super().__init__(':')
+        self.left:Expression = None # key|name|def
+        self.right:Expression = None # val|type
+
+    # def set(self, left, right, *args, **kw):
+    #     ''' Set sub expressions '''
+    #     print('\n\n = =============== 4>> set ', args, kw)
+    #     # if 'left' in args:
+    #     self.left = left
+    #     # if 'right' in args:
+    #     self.left = right
+
+    def do(self, ctx:Context):
+        self.left.do(ctx)
+        self.right.do(ctx)
+
+    def get(self):
+        return self.left.get(), self.right.get()
+
+
+
+# class OpColon(OperCommand):
+#     ''' `a : b` expr in dict '''
+
+#     def __init__(self,):
+#         super().__init__(':')
+
+#     def do(self, ctx:Context):
+        # pass
+

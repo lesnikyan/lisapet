@@ -17,6 +17,9 @@ SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
 EXT_ASSIGN_OPERS = '+= -= *= /= %='.split(' ')
 
 
+def elemStr(elems):
+    return ' '.join([ee.text for ee in elems])
+
 def afterLeft(elems:list[Elem])->int:
     ''' find index of elem after var, vars and possible brackets of collections elem
     cases:
@@ -43,6 +46,7 @@ def afterLeft(elems:list[Elem])->int:
             break
     return res
 
+
 def afterNameBr(elems:list[Elem])->int:
     ''' find index of elem after var/func Name and possible brackets
     cases:
@@ -60,7 +64,7 @@ def afterNameBr(elems:list[Elem])->int:
         if ee.text in cbr :
             # print('#close', ee.text)
             if obr.index(inBr[-1]) != cbr.index(ee.text):
-                print('# ee:', ee.text, 'inbr:', inBr)
+                # print('# ee:', ee.text, 'inbr:', inBr)
                 raise ParseErr('Incorrect brackets combinations %s on position %d %s ' % ''.join([n.text for n in elems]))
             # close brackets
             inBr = inBr[:-1]
@@ -81,7 +85,55 @@ def afterNameBr(elems:list[Elem])->int:
             res = i
             break
     return res
-    
+
+
+def bracketsPart(elems:list[Elem])->int:
+    ''' find index of elem after var/func Name and possible brackets
+    cases:
+        var ...
+        foo(arg, arg, arg) ...
+        arr[expr] ... 
+    '''
+    if len(elems) < 2:
+        return -1 # means not brackets
+    res = 0
+    inBr = ''
+    obr = '([{'
+    cbr = ')]}'
+    if elems[0].text not in obr:
+        return -1
+    for i in range(len(elems)):
+        ee = elems[i]
+        # if inBr:
+        if ee.text in cbr :
+            # print('#close', ee.text)
+            if obr.index(inBr[-1]) != cbr.index(ee.text):
+                # print('# ee:', ee.text, 'inbr:', inBr)
+                raise ParseErr('Incorrect brackets combinations %s on position %d %s ' % ''.join([n.text for n in elems]))
+            # close brackets
+            inBr = inBr[:-1]
+            if len(inBr) == 0:
+                # last bracket was closed
+                if i + 1 < len(elems):
+                    return i + 1
+                return -1
+            continue
+        if ee.type == Lt.oper and  ee.text in obr:
+            # enter into brackets
+            inBr += ee.text
+            # print('#open:', inBr)
+            continue
+        if inBr:
+            continue
+        if i > 0:
+            res = i
+            break
+    return res
+
+
+def isBrPair(elems:list[Elem], opn, cls):
+    return isLex(elems[0], Lt.oper, opn) and isLex(elems[-1], Lt.oper, cls)
+
 
 def prels(pref, elems:list[Elem]):
     print(pref, [n.text for n in elems])
@@ -120,10 +172,12 @@ struct User ...
 class CaseComment(ExpCase):
     ''' possibly will be used for meta-coding'''
     def match(self, elems:list[Elem])-> bool:
-        s = ''.join([n.text for n in elems]).lstrip()
-        # print('#== CaseComment.match:', s)
-        return s.startswith('#')
-    
+        s = ''.join([n.text for n in elems])
+        if elems[0].type == Lt.comm:
+            print('CaseComment.match', s)
+            return True
+        return False
+
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
         CommentExpr(''.join([n.text for n in elems]).lstrip())
@@ -252,15 +306,10 @@ class CaseSeq(ExpCase):
                 sub = elems[start: i]
                 prels('# start= %d, i= %d sub:' % (start, i), sub)
                 start = i + 1
-                # if len(sub) == 0:
-                #     continue
                 res.append(sub)
-                # sub = []
                 continue
-            # sub.append(ee)
         # print('Seq.split, start =', start, 'len-elems =', len(elems))
         if start < len(elems):
-            # print('- - post-append')
             res.append(elems[start:])
         return None, res
 
@@ -339,7 +388,7 @@ class CaseFunCall(SubCase):
         ''' '''
         # 1. func name, in next phase: method call: inst.foo() ? separated case for objects with members: obj.field, obj.method()
         # 2. arg-expressions
-        src = ' '.join([ee.text for ee in elems])
+        src = elemStr(elems)
         name = elems[0].text
         # argSrc = elems[2:-1]
         sub = elems[2:-1]

@@ -152,3 +152,12 @@ class Context:
             c = c.upper
             ind += 1
             
+
+# Context
+
+def instance(tp:VType)->Var:
+    match tp.name:
+        case 'list': return ListVar()
+        case 'dict': return DictVar()
+        case _: return Var(None, None, tp)
+

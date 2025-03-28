@@ -12,7 +12,7 @@ from cases.tcases import *
 from cases.control import *
 from cases.oper import *
 from cases.collection import *
-    
+
 from nodes import *
 from nodes.tnodes import *
 from nodes.oper_nodes import *
@@ -133,7 +133,7 @@ expCaseList = [ CaseComment(), CaseDebug(),
     CaseFuncDef(), CaseReturn(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseArrowR(),
     CaseSemic(), CaseAssign(), CaseBinAssign(),
-    CaseArray(), CaseCollectElem(), CaseFunCall(),
+    CaseDictLine(), CaseArray(), CaseCollectElem(), CaseFunCall(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:
@@ -188,6 +188,12 @@ def line2expr(cline:CLine)-> Expression:
     return expr
 
 def raw2done(parent:Expression, raw:RawCase)->Expression:
+    ''' post-process for sub-level sub-expressions:
+        match-case | expr -> expr
+        struct-field | expr : expr
+        dict-(key:val) | expr : expr
+        etc.
+    '''
     # match-case
     print('>> raw2done', parent, raw)
     if isinstance(parent, MatchExpr) and isinstance(raw, ArrOper):
@@ -199,8 +205,7 @@ def raw2done(parent:Expression, raw:RawCase)->Expression:
             res.add(raw.right)
         return res
     # lambdas ...
-    
-    
+
 
 def lex2tree(src:list[CLine]) -> Block:
     ''' '''
