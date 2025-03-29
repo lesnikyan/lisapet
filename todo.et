@@ -12,7 +12,7 @@ x = 2 #@ inline comment @# + sum([10, 20])
 
 #== store content of comments as a runtime metadata
 
-#== dict
+#== dict DONE
 
 #== list slice
 subVals = arr[3:-2]
@@ -64,6 +64,7 @@ str = (
     "new string!"
 )
 
+# not sure >>>
 nums = [1, 2, 
         3, 4]
 
@@ -71,16 +72,19 @@ data = {
     'a': 1,
     'b': 2
 }
+# <<<
 
 #== sugar for collections - skip commas between lines (auto-complit for interpretation)
-strings = [
+
+#== list
+strings = list
     'Hello world!'
     'Helo desktop!'
-]
-data = {
+
+#== DONE
+data = dict
     'a': 1
     'b': 2
-}
 
 #== struct
 

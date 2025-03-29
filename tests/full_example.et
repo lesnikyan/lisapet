@@ -119,7 +119,7 @@ weekDays = dict
     6: 'Saturday'
     7: 'Sunday'
 
-weekDays[2] = 'Rururu'
+weekDays[2] = 'Second day'
 printVal(weekDays, 2)
 
 
