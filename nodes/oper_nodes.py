@@ -9,26 +9,72 @@ from lang import *
 from vars import *
 from nodes.expression import *
 
-
 class OperCommand(Expression):
     
     def __init__(self, oper):
         self.src = ''
         self.oper:str = oper
         self.res = None
+        self._block = False
 
     def get(self):
         # print('# -> OperCommand.get() ', self.oper, self.res)
         return self.res
 
+    def isBlock(self)->bool:
+        ''' can be changed for multi-line assignment expressions '''
+        return self._block
+
+class BinOper(OperCommand):
+
+    def __init__(self, oper, left:Expression=None, right:Expression=None):
+        super().__init__(oper)
+        # self.oper = oper
+        self.left:Expression = left
+        self.right:Expression = right
+
+    def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
+        # print('BinOper.setArgs', left, right)
+        self.left = left
+        self.right = right
+
+
 class OpAssign(OperCommand):
     ''' Set value `=` '''
-    def __init__(self, left:Var|list[Var], right:Expression|list[Expression]):
+    def __init__(self, left:Expression|list[Expression]=None, right:Expression|list[Expression]=None):
         super().__init__('=')
         # self.oper = '='
         # print('OpAssign__init', left, right)
-        self.left:Var|list[Var]|Expression = left
+        self.left:Var|list[Expression]|Expression = left
         self.right:Expression|list[Expression] = right # maybe 1 only, tuple Expression with several subs inside
+
+    def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
+        '''
+        left - dest
+        right - src
+        '''
+        print('OpAssign__setArgs1', left, right)
+        # if not isinstance(left, list):
+        #     left = [left]
+        self.left = left
+        print('isinstance(right, MultilineVal) = ', isinstance(right, MultilineVal))
+        # print('isinstance(right, ) = ', right))
+        r0 = None
+        if isinstance(right, list):
+            r0 = right[0]
+        else:
+            r0 = right
+        if isinstance(r0, MultilineVal):
+            print('-- dict here')
+            self._block = True
+            right = r0
+        # if not isinstance(right, list):
+        #     right = [right]
+        self.right = right
+
+    def add(self, expr:Expression):
+        ''' where right is MultilineVal '''
+        self.right.add(expr)
 
     def do(self, ctx:Context):
         ''' var = src'''
@@ -55,18 +101,48 @@ class OpAssign(OperCommand):
             if isinstance(self.left[i], VarExpr_):
                 # skip _ var
                 continue
+            # if isinstance(self.left[i], CollectElemExpr):
+            #     self.left[i].do(ctx)
+            # if isinstance(self.left[i], CollectElemExpr):
+            print(' (a = b) :1')
+            # eval left expressopm
+            self.left[i].do(ctx)
+            print(' (a = b) :2')
+            val = resSet[i]
             if isinstance(self.left[i], CollectElemExpr):
-                self.left[i].do(ctx)
-            # print('# op-assign set, var:', self.left[i],' val = ', resSet[i])
-            print(' (a = b)', self.left[i],' val = ', resSet[i])
-            self.left[i].set(resSet[i]) # update value
+                ''' '''
+                val.name = None
+                self.left[i].set(val)
+                return
+            #get destination var
+            dest = self.left[i].get()
+            print('# op-assign set, var:', self.left[i],' val = ', resSet[i])
+            print(' (a = b)', dest,' val = ', val)
+                
+            # single var
+            name = dest.name
+            dest = val
+            dest.name = name
+            ctx.update(dest.name, val)
+            # if True or  isinstance(dest, VarUndefined):
+            #     print(' (a = b) >> ', dest)
+            # else:
+            #     dest.set(resSet[i]) # update value
+            # self.left[i].set(resSet[i]) # update value
 
-            if not isinstance(self.left[i], CollectElemExpr):
-                # print('# op-assign set, var:', self.left[i],' val = ', resSet[i])
-                # dinamic typing
-                self.left[i].setType(resSet[i].getType())
-                # update context
-                ctx.update(self.left[i].name, resSet[i])
+            # update var, skip collections
+            # if not isinstance(self.left[i], CollectElemExpr):
+            #     print('# op-assign set, var:', dest,' val = ', resSet[i])
+            #     # # dinamic typing
+            #     # self.left[i].setType(resSet[i].getType())
+            #     # # update context
+            #     # ctx.update(self.left[i].name, resSet[i])
+            #     # dinamic typing
+            #     dest.setType(resSet[i].getType())
+            #     # update context
+            ctx.update(dest.name, resSet[i])
+            saved = ctx.get('n')
+            print(' (a = b) saved ', saved)
 
         # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
         # TODO: thik about one way of assignment: (something) = (something)
@@ -82,19 +158,6 @@ class OpAssign(OperCommand):
         #     # if  matching of few vals...
         #     pass
 
-
-class BinOper(OperCommand):
-    
-    def __init__(self, oper, left:Expression=None, right:Expression=None):
-        super().__init__(oper)
-        # self.oper = oper
-        self.left:Expression = left
-        self.right:Expression = right
-
-    def setArgs(self, left:Expression, right:Expression):
-        # print('BinOper.setArgs', left, right)
-        self.left = left
-        self.right = right
 
 
 class OpMath(BinOper):
@@ -118,7 +181,7 @@ class OpMath(BinOper):
         self.left.do(ctx)
         self.right.do(ctx)
         # get val objects from expressions
-        # print('#bin-oper1:', self.left, self.right) # expressions
+        print('#bin-oper1:', self.left, self.right) # expressions
         a, b = self.left.get(), self.right.get() # Var objects
         # print('#bin-oper2', a, b)
         print(' ( %s )' % self.oper, a.get(), b.get())
@@ -175,6 +238,7 @@ class OpBinBool(BinOper):
         self.right.do(ctx)
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
+        print(' ( %s )' % self.oper, a.get(), b.get())
         type = a.getType()
         if type != b.getType():
             # naive impl: different types are not equal
@@ -342,26 +406,6 @@ class MultiOper(OperCommand):
         return self.root.get()
 
 
-# class OpEqual(BinOper):
-#     ''' Is equal `==` '''
-#     def __init__(self, oper, left:Expression, right:Expression):
-#         self.oper = '=='
-#         self.oper = oper
-#         self.left = left
-#         self.right = right
-#         self.res = None
-
-#     def do(self, ctx:Context):
-#         self.left.do(ctx)
-#         self.right.do(ctx)
-#         # get val objects from expressions
-#         a, b = self.left.get(), self.right.get()
-#         self.res = a.get() == b.get()
-
-#     def get(self):
-#         return self.res
-
-
 class ServPairExpr(BinOper):
     ''' service expression, works accordingly to context:
         - in dict 
@@ -382,14 +426,6 @@ class ServPairExpr(BinOper):
         super().__init__(':')
         self.left:Expression = None # key|name|def
         self.right:Expression = None # val|type
-
-    # def set(self, left, right, *args, **kw):
-    #     ''' Set sub expressions '''
-    #     print('\n\n = =============== 4>> set ', args, kw)
-    #     # if 'left' in args:
-    #     self.left = left
-    #     # if 'right' in args:
-    #     self.left = right
 
     def do(self, ctx:Context):
         self.left.do(ctx)

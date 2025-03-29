@@ -61,6 +61,7 @@ class IfExpr(Block):
         print('# IfExpr.do2 ', target)
         target.do(ctx)
         self.lastRes = target.get() # for case if we need result from if block or one-line-if
+        print('# IfExpr.do2 ', self.lastRes)
 
     def get(self):
         return self.lastRes
@@ -177,7 +178,8 @@ class LoopIterExpr(LoopBlock):
     '''
 
     def __init__(self):
-        self.block:Block = Block() # empty block on start
+        super().__init__()
+        
         self.iter:IterAssignExpr = None
         self.storeRes = False
 
@@ -207,7 +209,7 @@ class LoopExpr(LoopBlock):
     for n <- iter(10)
     '''
     def __init__(self):
-        self.block:Block = Block() # empty block on start
+        super().__init__()
         self.initExpr = None
         self.cond:Expression = None
         self.preIter:Expression = None
@@ -257,7 +259,7 @@ class WhileExpr(LoopBlock):
     '''
 
     def __init__(self, cond=None):
-        self.block:Block = Block() # empty block on start
+        super().__init__()
         self.cond:Expression = cond
         
     def setCond(self, cond:Expression):

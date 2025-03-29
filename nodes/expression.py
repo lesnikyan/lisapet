@@ -31,29 +31,22 @@ class CommentExpr(Expression):
         '''' text of comment line is value '''
         super().__init__(text)
 
+
 class ValExpr(Expression):
     def __init__(self, var:Var):
         # print('#tn2-valEx:', var, var.get())
-        self.val = var
-    
+        self.val:Var = var
+
     def do(self, ctx:Context):
         pass
 
     def get(self)->Var:
         # print('#tn2-valEx-get:', self.val, self.val.get())
         return self.val
-    
+
     def __str__(self):
         return 'ValExpr(%s)' % self.val
 
-
-class DebugExpr(Expression):
-    def __init__(self, txt):
-        print('**** DEBUG__init:', txt)
-        self.val = txt
-    
-    def do(self, ctx:Context):
-        print(" $$$ DEBUG: ", self.val)
 
 class VarExpr(Expression):
     def __init__(self, var:Var):
@@ -72,7 +65,7 @@ class VarExpr(Expression):
         return self.val
 
     def __str__(self):
-        return 'VarExpr(%s)' % (self.name)
+        return 'VarExpr(%s, %s)' % (self.name, self.val)
 
 class VarExpr_(VarExpr):
     def __init__(self, var:Var):
@@ -89,7 +82,16 @@ class VarExpr_(VarExpr):
 
     def __str__(self):
         return 'VarExpr_(_)'
+
+
+class DebugExpr(Expression):
+    def __init__(self, txt):
+        print('**** DEBUG__init:', txt)
+        self.val = txt
     
+    def do(self, ctx:Context):
+        print(" $$$ DEBUG: ", self.val)
+
 
 # class Command(Expression):
 #     def do(self, var:Var, src:Expression):
@@ -122,7 +124,8 @@ class Block(Expression):
             return
         lastInd = 0
         # self.ctx.upper = ctx
-        # print('!! Block.do')
+        print('!! Block.do')
+        ctx.print()
         self.lastVal = None
         for i in range(elen):
             # print('!! Block.iter ', i, self.subs[i])
@@ -130,6 +133,7 @@ class Block(Expression):
             expr.do(ctx)
             lastInd = i
             lineRes = None
+            lineRes = expr.get()
             # if not isinstance(expr, Block) or expr.storeRes:
             #     lineRes = expr.get()
             if isinstance(lineRes, FuncRes):
@@ -149,6 +153,11 @@ class Block(Expression):
 
 class LoopBlock(Block):
     ''' '''
+    
+    def __init__(self):
+        super().__init__()
+        self.block:Block = Block() # empty block on start
+
 
 class CollectionExpr(Expression):
     ''''''
@@ -160,6 +169,11 @@ class CollectionExpr(Expression):
 
     def getVal(self, index:Var):
         pass
+
+
+class MultilineVal:
+    ''' begiinning of multiline declaration '''
+
 
 
 class CollectElemExpr(Expression):

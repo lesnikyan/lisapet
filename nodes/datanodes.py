@@ -52,11 +52,13 @@ class ListExpr(CollectionExpr):
 class DictExpr(CollectionExpr):
     ''' {'key': val, keyVar: 13, foo():bar()} '''
     def __init__(self):
+        
         self.exprList:list[ServPairExpr] = []
         self.data:DictVar = None
 
     def add(self, exp:ServPairExpr):
         ''' add next elem of list'''
+        print('DictExpr_add', self,  exp)
         self.exprList.append(exp)
 
     def do(self, ctx:Context):
@@ -72,6 +74,17 @@ class DictExpr(CollectionExpr):
     def get(self):
         # print('## DictExpr.get self.data:', self.data)
         return self.data
+
+
+class DictConstr(MultilineVal, DictExpr):
+    ''' dict '''
+
+    def __init__(self):
+        super().__init__()
+
+    # def do(self, ctx:Context):
+    #     self.data = DictVar(None)
+
 
 class StructDefExpr(Block):
     ''' struct User

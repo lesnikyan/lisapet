@@ -63,31 +63,33 @@ class CaseAssign(SubCase):
         left = elems[:opInd]
         right = elems[opInd+1:]
         # TODO: Implement multi-assign case
-        if len(left) == 1:
-            dest = Var_()
-            if not CaseVar_().match(left):
-                dest = Var(None, left[0].text, Undefined)
-            expr = OpAssign(dest,None)
-            return expr, [right]
-        # if collection[index]
-        if isLex(left[1], Lt.oper, '['):
-            expr = OpAssign(None,None)
-            return expr,[left, right]
+        return OpAssign(), [left, right]
+        # if len(left) == 1:
+        #     dest = Var_()
+        #     if not CaseVar_().match(left):
+        #         dest = Var(None, left[0].text, Undefined)
+        #     expr = OpAssign(dest,None)
+        #     return expr, [right]
+        # # if collection[index]
+        # if isLex(left[1], Lt.oper, '['):
+        #     expr = OpAssign(None,None)
+        #     return expr,[left, right]
 
-        # print('#a50:', [n.text for n in elems])
-        return 2,[[]]
+        # # print('#a50:', [n.text for n in elems])
+        # return 2,[[]]
         
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         # waiting: OpAssign, [right]
-        # print('#b4', subs)
-        left = subs[:-1]
-        right = subs[-1]
-        base.right = right
-        if len(left) == 1:
-            base.left = left
-        else:
-            # multi-assignment
-            pass
+        print('#b4',base,  subs)
+        lsub = len(subs)
+        if lsub % 2 > 0:
+            # can be changed after tuple case implementation
+            raise InerpretErr('number of sub-expressions for assignment looks incorrect: %d ' % lsub)
+        hsize = int (lsub  / 2) # half of size
+        left = subs[:hsize]
+        right = subs[hsize:]
+        base.setArgs(left, right)
+
         return base
 
 

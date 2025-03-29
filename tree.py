@@ -133,6 +133,7 @@ expCaseList = [ CaseComment(), CaseDebug(),
     CaseFuncDef(), CaseReturn(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseArrowR(),
     CaseSemic(), CaseAssign(), CaseBinAssign(),
+    CaseDictBlock(),
     CaseDictLine(), CaseArray(), CaseCollectElem(), CaseFunCall(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
 
@@ -262,6 +263,7 @@ def lex2tree(src:list[CLine]) -> Block:
         #             stepBlock = False
         
         if stepBlock:
+            
             # start new sub-level
             # if definition of func, type: add to upper level context
             # if isinstance(expr, ElseExpr):

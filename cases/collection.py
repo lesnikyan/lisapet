@@ -165,3 +165,24 @@ class CaseDictLine(SubCase):
             base.add(exp)
         return base
 
+
+
+class CaseDictBlock(SubCase):
+    def match(self, elems:list[Elem]) -> bool:
+        '''
+        dict
+        from varName = dict
+        '''
+        # print('CaseDictBlock.match')
+        if len(elems) != 1:
+            return False
+        return isLex(elems[0], Lt.word, 'dict')
+    
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        return DictConstr(), []
+
+    def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
+        print('CaseDict.setSub empty: ', base, subs)
+
+
+

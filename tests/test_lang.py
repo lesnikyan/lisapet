@@ -1,6 +1,7 @@
 
 import unittest
 from unittest import TestCase, main
+from tests.utils import *
 
 from lang import Lt, Mk, CLine
 from parser import splitLine, splitLexems, charType, splitOper, elemStream
@@ -13,38 +14,9 @@ from tree import *
 import pdb
 
 
+# TODO: add asserts to each test
 
-code_input1 = '''
-x = 5
-for i to 15
-    print i
-
-for i << 1..5
-    print i
-# for x <- 5..20, 3 | x % 3 > 0 ???
-for a=10,b=3; i <- 10..20
-     c = a + b + i
-    if n=i*2+1; if n != c
-        print c
-        fprint('%s %d %f', c, 2, 3)
-'''
-
-def norm(code):
-    ''' Normalize input code: 
-    - cut extra indent'''
-    ind = 0
-    for s in code:
-        # print('`%s`' % s)
-        if s == ' ':
-            ind += 1
-        else:
-            break
-    print('norm ind=', ind)
-    return '\n'.join([s[ind:] for s in code.splitlines()])
-
-
-class TestParse(TestCase):
-    
+class TestLang(TestCase):
 
     def _test_dict_construct(self):
         # # line
@@ -76,10 +48,7 @@ class TestParse(TestCase):
         setNativeFunc(ctx, 'print', print, TypeNull)
         setNativeFunc(ctx, 'len', len, TypeInt)
         print('$$ run test ------------------')
-        # pdb.set_trace()
         exp.do(ctx)
-        # r1 = ctx.get('dd').get()
-        # print('#t >>> r:', r1)
 
     def _test_CaseDictLine_match(self):
         data = [
@@ -271,6 +240,34 @@ class TestParse(TestCase):
             if code.strip() == '':
                 continue
             checkRes(code, False)
+
+    def test_func_return(self):
+        code = '''
+        func foo(a)
+            res = 1
+            for i <- [1,2,3,4,5,6,7,8,9]
+                res += i
+                # print('=res>', res)
+                if res > a
+                    return res
+            -1000
+        res = foo(10)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        exp = lex2tree(clines)
+        ctx = Context(None)
+        setNativeFunc(ctx, 'print', print, TypeNull)
+        setNativeFunc(ctx, 'len', len, TypeInt)
+        # print('$$ run test ------------------')
+        # pdb.set_trace()
+        exp.do(ctx)
+        res = ctx.get('res').get()
+        # r2 = ctx.get('r2').get()
+        print('#t >>> r:', res)
+        self.assertEqual(res, -10)
+        # self.assertEqual(r2, 2000)
 
     def _test_call_func(self):
         code = '''
@@ -856,7 +853,21 @@ class TestParse(TestCase):
 
     
     def _test_split(self):
-        ''' '''
+        code_input1 = '''
+        x = 5
+        for i to 15
+            print i
+
+        for i << 1..5
+            print i
+        # for x <- 5..20, 3 | x % 3 > 0 ???
+        for a=10,b=3; i <- 10..20
+            c = a + b + i
+            if n=i*2+1; if n != c
+                print c
+                fprint('%s %d %f', c, 2, 3)
+        '''
+
         tlines = splitLexems(code_input1)
         s = []
         for tl in tlines:

@@ -128,7 +128,7 @@ class Context:
         if name in Context._defaultContextVals:
             return Context._defaultContextVals[name]
         src = self
-        # print('#Ctx-get0,:', name)
+        print('#Ctx-get0,:', name)
         while src is not None:
             # print('#Ctx-get,name:', name)
             # print('#Ctx-get2 vars', src.vars)
@@ -141,14 +141,20 @@ class Context:
             if name in src.vars:
                 return src.vars[name]
             if src.upper is None:
-                raise EvalErr('Can`t find var|type name `%s` in current context' % name)
+                # raise EvalErr('Can`t find var|type name `%s` in current context' % name)
+                var = VarUndefined(name)
+                self.addVar(var)
+                return var
             src = src.upper
 
     def print(self, ind=0):
         c:Context = self
         while c:
             for k, v in c.vars.items():
-                print('x>', ' ' * ind, k, ':', v.get())
+                vstr = v.get()
+                if isinstance(v, Collection):
+                    vstr = v.vals()
+                print('x>', ' ' * ind, k, ':', vstr)
             c = c.upper
             ind += 1
             

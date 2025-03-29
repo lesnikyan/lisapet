@@ -58,6 +58,13 @@ class Var_(Var):
         self.vtype:VType = TypeNull
         self.val = None
 
+
+class VarUndefined(Var):
+    def __init__(self, name):
+        super().__init__(None, name, Undefined)
+
+
+
 class VarNull(Var):
     ''' None|null'''
 
@@ -106,6 +113,9 @@ class Collection(Container):
     def len(self)->int:
         return 0
 
+    def vals(self):
+        pass
+
 
 class ListVar(Collection):
     ''' classic List / Array object'''
@@ -146,6 +156,9 @@ class ListVar(Collection):
         return  [n.get() for n in self.elems] # debug
         # return self.elems
 
+    def vals(self):
+        return [str(n.get()) for n in self.elems[:10]]
+
     def __str__(self):
         nm = self.name
         if not nm:
@@ -182,7 +195,10 @@ class DictVar(Collection):
         k = key.get()
         if k in self.data:
             return self.data[k]
-        raise EvalErr('List out of range by key %d ' % k)
+        raise EvalErr('List out of range by key %s ' % k)
+
+    def vals(self):
+        return {k: v.get() for k,v in self.data.items()}
 
 
 class UserStruct(TypeStruct):

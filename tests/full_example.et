@@ -67,10 +67,15 @@ func sum(nums)
 
 func prime(x)
     # while
+    print('--------------------- $$$ ---------------------')
     n = 2
+    q = n
+    print('n:', n)
     while n ** 2 < x
-        if x % n == 0
-            return false
+        if n >3
+            return
+#        if x % n == 0
+#            return false
         n += 1
     true
 
@@ -85,19 +90,38 @@ func printVal(data, key)
     print(data[key])
 
 # tests:
-#@
-t1 = prime(10)
-t2 = prime(23)
+t1 = prime(7)
+
+t2 = prime(8)
+
 t3 = sum([1000, 200, 30, 4])
+f10 = fact(10)
 
 hello = "Hello print example!"
 print(hello)
 print("Hello print example!" + '!!')
 print(fooPow2(5))
-print(t3)
 unar(true)
-print( fact(10) )
-@#
+print( 10 )
+print('is prime 11', t1)
+print(t3)
+
 colors = {'red':'#ff0000', 'green':'#00ff00', 'blue':'#0000ff'}
 printVal(colors, 'green')
+names = ['Alladin','Bob','Colin','Dude']
 
+weekDays = dict
+    1: 'Monday'
+    2: 'Tuesday'
+    3: 'Wednesday'
+    4: 'Thursday'
+    5: 'Friday'
+    6: 'Saturday'
+    7: 'Sunday'
+
+weekDays[2] = 'Rururu'
+printVal(weekDays, 2)
+
+
+#@
+@#
