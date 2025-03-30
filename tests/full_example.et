@@ -106,10 +106,24 @@ print( 10 )
 print('is prime 11', t1)
 print(t3)
 
-colors = {'red':'#ff0000', 'green':'#00ff00', 'blue':'#0000ff'}
-printVal(colors, 'green')
-names = ['Alladin','Bob','Colin','Dude']
+# List, one-line constructor
+names = ['Alladin','Bob','Colin','ddd']
+names[3] = 'Dude'
 
+# List, multiline constructor
+lorem = list
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit," 
+    "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." 
+    "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris"
+    "nisi ut aliquip ex ea commodo consequat." 
+    "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur." 
+    "Excepteur sint occaecat cupidatat non proident," 
+    "sunt in culpa qui officia deserunt mollit anim id est laborum."
+
+# Dict, one-line constructor
+colors = {'red':'#ff0000', 'green':'#00ff00', 'blue':'#0000ff'}
+
+# Dict, multiline constructor
 weekDays = dict
     1: 'Monday'
     2: 'Tuesday'
@@ -120,8 +134,12 @@ weekDays = dict
     7: 'Sunday'
 
 weekDays[2] = 'Second day'
-printVal(weekDays, 2)
 
+printVal(names, 3)
+printVal(lorem, 0)
+
+printVal(colors, 'green')
+printVal(weekDays, 2)
 
 #@
 @#

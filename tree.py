@@ -133,7 +133,7 @@ expCaseList = [ CaseComment(), CaseDebug(),
     CaseFuncDef(), CaseReturn(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseArrowR(),
     CaseSemic(), CaseAssign(), CaseBinAssign(),
-    CaseDictBlock(),
+    CaseDictBlock(), CaseListBlock(),
     CaseDictLine(), CaseArray(), CaseCollectElem(), CaseFunCall(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
 

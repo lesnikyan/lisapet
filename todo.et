@@ -64,20 +64,31 @@ str = (
     "new string!"
 )
 
-# not sure >>>
-nums = [1, 2, 
-        3, 4]
+#== Next line operator, next line after beginning, 
+# Second line starts with operator after 1 indent (like subline in block). 
+# Next lines after 2-nd - the same indent.
+res = (long_expressions)
+    + (next-expression) * (next-expression)
+    - (3rd-line--expression)
 
-data = {
-    'a': 1,
-    'b': 2
-}
-# <<<
+# not sure about if-conditions:
+if long-condition
+    || next-condition && condition
+    || 3rd-condition && condition
+    if-block-expressions
 
-#== sugar for collections - skip commas between lines (auto-complit for interpretation)
+#== else if - sugar for `if` into `else` block 
+if cond2
+    expr1
+else if cond2
+    expr2
+else
+    expr3
 
-#== list
-strings = list
+#== sugar for collections - skip commas between lines in multiline constructor
+
+#== list DONE
+hellos = list
     'Hello world!'
     'Helo desktop!'
 

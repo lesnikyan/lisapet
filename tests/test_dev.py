@@ -39,9 +39,34 @@ class TestDev(TestCase):
     array of dicts
     
     '''
-        
 
-    def test_dict_multiline(self):
+    def test_list_multiline(self):
+
+        code = '''
+        # create dict var with values in sub-block
+        names = list
+            'Anna'
+            'Barbi'
+            'Cindy'
+            'Dolores'
+            'no name'
+
+        names[4] = 'Vahtang'
+        for i <- [0,1,2,3,4]
+            print(i, names[i])
+        '''
+
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        exp = lex2tree(clines)
+        ctx = Context(None)
+        setNativeFunc(ctx, 'print', print, TypeNull)
+        setNativeFunc(ctx, 'len', len, TypeInt)
+        print('$$ run test ------------------')
+        exp.do(ctx)
+
+    def _test_dict_multiline(self):
 
         code = '''
         # create dict var with values in sub-block

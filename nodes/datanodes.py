@@ -49,6 +49,13 @@ class ListExpr(CollectionExpr):
         return self.listObj
 
 
+class ListConstr(MultilineVal, ListExpr):
+    ''' list '''
+
+    def __init__(self):
+        super().__init__()
+
+
 class DictExpr(CollectionExpr):
     ''' {'key': val, keyVar: 13, foo():bar()} '''
     def __init__(self):

@@ -37,6 +37,25 @@ class CaseArray(SubCase):
             base.add(exp)
         return base
 
+
+class CaseListBlock(SubCase):
+    def match(self, elems:list[Elem]) -> bool:
+        '''
+        list
+        varName = list
+        '''
+        # print('CaseListBlock.match')
+        if len(elems) != 1:
+            return False
+        return isLex(elems[0], Lt.word, 'list')
+    
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        return ListConstr(), []
+
+    def setSub(self, base:ListConstr, subs:Expression|list[Expression])->Expression:
+        print('ListConstr.setSub empty: ', base, subs)
+
+
 class CaseCollectElem(SubCase):
     ''' 
     case array[index-expr]
@@ -182,7 +201,7 @@ class CaseDictBlock(SubCase):
         return DictConstr(), []
 
     def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
-        print('CaseDict.setSub empty: ', base, subs)
+        print('CaseDictBlock.setSub empty: ', base, subs)
 
 
 
