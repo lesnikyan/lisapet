@@ -159,8 +159,6 @@ class Context:
             ind += 1
             
 
-# Context
-
 def instance(tp:VType)->Var:
     match tp.name:
         case 'list': return ListVar()

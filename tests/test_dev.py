@@ -8,6 +8,7 @@ from parser import splitLine, splitLexems, charType, splitOper, elemStream
 from vars import *
 from vals import numLex
 from context import Context
+from eval import rootContext
 from nodes.tnodes import Var
 from nodes import setNativeFunc, Function
 from tree import *
@@ -40,60 +41,23 @@ class TestDev(TestCase):
     
     '''
 
-    def test_list_multiline(self):
-
+    def test_for_iter(self):
         code = '''
-        # create dict var with values in sub-block
-        names = list
-            'Anna'
-            'Barbi'
-            'Cindy'
-            'Dolores'
-            'no name'
-
-        names[4] = 'Vahtang'
-        for i <- [0,1,2,3,4]
-            print(i, names[i])
+        res = 0
+        for i <- iter(10)
+            res += i
+        print('res: ', res)
         '''
-
         code = norm(code[1:])
+        # data = [6]
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
-        exp = lex2tree(clines)
-        ctx = Context(None)
-        setNativeFunc(ctx, 'print', print, TypeNull)
-        setNativeFunc(ctx, 'len', len, TypeInt)
-        print('$$ run test ------------------')
-        exp.do(ctx)
-
-    def _test_dict_multiline(self):
-
-        code = '''
-        # create dict var with values in sub-block
-        dd = dict
-            'red' :'#ff0000'
-            'green' :'#00ff00'
-            'blue' :'#0000ff'
-            'orange' :'#ff8800'
-            
-        dd['blue'] = 'dark-blue'
-        for n <- ['red', 'green', 'blue']
-            print(n, dd[n])
-        '''
-        t='''
-        '''
-
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        exp = lex2tree(clines)
-        ctx = Context(None)
-        setNativeFunc(ctx, 'print', print, TypeNull)
-        setNativeFunc(ctx, 'len', len, TypeInt)
-        print('$$ run test ------------------')
-        exp.do(ctx)
-
-
+        ex = lex2tree(clines)
+        ress = []
+        ctx = rootContext()
+        ex.do(ctx)
+        print('##################t-IF1:', ctx.get('res').get())
+        
 
 if __name__ == '__main__':
     main()
