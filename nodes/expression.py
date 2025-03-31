@@ -131,6 +131,9 @@ class Block(Expression):
             # print('!! Block.iter ', i, self.subs[i])
             expr = self.subs[i]
             expr.do(ctx)
+            if isinstance(expr, DefinitionExpr):
+                # Skip actions with result
+                continue
             lastInd = i
             lineRes = None
             lineRes = expr.get()

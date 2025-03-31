@@ -128,12 +128,11 @@ class CaseDictLine(SubCase):
             return False
         
         if len(elems) == 2:
-            # empty dict {}
             print('case-dict empty')
             return True
 
         ind = bracketsPart(elems)
-        print('case-dict ind', ind)
+        # print('case-dict ind', ind)
         if ind != -1:
             return False
 
@@ -168,7 +167,7 @@ class CaseDictLine(SubCase):
         exp = DictExpr()
         sub = elems[1:-1]
         cs = CaseCommas()
-        cc = CaseColon()
+        # cc = CaseColon()
         subs = [sub] # 1 elem
         if cs.match(sub):
             _, subs = cs.split(sub)

@@ -2,53 +2,40 @@
 
 from lang import *
 from base import *
+from typex import *
 
-# Datatype part
+
+# class Var(Base):
+#     def __init__(self, val:Base, name=None, vtype:VType=None):
+#         self.val:Base = val
+#         self.name = name # if name is none - here Val, not Var
+#         self.vtype:VType = vtype
+    
+#     def set(self, val):
+#         self.val = val
+    
+#     def get(self):
+#         return self.val
+    
+#     def setType(self, t:VType):
+#         self.vtype = t
+    
+#     def getType(self):
+#         return self.vtype
+    
+#     def __str__(self):
+#         n = self.name
+#         if not n:
+#             n = '#noname'
+#         tt = '#undefined'
+#         if self.vtype is not None:
+#             tt = self.vtype.name
+#         return '%s(%s, %s: %s)' % (self.__class__.__name__, n, self.val, tt)
 
 
-class TypeNull(VType):
-    name = 'null'
-
-class Undefined(VType):
-    name='undefined'
-
-class ComparT:
-    ''' Comparable type'''
-    def compare(self, other:'ComparT'):
-        pass
-
-class TypeNum(VType):
-    name = 'num'
-
-class TypeInt(TypeNum):
-    name = 'int'
-
-class TypeFloat(TypeNum):
-    name = 'float'
-
-class TypeComplex(TypeNum):
-    name = 'complex'
-
-class TypeBool(VType):
-    name = 'bool'
-
-class TypeList(VType):
-    name = 'list'
-
-class TypeDict(VType):
-    name = 'dict'
-
-class TypeTuple(VType):
-    name = 'tuple'
-
-class TypeString(VType):
-    name = 'string'
-
-class TypeStruct(VType):
-    name = 'struct'
-
-class TypeFunc(VType):
-    name = 'function'
+class VarType(Var):
+    def __init__(self, val:VType, vtype = VType):
+        super().__init__(val, 'type', vtype)
 
 
 class Var_(Var):
@@ -64,18 +51,15 @@ class VarUndefined(Var):
         super().__init__(None, name, Undefined)
 
 
-
 class VarNull(Var):
     ''' None|null'''
 
     def __init__(self, name=None):
-        self.name = name
-
-    def get(self):
-        return None
+        super().__init__(None, name, TypeNull)
 
     def setType(self, t:VType):
         pass
+
 
 def value(val, vtype:VType)->Var:
     return Var(val, None, vtype)
@@ -199,53 +183,4 @@ class DictVar(Collection):
 
     def vals(self):
         return {k: v.get() for k,v in self.data.items()}
-
-
-class UserStruct(TypeStruct):
-    ''' struct TypeName '''
-    
-    def __init__(self, name:str):
-        self._typeName = name
-        self.fieldNames:list[str] = []
-        self.fieldsTypes:dict[str, VType] = {}
-
-    def addField(self, name:str, stype:VType):
-        if name in self.fieldNames:
-            raise EvalErr('Field %d in struct %s already defined.')
-        self.fieldNames.append(name)
-        self.fieldsTypes[name] = stype
-
-    def typeName(self):
-        return self._typeName
-
-
-class StructVar(Var):
-    ''' instance of user-defined struct'''
-
-    def __init__(self, name=None, stype=UserStruct):
-        super().__init__(None, name, )
-        self.type:UserStruct = stype
-        self.data:dict[str,Var] = {}
-
-    def checkField(self, name, val:Var=None):
-        if name not in self.type.fieldNames:
-            raise EvalErr('Struct %s doesn`t have field %s' % (name, self.type.typeName()))
-        if val is not None:
-            # field type doesn't change
-            if name in self.data and self.type.fieldsTypes[name].name != val.getType().name:
-                raise EvalErr('Incorrect value type in struct  field assignments: %s != %s' 
-                            % (self.data[name].getType().name, val.getType().name))
-
-    def setVal(self, key:Var, val:Var):
-        '''set value of a field by name'''
-        k = key.get()
-        self.checkField(k, val)
-        self.data[k].setVal(val.getVal())
-
-    def getVal(self, key:Var)->Var:
-        fn = key.get()
-        self.checkField(fn)
-        if fn in self.data:
-            return self.data[fn]
-        raise EvalErr('Incorrect field name %s of struct %s ' % (fn, self.type.typeName()))
 

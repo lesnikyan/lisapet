@@ -18,6 +18,11 @@ class EvalErr(ValueError):
         super().__init__(*args)
 
 
+class TypeErr(ValueError):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
 class Mk:
     empty = 0
     lex = 1 # any lexem

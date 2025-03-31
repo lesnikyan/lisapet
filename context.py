@@ -46,11 +46,14 @@ class Context:
             src = src.upper
         return d
 
-    def addType(self, tp:VType):
-        if tp.name not in self.types:
-            self.types[tp.name] = tp
 
-    def getType(self, name)->Base:
+    def addType(self, tp:VType):
+        if tp.name in self.types:
+            raise EvalErr(f'Type {tp.name} already defined.')
+        # if tp.name not in self.types:
+        self.types[tp.name] = tp
+
+    def getType(self, name)->VType:
         if name in Context._defaultContextVals:
             return Context._defaultContextVals[name]
         src = self

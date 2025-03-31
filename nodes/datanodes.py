@@ -93,12 +93,12 @@ class DictConstr(MultilineVal, DictExpr):
     #     self.data = DictVar(None)
 
 
-class StructDefExpr(Block):
-    ''' struct User
-            name: string
-            age: int
-            weight: float
-    '''
+# class StructDefExpr(Block):
+#     ''' struct User
+#             name: string
+#             age: int
+#             weight: float
+#     '''
 
 
 class StructFieldExpr(VarExpr):

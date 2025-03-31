@@ -17,6 +17,7 @@ from nodes import *
 from nodes.tnodes import *
 from nodes.oper_nodes import *
 from nodes.control import *
+from cases.structs import *
 
 
 class CaseIterOper(SubCase):
@@ -132,9 +133,11 @@ class CaseDebug(ExpCase):
 expCaseList = [ CaseComment(), CaseDebug(),
     CaseFuncDef(), CaseReturn(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseArrowR(),
+    CaseStructDef(),
     CaseSemic(), CaseAssign(), CaseBinAssign(),
     CaseDictBlock(), CaseListBlock(),
-    CaseDictLine(), CaseArray(), CaseCollectElem(), CaseFunCall(),
+    CaseDictLine(), CaseArray(), CaseCollectElem(), CaseFunCall(), CaseStructConstr(),
+    CaseStructField(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:

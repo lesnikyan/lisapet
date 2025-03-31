@@ -1,6 +1,16 @@
 
 
+LANG_WORDS = [word.strip() for line in '''
+for while if else func type def var match case
+list dict struct
+'''.splitlines() for word in line.split(' ') if word.strip() != '']
+
+
+# def inst(self, *args)->Base:
+#     return VType()
+
 class Base:
+    ''' '''
     def get(self)->'Base':
         pass
 
@@ -9,13 +19,11 @@ class VType(Base):
     ''' Base of Var Type '''
     name = 'type'
 
-def inst(self, *args)->Base:
-    return VType()
 
 
 class Var(Base):
-    def __init__(self, val, name=None, vtype:VType=None):
-        self.val = val
+    def __init__(self, val:Base, name=None, vtype:VType=None):
+        self.val:Base = val
         self.name = name # if name is none - here Val, not Var
         self.vtype:VType = vtype
     

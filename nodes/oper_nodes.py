@@ -409,10 +409,10 @@ class MultiOper(OperCommand):
 class ServPairExpr(BinOper):
     ''' service expression, works accordingly to context:
         - in dict 
-        {a : b} >> var:var
+        {a : b} >> key(Var):value(Var)
         - in var declaration:
         var with type >> name : type
-        user: User
+        user: User; counter: int
         - in func definition
         func args and res type >> func-expr : type
         func foo(a:int, b:list): int
