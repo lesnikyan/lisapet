@@ -39,6 +39,9 @@ class Var(Base):
     def getType(self):
         return self.vtype
     
+    # TODO: fix Var-to-string for all builit types: 
+    # null, bool, int, float, complex-num, string,
+    # list, dict, struct, tuple 
     def __str__(self):
         n = self.name
         if not n:

@@ -38,6 +38,10 @@ class StructDef(TypeStruct):
         self.fields.append(f.name)
         self.types[f.name] = tp
 
+    def __str__(self):
+        return 'type struct %s{}' % self.name
+
+
 
 class DefaultStruct(StructDef):
     ''' type of anonymous struct
@@ -54,7 +58,9 @@ class StructInstance(Var):
         self.type:StructDef=stype
         self.data:dict[str, Var] = {}
 
-    def get(self, fname):
+    def get(self, fname=None):
+        if fname is None:
+            return str(self) # debug 
         return self.data[fname]
 
     def setVals(self, vals:list[Var]):
@@ -75,6 +81,10 @@ class StructInstance(Var):
             raise TypeErr(f'Incorrect type `{vtype.name}` for field {self.type.name}.{fname}')
         self.data[fname] = val
 
+    def __str__(self):
+        fns = self.type.fields
+        vals = ','.join(['%s, %s' % (f, self.get(f)) for f in fns])
+        return 'struct %s(%s)' % (self.type.name, vals)
 
 # Expressions
 

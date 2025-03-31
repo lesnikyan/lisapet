@@ -147,7 +147,13 @@ class ListVar(Collection):
         nm = self.name
         if not nm:
             nm = '#list-noname'
-        return 'ListVar(%s, [%s])' % (nm, ', '.join([str(n.get()) for n in self.elems[:10]]))
+        def strv(var):
+            print('@>>', var, var.getType())
+            if isinstance(var.getType(), TypeContainer):
+                return str(var)
+            return str(var.get())
+        vals = [strv(n) for n in self.elems[:10]]
+        return 'ListVar(%s, [%s])' % (nm, ', '.join(vals))
 
 
 class DictVar(Collection):

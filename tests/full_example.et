@@ -44,6 +44,11 @@ For now we can:
     set val: dd['cc'] = 555
     get val: print(dd['aa'])
 
+9. Struct (single-line syntax).
+    struct User name, age, sex, phone
+    user = User{name:'Catod', age:25, sex:male, phone:'123-45-67'}
+    print('phone:', user.phone)
+    TODO: block-definition, block-constructor, set val to struct.field (a.b = c)
 
 --
 @#
@@ -140,6 +145,21 @@ printVal(lorem, 0)
 
 printVal(colors, 'green')
 printVal(weekDays, 2)
+
+struct Book title, author, pages
+books = list
+    Book{title:'Green  gardens', author:'Bob Stinger', pages:100}
+    Book{title:'Blue, blue sky', author:'Ani Arabesquin', pages:200}
+    Book{title:'Silver sword of small town', author:'Arnold Whiteshvartz', pages:300}
+
+func printBook(book)
+    print(book.title, book.author, book.pages)
+
+func testBooks()
+    for bb <-books
+        printBook(bb)
+
+testBooks()
 
 #@
 @#

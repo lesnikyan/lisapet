@@ -116,8 +116,10 @@ class OpAssign(OperCommand):
                 return
             #get destination var
             dest = self.left[i].get()
-            print('# op-assign set, var:', self.left[i],' val = ', resSet[i])
-            print(' (a = b)', dest,' val = ', val)
+            print('# op-assign set, var:', self.left[i],)
+            print('# op-assign set,',' val = ', type(resSet[i]))
+            print(' (a = b)', dest,
+                  ' val = ', val)
                 
             # single var
             name = dest.name

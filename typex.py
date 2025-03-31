@@ -37,14 +37,17 @@ class TypeBool(VType):
     name = 'bool'
 
 
-class TypeList(VType):
+class TypeContainer(VType):
+    pass
+
+class TypeList(TypeContainer):
     name = 'list'
 
-class TypeDict(VType):
+class TypeDict(TypeContainer):
     name = 'dict'
 
 
-class TypeTuple(VType):
+class TypeTuple(TypeContainer):
     name = 'tuple'
 
 
@@ -52,7 +55,7 @@ class TypeString(VType):
     name = 'string'
 
 
-class TypeStruct(VType):
+class TypeStruct(TypeContainer):
     name = 'struct'
 
 
