@@ -51,7 +51,7 @@ class Context:
         if tp.name in self.types:
             raise EvalErr(f'Type {tp.name} already defined.')
         # if tp.name not in self.types:
-        self.types[tp.name] = tp
+        self.types[tp.name] = VarType(tp)
 
     def getType(self, name)->VType:
         if name in Context._defaultContextVals:

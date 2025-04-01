@@ -35,7 +35,7 @@ from typex import *
 
 class VarType(Var):
     def __init__(self, val:VType, vtype = VType):
-        super().__init__(val, 'type', vtype)
+        super().__init__(val, 'type_%s' % vtype.name, vtype)
 
 
 class Var_(Var):
@@ -74,6 +74,16 @@ class CompVar(Var):
         return a - b
 
 
+class VarRatio(CompVar):
+    def __init__(self, a:int, b:int, name=None):
+        super().__init__(0, name, TypeRatio)
+        self.numer:int = a # numerator
+        self.denom:int = b # denominator
+
+    def float(self):
+        return Var(self.name, self.numer / self.denom, TypeFloat)
+
+
 class FuncRes(Var):
     ''' '''
     def __init__(self, val):
@@ -88,7 +98,7 @@ class Container(Var):
     def setVal(self, key:Var, val:Var):
         pass
 
-    def getVal(self, key:Var|int):
+    def getVal(self, key:Var):
         pass
 
 

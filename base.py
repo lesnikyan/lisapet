@@ -11,6 +11,8 @@ list dict struct
 
 class Base:
     ''' '''
+    def __init__(self):
+        pass
     def get(self)->'Base':
         pass
 
@@ -18,7 +20,13 @@ class Base:
 class VType(Base):
     ''' Base of Var Type '''
     name = 'type'
-
+    ''' '''
+    def __init__(self):
+        pass
+    
+    # def get(self)->'VType':
+    #     pass
+    
 
 
 class Var(Base):

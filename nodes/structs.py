@@ -34,9 +34,13 @@ class StructDef(TypeStruct):
             self.add(f)
 
     def add(self, f:Var):
+        print('StructDef.add ## ', f)
         tp:VType = f.getType()
         self.fields.append(f.name)
         self.types[f.name] = tp
+
+    def getFields(self):
+        return self.fields
 
     def __str__(self):
         return 'type struct %s{}' % self.name
@@ -54,8 +58,9 @@ class StructInstance(Var):
     ''' data of struct '''
 
     def __init__(self, name, stype:StructDef):
-        super().__init__(None, name, stype)
-        self.type:StructDef=stype
+        super().__init__(self, name, stype)
+        print('StructInstance.__init__', '>>', stype)
+        self.vtype:StructDef = stype
         self.data:dict[str, Var] = {}
 
     def get(self, fname=None):
@@ -64,27 +69,50 @@ class StructInstance(Var):
         return self.data[fname]
 
     def setVals(self, vals:list[Var]):
-        if len(vals) != len(self.type.fields):
-            raise EvalErr(f'Incorrect number of values in constructor of struct {self.type.name}')
+        if len(vals) != len(self.vtype.fields):
+            raise EvalErr(f'Incorrect number of values in constructor of struct {self.vtype.name}')
         for i in range(len(vals)):
-            self.set(self.type.fields[i], vals[i])
+            self.set(self.vtype.fields[i], vals[i])
 
     def set(self, fname:str, val:Var):
         # check type
         print('StructInstance.set:', fname, val)
-        vtype = val.getType()
-        print('StructInstance.set types:', self.type.types.keys())
-        if fname not in  self.type.types:
-            raise EvalErr(f'Incorrect field `{fname}` of Type `{self.type.name}`')
-        ftype = self.type.types[fname]
-        if ftype != TypeAny and ftype != vtype:
-            raise TypeErr(f'Incorrect type `{vtype.name}` for field {self.type.name}.{fname}')
+        # print('@3>> ', dir(self))
+        # print('StructInstance.set type:', self.vtype, )
+        # print('StructInstance.set types:', '>', self.vtype.types)
+        if fname not in  self.vtype.types:
+            raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
+        # TODO: Fic to use types compatibility
+        self.checkType(fname, val)
         self.data[fname] = val
 
+    def checkType(self, fname, val:Var):
+        valType = val.getType()
+        ftype = self.vtype.types[fname] # class inherited of VType or inst of StructInstance
+        fclass = ftype.__class__
+        print('Type Check ???1:', valType, '<?>', ftype)
+        print('Type Check ???2:', valType.__class__, '<?>', fclass,' if:', isinstance(valType, fclass))
+        print('Type struct???3:', isinstance(valType, StructInstance))
+        if ftype == TypeAny:
+            return # ok
+        # if primitives or collections
+        # print('if prim and !types', not isinstance(valType, StructInstance) and not isinstance(valType, ftype))
+        if not isinstance(ftype, StructDef):
+            print('!! Not struct!', fclass)
+            if not isinstance(valType, fclass):
+                # TODO: add compatibility check
+                raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
+            return
+        # if struct
+        print('@ check type ', valType.name, '!=', self.vtype.name , valType.name != self.vtype.name)
+        if valType.name != ftype.name:
+            raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
+        
+
     def __str__(self):
-        fns = self.type.fields
-        vals = ','.join(['%s, %s' % (f, self.get(f)) for f in fns])
-        return 'struct %s(%s)' % (self.type.name, vals)
+        fns = self.vtype.fields
+        vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
+        return 'struct %s(%s)' % (self.vtype.name, vals)
 
 # Expressions
 
@@ -107,8 +135,10 @@ class StructDefExpr(DefinitionExpr):
             fname, ftype = '', TypeAny
             if isinstance(field, tuple) and len(field) == 2:
                 fn, ft = field
-                fname = fn.get()
+                print('@2>>', fn, ft)
+                fname = fn.name
                 ftype = ft.get()
+                print('@21>>', fname, ftype)
             elif isinstance(field, Var):
                 fname = field.name
             else:
@@ -160,7 +190,8 @@ class StructConstr(Expression):
     def do(self, ctx:Context):
         self.inst = None
         stype = ctx.getType(self.typeName)
-        inst = StructInstance(None, stype)
+        print('StructConstr.do1 >> ', stype)
+        inst = StructInstance(None, stype.get())
         vals = []
         for fexp in self.fieldExp:
             fexp.do(ctx)
@@ -178,7 +209,7 @@ class StructConstr(Expression):
                 fname, val = expRes
                 # fname = fn
                 # val = fv
-                print('DB>> ', fname, val)
+                print('Strc.do >> ', expRes, fname, val)
                 inst.set(fname, val)
             else:
                 raise EvalErr('Struct def error: fiels expression returns incorrect result: %s ' % expRes)

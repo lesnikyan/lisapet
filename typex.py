@@ -25,6 +25,10 @@ class TypeInt(TypeNum):
     name = 'int'
 
 
+class TypeRatio(TypeNum):
+    '''rational number n/m'''
+    name = 'ratio'
+
 class TypeFloat(TypeNum):
     name = 'float'
 
@@ -67,6 +71,11 @@ class ComparT:
     ''' Comparable type'''
     def compare(self, other:'ComparT'):
         pass
+
+
+def builtinTypes()->list[VType]:
+    return [TypeAny, TypeBool, TypeNum, TypeInt, TypeFloat, TypeComplex, 
+            TypeString, TypeList, TypeDict, TypeStruct, TypeNull, TypeTuple, TypeFunc]
 
 
 def typeCompat(dest:VType, src:VType):
