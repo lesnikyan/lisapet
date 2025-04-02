@@ -41,7 +41,7 @@ def afterLeft(elems:list[Elem])->int:
             # enter into brackets
             inBr += 1
             continue
-        if i > 0 and ee.type != Lt.word and (ee.type == Lt.oper and ee.text != ','):
+        if i > 0 and ee.type != Lt.word and (ee.type == Lt.oper and ee.text not in '.,'):
             res = i
             break
     return res

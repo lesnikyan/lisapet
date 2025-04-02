@@ -80,21 +80,25 @@ class TestDev(TestCase):
         ctx = rootContext()
         ex.do(ctx)
 
-    def test_deep_nesting_struct(self):
-        ''' refactor operator `.` for subfields of structs '''
+    def _test_deep_nesting_struct(self):
+        ''' fix dot-operator for flexible access to submembers of struct inner fields.
+        implement operator `.` instead of magic `name.name` tepmlate '''
         code='''
-        struct A name:string
-        struct B aa:A
-        struct C bb:B
-        struct D cc:C
-        @debug instances
-        a = A {name:'AAAAA'}
-        b = B{aa:a}
-        c = C{bb:b}
-        d = D{cc:c}
-        print(d.cc.bb.aa.name)
+        struct A nname:string
+        a = A {nname:'AAAAA'}
+        @debug field assign
+        # a.nname = 'AA2222'
+        print(a.nname)
         '''
         tt = '''
+        struct B aa:A
+        struct C bb:B, cbb:string
+        struct D cc:C
+        b = B{aa:a}
+        c = C{bb:b, cbb:'c-val'}
+        d = D{cc:c}
+        # d.cc.cbb = 'c-val2'
+        print(d.cc.bb.aa.name1, d.cc.cbb)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -102,6 +106,29 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+
+    def test_dot_oper(self):
+        code='''
+        obj.member
+        obj.member.member.member
+        '''
+        tt = '''
+        array[expr].member
+        array[expr].member[key].member
+        array[expr.member].member
+        array[expr].member
+        foo(args).member
+        obj.fmember()
+        obj.fmember(args)
+        foo().bar().baz().member
+        foo().bar().baz().member.member
+        foo().bar().baz().member.method(args)
+        array[foo()].member[key].method()
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
         
 
     def _test_struct_inline_types(self):

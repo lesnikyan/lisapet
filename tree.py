@@ -137,7 +137,7 @@ expCaseList = [ CaseComment(), CaseDebug(),
     CaseSemic(), CaseAssign(), CaseBinAssign(),
     CaseDictBlock(), CaseListBlock(),
     CaseDictLine(), CaseArray(), CaseCollectElem(), CaseFunCall(), CaseStructConstr(),
-    CaseStructField(),
+    OperDot(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:

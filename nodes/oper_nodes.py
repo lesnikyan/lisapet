@@ -8,6 +8,7 @@ Eval tree nodes: operators.
 from lang import *
 from vars import *
 from nodes.expression import *
+from nodes.structs import StructInstance
 
 class OperCommand(Expression):
     
@@ -43,8 +44,6 @@ class OpAssign(OperCommand):
     ''' Set value `=` '''
     def __init__(self, left:Expression|list[Expression]=None, right:Expression|list[Expression]=None):
         super().__init__('=')
-        # self.oper = '='
-        # print('OpAssign__init', left, right)
         self.left:Var|list[Expression]|Expression = left
         self.right:Expression|list[Expression] = right # maybe 1 only, tuple Expression with several subs inside
 
@@ -54,8 +53,6 @@ class OpAssign(OperCommand):
         right - src
         '''
         print('OpAssign__setArgs1', left, right)
-        # if not isinstance(left, list):
-        #     left = [left]
         self.left = left
         print('isinstance(right, MultilineVal) = ', isinstance(right, MultilineVal))
         # print('isinstance(right, ) = ', right))
@@ -68,8 +65,6 @@ class OpAssign(OperCommand):
             print('-- dict here')
             self._block = True
             right = r0
-        # if not isinstance(right, list):
-        #     right = [right]
         self.right = right
 
     def add(self, expr:Expression):
@@ -101,9 +96,6 @@ class OpAssign(OperCommand):
             if isinstance(self.left[i], VarExpr_):
                 # skip _ var
                 continue
-            # if isinstance(self.left[i], CollectElemExpr):
-            #     self.left[i].do(ctx)
-            # if isinstance(self.left[i], CollectElemExpr):
             print(' (a = b) :1')
             # eval left expressopm
             self.left[i].do(ctx)
@@ -114,52 +106,31 @@ class OpAssign(OperCommand):
                 val.name = None
                 self.left[i].set(val)
                 return
+            
             #get destination var
             dest = self.left[i].get()
-            print('# op-assign set, var:', self.left[i],)
-            print('# op-assign set,',' val = ', type(resSet[i]))
-            print(' (a = b)', dest,
-                  ' val = ', val)
+            print('# op-assign set1, varX, valX:', self.left[i], src[i])
+            print('# op-assign set2, var-type:', dest.getType().__class__)
+            # print('# op-assign set,',' val = ', type(resSet[i]))
+            print(' (a = b) dest =', dest, ' val = ', val)
+            if isinstance(dest.getType(), TypeStruct):
+                dest.set(val)
+                print('!!!!!! struct', dest)
+                return
                 
+                # dest.set()
             # single var
             name = dest.name
             dest = val
             dest.name = name
             ctx.update(dest.name, val)
-            # if True or  isinstance(dest, VarUndefined):
-            #     print(' (a = b) >> ', dest)
-            # else:
-            #     dest.set(resSet[i]) # update value
-            # self.left[i].set(resSet[i]) # update value
-
-            # update var, skip collections
-            # if not isinstance(self.left[i], CollectElemExpr):
-            #     print('# op-assign set, var:', dest,' val = ', resSet[i])
-            #     # # dinamic typing
-            #     # self.left[i].setType(resSet[i].getType())
-            #     # # update context
-            #     # ctx.update(self.left[i].name, resSet[i])
-            #     # dinamic typing
-            #     dest.setType(resSet[i].getType())
-            #     # update context
             ctx.update(dest.name, resSet[i])
             saved = ctx.get('n')
             print(' (a = b) saved ', saved)
 
+
         # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
         # TODO: thik about one way of assignment: (something) = (something)
-
-        # if len(self.left) == 1:
-        #     # simple case
-        #     var:VarExpr = self.left[0]
-        #     self.right.do(ctx)
-        #     varVal = self.right.get()
-        #     # var.var.set(varVal)
-        #     ctx.vars[var.var.name] = varVal
-        # else:
-        #     # if  matching of few vals...
-        #     pass
-
 
 
 class OpMath(BinOper):
@@ -343,6 +314,28 @@ class OpBitwise(BinOper):
         return a ^ b
 
 
+class OpDot(BinOper):
+    ''' inst.field
+        expr.expr.expr.expr
+        expr.method()
+        get member from object
+    '''
+
+    def __init__(self, left:Expression=None, right:Expression=None):
+        super().__init__('.', left, right)
+
+    def do(self, ctx:Context):
+        self.left.do(ctx) # find object (struct instance)
+        inst = self.left.get()
+        field = self.right.name
+        self.res = inst.get(field)
+        print('oper .... ', inst, field,' :: ', self.res)
+
+    # def get(self):
+    #     # print('# -> OperCommand.get() ', self.oper, self.res)
+    #     return self.res
+
+
 class UnarOper(OperCommand):
     def __init__(self, oper:str, inner:Expression=None):
         super().__init__(oper)
@@ -351,6 +344,7 @@ class UnarOper(OperCommand):
 
     def setInner(self, inner:Expression):
         self.inner = inner
+
 
 class BoolNot(UnarOper):
     def __init__(self, oper:str, inner:Expression=None):
@@ -361,6 +355,7 @@ class BoolNot(UnarOper):
         inVal = self.inner.get()
         res = not inVal.get()
         self.res = Var(res, None, inVal.getType())
+
 
 class BitNot(UnarOper):
     def __init__(self, oper:str, inner:Expression=None):
@@ -435,6 +430,29 @@ class ServPairExpr(BinOper):
 
     def get(self):
         return self.left.get(), self.right.get()
+
+# BinOper
+class OperDot(Expression):
+    ''' inst.field '''
+
+    def __init__(self):
+        self.objExp:VarExpr = None
+        self.field:str = ''
+        self.val:Var = None
+
+    def set(self, inst:VarExpr, field:VarExpr):
+        self.objExp = inst
+        self.field = field.name
+
+    def do(self, ctx:Context):
+        # print('StructField.do1', self.objExp, self.field)
+        self.objExp.do(ctx)
+        inst:StructInstance = self.objExp.get()
+        self.val = inst.get(self.field)
+        # print('StructField.do2', inst, self.val)
+
+    def get(self):
+        return self.val
 
 
 

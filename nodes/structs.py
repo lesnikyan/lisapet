@@ -220,27 +220,27 @@ class StructConstr(Expression):
     def get(self):
         return self.inst
 
-class StructField(Expression):
-    ''' inst.field '''
+# class StructField(Expression):
+#     ''' inst.field '''
 
-    def __init__(self):
-        self.objExp:VarExpr = None
-        self.field:str = ''
-        self.val:Var = None
+#     def __init__(self):
+#         self.objExp:VarExpr = None
+#         self.field:str = ''
+#         self.val:Var = None
 
-    def set(self, inst:VarExpr, field:VarExpr):
-        self.objExp = inst
-        self.field = field.name
+#     def set(self, inst:VarExpr, field:VarExpr):
+#         self.objExp = inst
+#         self.field = field.name
 
-    def do(self, ctx:Context):
-        # print('StructField.do1', self.objExp, self.field)
-        self.objExp.do(ctx)
-        inst:StructInstance = self.objExp.get()
-        self.val = inst.get(self.field)
-        # print('StructField.do2', inst, self.val)
+#     def do(self, ctx:Context):
+#         # print('StructField.do1', self.objExp, self.field)
+#         self.objExp.do(ctx)
+#         inst:StructInstance = self.objExp.get()
+#         self.val = inst.get(self.field)
+#         # print('StructField.do2', inst, self.val)
 
-    def get(self):
-        return self.val
+#     def get(self):
+#         return self.val
 
 
 

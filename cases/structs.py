@@ -94,29 +94,29 @@ class CaseStructConstr(SubCase):
             base.add(exp)
         return base
 
-def checkTypes(elems:list[Elem], exp:list[int]):
-    if len(elems) != len(exp):
-        return False
-    for i in range(len(elems)):
-        if elems[i].type != exp[i]:
-            return False
-    return True
+# def checkTypes(elems:list[Elem], exp:list[int]):
+#     if len(elems) != len(exp):
+#         return False
+#     for i in range(len(elems)):
+#         if elems[i].type != exp[i]:
+#             return False
+#     return True
 
 
-class CaseStructField(SubCase):
-    def match(self, elems:list[Elem]) -> bool:
-        if len(elems) != 3:
-            return False
-        return checkTypes(elems, [Lt.word, Lt.oper, Lt.word]) and elems[1].text == '.'
+# class CaseStructField(SubCase):
+#     def match(self, elems:list[Elem]) -> bool:
+#         if len(elems) != 3:
+#             return False
+#         return checkTypes(elems, [Lt.word, Lt.oper, Lt.word]) and elems[1].text == '.'
 
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        return StructField(), [[elems[0]],[elems[2]]]
+#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+#         return StructField(), [[elems[0]],[elems[2]]]
 
-    def setSub(self, base:StructField, subs:Expression|list[Expression])->Expression:
-        print('CaseStructField:', base, subs)
-        # raise EvalErr('')
-        base.set(subs[0], subs[1])
-        return base
+#     def setSub(self, base:StructField, subs:Expression|list[Expression])->Expression:
+#         print('CaseStructField:', base, subs)
+#         # raise EvalErr('')
+#         base.set(subs[0], subs[1])
+#         return base
         
     
 

@@ -34,7 +34,7 @@ class CaseAssign(SubCase):
             # left part
             if el.type == Lt.word:
                 continue
-            if el.type == Lt.oper and el.text == ',':
+            if el.type == Lt.oper and el.text in '[],.':
                 continue
             # found operator
             if el.type == Lt.oper and el.text == '=':
@@ -215,6 +215,8 @@ def makeOperExp(elem:Elem)->OperCommand:
         return OpBitwise(oper)
     if oper == ':':
         return ServPairExpr()
+    if oper == '.':
+        return OpDot()
     # undefined case:
     return OperCommand(elem.text)
 
@@ -354,6 +356,46 @@ class CaseBinAssign(CaseAssign):
     
     def setSub(self, base:Expression, subs:list[Expression])->Expression:
         return super().setSub(base, subs)
+
+
+def checkTypes(elems:list[Elem], exp:list[int]):
+    if len(elems) != len(exp):
+        return False
+    for i in range(len(elems)):
+        if elems[i].type != exp[i]:
+            return False
+    return True
+
+
+class CaseDotOper(BinOper):
+    def match(self, elems:list[Elem]) -> bool:
+        '''
+        obj.member
+        obj.member.member.member
+        array[expr].member
+        array[expr].member[key].member
+        array[expr.member].member
+        array[expr].member
+        foo(args).member
+        obj.fmember()
+        obj.fmember(args)
+        foo().bar().baz().member
+        foo().bar().baz().member.member
+        foo().bar().baz().member.method(args)
+        array[foo()].member[key].method()
+        '''
+        if len(elems) < 3:
+            return False
+        return checkTypes(elems, [Lt.word, Lt.oper, Lt.word]) and elems[1].text == '.'
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        return OperDot(), [[elems[0]],[elems[2]]]
+
+    def setSub(self, base:OperDot, subs:Expression|list[Expression])->Expression:
+        print('CaseStructField:', base, subs)
+        # raise EvalErr('')
+        base.set(subs[0], subs[1])
+        return base
 
 
 # class CaseColonPair(SubCase):
