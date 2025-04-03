@@ -44,12 +44,13 @@ def afterLeft(elems:list[Elem])->int:
                 # close brackets
                 inBr -= 1
                 continue
-        if inBr:
-            continue
+        # print('inbr ', inBr)
         # if ee.type == Lt.oper and  ee.text == '[':
         if ee.type == Lt.oper and  ee.text in '([':
             # enter into brackets
             inBr += 1
+            continue
+        if inBr:
             continue
         # print('@@ after', i, elems[i].text)
         if i > 0 and ee.type != Lt.word and (ee.type == Lt.oper and ee.text not in '.,:'):

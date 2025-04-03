@@ -28,12 +28,13 @@ class C(A,B):
 
 
 class TestDev(TestCase):
-    
+
     def test_left_assign_arg(self):
         code='''
         obj.member = 11
         obj.member.member.member = 22
         array[expr].member = 33
+        array[foo(bar(baz(arg)))].member = 34
         array[expr].member[key].member = 44
         array[expr.member].member = 55
         array[expr].member = 66
@@ -52,6 +53,7 @@ class TestDev(TestCase):
             elems = cline.code
             ind = afterLeft(elems)
             print(elemStr(elems), '>>', ind, '>>>', '  ', elems[ind].text)
+            self.assertEqual(elems[ind].text, '=')
 
     def test_deep_nesting_struct2(self):
         '''  '''
