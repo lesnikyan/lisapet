@@ -133,7 +133,7 @@ class CaseDebug(ExpCase):
 expCaseList = [ CaseComment(), CaseDebug(),
     CaseFuncDef(), CaseReturn(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseArrowR(),
-    CaseStructDef(),
+    CaseStructBlockDef(), CaseStructDef(),
     CaseSemic(), CaseAssign(), 
     CaseBinAssign(),
     CaseDictBlock(), CaseListBlock(),
@@ -234,6 +234,7 @@ def lex2tree(src:list[CLine]) -> Block:
             # nothing for comment now
             continue
         print('lex2tree-2 expr:', expr, '; parents:', parents, curBlock)
+        print(dir(expr))
         if indent < curInd:
             # end of block
             stepsUp = curInd - indent
@@ -257,7 +258,7 @@ def lex2tree(src:list[CLine]) -> Block:
             curBlock.toElse(expr)
             # TODO: for `else if` case we need additional logic with parent and nested `if` expr
             continue
-        # print('lex2tree-4:', expr, expr.__class__.__name__, type(expr))
+        print('lex2tree-4:', expr, expr.__class__.__name__, type(expr), 'isBlock:' , expr.isBlock())
         stepBlock = expr.isBlock()
         # if stepBlock:
         #     if isinstance(expr, CaseExpr):

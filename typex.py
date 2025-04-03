@@ -86,7 +86,7 @@ def find(self, name)->Base:
 
 
 def builtinTypes()->list[VType]:
-    return [TypeAny, TypeBool, TypeNum, TypeInt, TypeFloat, TypeComplex, 
+    return [TypeAny, TypeBool, TypeInt, TypeFloat, TypeComplex, 
             TypeString, TypeList, TypeDict, TypeStruct, TypeNull, TypeTuple, TypeFunc]
 
 

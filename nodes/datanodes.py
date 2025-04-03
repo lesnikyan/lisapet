@@ -29,6 +29,7 @@ class ListExpr(CollectionExpr):
     Make `list` object 
     '''
     def __init__(self):
+        super().__init__()
         self.valsExprList:list[Expression] = []
         self.listObj:ListVar = None
 
@@ -59,7 +60,7 @@ class ListConstr(MultilineVal, ListExpr):
 class DictExpr(CollectionExpr):
     ''' {'key': val, keyVar: 13, foo():bar()} '''
     def __init__(self):
-        
+        super().__init__()
         self.exprList:list[ServPairExpr] = []
         self.data:DictVar = None
 
@@ -101,8 +102,8 @@ class DictConstr(MultilineVal, DictExpr):
 #     '''
 
 
-class StructFieldExpr(VarExpr):
-    ''' inst.field = val; var = inst.field '''
+# class StructFieldExpr(VarExpr):
+#     ''' inst.field = val; var = inst.field '''
 
 
 

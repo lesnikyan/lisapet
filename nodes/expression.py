@@ -9,7 +9,8 @@ from context import *
 class Expression:
     def __init__(self, val=None, src:str=''):
         self.val = val
-        self.block = False
+        self.__block = False
+        # print('Expression init', self)
         self.src:str = src
     
     def do(self, ctx:Context):
@@ -20,7 +21,10 @@ class Expression:
     
     def isBlock(self)->bool:
         ''' True if one of: func, for, if, match, case'''
-        return False
+        return self.__block
+
+    def toBlock(self):
+        self.__block = True
     
     def __str__(self):
         return self.__class__.__name__
@@ -35,7 +39,8 @@ class CommentExpr(Expression):
 class ValExpr(Expression):
     def __init__(self, var:Var):
         # print('#tn2-valEx:', var, var.get())
-        self.val:Var = var
+        super().__init__(var)
+        # self.val:Var = var
 
     def do(self, ctx:Context):
         pass
@@ -50,7 +55,8 @@ class ValExpr(Expression):
 
 class VarExpr(Expression):
     def __init__(self, var:Var):
-        self.val = var # or name,type ?
+        super().__init__(var)
+        # self.val = var # or name,type ?
         self.name = var.name
     
     def do(self, ctx:Context):
@@ -66,10 +72,12 @@ class VarExpr(Expression):
         return self.val
 
     def __str__(self):
+        # print('VVV', self)
         return 'VarExpr(%s, %s)' % (self.name, self.val)
 
 class VarExpr_(VarExpr):
-    def __init__(self, var:Var):
+    def __init__(self, var:Var=None):
+        super().__init__(Var_())
         self.name = '_'
     
     def do(self, ctx:Context):
@@ -88,6 +96,7 @@ class VarExpr_(VarExpr):
 class DebugExpr(Expression):
     def __init__(self, txt):
         print('**** DEBUG__init:', txt)
+        super().__init__()
         self.val = txt
     
     def do(self, ctx:Context):
@@ -109,6 +118,7 @@ class ControlExpr(Expression):
 class Block(Expression):
     def __init__(self):
         # self.ctx = Context()
+        super().__init__()
         self.subs: list[Expression] = []
         self.storeRes = False
         self.lastVal:Var|list[Var] = None # result of last sequence, can be a list if many results: a, b, [1,2,3]
@@ -280,7 +290,7 @@ class ServPairExpr(Expression):
     '''
 
     def __init__(self):
-        # super().__init__(':')
+        super().__init__()
         self.left:Expression = None # key|name|def
         self.right:Expression = None # val|type
 

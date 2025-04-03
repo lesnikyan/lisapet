@@ -144,8 +144,9 @@ class FuncDefExpr(DefinitionExpr, Block):
 class ReturnExpr(Expression):
     ''' '''
     def __init__(self):
+        super().__init__()
         self.sub:Expression = None
-        self.val = None
+        # self.val = None
         
 
     def setSub(self, exp:Expression):

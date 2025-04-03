@@ -58,6 +58,28 @@ class CaseStructDef(SubCase):
             base.add(exp)
         return base
 
+
+class CaseStructBlockDef(SubCase):
+    def match(self, elems:list[Elem]) -> bool:
+        '''
+        struct TypeName
+            ...
+        '''
+        # print('CaseDictBlock.match')
+        if len(elems) != 2:
+            return False
+        return isLex(elems[0], Lt.word, 'struct') and elems[1].type == Lt.word
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        exp, subs = CaseStructDef().split(elems)
+        exp.toBlock()
+        return exp, subs
+
+    def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
+        print('CaseDictBlock.setSub empty: ', base, subs)
+        return base
+
+
 class CaseStructConstr(SubCase):
     ''' 
         inline struct creation

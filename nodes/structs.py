@@ -91,7 +91,7 @@ class StructInstance(Var, NSContext):
         print('StructInstance.set:', fname, val)
         # print('@3>> ', dir(self))
         # print('StructInstance.set type:', self.vtype, )
-        # print('StructInstance.set types:', '>', self.vtype.types)
+        print('StructInstance.set types:', '>', self.vtype.types)
         if fname not in  self.vtype.types:
             raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
         # TODO: Fic to use types compatibility
@@ -133,9 +133,10 @@ class StructDefExpr(DefinitionExpr):
     ''' expr `struct TypeName [fields]` '''
 
     def __init__(self, typeName:str):
+        super().__init__()
         self.typeName:str = typeName
         self.fields:list = [] # fields expressions
-        
+
     def add(self, fexp:Expression):
         '''fexp - field expression: VarExpr | ServPairExpr '''
         self.fields.append(fexp)
@@ -191,6 +192,7 @@ class StructConstr(Expression):
     ''' Typename{[field-values]} '''
 
     def __init__(self,  typeName):
+        super().__init__()
         self.typeName:str = typeName
         self.fieldExp = []
 

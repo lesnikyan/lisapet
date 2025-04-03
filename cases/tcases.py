@@ -164,23 +164,6 @@ class ExpCase:
     
     def sub(self)->list[Elem]:
         return None
-    
-    # def setSub(self, expr:Expression):
-    #     pass
-
-'''
-Cases:
-Val: 123, 'asd', true, null
-Var: name,  
-Func: foo(), foom(expr), bar(baz(arg, arg))
-Oper: a + b, age(user) < 45
-Obj: obj.field, obj.foo()
-if expr && expr2
-for n <- expr
-type Abc list[str] # ?
-type User struct name:str, age: int # ?
-struct User ...
-'''
 
 
 class CaseComment(ExpCase):
