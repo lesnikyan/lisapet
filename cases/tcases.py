@@ -26,22 +26,34 @@ def afterLeft(elems:list[Elem])->int:
         var ...
         a, b, c ...
         arr[expr] ... 
+        arr[axpr + expr] ...
+        obj.field[key].field ...
+        obj.meth(arg).field[key].field ...
     '''
-    res = 0
+    res = -1
     inBr = 0
     opers = ''.split('= += -= *= /= %=')
+    
     for i in range(len(elems)):
         ee = elems[i]
+        # print(ee.text)
         if inBr:
-            if ee.text == ']':
+            # if ee.text == ']':
+            # print('in BR. continue', ee.text, ee.text in ')]')
+            if ee.text in ')]':
                 # close brackets
                 inBr -= 1
+                continue
+        if inBr:
             continue
-        if ee.type == Lt.oper and  ee.text == '[':
+        # if ee.type == Lt.oper and  ee.text == '[':
+        if ee.type == Lt.oper and  ee.text in '([':
             # enter into brackets
             inBr += 1
             continue
-        if i > 0 and ee.type != Lt.word and (ee.type == Lt.oper and ee.text not in '.,'):
+        # print('@@ after', i, elems[i].text)
+        if i > 0 and ee.type != Lt.word and (ee.type == Lt.oper and ee.text not in '.,:'):
+            # print('break:<(', ee.text,')> >> ',  elemStr(elems[:i+1]))
             res = i
             break
     return res
@@ -79,6 +91,7 @@ def afterNameBr(elems:list[Elem])->int:
             inBr += ee.text
             # print('#open:', inBr)
             continue
+        
         if inBr:
             continue
         if i > 0:
@@ -174,7 +187,7 @@ class CaseComment(ExpCase):
     def match(self, elems:list[Elem])-> bool:
         s = ''.join([n.text for n in elems])
         if elems[0].type == Lt.comm:
-            print('CaseComment.match', s)
+            # print('CaseComment.match', s)
             return True
         return False
 
@@ -188,15 +201,8 @@ class CaseVal(ExpCase):
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) > 1:
             return False
-        # print('#a8: ', [n.text for n in elems])
-        # print('#a8: ', [Lt.name(n.type) for n in elems])
-        # if elems[0].type not in [Lt.word, Lt.num, Lt.text]:
-        #     return False
         if elems[0].type in [Lt.num, Lt.text]:
-            # print('#a9')
             return True
-        # if elems[0].type == Lt.word and isDefConst(elems[0].text):
-        #     return True
         return False
     
     def expr(self, elems:list[Elem])-> Expression:
@@ -339,6 +345,12 @@ class CaseColon(CaseSeq):
         super().__init__(':')
 
 
+class CaseDot(CaseSeq):
+    ''' key.val  '''
+    def __init__(self):
+        super().__init__('.')
+
+
 class CaseFuncDef(BlockCase, SubCase):
     ''' func foo(arg-expressions over comma) '''
     def match(self, elems:list[Elem]) -> bool:
@@ -368,7 +380,6 @@ class CaseFunCall(SubCase):
         ''' foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))
             spec words  sould not be here (for, if, func, match, return..)
         '''
-        prels('CaseFunCall.match', elems)
         if len(elems) < 3:
             return False
         if elems[0].type != Lt.word:

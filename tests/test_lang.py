@@ -19,6 +19,42 @@ import pdb
 
 class TestLang(TestCase):
 
+    def test_type_nums(self):
+        code = '''
+        a: int = 5
+        b: int = 10
+        c = b * a
+        print(c, type(c))
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        res = ctx.get('c').get()
+        # print('##################t-IF1:', )
+        self.assertEqual(res, 50)
+
+    def test_struct_field_full(self):
+        ''' full test of obj.member cases '''
+        code='''
+        obj.member
+        obj.member.member.member
+        array[expr].member
+        array[expr].member[key].member
+        array[expr.member].member
+        array[expr].member
+        foo(args).member
+        obj.fmember()
+        obj.fmember(args)
+        foo().bar().baz().member
+        foo().bar().baz().member.member
+        foo().bar().baz().member.method(args)
+        array[foo()].member[key].method()
+        '''
+        code = norm(code[1:])
+
     def test_list_multiline(self):
 
         code = '''
@@ -280,30 +316,24 @@ class TestLang(TestCase):
     def test_func_return(self):
         code = '''
         func foo(a)
-            res = 1
+            res = 0
             for i <- [1,2,3,4,5,6,7,8,9]
                 res += i
-                # print('=res>', res)
                 if res > a
                     return res
             -1000
         res = foo(10)
+        print('cc res', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
-        ctx = Context(None)
-        setNativeFunc(ctx, 'print', print, TypeNull)
-        setNativeFunc(ctx, 'len', len, TypeInt)
-        # print('$$ run test ------------------')
-        # pdb.set_trace()
+        ctx = rootContext()
         exp.do(ctx)
         res = ctx.get('res').get()
-        # r2 = ctx.get('r2').get()
         print('#t >>> r:', res)
-        self.assertEqual(res, -10)
-        # self.assertEqual(r2, 2000)
+        self.assertEqual(res, 15)
 
     def test_call_func(self):
         code = '''
@@ -939,7 +969,9 @@ class TestLang(TestCase):
                 (' ',Lt.oper,Lt.space),('\t',Lt.oper,Lt.space),('\n',Lt.oper,Lt.space),
                 (' ',Lt.space,Lt.space),('\t',Lt.space,Lt.space),('\n',Lt.space,Lt.space),
                 
-                ('a',0,Lt.word),('a',Lt.word,Lt.word),('a',Lt.num,Lt.word),('a',Lt.oper,Lt.word),('a',Lt.text,Lt.text),('a',Lt.space,Lt.word),
+                ('a',0,Lt.word),('a',Lt.word,Lt.word),('k',Lt.num,Lt.word),('a',Lt.oper,Lt.word),('a',Lt.text,Lt.text),('a',Lt.space,Lt.word),
+                # hex, complex, bin, octa case:
+                ('a',Lt.num,Lt.num),('b',Lt.num,Lt.num),('f',Lt.num,Lt.num),('x',Lt.num,Lt.num),('o',Lt.num,Lt.num),('0',Lt.num,Lt.num),
                 ('B',0,Lt.word),('B',Lt.word,Lt.word),('B',Lt.num,Lt.word),('B',Lt.oper,Lt.word),('B',Lt.text,Lt.text),('B',Lt.space,Lt.word),
                 ('+',0,Lt.oper),('-',Lt.word,Lt.oper),('<',Lt.num,Lt.oper),('>',Lt.oper,Lt.oper),('/',Lt.text,Lt.text),('?',Lt.space,Lt.oper),
                 ('0',0,Lt.num),('1',Lt.word,Lt.word),('2',Lt.num,Lt.num),('3',Lt.oper,Lt.num),('4',Lt.text,Lt.text),('5',Lt.space,Lt.num),
@@ -953,11 +985,11 @@ class TestLang(TestCase):
                 ('/',Lt.esc,Lt.text),('`',Lt.esc,Lt.text),
                 # ('',Lt),('',Lt),('',Lt),('',Lt),('',Lt),('',Lt),('',Lt),
                 ]
-        print('space %d, word %d, num %d, oper %d, text %d, quot %d, esc %d' % (Lt.space, Lt.word, Lt.num, Lt.oper, Lt.text, Lt.quot, Lt.esc))
+        # print('space %d, word %d, num %d, oper %d, text %d, quot %d, esc %d' % (Lt.space, Lt.word, Lt.num, Lt.oper, Lt.text, Lt.quot, Lt.esc))
         for tt in args:
             rt = charType(tt[1], tt[0])
-            print(tt, rt)
-            errmsg = "Args: '%s' %d %d" % (tt[0],tt[1], tt[2])
+            print("Args: '%s', %s; exp: %s ? %s" % (tt[0], Lt.name(tt[1]), Lt.name(tt[2]), Lt.name(rt)))
+            errmsg = "Args: '%s', %s, %s res = %s" % (tt[0], Lt.name(tt[1]), Lt.name(tt[2]), Lt.name(rt))
             self.assertEqual(rt, tt[2], errmsg)
             
 

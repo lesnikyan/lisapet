@@ -81,8 +81,9 @@ class FuncCallExpr(Expression):
         self.func = ctx.get(self.name)
         print('#1# func-call do: ', self.name, self.func, 'line:', self.src)
         for exp in self.argExpr:
+            # print('#1# func-call do2 exp=: ', exp)
             exp.do(ctx)
-            print('FCdo:', exp, exp.get())
+            # print('FCdo:', exp, exp.get())
             args.append(exp.get())
         self.func.setArgVals(args)
         # TODO: add usage of Definishion Context instead of None
@@ -132,7 +133,7 @@ class FuncDefExpr(DefinitionExpr, Block):
         for exp in self.blockLines:
             func.block.add(exp)
         self.res = func
-        print('FuncDefExpr.do 2:', func.name)
+        # print('FuncDefExpr.do 2:', func.name)
         
         ctx.addFunc(func)
     
@@ -178,7 +179,10 @@ class NFunc(Function):
         args = []
         for arg in self.argVars:
             # print('#T arg = ', arg)
-            args.append(arg)
+            a = arg
+            if isinstance(arg, Var):
+                a = arg.get()
+            args.append(a)
         res = self.callFunc(*args)
         self.res = value(res, self.resType)
 

@@ -10,6 +10,7 @@ from vars import *
 from nodes.expression import *
 from nodes.structs import StructInstance
 
+
 class OperCommand(Expression):
     
     def __init__(self, oper):
@@ -54,7 +55,7 @@ class OpAssign(OperCommand):
         '''
         print('OpAssign__setArgs1', left, right)
         self.left = left
-        print('isinstance(right, MultilineVal) = ', isinstance(right, MultilineVal))
+        # print('isinstance(right, MultilineVal) = ', isinstance(right, MultilineVal))
         # print('isinstance(right, ) = ', right))
         r0 = None
         if isinstance(right, list):
@@ -62,7 +63,7 @@ class OpAssign(OperCommand):
         else:
             r0 = right
         if isinstance(r0, MultilineVal):
-            print('-- dict here')
+            # print('-- MultilineVal here')
             self._block = True
             right = r0
         self.right = right
@@ -80,7 +81,8 @@ class OpAssign(OperCommand):
         if not isinstance(self.left, list):
             self.left = [self.left]
         if len(self.left) != size:
-            raise InerpretErr('Count of left and right parts of assignment are different')
+            raise InterpretErr('Count of left and right parts of assignment are different '
+                               'left = %d, right = %d' % (len(self.left), len(self.right)))
 
         # 1 or more asignments: a, b, c = 1, 2, 3
         ctx.print()
@@ -99,8 +101,12 @@ class OpAssign(OperCommand):
             print(' (a = b) :1')
             # eval left expressopm
             self.left[i].do(ctx)
-            print(' (a = b) :2')
+            # print(' (a = b) :2')
             val = resSet[i]
+            # if isinstance(val, ObjectMember):
+            #     print('# struct field as right operand')
+            #     val = val.get()
+            
             if isinstance(self.left[i], CollectElemExpr):
                 ''' '''
                 val.name = None
@@ -109,14 +115,30 @@ class OpAssign(OperCommand):
             
             #get destination var
             dest = self.left[i].get()
-            print('# op-assign set1, varX, valX:', self.left[i], src[i])
-            print('# op-assign set2, var-type:', dest.getType().__class__)
+            isNew = False
+            
+            if isinstance(dest, VarUndefined):
+                # new var for assignment
+                isNew = True
+                newVar = Var(None, dest.name)
+                # print('Assign new var', newVar)
+                ctx.addVar(newVar)
+                dest = newVar
+                
+            # print('# op-assign set1, varX, valX:', self.left[i], src[i])
+            # print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
             # print('# op-assign set,',' val = ', type(resSet[i]))
-            print(' (a = b) dest =', dest, ' val = ', val)
-            if isinstance(dest.getType(), TypeStruct):
+            print(' (a = b) dest =', dest, ' val = ', val, 'isNew:', isNew)
+                
+            if isinstance(dest, ObjectMember):
+                # struct field as left operand
                 dest.set(val)
-                print('!!!!!! struct', dest)
+                # print('!!!!!! struct.2', dest)
                 return
+                
+            # if isinstance(dest.getType(), TypeStruct):
+            #     dest.set(val)
+            #     return
                 
                 # dest.set()
             # single var
@@ -125,7 +147,7 @@ class OpAssign(OperCommand):
             dest.name = name
             ctx.update(dest.name, val)
             ctx.update(dest.name, resSet[i])
-            saved = ctx.get('n')
+            saved = ctx.get(name)
             print(' (a = b) saved ', saved)
 
 
@@ -154,10 +176,12 @@ class OpMath(BinOper):
         self.left.do(ctx)
         self.right.do(ctx)
         # get val objects from expressions
-        print('#bin-oper1:', self.left, self.right) # expressions
+        # print('#bin-oper1:', self.left, self.right) # expressions
         a, b = self.left.get(), self.right.get() # Var objects
         # print('#bin-oper2', a, b)
+        # print('#bin-oper3', a.get(), b.get())
         print(' ( %s )' % self.oper, a.get(), b.get())
+        # print(' (%s %s %s)' % (a.getType(), self.oper, b.getType()))
         type = a.getType()
         if type != b.getType():
             # TODO fix different types
@@ -314,28 +338,6 @@ class OpBitwise(BinOper):
         return a ^ b
 
 
-class OpDot(BinOper):
-    ''' inst.field
-        expr.expr.expr.expr
-        expr.method()
-        get member from object
-    '''
-
-    def __init__(self, left:Expression=None, right:Expression=None):
-        super().__init__('.', left, right)
-
-    def do(self, ctx:Context):
-        self.left.do(ctx) # find object (struct instance)
-        inst = self.left.get()
-        field = self.right.name
-        self.res = inst.get(field)
-        print('oper .... ', inst, field,' :: ', self.res)
-
-    # def get(self):
-    #     # print('# -> OperCommand.get() ', self.oper, self.res)
-    #     return self.res
-
-
 class UnarOper(OperCommand):
     def __init__(self, oper:str, inner:Expression=None):
         super().__init__(oper)
@@ -403,57 +405,105 @@ class MultiOper(OperCommand):
         return self.root.get()
 
 
-class ServPairExpr(BinOper):
-    ''' service expression, works accordingly to context:
-        - in dict 
-        {a : b} >> key(Var):value(Var)
-        - in var declaration:
-        var with type >> name : type
-        user: User; counter: int
-        - in func definition
-        func args and res type >> func-expr : type
-        func foo(a:int, b:list): int
-        - in field expression into struct type definition
-        struct User
-            name: string
-            age: int
-    '''
+class ObjectMember(Var):
+    ''' '''
+    def __init__(self, obj, member):
+        super().__init__(None, None, TypeAccess)
+        self.object:StructInstance = None
+        self.member:str = None
+        self.setArgs(obj, member)
 
-    def __init__(self):
-        super().__init__(':')
-        self.left:Expression = None # key|name|def
-        self.right:Expression = None # val|type
-
-    def do(self, ctx:Context):
-        self.left.do(ctx)
-        self.right.do(ctx)
+    def setArgs(self, obj, member):
+        # print('ObjectMember.setArgs (', obj, ' -> ', member, ')')
+        self.object = obj
+        self.member = member
 
     def get(self):
-        return self.left.get(), self.right.get()
+        ''' res = obj.member; foo(obj.member); obj.member() '''
+        val = self.object.get(self.member)
+        
+        # print('self.member, get :: ', self.member, val)
+        if isinstance(val, StructInstance):
+            # print('membrr get struct')
+            return val
+        return val.get()
+    
+    def getType(self):
+        val = self.object.get(self.member)
+        return val.getType()
+    
+    def set(self, val:Var):
+        ''' obj.member = expr; obj.member[key] = expr (looks like a.b[c] is an subcase of a.b) '''
+        # print('self.member, val :: ', self.member, val)
+        self.object.set(self.member, val)
+
+    def __str__(self):
+        return "node ObjectMember(inst=%s, name=%s)" % (self.object, self.member)
+
 
 # BinOper
-class OperDot(Expression):
+class OperDot(BinOper):
     ''' inst.field '''
 
     def __init__(self):
+        super().__init__('.')
+        # obj, foo(), arr[key], obj.sub 
         self.objExp:VarExpr = None
-        self.field:str = ''
-        self.val:Var = None
+        # obj.field, obj.meth(), obj.field[key]
+        self.membExpr:Expression = None
+        self.val:ObjectMember= None
 
-    def set(self, inst:VarExpr, field:VarExpr):
+    def setArgs(self, inst:VarExpr, member:VarExpr):
         self.objExp = inst
-        self.field = field.name
+        self.membExpr = member
+        # print('   >> OperDot.set', self.objExp, self.membExpr)
 
-    def do(self, ctx:Context):
-        # print('StructField.do1', self.objExp, self.field)
+    def do(self, ctx:NSContext):
+        # print('OperDot.do0', self.objExp, ' :: ', self.membExpr)
         self.objExp.do(ctx)
         inst:StructInstance = self.objExp.get()
-        self.val = inst.get(self.field)
-        # print('StructField.do2', inst, self.val)
+        # print('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
+        # self.membExpr.do(inst)
+        name = ''
+        if isinstance(self.membExpr, VarExpr):
+            name = self.membExpr.name # just name for struct, 
+        else:
+            # exp.get() - for array or dimanic field name obj.(fieldName(args))
+            self.membExpr.do(ctx)
+            sub = self.membExpr.get()
+            name = sub.get()
+        
+        if isinstance(inst, ObjectMember):
+            inst = inst.get()
+        # member = inst.find(self.membExpr.name)
+        # print('OperDot.do2 <inst =', inst, 'name=', name ,'>')
+        self.val = ObjectMember(inst, name)
+        # print('OperDot.do3 res=', self.val)
 
     def get(self):
         return self.val
 
+
+# class OpDot(BinOper):
+#     ''' inst.field
+#         expr.expr.expr.expr
+#         expr.method()
+#         get member from object
+#     '''
+
+#     def __init__(self, left:Expression=None, right:Expression=None):
+#         super().__init__('.', left, right)
+
+#     def do(self, ctx:Context):
+#         self.left.do(ctx) # find object (struct instance)
+#         inst = self.left.get()
+#         field = self.right.name
+#         self.res = inst.get(field)
+#         print('oper .... ', inst, field,' :: ', self.res)
+
+#     # def get(self):
+#     #     # print('# -> OperCommand.get() ', self.oper, self.res)
+#     #     return self.res
 
 
 # class OpColon(OperCommand):

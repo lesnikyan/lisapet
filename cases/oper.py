@@ -22,8 +22,6 @@ class CaseAssign(SubCase):
         var1 = foo(123, [1,2,3]), 
         arr[index] = 2
         a,b,c = 1, var1, foo(10, 20) '''
-        # print('#a5::', [n.text for n in elems])
-        # print('#a5::', [Lt.name(n.type) for n in elems])
         if elems[0].type != Lt.word:
             return False
         if len(elems) < 2:
@@ -34,7 +32,7 @@ class CaseAssign(SubCase):
             # left part
             if el.type == Lt.word:
                 continue
-            if el.type == Lt.oper and el.text in '[],.':
+            if el.type == Lt.oper and el.text in '[],.:':
                 continue
             # found operator
             if el.type == Lt.oper and el.text == '=':
@@ -48,46 +46,32 @@ class CaseAssign(SubCase):
         right:list[Elem] = [] # vars, vals, funcs, methods
         # slice
         prels('# OpAsgn split1: ', elems)
-        # for i, el in enumerate(elems):
-        #     if el.type != Lt.oper or el.type == Lt.space or el.text != '=':
-        #         # left.append(el)
-        #         continue
-        #     # = found
-        #     left = elems[0:i]
-        #     if len(elems) > i:
-        #         # `=` not last
-        #         right = elems[i+1:]
-        # left = [el for el in left if el.type != Lt.space]
         opInd = afterLeft(elems)
         print('Assign-split opInd:', opInd, elems[opInd].text)
         left = elems[:opInd]
         right = elems[opInd+1:]
         # TODO: Implement multi-assign case
         return OpAssign(), [left, right]
-        # if len(left) == 1:
-        #     dest = Var_()
-        #     if not CaseVar_().match(left):
-        #         dest = Var(None, left[0].text, Undefined)
-        #     expr = OpAssign(dest,None)
-        #     return expr, [right]
-        # # if collection[index]
-        # if isLex(left[1], Lt.oper, '['):
-        #     expr = OpAssign(None,None)
-        #     return expr,[left, right]
 
-        # # print('#a50:', [n.text for n in elems])
-        # return 2,[[]]
-        
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         # waiting: OpAssign, [right]
-        print('#b4',base,  subs)
+        print('CaseAssign setSub:',base,  subs)
         lsub = len(subs)
         if lsub % 2 > 0:
             # can be changed after tuple case implementation
-            raise InerpretErr('number of sub-expressions for assignment looks incorrect: %d ' % lsub)
+            raise InterpretErr('number of sub-expressions for assignment looks incorrect: %d ' % lsub)
         hsize = int (lsub  / 2) # half of size
         left = subs[:hsize]
         right = subs[hsize:]
+        print('CaseAssign sesubs L/R:', left, right)
+        tl = left
+        left = []
+        for tex in tl:
+            if isinstance(tex, ServPairExpr):
+                print('pair tex =  ', tex.left, tex.right)
+                left.append(tex.getTypedVar())
+            else:
+                left.append(tex)
         base.setArgs(left, right)
 
         return base
@@ -108,7 +92,7 @@ class CaseBinOper(SubCase):
     def __init__(self):
         priorGroups = operPrior.split(',')
         self.priorGroups = [[ n for n in g.split(' ') if n.strip()] for g in priorGroups]
-        self.opers = [oper for nn in self.priorGroups for oper in nn]
+        self.opers = [oper for nn in self.priorGroups[:-1] for oper in nn]
 
     def match(self, elems:list[Elem]) -> bool:
         elen = len(elems)
@@ -148,10 +132,10 @@ class CaseBinOper(SubCase):
         obr='([{'
         cbr = ')]}'
         inBrs = [] # brackets which was opened from behind
-        # prels('~~ CaseBinOper', elems)
+        prels('~~ CaseBinOper', elems)
         for prior in range(lowesPrior, -1, -1):
             skip = -1
-            # print('prior=', prior, self.priorGroups[prior] )
+            print('prior=', prior, self.priorGroups[prior] )
             for i in range(maxInd, -1, -1):
                 el = elems[i]
                 etx = el.text
@@ -182,19 +166,23 @@ class CaseBinOper(SubCase):
                     continue
                 if el.text in self.priorGroups[prior]:
                     # we found current split item
+                    print('oper-expr>', '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
+                    # assigMath = '+= -= *= /= %='
+                    # if el.text in assigMath:
+                    #     opcase = CaseBinAssign()
+                    #     return opcase.split(elems)
                     exp = makeOperExp(el)
                     exp.src = src
-                    # print('oper-expr>', '`%s`' % src, elemStr(elems[0:i]), '|=|', elemStr(elems[i+1:]))
                     return exp, [elems[0:i], elems[i+1:]]
         # print('#a52:', [n.text for n in elems])
         # return 1,[[]]
-        raise InerpretErr('Matched case didnt find key Item in [%s]' % ','.join([n.text for n in elems]))
+        raise InterpretErr('Matched case didnt find key Item in [%s]' % ','.join([n.text for n in elems]))
 
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         ''' base - top-level (very right oper with very small priority) 
             subs - left and right parts
         '''
-        # print('oper-bin seSub', base, subs)
+        print('oper-bin seSub', base, subs)
         base.setArgs(subs[0], subs[1])
 
 
@@ -216,8 +204,9 @@ def makeOperExp(elem:Elem)->OperCommand:
     if oper == ':':
         return ServPairExpr()
     if oper == '.':
-        return OpDot()
+        return OperDot()
     # undefined case:
+    raise InterpretErr('!!>>> appropriate case didnt found for oper `%s`' % oper)
     return OperCommand(elem.text)
 
 
@@ -228,10 +217,7 @@ unaryOpers = '- ! ~'.split(' ')
 class CaseUnar(SubCase):
     def match(self, elems:list[Elem]) -> bool:
         ''' -123, -0xabc, ~num, -sum([1,2,3]), !valid, !foo(1,2,3) '''
-        # print('#unaryOpers ',unaryOpers)
-        # prels('#unary-match1: ', elems)
         if elems[0].type != Lt.oper or elems[0].text not in unaryOpers:
-            # print('# -- not in unaryOpers', elems[0].text)
             return False
         if len(elems) == 2 and elems[1].type in [Lt.num, Lt.word]:
             # fast check for trivial cases: -1, !true, ~num, ~ 0xabc
@@ -329,19 +315,20 @@ class CaseBinAssign(CaseAssign):
         '''  '''
         if elems[0].type != Lt.word or elems[0].text in SPEC_WORDS:
             return False
-        afterInd = afterNameBr(elems)
-        # prels('>>>', elems)
-        # print('=== afterInd:', afterInd)# , elems[afterInd].text)
+        afterInd = afterLeft(elems)
         if afterInd == -1:
             return False
+        if afterInd > len(elems):
+            return False
         elem = elems[afterInd]
+        print('CaseBinAssign,split', afterInd, elem.text)
         if elem.type != Lt.oper or elem.text not in EXT_ASSIGN_OPERS:
             return False
         return True
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' Reusing OpAssign expression object'''
-        opIndex = afterNameBr(elems)
+        opIndex = afterLeft(elems)
         biOper = elems[opIndex]
         prels('CaseBinAssign.split1', elems)
         print('biOper:', biOper.text)
@@ -367,7 +354,8 @@ def checkTypes(elems:list[Elem], exp:list[int]):
     return True
 
 
-class CaseDotOper(BinOper):
+class _CaseDotOper(SubCase):
+    
     def match(self, elems:list[Elem]) -> bool:
         '''
         obj.member
@@ -392,7 +380,7 @@ class CaseDotOper(BinOper):
         return OperDot(), [[elems[0]],[elems[2]]]
 
     def setSub(self, base:OperDot, subs:Expression|list[Expression])->Expression:
-        print('CaseStructField:', base, subs)
+        print('CaseDotOper:', base, subs)
         # raise EvalErr('')
         base.set(subs[0], subs[1])
         return base

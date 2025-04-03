@@ -13,7 +13,8 @@ from parser import splitLexems, elemStream
 from vars import *
 from context import Context
 from tree import *
-from nodes.func_expr import setNativeFunc
+# from nodes.func_expr import setNativeFunc
+from eval import rootContext
 
 
 def filepath(fname):
@@ -31,9 +32,9 @@ class TestEvalFile(TestCase):
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             exp = lex2tree(clines)
-            ctx = Context(None)
-            setNativeFunc(ctx, 'print', print, TypeNull)
-            setNativeFunc(ctx, 'len', len, TypeInt)
+            ctx = rootContext()
+            # setNativeFunc(ctx, 'print', print, TypeNull)
+            # setNativeFunc(ctx, 'len', len, TypeInt)
             ctx.get('len')
             # return
             print('$$ run test ------------------')

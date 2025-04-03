@@ -25,7 +25,7 @@ class FuncInst(Var):
         pass
 
 
-class Context:
+class Context(NSContext):
     _defaultContextVals = {
         'true': Var(True, 'true', TypeBool),
         'false': Var(False, 'false', TypeBool),
@@ -128,6 +128,9 @@ class Context:
             src = src.upper
 
     def get(self, name)->Base:
+        return self.find(name)
+
+    def find(self, name):
         if name in Context._defaultContextVals:
             return Context._defaultContextVals[name]
         src = self
@@ -146,7 +149,7 @@ class Context:
             if src.upper is None:
                 # raise EvalErr('Can`t find var|type name `%s` in current context' % name)
                 var = VarUndefined(name)
-                self.addVar(var)
+                # self.addVar(var)
                 return var
             src = src.upper
 

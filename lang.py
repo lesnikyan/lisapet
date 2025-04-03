@@ -8,7 +8,7 @@ class ParseErr(ValueError):
         super().__init__(*args)
 
 
-class InerpretErr(ValueError):
+class InterpretErr(ValueError):
     def __init__(self, *args):
         super().__init__(*args)
 

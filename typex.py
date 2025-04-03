@@ -67,10 +67,22 @@ class TypeFunc(VType):
     name = 'function'
 
 
+class TypeAccess(VType):
+    '''  '''
+    name = 'handler'
+
+
 class ComparT:
     ''' Comparable type'''
     def compare(self, other:'ComparT'):
         pass
+
+
+class NSContext:
+    ''' namespeca contxt '''
+
+def find(self, name)->Base:
+    pass
 
 
 def builtinTypes()->list[VType]:

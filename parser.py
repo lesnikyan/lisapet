@@ -61,6 +61,7 @@ def charType(prev:int, s:str) -> int:
         if base == Lt.esc:
             return Lt.esc
         return Lt.text # TODO: add check for types of strig opener ' , "
+    # print(' >> ', Lt.name(prev), Lt.name(base))
     if prev == Lt.num and s in ext_in[Lt.num]:
         return prev
     if prev == Lt.word and base == Lt.num:
@@ -303,6 +304,7 @@ def elemLine(src:TLine)->CLine:
 def elemStream(lines:list[TLine])->list[CLine]:
     ''' '''
     res:list[CLine] = []
+    CLine.BaseIndent = 0
     for tl in lines:
         cl = elemLine(tl)
         res.append(cl)

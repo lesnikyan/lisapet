@@ -22,7 +22,7 @@ from nodes.iternodes import *
 class ElseExpr(Block):
     ''' '''
 
-class IfExpr(Block):
+class IfExpr(ControlBlock):
     
     def __init__(self, cond:Expression=None):
         # super().__init__()
@@ -69,7 +69,7 @@ class IfExpr(Block):
 
 # MATCH-CASE
 
-class CaseExpr(Block):
+class CaseExpr(ControlBlock):
     ''' case in `match` block
     '''
     
@@ -114,9 +114,10 @@ class CaseExpr(Block):
     
     def do(self, ctx:Context):
         self.block.do(ctx)
+        self.lastVal = self.block.get()
 
 
-class MatchExpr(Block):
+class MatchExpr(ControlBlock):
     ''' 
     1. for unpack multiresults.
     2. for pattern matching like switch/case 
@@ -136,13 +137,14 @@ class MatchExpr(Block):
     '''
 
     def __init__(self):
+        super().__init__()
         self.match:Expression = None
         self.cases:list[CaseExpr] = []
         self.defaultCase:CaseExpr = None
 
     def add(self, xcase:CaseExpr):
         if not isinstance(xcase, CaseExpr):
-            raise InerpretErr('Trying add not-case sub-expression (%s) to `match` block' % xcase.__class__.__name__)
+            raise InterpretErr('Trying add not-case sub-expression (%s) to `match` block' % xcase.__class__.__name__)
         if isinstance(xcase.expect, VarExpr_):
             self.defaultCase = xcase
             return
@@ -164,6 +166,7 @@ class MatchExpr(Block):
             mval = self.match.get()
             if cs.matches(mval):
                 cs.do(mctx)
+                self.lastVal = cs.get()
                 return True
         return False
 
@@ -195,6 +198,11 @@ class LoopIterExpr(LoopBlock):
             print('# loop iter ----------------------------------')
             self.iter.do(ctx)
             self.block.do(ctx)
+            blockRes = self.block.get()
+            if isinstance(blockRes, FuncRes):
+                # return expr
+                self.lastVal = blockRes
+                return
             self.iter.step()
 
 
@@ -223,7 +231,7 @@ class LoopExpr(LoopBlock):
                 case 'cond': self.cond = exp
                 case 'pre': self.preIter = exp
                 case 'post': self.postIter = exp
-                case _: raise InerpretErr('LoopExpr doesn`t have expression `%s` ' % name)
+                case _: raise InterpretErr('LoopExpr doesn`t have expression `%s` ' % name)
 
 
     def add(self, exp:Expression):
@@ -242,6 +250,11 @@ class LoopExpr(LoopBlock):
             if self.preIter:
                 self.preIter.do(ctx)
             self.block.do(ctx)
+            blockRes = self.block.get()
+            if isinstance(blockRes, FuncRes):
+                # return expr
+                self.lastVal = blockRes
+                return
             if self.postIter:
                 self.postIter.do(ctx)
 
@@ -279,5 +292,10 @@ class WhileExpr(LoopBlock):
                 break
             print('# while iter ----------------------------------')
             self.block.do(ctx)
+            blockRes = self.block.get()
+            if isinstance(blockRes, FuncRes):
+                # return expr
+                self.lastVal = blockRes
+                return
             self.cond.do(ctx)
 

@@ -54,6 +54,7 @@ class VarExpr(Expression):
         self.name = var.name
     
     def do(self, ctx:Context):
+        print('VarExpr.do ctx:', ctx, 'name=', self.name)
         newVal = ctx.get(self.name)
         print('VarExpr.do:', newVal)
         self.val = newVal
@@ -101,6 +102,10 @@ class DebugExpr(Expression):
 #         return self.val
 
 
+class ControlExpr(Expression):
+    ''' for, if, match '''
+
+
 class Block(Expression):
     def __init__(self):
         # self.ctx = Context()
@@ -128,17 +133,20 @@ class Block(Expression):
         ctx.print()
         self.lastVal = None
         for i in range(elen):
-            # print('!! Block.iter ', i, self.subs[i])
+            print('!! Block.iter ', i, self.subs[i])
             expr = self.subs[i]
             expr.do(ctx)
-            if isinstance(expr, DefinitionExpr):
+            if isinstance(expr, (DefinitionExpr)):
                 # Skip actions with result
                 continue
             lastInd = i
             lineRes = None
             lineRes = expr.get()
+            if isinstance(lineRes, FuncRes):
+                print(' - return::', lineRes)
             # if not isinstance(expr, Block) or expr.storeRes:
             #     lineRes = expr.get()
+            # print(' - - Block.iter lineRes', lineRes)
             if isinstance(lineRes, FuncRes):
                 # return expr
                 self.lastVal = lineRes
@@ -154,7 +162,10 @@ class Block(Expression):
         return True
 
 
-class LoopBlock(Block):
+class ControlBlock(Block, ControlExpr):
+    ''''''
+
+class LoopBlock(ControlBlock):
     ''' '''
     
     def __init__(self):
@@ -251,4 +262,67 @@ class DefinitionExpr(Expression):
             address: Address
     '''
 
+
+class ServPairExpr(Expression):
+    ''' service expression, works accordingly to context:
+        - in dict 
+        {a : b} >> key(Var):value(Var)
+        - in var declaration:
+        var with type >> name : type
+        user: User; counter: int
+        - in func definition
+        func args and res type >> func-expr : type
+        func foo(a:int, b:list): int
+        - in field expression into struct type definition
+        struct User
+            name: string
+            age: int
+    '''
+
+    def __init__(self):
+        # super().__init__(':')
+        self.left:Expression = None # key|name|def
+        self.right:Expression = None # val|type
+
+    def do(self, ctx:Context):
+        self.left.do(ctx)
+        self.right.do(ctx)
+
+    def get(self):
+        return self.left.get(), self.right.get()
+    
+    def getTypedVar(self):
+        return TypedVarExpr(self.left, self.right)
+
+    def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
+        # print('BinOper.setArgs', left, right)
+        self.left = left
+        self.right = right
+
+
+class VarStrict(Var):
+    ''' strict typed var '''
+    def __init__(self, val, name, vtype):
+        super().__init__(val, name, None)
+        self.__type = vtype
+    
+    def getType(self):
+        return self.__type
+
+
+class TypedVarExpr(VarExpr):
+    ''' name: type '''
+    def __init__(self, left, right):
+        var = Var(None)
+        super().__init__(var)
+        self.left = left
+        self.right = right
+
+    def do(self, ctx):
+        self.right.do(ctx)
+        tp = self.right.get()
+        name = self.left.get().name
+        # print('TypedVarExpr.do1 ', name, tp.get())
+        self.val = VarStrict(None, name, tp.get())
+        ctx.addVar(self.val)
 

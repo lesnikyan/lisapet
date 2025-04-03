@@ -146,20 +146,23 @@ printVal(lorem, 0)
 printVal(colors, 'green')
 printVal(weekDays, 2)
 
-struct Book title, author, pages
+struct Product price:float, amount:int
+struct Book title:string, author:string, pages:int, prod:Product
 books = list
-    Book{title:'Green  gardens', author:'Bob Stinger', pages:100}
-    Book{title:'Blue, blue sky', author:'Ani Arabesquin', pages:200}
-    Book{title:'Silver sword of small town', author:'Arnold Whiteshvartz', pages:300}
+    Book{title:'Green  gardens', author:'Bob Stinger', pages:100, prod: Product{price:10., amount:1111}}
+    Book{title:'Blue, blue sky', author:'Ani Arabesquin', pages:200, prod: Product{price:20., amount:2222}}
+    Book{title:'Silver sword of small town', author:'Arnold Whiteshvartz', pages:300, prod: Product{price:20., amount:3333}}
+
+
+books[2].prod.price *= 1.1
 
 func printBook(book)
-    print(book.title, book.author, book.pages)
+    print(book.title, book.author, book.pages, book.prod.price)
 
 func testBooks()
     for bb <-books
         printBook(bb)
 
 testBooks()
-
 #@
 @#

@@ -141,7 +141,7 @@ class ListVar(Collection):
         i = key
         if isinstance(key, Var):
             i = key.get()
-        print('@ i=', i)
+        # print('@ i=', i)
         if i < len(self.elems):
             return self.elems[i]
         raise EvalErr('List out of range by index %d ' % i)
@@ -158,7 +158,7 @@ class ListVar(Collection):
         if not nm:
             nm = '#list-noname'
         def strv(var):
-            print('@>>', var, var.getType())
+            # print('@>>', var, var.getType())
             if isinstance(var.getType(), TypeContainer):
                 return str(var)
             return str(var.get())

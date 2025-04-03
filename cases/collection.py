@@ -44,7 +44,6 @@ class CaseListBlock(SubCase):
         list
         varName = list
         '''
-        # print('CaseListBlock.match')
         if len(elems) != 1:
             return False
         return isLex(elems[0], Lt.word, 'list')
@@ -73,10 +72,8 @@ class CaseCollectElem(SubCase):
         elems[0]: varName, funcName + (expr), 
         more complex: obj.field, obj.method(expr)
         '''
-        prels('CaseCollectElem.match1', elems)
         opIndex = afterNameBr(elems)
         oper = elems[opIndex]
-        print('CaseCollectElem, oper =', oper.text, 'index=', opIndex)
         if opIndex == -1 and isLex(elems[-1], Lt.oper, ']'):
             # case: var[key]
             return True
@@ -123,7 +120,6 @@ class CaseDictLine(SubCase):
     '''
 
     def match(self, elems:list[Elem]) -> bool:
-        print('CaseDictLine.match')
         if not isBrPair(elems, '{','}'):
             return False
         
@@ -142,14 +138,10 @@ class CaseDictLine(SubCase):
         cc = CaseColon()
         if not cs.match(subel):
             # guess 1 item, check colon-separeted seq
-            print('CaseDictLine.match2')
             return self.checkValidSub(subel, cc)
-        print('CaseDictLine.match3')
         _, parts = cs.split(subel)
         for pp in parts:
-            print('CaseDictLine.match4:', elemStr(pp))
             if not self.checkValidSub(pp, cc):
-                print('CaseDictLine.match5 not valid')
                 return False
         return True
         # return False
@@ -158,7 +150,6 @@ class CaseDictLine(SubCase):
         if not cc.match(elems):
             return False
         _, pair = cc.split(elems)
-        print('CD.checkValidSub', len(pair), [elemStr(n) for n in pair])
         return len(pair) ==2
             # # something like {a:b:c}
             # return False

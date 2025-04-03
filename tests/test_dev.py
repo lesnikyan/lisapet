@@ -80,39 +80,11 @@ class TestDev(TestCase):
         ctx = rootContext()
         ex.do(ctx)
 
-    def _test_deep_nesting_struct(self):
-        ''' fix dot-operator for flexible access to submembers of struct inner fields.
-        implement operator `.` instead of magic `name.name` tepmlate '''
-        code='''
-        struct A nname:string
-        a = A {nname:'AAAAA'}
-        @debug field assign
-        # a.nname = 'AA2222'
-        print(a.nname)
-        '''
-        tt = '''
-        struct B aa:A
-        struct C bb:B, cbb:string
-        struct D cc:C
-        b = B{aa:a}
-        c = C{bb:b, cbb:'c-val'}
-        d = D{cc:c}
-        # d.cc.cbb = 'c-val2'
-        print(d.cc.bb.aa.name1, d.cc.cbb)
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-
-    def test_dot_oper(self):
+    def _test_struct_field_full(self):
+        ''' full test of obj.member cases '''
         code='''
         obj.member
         obj.member.member.member
-        '''
-        tt = '''
         array[expr].member
         array[expr].member[key].member
         array[expr.member].member
@@ -126,26 +98,26 @@ class TestDev(TestCase):
         array[foo()].member[key].method()
         '''
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        
+    
+    '''
+    TODO:
+    test assignment and read 
+    global var and local block
+    local var and function-block
+    var <- val
+    var <- var
+    var <- array
+    array <- var
+    dict of items str : array
+    array of dicts
+    
+    '''
 
-    def _test_struct_inline_types(self):
-        code='''
-        struct Sex id:int
-        @debug =1
-        male = Sex{id:1}
-        female= Sex{id:1}
-        print(male)
-        struct User name:string, age:int, sex:Sex, phone:string
-        user = User{name:'Catod', age:25, sex:male, phone:'123-45-67'}
-        print('user data:', user.name, user.phone, user.sex)
-        '''
-        tt = '''
-        # print('phone:', user.phone)
-        user = User{name:'Catod', sex:male}
-        user = User{'Catod', 25, male, '123-45-67'}
+    def _test_struct_anon(self):
+        code = '''
+        user = struct {name:'Anod', age:25, sex:male, phone:'123-45-67'}
+        # uf = user.fields()
+        print(user.name)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -153,18 +125,23 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        # rtype = ctx.getType('User')
-        # print('# TT >>>', rtype)
 
-    def _test_struct_inline(self):
+    def _test_struct_block(self):
         code='''
-        struct User name, age, sex, phone
+        struct User
+            name
+            age
+            sex
+            phone
         user = User{name:'Catod', age:25, sex:male, phone:'123-45-67'}
         print('phone:', user.phone)
         '''
         tt = '''
-        user = User{name:'Catod', sex:male}
-        user = User{'Catod', 25, male, '123-45-67'}
+        user = User
+            name:'Catod'
+            age:25
+            sex:male
+            phone:'123-45-67'
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -172,40 +149,6 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        rtype = ctx.getType('User')
-        print('# TT >>>', rtype)
-
-    def _test_struct_field_type(self):
-        type1 = StructDef('Test1')
-        fields = [
-            Var(None, 'amount', TypeInt),
-            Var(None, 'weight', TypeFloat),
-            Var(None, 'title', TypeString)
-        ]
-        for ff in fields:
-            type1.add(ff)
-        inst = StructInstance('varName', type1)
-        inst.set('amount', value(12, TypeInt))
-        print('## T >>> ', inst.get('amount'))
-        # inst.set('amount', value('12', TypeString))
-        # print('## T >>> ', inst.get('amount'))
-
-    def _test_type_nums(self):
-        code = '''
-        a: int = 5
-        b: float = 10
-        c = b / a
-        print(c, type(c))
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        res = ctx.get('res').get()
-        print('##################t-IF1:', )
-        self.assertEqual(res, 45)
 
 if __name__ == '__main__':
     main()

@@ -12,7 +12,7 @@ AnonStructConstr *? : create instance of anonymous struct (json-like object)
 
 from nodes.expression import *
 from context import *
-from nodes.oper_nodes import ServPairExpr
+from nodes.expression import ServPairExpr
 
 
 
@@ -25,17 +25,23 @@ class StructDef(TypeStruct):
     def __init__(self, name, fields:list[Var]=[]):
         self.name=name
         self.fields = []
+        self.methods:dict[str,FuncInst] = []
         self.types:dict[str, VType] = {}
         if fields:
             self.__fillData(fields)
+
+    def find(self, name):
+        if name in self.methods:
+            return self.methods[name]
+        raise EvalErr('Struct Type `self.name` doesn`t contain member `{name}`')
 
     def __fillData(self, fields):
         for f in fields:
             self.add(f)
 
     def add(self, f:Var):
-        print('StructDef.add ## ', f)
         tp:VType = f.getType()
+        print('StructDef.add ## ', f, tp)
         self.fields.append(f.name)
         self.types[f.name] = tp
 
@@ -54,7 +60,7 @@ class DefaultStruct(StructDef):
         super().__init__('anonimous', fields)
 
 
-class StructInstance(Var):
+class StructInstance(Var, NSContext):
     ''' data of struct '''
 
     def __init__(self, name, stype:StructDef):
@@ -65,7 +71,13 @@ class StructInstance(Var):
 
     def get(self, fname=None):
         if fname is None:
-            return str(self) # debug 
+            # print('StructInstance.DEBUG::: getting enmpty fieldname')
+            return '@struct debug / ' + str(self) # debug 
+        return self.data[fname]
+    
+    def find(self, fname):
+        ''' find sub-field by name'''
+        print('st.find', fname, ':', self.vtype.fields)
         return self.data[fname]
 
     def setVals(self, vals:list[Var]):
@@ -90,6 +102,7 @@ class StructInstance(Var):
         valType = val.getType()
         ftype = self.vtype.types[fname] # class inherited of VType or inst of StructInstance
         fclass = ftype.__class__
+        print('Type: name / members', self.vtype.name, self.vtype.types)
         print('Type Check ???1:', valType, '<?>', ftype)
         print('Type Check ???2:', valType.__class__, '<?>', fclass,' if:', isinstance(valType, fclass))
         print('Type struct???3:', isinstance(valType, StructInstance))
@@ -198,7 +211,7 @@ class StructConstr(Expression):
             # if val only
             # if pair name:val
             expRes = fexp.get()
-            # print('StructConstr.do res:', expRes[0], expRes[1])
+            print('StructConstr.do res:', expRes[0], expRes[1])
             # fname, val = '', None
             if isinstance(expRes, Var):
                 val = expRes

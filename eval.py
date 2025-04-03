@@ -16,6 +16,7 @@ def rootContext():
     setNativeFunc(ctx, 'print', print, TypeNull)
     setNativeFunc(ctx, 'len', len, TypeInt)
     setNativeFunc(ctx, 'iter', loop_iter, TypeInt)
+    setNativeFunc(ctx, 'type', type, TypeInt)
 
     return ctx
 

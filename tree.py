@@ -134,10 +134,11 @@ expCaseList = [ CaseComment(), CaseDebug(),
     CaseFuncDef(), CaseReturn(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseArrowR(),
     CaseStructDef(),
-    CaseSemic(), CaseAssign(), CaseBinAssign(),
+    CaseSemic(), CaseAssign(), 
+    CaseBinAssign(),
     CaseDictBlock(), CaseListBlock(),
     CaseDictLine(), CaseArray(), CaseCollectElem(), CaseFunCall(), CaseStructConstr(),
-    OperDot(),
+    # CaseDotOper(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:
@@ -150,17 +151,17 @@ def simpleExpr(expCase:ExpCase, elems)->Expression:
 def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     base, subs = expCase.split(elems)
     # print('#complex-case:', expCase)
-    print('#complexExpr', base, subs)
-    if isinstance(subs, list):
-        for ee in subs:
-            prels('#cml-exp1:', ee)
+    print('#complexExpr', base, [elemStr(s) for s in subs])
+    # if isinstance(subs, list):
+    #     for ee in subs:
+            # prels('#cml-exp1:', ee)
     if not expCase.sub():
         return base
     if not subs or not subs[0]:
         return base
     subExp:list[Expression] = []
     for sub in subs:
-        prels('#complexExpr1:', sub)
+        # prels('#complexExpr1:', sub)
         texpr = elems2expr(sub)
         subExp.append(texpr)
     expCase.setSub(base, subExp)
@@ -173,16 +174,16 @@ def makeExpr(expCase:ExpCase, elems:list[Elem])->Expression:
     return simpleExpr(expCase, elems)
 
 def elems2expr(elems:list[Elem])->Expression:
-    print('#elems2expr #b1', [(n.text, Lt.name(n.type)) for n in elems])
+    print('#elems2expr:', [(n.text, Lt.name(n.type)) for n in elems])
     for expCase in getCases():
         if expCase.match(elems):
             # if expCase.sub():
             #     return complexExpr(expCase, elems)
-            # print('#c foundCase:', expCase.__class__.__name__)
+            print('Case found::', expCase.__class__.__name__, '', elemStr(elems))
             expr = makeExpr(expCase, elems)
             # print('#b5', expr)
             return expr
-    raise InerpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
+    raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
 
 
 def line2expr(cline:CLine)-> Expression:
