@@ -79,11 +79,11 @@ class FuncCallExpr(Expression):
         # inne rcontext
         args:list[Var] = []
         self.func = ctx.get(self.name)
-        print('#1# func-call do: ', self.name, self.func, 'line:', self.src)
+        print('#1# func-call do1: ', self.name, self.func, 'line:', self.src)
         for exp in self.argExpr:
             # print('#1# func-call do2 exp=: ', exp)
             exp.do(ctx)
-            # print('FCdo:', exp, exp.get())
+            print('func-call do2:', exp, exp.get())
             args.append(exp.get())
         self.func.setArgVals(args)
         # TODO: add usage of Definishion Context instead of None

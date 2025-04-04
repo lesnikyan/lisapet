@@ -344,3 +344,28 @@ class TypedVarExpr(VarExpr):
         self.val = VarStrict(None, name, tp.get())
         ctx.addVar(self.val)
 
+
+class InterpretContext:
+    ''' store for specific details of interpretation process
+        1. list of user-defined structs
+        2. ?? functions
+    '''
+    
+    __inst = None
+    
+    def __init__(self):
+        self._structs = {}
+    
+    def addStruct(self, name):
+        self._structs[name] = len(self._structs)
+        
+    def hasStruct(self, name):
+        return name in self._structs
+
+    @classmethod
+    def get(cc):
+        if cc.__inst is None:
+            cc.__inst = InterpretContext()
+        return cc.__inst
+
+

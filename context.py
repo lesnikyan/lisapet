@@ -48,10 +48,16 @@ class Context(NSContext):
 
 
     def addType(self, tp:VType):
+        print('ctx.addType: ', tp)
         if tp.name in self.types:
             raise EvalErr(f'Type {tp.name} already defined.')
+        if not isinstance(tp, (VType, VarType)):
+            raise EvalErr(f'Trying to put non-type {tp.name} to ctx.types.')
         # if tp.name not in self.types:
-        self.types[tp.name] = VarType(tp)
+        name = tp.name if isinstance(tp, VType) else tp.get().name
+        if not isinstance(tp, VarType):
+            tp = VarType(tp)
+        self.types[name] = tp
 
     def getType(self, name)->VType:
         if name in Context._defaultContextVals:
@@ -156,11 +162,12 @@ class Context(NSContext):
     def print(self, ind=0):
         c:Context = self
         while c:
-            for k, v in c.vars.items():
-                vstr = v.get()
-                if isinstance(v, Collection):
-                    vstr = v.vals()
-                print('x>', ' ' * ind, k, ':', vstr)
+            for data in [c.vars, c.types]:
+                for k, v in data.items():
+                    vstr = v.get()
+                    if isinstance(v, Collection):
+                        vstr = v.vals()
+                    print('x>', ' ' * ind, k, ':', vstr)
             c = c.upper
             ind += 1
             

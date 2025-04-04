@@ -14,18 +14,19 @@ from nodes.structs import StructInstance
 class OperCommand(Expression):
     
     def __init__(self, oper):
+        super().__init__(oper)
         self.src = ''
         self.oper:str = oper
         self.res = None
-        self._block = False
+        # self._block = False
 
     def get(self):
         # print('# -> OperCommand.get() ', self.oper, self.res)
         return self.res
 
-    def isBlock(self)->bool:
-        ''' can be changed for multi-line assignment expressions '''
-        return self._block
+    # def isBlock(self)->bool:
+    #     ''' can be changed for multi-line assignment expressions '''
+    #     return self._block
 
 class BinOper(OperCommand):
 
@@ -40,6 +41,7 @@ class BinOper(OperCommand):
         self.left = left
         self.right = right
 
+from nodes.structs import StructConstrBegin
 
 class OpAssign(OperCommand):
     ''' Set value `=` '''
@@ -62,9 +64,18 @@ class OpAssign(OperCommand):
             r0 = right[0]
         else:
             r0 = right
+        
+        if isinstance(r0, VarExpr):
+            exvar = r0.get()
+            name = exvar.name
+            print('@@ exvar', name)
+            if InterpretContext.get().hasStruct(name):
+                print('@@ struct Type here ')
+                r0 = StructConstrBegin(name)
+        
         if isinstance(r0, MultilineVal):
-            # print('-- MultilineVal here')
-            self._block = True
+            print('-- MultilineVal or Struct here')
+            self.toBlock()
             right = r0
         self.right = right
 
@@ -136,6 +147,10 @@ class OpAssign(OperCommand):
                 # print('!!!!!! struct.2', dest)
                 return
                 
+            # if isinstance(val, VarType):
+            #     vtype = val.get()
+            #     if 
+            
             # if isinstance(dest.getType(), TypeStruct):
             #     dest.set(val)
             #     return
@@ -414,7 +429,7 @@ class ObjectMember(Var):
         self.setArgs(obj, member)
 
     def setArgs(self, obj, member):
-        # print('ObjectMember.setArgs (', obj, ' -> ', member, ')')
+        print('ObjectMember.setArgs (', obj, ' -> ', member, ')')
         self.object = obj
         self.member = member
 
@@ -462,7 +477,7 @@ class OperDot(BinOper):
         # print('OperDot.do0', self.objExp, ' :: ', self.membExpr)
         self.objExp.do(ctx)
         inst:StructInstance = self.objExp.get()
-        # print('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
+        print('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
         # self.membExpr.do(inst)
         name = ''
         if isinstance(self.membExpr, VarExpr):

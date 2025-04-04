@@ -13,6 +13,5 @@ def loop_iter(*args):
         case 1: over = args[0]
         case 2: beg, over = args
         case 3: beg, over, step = args
-    # it = IterGen(beg, over, step)
     it = IndexIterator(beg, over, step)
     return it

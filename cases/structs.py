@@ -50,6 +50,7 @@ class CaseStructDef(SubCase):
         cs = CaseCommas()
         if cs.match(sub):
             _, subs = cs.split(sub)
+        InterpretContext.get().addStruct(typeName)
         return exp, subs
 
     def setSub(self, base:StructDefExpr, subs:list[Expression])->Expression:
@@ -115,6 +116,39 @@ class CaseStructConstr(SubCase):
         for exp in subs:
             base.add(exp)
         return base
+
+
+class CaseStructBlockConstr(SubCase):
+    ''' 
+        inline struct creation
+        Example:
+            varName = TypeName
+                field: val
+                field: val
+    '''
+    # def match(self, elems:list[Elem]) -> bool:
+    #     if len(elems) != 1:
+    #         return False
+    #     return InterpretContext.get().hasStruct(elems[0].text)
+    
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        typeName = elems[0].text
+        # if  InterpretContext.get().hasStruct(typeName):
+        #     # begin of multiline srtuct constructor
+        #     expr 
+        # sub = elems[2:-1]
+        # cs = CaseCommas()
+        # subs = [sub]
+        # if cs.match(sub):
+        #     _, subs = cs.split(sub)
+        return StructConstrBegin(elems[0].text), []
+
+    def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
+        print('StructConstr.setSub empty: ', base, subs)
+        # for exp in subs:
+        #     base.add(exp)
+        # return base
+
 
 # def checkTypes(elems:list[Elem], exp:list[int]):
 #     if len(elems) != len(exp):

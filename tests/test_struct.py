@@ -29,6 +29,54 @@ class C(A,B):
 
 class TestDev(TestCase):
 
+    def test_struct_block(self):
+        code='''
+        struct Btype
+            title: string
+            vall: float
+        struct Atype
+            name: string
+            num: int
+            sub: Btype
+        bb = Btype{title: 'Bim-bom', vall: 11.55}
+        aa = Atype{name:'Vasya', num:20, sub: bb}
+        print('var user: ', aa.name, aa.num, aa.sub.title, aa.sub.vall)
+        '''
+        tt = '''
+        user = User
+            name:'Catod'
+            age:25
+            sex:male
+            phone:'123-45-67'
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+    def test_struct_empty(self):
+        code='''
+        struct Btype
+        struct Atype
+            name: string
+            num: int
+            sub: Btype
+        # bb = Btype{title: 'Bim-bom', vall: 11.55}
+        aa = Atype{name:'Vasya', num:20, sub:Btype{}}
+        print('var user: ', aa.name, aa.num, aa.sub)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        atype = ctx.getType('Atype')
+        btype = ctx.getType('Btype')
+        print(atype, btype)
+
     def test_left_assign_arg(self):
         code='''
         obj.member = 11

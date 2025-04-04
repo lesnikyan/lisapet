@@ -135,7 +135,7 @@ class CaseBinOper(SubCase):
         prels('~~ CaseBinOper', elems)
         for prior in range(lowesPrior, -1, -1):
             skip = -1
-            print('prior=', prior, self.priorGroups[prior] )
+            # print('prior=', prior, self.priorGroups[prior] )
             for i in range(maxInd, -1, -1):
                 el = elems[i]
                 etx = el.text

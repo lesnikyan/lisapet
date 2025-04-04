@@ -41,6 +41,8 @@ class StructDef(TypeStruct):
 
     def add(self, f:Var):
         tp:VType = f.getType()
+        # if tp.name not in self.types:
+        print('StructDef.add ## ', f.__class__, ' || ', tp)
         print('StructDef.add ## ', f, tp)
         self.fields.append(f.name)
         self.types[f.name] = tp
@@ -48,8 +50,8 @@ class StructDef(TypeStruct):
     def getFields(self):
         return self.fields
 
-    def __str__(self):
-        return 'type struct %s{}' % self.name
+    # def __str__(self):
+    #     return 'type struct %s{}' % self.name
 
 
 
@@ -125,7 +127,7 @@ class StructInstance(Var, NSContext):
     def __str__(self):
         fns = self.vtype.fields
         vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
-        return 'struct %s(%s)' % (self.vtype.name, vals)
+        return 'struct instance %s(%s)' % (self.vtype.name, vals)
 
 # Expressions
 
@@ -139,6 +141,7 @@ class StructDefExpr(DefinitionExpr):
 
     def add(self, fexp:Expression):
         '''fexp - field expression: VarExpr | ServPairExpr '''
+        print('@@StructDefExpr.add1', fexp)
         self.fields.append(fexp)
 
     def do(self, ctx:Context):
@@ -147,18 +150,25 @@ class StructDefExpr(DefinitionExpr):
             fexp.do(ctx)
             field = fexp.get()
             fname, ftype = '', TypeAny
+            ctx.print()
             if isinstance(field, tuple) and len(field) == 2:
                 fn, ft = field
-                print('@2>>', fn, ft)
+                print('@2>>', field)
+                print('@20>>', fn, ft)
                 fname = fn.name
                 ftype = ft.get()
-                print('@21>>', fname, ftype)
+                print('@21>>', fname, ' >> ',  ftype, type(ftype))
+                if not isinstance(ftype, (VType)):
+                    print('fname:', type(ft))
+                    raise EvalErr(f'Trying to put non-type {fname} to ctx.types.')
+
             elif isinstance(field, Var):
                 fname = field.name
             else:
                 raise EvalErr('Struct def error: fiels expression returns incorrect result: %s ' % field)
             tdef.add(Var(None, fname, ftype))
         # register new type
+        tvar = VarType(tdef, TypeStruct)
         ctx.addType(tdef)
 
     def get(self):
@@ -234,6 +244,12 @@ class StructConstr(Expression):
 
     def get(self):
         return self.inst
+
+
+class StructConstrBegin(StructConstr, MultilineVal):
+    def __init__(self, typeName):
+        super().__init__(typeName)
+
 
 # class StructField(Expression):
 #     ''' inst.field '''
