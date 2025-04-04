@@ -136,16 +136,17 @@ class CaseFor(BlockCase, SubCase):
         subs = []
         start = 1
         elen = len(elems)
-        for i in range(1, elen):
-            prels('>>> %d ' % i, elems[i:])
-            ee = elems[i]
-            if ee.type == Lt.oper and ee.text == ';':
-                subs.append(elems[start:i])
-                start = i + 1
-            if i == elen - 1 and start < elen - 1:
-                # last elem
-                print('Last elem')
-                subs.append(elems[start:])
+        _, subs = CaseSemic().split(elems[1:])
+        # for i in range(1, elen):
+        #     prels('>>> %d ' % i, elems[i:])
+        #     ee = elems[i]
+        #     if ee.type == Lt.oper and ee.text == ';':
+        #         subs.append(elems[start:i])
+        #         start = i + 1
+        #     if i == elen - 1 and start < elen - 1:
+        #         # last elem
+        #         print('Last elem')
+        #         subs.append(elems[start:])
         # if start > len(elems) - 1:
         #     subs.append()
         exp:LoopBlock = None

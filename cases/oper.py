@@ -205,6 +205,8 @@ def makeOperExp(elem:Elem)->OperCommand:
         return ServPairExpr()
     if oper == '.':
         return OperDot()
+    if oper =='<-':
+        return IterAssignExpr() # TODO: could be extended for additional cases
     # undefined case:
     raise InterpretErr('!!>>> appropriate case didnt found for oper `%s`' % oper)
     return OperCommand(elem.text)
@@ -354,36 +356,36 @@ def checkTypes(elems:list[Elem], exp:list[int]):
     return True
 
 
-class _CaseDotOper(SubCase):
+# class _CaseDotOper(SubCase):
     
-    def match(self, elems:list[Elem]) -> bool:
-        '''
-        obj.member
-        obj.member.member.member
-        array[expr].member
-        array[expr].member[key].member
-        array[expr.member].member
-        array[expr].member
-        foo(args).member
-        obj.fmember()
-        obj.fmember(args)
-        foo().bar().baz().member
-        foo().bar().baz().member.member
-        foo().bar().baz().member.method(args)
-        array[foo()].member[key].method()
-        '''
-        if len(elems) < 3:
-            return False
-        return checkTypes(elems, [Lt.word, Lt.oper, Lt.word]) and elems[1].text == '.'
+#     def match(self, elems:list[Elem]) -> bool:
+#         '''
+#         obj.member
+#         obj.member.member.member
+#         array[expr].member
+#         array[expr].member[key].member
+#         array[expr.member].member
+#         array[expr].member
+#         foo(args).member
+#         obj.fmember()
+#         obj.fmember(args)
+#         foo().bar().baz().member
+#         foo().bar().baz().member.member
+#         foo().bar().baz().member.method(args)
+#         array[foo()].member[key].method()
+#         '''
+#         if len(elems) < 3:
+#             return False
+#         return checkTypes(elems, [Lt.word, Lt.oper, Lt.word]) and elems[1].text == '.'
 
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        return OperDot(), [[elems[0]],[elems[2]]]
+#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+#         return OperDot(), [[elems[0]],[elems[2]]]
 
-    def setSub(self, base:OperDot, subs:Expression|list[Expression])->Expression:
-        print('CaseDotOper:', base, subs)
-        # raise EvalErr('')
-        base.set(subs[0], subs[1])
-        return base
+#     def setSub(self, base:OperDot, subs:Expression|list[Expression])->Expression:
+#         print('CaseDotOper:', base, subs)
+#         # raise EvalErr('')
+#         base.set(subs[0], subs[1])
+#         return base
 
 
 # class CaseColonPair(SubCase):

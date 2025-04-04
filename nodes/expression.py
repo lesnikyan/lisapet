@@ -273,6 +273,14 @@ class DefinitionExpr(Expression):
     '''
 
 
+class SkippedExpr(VarExpr):
+    ''' Literally - nothing in the place wher ewe are waiting some value.
+        Special case for list slices, generators, etc.
+    '''
+    def __init__(self):
+        super().__init__(None)
+
+
 class ServPairExpr(Expression):
     ''' service expression, works accordingly to context:
         - in dict 

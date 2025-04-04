@@ -56,15 +56,18 @@ class TestDev(TestCase):
         ctx = rootContext()
         ex.do(ctx)
 
-    def _test_struct_block(self):
+    def test_struct_block(self):
         code='''
-        struct User
-            name
-            age
-            sex
-            phone
-        user = User{name:'Catod', age:25, sex:male, phone:'123-45-67'}
-        print('phone:', user.phone)
+        struct Btype
+            title: string
+            vall: float
+        struct Atype
+            name: string
+            num: int
+            sub: Btype
+        bb = Btype{title: 'Bim-bom', vall: 11.55}
+        aa = Atype{name:'Vasya', num:20, sub: bb}
+        print('var user: ', aa.name, aa.num, aa.sub.title, aa.sub.vall)
         '''
         tt = '''
         user = User
@@ -83,15 +86,13 @@ class TestDev(TestCase):
     def test_struct_empty(self):
         code='''
         struct Btype
-            title: string
-            vall: float
         struct Atype
             name: string
             num: int
             sub: Btype
-        bb = Btype{title: 'Bim-bom', vall: 11.55}
-        aa = Atype{name:'Vasya', num:20, sub: bb}
-        print('var user: ', aa.name, aa.num, aa.sub.title, aa.sub.vall)
+        # bb = Btype{title: 'Bim-bom', vall: 11.55}
+        aa = Atype{name:'Vasya', num:20, sub:Btype{}}
+        print('var user: ', aa.name, aa.num, aa.sub)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -104,8 +105,19 @@ class TestDev(TestCase):
         print(atype, btype)
 
     
-    '''
-    TODO:
+    _ = '''
+        TODO features:
+        1. List comprehetion / generator
+    [-10..10]; [..10] >> IterGen(beg, over, step)
+    [n.name | n <- arr] ##### [2 * n | n <- [0..10]] ##### [2 * n | n <- iter(10)] >> add over-item expression
+    [n <- iter(10) | n %2 == 0] >> add sub-condition
+    [n | subArr <- arr n <- subArr] >> flat sub-list
+    [n * m | n <- arr1, m <- arr2] >> iterator over iterator
+    [n + m | n <- arr, m = n / 10, k <- arr2 | m != k] >> add sub expression
+    [n + m | n <- arr, m:int = int (n / 10), k <- arr2[m] | m > 0 && m < len(arr2)] ?? >> add sub expression
+        2. List slice
+    arr[0:5] ##### arr[3:] ##### arr[:3] ##### arr[2:-3] 
+        TODO tests:
     test assignment and read 
     global var and local block
     local var and function-block

@@ -20,7 +20,7 @@ from nodes.control import *
 from cases.structs import *
 
 
-class CaseIterOper(SubCase):
+class _CaseIterOper(SubCase):
     '''
     <- operator is an iterative assignment from collection or iterator to local var
     base use case - for-loop statement
@@ -58,7 +58,7 @@ class CaseIterOper(SubCase):
                 dest = Var(None, left[0].text, Undefined)
             target.append(dest)
         # expMain = IterAssignExpr()
-        # print('@@@@ CaseIterOper.split')
+        print('@@@@ CaseIterOper.split')
         expAssign = IterAssignExpr()
         expAssign.setTarget(target)
         expIter = self.iterExpr(right)
@@ -80,10 +80,11 @@ class CaseIterOper(SubCase):
         res = None
         
         # print('@@@@ CaseIterOper.iterExpr')
-        if elems[0].text == 'iter':
-            # dev manual impl with numbers (not vars)
-            res = self.iterGen(elems[1:])
-        elif CaseArray().match(elems):
+        # if elems[0].text == 'iter':
+        #     # dev manual impl with numbers (not vars)
+        #     res = self.iterGen(elems[1:])
+        # el
+        if CaseArray().match(elems):
             res = elems2expr(elems) # TODO: change to returning subs with latest build in class.setSub
             # print('#$ subExpr array', res)
             # iter = 
@@ -118,6 +119,16 @@ class CaseIterOper(SubCase):
     
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
         print('CaseIterOper.setSub: ', base, subs)
+        
+        expAssign:IterAssignExpr = base
+        target, right = subs
+        expAssign.setTarget(target)
+        expIter = self.iterExpr(right)
+        print('(x=2)', expIter)
+        if isinstance(expIter, IterGen):
+            expAssign.setIter(expIter)
+        if isinstance(expIter, (CollectionExpr, VarExpr, FuncCallExpr)):
+            expAssign.setSrc(expIter)
 
 
 
@@ -132,7 +143,7 @@ class CaseDebug(ExpCase):
 
 expCaseList = [ CaseComment(), CaseDebug(),
     CaseFuncDef(), CaseReturn(),
-    CaseIf(), CaseElse(), CaseWhile(), CaseFor(), CaseIterOper(), CaseMatch(), CaseArrowR(),
+    CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseArrowR(), # CaseIterOper(),
     CaseStructBlockDef(), CaseStructDef(),
     CaseSemic(), CaseAssign(), 
     CaseBinAssign(),
@@ -234,7 +245,7 @@ def lex2tree(src:list[CLine]) -> Block:
             # nothing for comment now
             continue
         print('lex2tree-2 expr:', expr, '; parents:', parents, curBlock)
-        print(dir(expr))
+        # print(dir(expr))
         if indent < curInd:
             # end of block
             stepsUp = curInd - indent

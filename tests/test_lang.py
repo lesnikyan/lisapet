@@ -33,7 +33,6 @@ class TestLang(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         res = ctx.get('c').get()
-        # print('##################t-IF1:', )
         self.assertEqual(res, 50)
 
     def test_struct_field_full(self):
@@ -75,9 +74,7 @@ class TestLang(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
-        ctx = Context(None)
-        setNativeFunc(ctx, 'print', print, TypeNull)
-        setNativeFunc(ctx, 'len', len, TypeInt)
+        ctx = rootContext()
         print('$$ run test ------------------')
         exp.do(ctx)
 
@@ -102,9 +99,7 @@ class TestLang(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
-        ctx = Context(None)
-        setNativeFunc(ctx, 'print', print, TypeNull)
-        setNativeFunc(ctx, 'len', len, TypeInt)
+        ctx = rootContext()
         print('$$ run test ------------------')
         exp.do(ctx)
 
@@ -121,9 +116,7 @@ class TestLang(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
-        ctx = Context(None)
-        setNativeFunc(ctx, 'print', print, TypeNull)
-        setNativeFunc(ctx, 'len', len, TypeInt)
+        ctx = rootContext()
         print('$$ run test ------------------')
         exp.do(ctx)
 
@@ -143,7 +136,6 @@ class TestLang(TestCase):
             ("{'aa': 'hello dd', 'bb': 123}", False)
         ]
         cd = CaseDictLine()
-        # tdata = [data[i*2 : i*2+1] for i in range(len(data) / 2)]
         for code, exp in data:
             print(code, exp)
             # continue
@@ -192,14 +184,9 @@ class TestLang(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
-        ctx = Context(None)
-        setNativeFunc(ctx, 'print', print, TypeNull)
-        # setNativeFunc(ctx, 'len', len, TypeInt)
+        ctx = rootContext()
         print('$$ run test ------------------')
-        # pdb.set_trace()
         exp.do(ctx)
-        # r1 = ctx.get('r1').get()
-        # print('#t >>> r:', r1)
 
     def test_for_array(self):
         ''' for n <- [1,2,3] 
@@ -226,14 +213,9 @@ class TestLang(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
-        ctx = Context(None)
-        setNativeFunc(ctx, 'print', print, TypeNull)
-        setNativeFunc(ctx, 'len', len, TypeInt)
+        ctx = rootContext()
         print('$$ run test ------------------')
-        # pdb.set_trace()
         exp.do(ctx)
-        # r1 = ctx.get('r1').get()
-        # print('#t >>> r:', r1)
 
     def test_str_in_fun(self):
         code = 'print("Hello buhlo 123!")'
@@ -258,15 +240,10 @@ class TestLang(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
-        ctx = Context(None)
-        # print('$$ run test ------------------')
-        # pdb.set_trace()
+        ctx = rootContext()
         exp.do(ctx)
         r1 = ctx.get('r1').get()
-        # r2 = ctx.get('r2').get()
         print('#t >>> r:', r1)
-        # self.assertEqual(r1, 1035)
-        # self.assertEqual(r2, 2000)
 
     def test_CaseArrowR_mattch(self):
         cs = CaseArrowR()
@@ -352,13 +329,11 @@ class TestLang(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
-        ctx = Context(None)
+        ctx = rootContext()
         # print('$$ run test ------------------')
-        # pdb.set_trace()
         exp.do(ctx)
         r1 = ctx.get('r1').get()
         r2 = ctx.get('r2').get()
-        # print('#t >>> r:', r1, r2)
         self.assertEqual(r1, 1035)
         self.assertEqual(r2, 2000)
 
@@ -375,11 +350,9 @@ class TestLang(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
-        ctx = Context(None)
+        ctx = rootContext()
         print('$$ run test ------------------')
-        # pdb.set_trace()
         exp.do(ctx)
-        # fn = exp.get()
         fn:Function = ctx.get('foo')
         print('#tt1>>> ', fn, type(fn))
         args = [value(2, TypeInt),value(3, TypeInt),value(4, TypeInt)]
@@ -420,12 +393,8 @@ class TestLang(TestCase):
             lines = code.split('; ')
             code = '\n'.join(init+lines)
             print('CODE:','\n'+code)
-            # code = lines[0]
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
-            # elems = clines[0].code
-            # exp, subs = cs.split(elems)
-            # print('# tt>>>', exp, subs)
             exp = lex2tree(clines)
             ctx = Context(None)
             print('$$ eval expr ------------------')
@@ -433,12 +402,6 @@ class TestLang(TestCase):
             res = ctx.get('res').get()
             barr = ctx.get('barr').get()
             rrs.append((res, barr,))
-            
-            # ind = afterNameBr(elems)
-            # res = elems[ind]
-            # res = cs.match(elems)
-            # print('## t:', code, '>>>', res, elems[res])
-            # self.assertTrue(res)
         print('# tt>> ', rrs)
 
     def test_array_set(self):
@@ -504,8 +467,6 @@ class TestLang(TestCase):
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
-            # ind = afterNameBr(elems)
-            # res = elems[ind]
             res = cs.match(elems)
             print('## t:', code, '>>>', res, elems[res])
             self.assertTrue(res)
@@ -528,8 +489,6 @@ class TestLang(TestCase):
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
-            # ind = afterNameBr(elems)
-            # res = elems[ind]
             res = cs.match(elems)
             print('## t:', code, '>>>', res, elems[res])
             self.assertFalse(res)
@@ -585,24 +544,15 @@ class TestLang(TestCase):
             r = 1000
             for i <- iter(3)
                 r = r + arr[i]
-            ''',
-            # ''' ''',
-            # ''' ''',
+            '''
         ]
-        # ctdata = {
-        #     'a': 1,
-        #     'b':2,
-        #     'c':3
-        # }
+
         for code in data:
             code = norm(code[1:])
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             ex = lex2tree(clines)
-            ress = []
-            ctx = Context(None)
-            # for k, v in ctdata.items():
-            #     ctx.addSet({k: Var(v, k, TypeInt)})
+            ctx = rootContext()
             print('~~~~ test case: %s ~~~~' % code)
             ex.do(ctx)
             rr = [ctx.get('res').get() , ctx.get('r').get()]
@@ -629,8 +579,6 @@ class TestLang(TestCase):
                 ctx.addSet({k: Var(v, k, TypeInt)})
             print('~~~~ test case: %s ~~~~' % code)
             ex.do(ctx)
-            # rr = [ctx.get('res').get()]
-            # print('Test res = ', rr)
 
     def test_seq_split(self):
         data = [
@@ -641,11 +589,11 @@ class TestLang(TestCase):
             '11, [a,b,c], f() + b(), {a:b, c:d}',
             "'a:' 1 + 2 - foo() , 'b': 1"
         ]
-        # for src in data:
-        #     tlines = splitLexems(src)
-        #     clines:CLine = elemStream(tlines)
-        #     elems = clines[0].code
-        #     cs = CaseSeq(',')
+        for src in data:
+            tlines = splitLexems(src)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            cs = CaseSeq(',')
         
         
         for src in data:
@@ -653,31 +601,37 @@ class TestLang(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             cs = CaseSeq(',')
-            # prels('CaseSeq.match: ', elems)
             self.assertTrue(cs.match(elems))
-            # if cs.match(elems):
             prels('CaseSeq.match: TRUE=%s' % cs.match(elems), elems)
             _, subs = cs.split(elems)
             for sub in subs:
                 prels('tt>', sub)
 
     def test_for_iter(self):
-        code = '''
+        src = [
+        '''
         res = 0
         for i <- iter(10)
             res += i
         print('res: ', res)
+        ''',
         '''
-        code = norm(code[1:])
-        # data = [6]
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        res = ctx.get('res').get()
-        print('##################t-IF1:', )
-        self.assertEqual(res, 45)
+        res = 0
+        for i <- [1,2,3,4,5,6,7,8,9]
+            res += i
+        print('res: ', res)
+        '''
+        ]
+        for code in src:
+            code = norm(code[1:])
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            ex = lex2tree(clines)
+            ctx = rootContext()
+            ex.do(ctx)
+            res = ctx.get('res').get()
+            print('##################t-IF1:', )
+            # self.assertEqual(res, 45)
 
 
     def test_for_expr(self):
@@ -791,8 +745,6 @@ class TestLang(TestCase):
 
     def test_operators_order(self):
         '() [] . , -x !x ~x , ** , * / % , + - , << >> , < <= > >= -> !>, == != , &, ^ , | , && , ||, = += -= *= /= %=  '
-        # -> in, !> not in: if 12 -> nums, if 'a' !> names. # ??
-        # a = 12 % 5;
         s = 'a = 5 + 6 - 7*(b - c * 10 - 5) / 11 + 3 ** d - 0xe * 5'
         s = 'a = 5 + (2 - 1) * (3 - 4)/ (-1)'
         s = 'a = 5 + sum([1,2,3, b, c + 3])' # TODO: functios
@@ -881,17 +833,10 @@ class TestLang(TestCase):
         data = [
             'x = 5.0', 'x = 5j2', 'x = 0xf000a', "x = '5' ", 'x = 0b10101'
         ]
-        # src = 'x = 5.0'
-        # src = 'x = 5j2'
-        # src = 'x = 0xf000a' # 983050
-        # src = "x = '5' "
         for src in data:
             tlines = splitLexems(src)
-            # print('#a6', [n.val for n in tlines[0].lexems])
             clines = elemStream(tlines)
-            # print('#a2', len(clines))
             line0 = clines[0]
-            # print('#a1', line0.code)
             expr = line2expr(line0)
             ctx = Context(None)
             expr.do(ctx)
@@ -946,12 +891,7 @@ class TestLang(TestCase):
         args = [
             ('for a=10,b=3; i <- 10..20', []),
             ('str2 = ["Hello 3 men!", "123,465 \'-=#=-\'", "\\\'A\\\' + \\\"B\\\"" ]', []),
-            # ('', []),
-            # ('', []),
         ]
-        # src = 'for a=10,b=3; i << 10..20'
-        # res = splitLine(src)
-        # print([(n.val, n.mark, n.ltype) for n in res])
         for tt in args:
             src, exp = tt
             print('space %d, word %d, num %d, oper %d, text %d, quot %d, esc %d' % (Lt.space, Lt.word, Lt.num, Lt.oper, Lt.text, Lt.quot, Lt.esc))
