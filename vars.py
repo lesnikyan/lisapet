@@ -136,15 +136,21 @@ class ListVar(Collection):
         self.elems[i] = val
 
     def getVal(self, key:Var|int):
-        # print('ListVar.getVal1, key:', key)
+        print('ListVar.getVal1, key:', key)
         # print('ListVar.getVal1, elems:', self.elems)
         i = key
         if isinstance(key, Var):
             i = key.get()
-        # print('@ i=', i)
+        print('@ i=', i)
         if i < len(self.elems):
             return self.elems[i]
         raise EvalErr('List out of range by index %d ' % i)
+
+    def getSlice(self, beg, end):
+        if beg < 0 or end > len(self.elems):
+            raise EvalErr('indexes of List slice are out of range [%d : %d] with len = %d' % (beg, end, len(self.elems)))
+        rdata = self.elems[beg: end]
+        return ListVar(elems=rdata)
 
     def get(self):
         return  [n.get() for n in self.elems] # debug

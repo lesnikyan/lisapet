@@ -17,7 +17,8 @@ SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
 EXT_ASSIGN_OPERS = '+= -= *= /= %='.split(' ')
 
 
-def elemStr(elems):
+def elemStr(elems:list[Elem]):
+    print('debug elemStr', elems)
     return ' '.join([ee.text for ee in elems])
 
 def afterLeft(elems:list[Elem])->int:
@@ -149,8 +150,8 @@ def isBrPair(elems:list[Elem], opn, cls):
     return isLex(elems[0], Lt.oper, opn) and isLex(elems[-1], Lt.oper, cls)
 
 
-def prels(pref, elems:list[Elem]):
-    print(pref, [n.text for n in elems])
+def prels(pref, elems:list[Elem], *args):
+    print(pref, [n.text for n in elems], *args)
 
 
 class ExpCase:
@@ -169,6 +170,8 @@ class ExpCase:
 class CaseComment(ExpCase):
     ''' possibly will be used for meta-coding'''
     def match(self, elems:list[Elem])-> bool:
+        if len(elems) == 0:
+            return False
         s = ''.join([n.text for n in elems])
         if elems[0].type == Lt.comm:
             # print('CaseComment.match', s)
@@ -178,6 +181,16 @@ class CaseComment(ExpCase):
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
         CommentExpr(''.join([n.text for n in elems]).lstrip())
+
+
+class CaseEmpty(ExpCase):
+    ''' possibly will be used for meta-coding'''
+    def match(self, elems:list[Elem])-> bool:
+        return len(elems) == 0
+
+    def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
+        ''' return base expression, Sub(elems) '''
+        return NothingExpr()
 
 
 class CaseVal(ExpCase):
@@ -257,6 +270,7 @@ class CaseSeq(ExpCase):
 
     def match(self, elems:list[Elem]) -> bool:
         # parents = []
+        prels('CaseSeq.match %s'% self.delim, elems)
         obr = 0 # bracket counter
         # check without control of nesting, just count open and close brackets
         for ee in elems:
@@ -301,6 +315,10 @@ class CaseSeq(ExpCase):
         # print('Seq.split, start =', start, 'len-elems =', len(elems))
         if start < len(elems):
             res.append(elems[start:])
+        # if isLex(res[0][0], Lt.oper, self.delim):
+        #     res = [[]] + res
+        if isLex(elems[-1], Lt.oper, self.delim):
+            res.append([])
         return None, res
 
 

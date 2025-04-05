@@ -16,38 +16,15 @@ from nodes.structs import *
 import pdb
 
 
-class A:
-    def __init__(self):
-        self.field = '111'
-
-class B:
-    pass
-
-class C(A,B):
-    pass
-
-
 class TestDev(TestCase):
-    
-    '''
-    TODO:
-    test assignment and read 
-    global var and local block
-    local var and function-block
-    var <- val
-    var <- var
-    var <- array
-    array <- var
-    dict of items str : array
-    array of dicts
-    
-    '''
 
-    def _test_struct_anon(self):
-        code = '''
-        user = struct {name:'Anod', age:25, sex:male, phone:'123-45-67'}
-        # uf = user.fields()
-        print(user.name)
+
+    def test_list_slice_skip_both(self):
+        ''' arr[:] same as full copy '''
+        code='''
+        arr = [1,2,3,4,5,6,7,8,9]
+        arr2 = arr[:]
+        print('arr2:', arr2, ' len:', len(arr2))
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -55,33 +32,64 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+        arr2 = ctx.get('arr2')
+        self.assertEqual(9, len(arr2.elems))
 
-    def test_struct_block_constr(self):
+
+    def test_list_slice_skip2(self):
+        ''' '''
         code='''
-        
-        struct Btype title:string
-        
-        bb = Btype{title:'BBBBB'}
-
-        struct Atype
-            name: string
-            num: int
-            sub: Btype
-
-        aa = Atype
-            name:'Vasya'
-            num:20
-            sub: bb
-        # tt = aa
-        print('t-inst: ', aa.name , aa.num , aa.sub.title)
-        #
+        arr = [1,2,3,4,5,6,7,8,9]
+        arr2 = arr[2:]
+        print('arr2:', arr2, ' len:', len(arr2))
         '''
-        tt = '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        arr2 = ctx.get('arr2')
+        self.assertEqual(7, len(arr2.elems))
 
-            sub: bb
-            title: string
-            vall: float
-        bb = Btype{title: 'Bim-bom', vall: 11.55}
+    def test_list_slice_skip1(self):
+        ''' '''
+        code='''
+        arr = [1,2,3,4,5,6,7,8,9]
+        arr2 = arr[:5]
+        # print('arr2:', arr2, ' len:', len(arr2))
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        arr2 = ctx.get('arr2')
+        self.assertEqual(5, len(arr2.elems))
+
+    def _test_list_slice(self):
+        ''' '''
+        code='''
+        arr = [1,2,3,4,5,6,7,8,9]
+        arr2 = arr[2:-2]
+        print('arr2:', arr2, ' len:', len(arr2))
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        arr2 = ctx.get('arr2')
+        self.assertEqual(5, len(arr2.elems))
+        
+
+    def _test_struct_anon(self):
+        code = '''
+        user = struct {name:'Anod', age:25, sex:male, phone:'123-45-67'}
+        # uf = user.fields()
+        print(user.name)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)

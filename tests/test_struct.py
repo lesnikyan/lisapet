@@ -29,6 +29,31 @@ class C(A,B):
 
 class TestDev(TestCase):
 
+
+    def test_struct_block_constr(self):
+        code='''
+        struct Btype title:string
+        
+        bb = Btype{title:'BBBBB'}
+
+        struct Atype
+            name: string
+            num: int
+            sub: Btype
+
+        aa = Atype
+            name:'Vasya'
+            num:20
+            sub: bb
+        print('t-inst: ', aa.name , aa.num , aa.sub.title)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
     def test_struct_block(self):
         code='''
         struct Btype

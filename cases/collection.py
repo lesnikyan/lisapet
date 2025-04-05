@@ -12,6 +12,25 @@ from nodes.oper_nodes import *
 from nodes.datanodes import *
 
 
+
+
+def keyBorders(elems:list[Elem]):
+    open, close = 0, 0
+    # i = -1
+    lel = len(elems)
+    for i in range(0, lel, 1):
+        ee = elems[i]
+        if isLex(ee, Lt.oper, '['):
+            open = i
+            break
+    for i in range(lel-1, -1, -1):
+        ee = elems[i]
+        if isLex(ee, Lt.oper, ']'):
+            close = i
+            break
+    return open, close
+
+
 class CaseArray(SubCase):
     ''' [num, word, expr] '''
 
@@ -72,21 +91,24 @@ class CaseCollectElem(SubCase):
         elems[0]: varName, funcName + (expr), 
         more complex: obj.field, obj.method(expr)
         '''
-        opIndex = afterNameBr(elems)
-        oper = elems[opIndex]
-        if opIndex == -1 and isLex(elems[-1], Lt.oper, ']'):
-            # case: var[key]
-            return True
-        
         if len(elems) < 4:
             return False
-        # assign to no-key case var[] = 123
+        opIndex = afterNameBr(elems)
+        # oper = elems[opIndex]
+        if opIndex > -1 or not isLex(elems[-1], Lt.oper, ']'):
+            # case: var[key]
+            return False
+        xopen, close = keyBorders(elems)
+        prels('CaseCollectElem match1:', elems, xopen, close)
+        prels('CaseCollectElem match2:', elems[xopen+1 : close])
+        hasColon = CaseColon().match(elems[xopen+1 : close])
+        print('CaseCollectElem hasColon', hasColon)
+        return not hasColon
+        # return True
         
-        # simple case: varName [ any ]
-        if len(elems) == 4 and elems[0].type == Lt.word and isLex(elems[1], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']'):
-            # check internal brackets to avoide a[]...b[]
-            return True
-        # TODO: match complex cases: var.meth(arg, arg, arg)[foo(var.field + smth) - arr[index + var]]
+        # if len(elems) < 4:
+        #     return False
+        # assign to no-key case var[] = 123
         
         return False
 
@@ -97,19 +119,61 @@ class CaseCollectElem(SubCase):
         2. eval key|index expr
         3. get val from collection by index|key
         '''
-        varElems = []
-        keyElems = []
-        for ee in elems:
-            if isLex(ee, Lt.oper, '['):
-                keyElems = elems[len(varElems)+1: -1]
-                break
-            varElems.append(ee)
+        # varElems = []
+        # keyElems = []
+        # for ee in elems:
+        #     if isLex(ee, Lt.oper, '['):
+        #         keyElems = elems[len(varElems)+1: -1]
+        #         break
+        #     varElems.append(ee)
+
         exp = CollectElemExpr()
+        xopen, close = keyBorders(elems)
+        varElems = elems[:xopen] # (array)[key-expr]
+        keyElems = elems[xopen+1 : close] # array[(key-expr)]
         return exp, [varElems, keyElems]
-            
+
     def setSub(self, base:CollectElemExpr, subs:Expression|list[Expression])->Expression:
         base.setVarExpr(subs[0])
         base.setKeyExpr(subs[1])
+        return base
+
+
+class CaseSlice(SubCase):
+
+    def match(self, elems:list[Elem]) -> bool:        
+        ''' arr.expr[start-expr : end-expr] 
+            TODO: super[key-expr][start : end]
+        '''
+        if len(elems) < 4:
+            return False
+
+        opIndex = afterNameBr(elems)
+        if opIndex > -1 or not isLex(elems[-1], Lt.oper, ']'):
+            return False
+        xopen, close = keyBorders(elems)
+        cc = CaseColon()
+        subPart = elems[xopen+1 : close]
+        hasColon = cc.match(subPart)
+        _, ccParts = cc.split(subPart)
+        print('CaseSlice match', hasColon, ccParts, len(ccParts))
+        return hasColon and (len(ccParts) == 2 or isLex(subPart[-1], Lt.oper, ':'))
+
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        xopen, close = keyBorders(elems)
+        subPart = elems[xopen+1 : close]
+        cc = CaseColon()
+        _, keys = cc.split(subPart)
+        varexp = elems[:xopen]
+        exp = SliceExpr()
+        # print('!@#', )
+        return exp, [varexp]+ keys
+
+    def setSub(self, base:CollectElemExpr, subs:Expression|list[Expression])->Expression:
+        print('CaseSlice setSub', base, subs)
+        base.setVarExpr(subs[0])
+        base.setKeysExpr(subs[1], subs[2])
         return base
 
 

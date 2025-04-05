@@ -14,7 +14,7 @@ x = 2 #@ inline comment @# + sum([10, 20])
 
 #== dict DONE
 
-#== list slice
+#== list slice # DONE
 subVals = arr[3:-2]
 
 # list | string math mult, concat
@@ -98,6 +98,7 @@ data = dict
     'b': 2
 
 #== struct
+# DONE
 
 struct TypeName
     field1: str

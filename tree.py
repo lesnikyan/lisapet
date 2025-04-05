@@ -135,13 +135,14 @@ from cases.structs import *
 class CaseDebug(ExpCase):
     def match(self, elems:list[Elem])-> bool:
         prels('--DEbug', elems)
-        return elems[0].text == '@debug'
+        return len(elems) > 0 and elems[0].text == '@debug'
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' return base expression, Sub(elems) '''
         return DebugExpr(' '.join([e.text for e in elems]))
 
-expCaseList = [ CaseComment(), CaseDebug(),
+expCaseList = [ 
+    CaseEmpty(), CaseComment(), CaseDebug(),
     CaseFuncDef(), CaseReturn(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseArrowR(), # CaseIterOper(),
     CaseStructBlockDef(), CaseStructDef(),
@@ -149,7 +150,7 @@ expCaseList = [ CaseComment(), CaseDebug(),
     CaseBinAssign(),
     CaseDictBlock(), CaseListBlock(), 
     # CaseStructBlockConstr(),
-    CaseDictLine(), CaseArray(), CaseCollectElem(), CaseFunCall(), CaseStructConstr(),
+    CaseDictLine(), CaseArray(), CaseCollectElem(), CaseSlice(), CaseFunCall(), CaseStructConstr(),
     # CaseDotOper(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
 
@@ -162,7 +163,7 @@ def simpleExpr(expCase:ExpCase, elems)->Expression:
 
 def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     base, subs = expCase.split(elems)
-    # print('#complex-case:', expCase)
+    print('#complex-case:', expCase)
     print('#complexExpr', base, [elemStr(s) for s in subs])
     # if isinstance(subs, list):
     #     for ee in subs:

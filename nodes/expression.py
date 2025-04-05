@@ -36,6 +36,13 @@ class CommentExpr(Expression):
         super().__init__(text)
 
 
+class NothingExpr(Expression):
+    ''' nothing, empty plase in code or skipper lexem '''
+    def __init__(self):
+        '''' '''
+        super().__init__('')
+
+
 class ValExpr(Expression):
     def __init__(self, var:Var):
         # print('#tn2-valEx:', var, var.get())
@@ -199,36 +206,9 @@ class MultilineVal:
     ''' begiinning of multiline declaration '''
 
 
+class CollectElem:
+    ''' dataVar[key-or-index] '''
 
-class CollectElemExpr(Expression):
-    
-    def __init__(self):
-        self.target:Collection = None
-        self.varExpr:Expression = None
-        self.keyExpr = None
-        
-    def setVarExpr(self, exp:Expression):
-        self.varExpr = exp
-
-    def setKeyExpr(self, exp:Expression):
-        self.keyExpr = exp
-
-    def do(self, ctx:Context):
-        self.target = None
-        self.varExpr.do(ctx) # before []
-        self.target = self.varExpr.get() # found collection
-        # print('## self.target', self.target)
-        self.keyExpr.do(ctx) #  [ into ]
-
-    def set(self, val:Var):
-        ''' '''
-        key = self.keyExpr.get()
-        self.target.setVal(key, val)
-
-    def get(self)->Var:
-        key = self.keyExpr.get()
-        elem = self.target.getVal(key)
-        return elem
 
 class TypeExpr(Expression):
     ''' int, string, bool, list, struct '''
@@ -242,6 +222,7 @@ class TypeExpr(Expression):
     
     def get(self)->VType:
         ''' return '''
+
 
 class DeclarationExpr(Expression):
     ''' var:type declaration '''

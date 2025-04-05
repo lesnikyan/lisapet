@@ -118,7 +118,7 @@ class OpAssign(OperCommand):
             #     print('# struct field as right operand')
             #     val = val.get()
             
-            if isinstance(self.left[i], CollectElemExpr):
+            if isinstance(self.left[i], CollectElem):
                 ''' '''
                 val.name = None
                 self.left[i].set(val)

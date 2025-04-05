@@ -90,21 +90,73 @@ class DictConstr(MultilineVal, DictExpr):
     def __init__(self):
         super().__init__()
 
-    # def do(self, ctx:Context):
-    #     self.data = DictVar(None)
+
+class CollectElemExpr(Expression, CollectElem):
+    
+    def __init__(self):
+        self.target:Collection = None
+        self.varExpr:Expression = None
+        self.keyExpr = None
+        
+    def setVarExpr(self, exp:Expression):
+        self.varExpr = exp
+
+    def setKeyExpr(self, exp:Expression):
+        self.keyExpr = exp
+
+    def do(self, ctx:Context):
+        self.target = None
+        self.varExpr.do(ctx) # before []
+        self.target = self.varExpr.get() # found collection
+        # print('## self.target', self.target)
+        self.keyExpr.do(ctx) #  [ into ]
+
+    def set(self, val:Var):
+        ''' '''
+        key = self.keyExpr.get()
+        self.target.setVal(key, val)
+
+    def get(self)->Var:
+        key = self.keyExpr.get()
+        elem = self.target.getVal(key)
+        return elem
 
 
-# class StructDefExpr(Block):
-#     ''' struct User
-#             name: string
-#             age: int
-#             weight: float
-#     '''
+class SliceExpr(Expression, CollectElem):
+    ''' array[start : last+1] '''
 
+    def __init__(self):
+        self.target:ListVar = None
+        self.varExpr:Expression = None
+        self.beginExpr = None
+        self.closeExpr = None
+        
+    def setVarExpr(self, exp:Expression):
+        self.varExpr = exp
 
-# class StructFieldExpr(VarExpr):
-#     ''' inst.field = val; var = inst.field '''
+    def setKeysExpr(self, beginExpr:Expression, closeExpr:Expression):
+        ''' openExpr, closeExpr'''
+        if isinstance(beginExpr, NothingExpr):
+            beginExpr = ValExpr(Var(0, None, TypeInt))
+        # if isinstance(closeExpr, NothingExpr):
+        #     closeExpr = ValExpr(Var(-1, None, TypeInt))
+        self.beginExpr = beginExpr
+        self.closeExpr = closeExpr
 
+    def do(self, ctx:Context):
+        self.target = None
+        self.varExpr.do(ctx) # before []
+        self.target = self.varExpr.get() # found collection
+        self.beginExpr.do(ctx)
+        self.closeExpr.do(ctx)
+        if isinstance(self.closeExpr, NothingExpr):
+            self.closeExpr = ValExpr(Var(self.target.len(), None, TypeInt))
+        print('## self.target', self.target)
+
+    def get(self)->Var:
+        beg, end = self.beginExpr.get(), self.closeExpr.get()
+        res = self.target.getSlice(beg.get(), end.get())
+        return res
 
 
 class TupleExpr(CollectionExpr):
