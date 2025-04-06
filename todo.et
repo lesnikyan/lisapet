@@ -26,11 +26,12 @@
 # Named func args
 
 func foo(user:User, name: string, age: int)
-    user | getUser(name, age) # return user if not null, otherwize - return result of getUser()
+    user ?: getUser(name, age) 
+    # return user if not null, otherwize - return result of getUser()
 foo(age=22, name='Vasya')
 
 #== 
-# ternar operator ?:
+# ternar operator ? :
 res = condition ? valueIfTrue : valueIfFalse
 
 
@@ -43,7 +44,7 @@ value in {'a':1, 'b':2,...}
 
 
 #==
-    `expr1 | expr2` # or-value, for non-numver values, 
+    `expr1 ?: expr2` # or-value, for non-numver values, 
     # syntax sugar for ternar operator with condition: (expr1 != null and expr != false)
     # operator that is returns left val if it not a null/false, otherwize - return second
 
