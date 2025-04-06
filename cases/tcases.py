@@ -322,6 +322,54 @@ class CaseSeq(ExpCase):
         return None, res
 
 
+def endsWithBrackets(elems:list[Elem], br='()'):
+    ''' any expr which ends with something(or nothing) in brackets 
+        expr(); expr[expr]; expt{expr}
+        (): foo(arg), obj.foo(obj.val), arr[expr].foo(arr[expr])
+        []: obj.arr[expr], arr[obj.arr[expr]], arr[obj.sub.foo(arg)], dictVal[keyExpr][arrIndex][arrIndex]
+        {}: SType{expr, expr}; foo(SType{expr, expr}); foo(struct{field:val, field:val}); foo({key:val, key:val})
+    '''
+    lem = len(elems)
+    if lem < 2:
+        return False
+    
+    bopen, bclose = br
+    if not isLex(elems[-1], Lt.oper, bclose):
+        return False
+
+    opInd = findLastBrackets(elems)
+    return opInd > 0
+
+def findLastBrackets(elems:list[Elem]):
+    ''' return index of opening of last brackets in explession '''
+    lem = len(elems)
+    inBr = 0
+    obrs = '( [ {'.split(' ')
+    cbrs = ') ] }'.split(' ')
+    if not isLex(elems[-1], Lt.oper, cbrs):
+        # incorrect elems data
+        return -1
+    
+    for i in range(lem-1, -1, -1):
+        ee = elems[i]
+        if ee.type != Lt.oper:
+            continue
+        if isLex(ee, Lt.oper, cbrs):
+            # step in brackets
+            inBr += 1
+            continue
+        if isLex(ee, Lt.oper, obrs):
+            # step out from brackets
+            inBr -= 1
+            if inBr == 0:
+                return i
+            continue
+    return -2 # just for debug needs
+
+def splitLastBrackets(elems:list[Elem]):
+    pass
+
+
 class CaseSemic(CaseSeq, SubCase):
     ''' Semicolons out of controls cases. The same as one-line block
         a=5; b = 7 + foo(); c = a * b

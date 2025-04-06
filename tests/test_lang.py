@@ -19,6 +19,120 @@ import pdb
 
 class TestLang(TestCase):
 
+
+    def test_last_sqr_brackets(self):
+        data = [
+            ('arr[1]', 1),
+            ('arr[x[123]]', 1),
+            ('arr[foo()]', 1),
+            ('arr[1][2]', 4),
+            ('arr[1:2]', 1),
+            ('arr[1][1:2]', 4),
+            ('arr[1:2][2]', 6),
+            ('arr[1][2][3]', 7),
+            ('foo(arg)[1]', 4),
+            ('foo({a:1, a:2})[1][2]', 15),
+        ]
+        for tt in data:
+            code = tt[0]
+            exp = tt[1]
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            opInd = findLastBrackets(elems)
+            self.assertEqual(exp, opInd, 'Error in code `%s`' % code)
+        
+    def test_tuple_in_list(self):
+        code = '''
+        a = (1, 2, ['aa','bb'])
+        a[2][0] = 'a222'
+        print('tuple_a', a[0], a[2][0], a[2][1])
+        print(a[2][:1])
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+    def test_tuple(self):
+        code = '''
+        a = (1, 2, ['aa','bb'])
+        print('tuple_a', a[0], a[2])
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+    def test_list_slice_skip_both(self):
+        ''' arr[:] same as full copy '''
+        code='''
+        arr = [1,2,3,4,5,6,7,8,9]
+        arr2 = arr[:]
+        print('arr2:', arr2, ' len:', len(arr2))
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        arr2 = ctx.get('arr2')
+        self.assertEqual(9, len(arr2.elems))
+
+
+    def test_list_slice_skip2(self):
+        ''' '''
+        code='''
+        arr = [1,2,3,4,5,6,7,8,9]
+        arr2 = arr[2:]
+        print('arr2:', arr2, ' len:', len(arr2))
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        arr2 = ctx.get('arr2')
+        self.assertEqual(7, len(arr2.elems))
+
+    def test_list_slice_skip1(self):
+        ''' '''
+        code='''
+        arr = [1,2,3,4,5,6,7,8,9]
+        arr2 = arr[:5]
+        # print('arr2:', arr2, ' len:', len(arr2))
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        arr2 = ctx.get('arr2')
+        self.assertEqual(5, len(arr2.elems))
+
+    def test_list_slice(self):
+        ''' '''
+        code='''
+        arr = [1,2,3,4,5,6,7,8,9]
+        arr2 = arr[2:-2]
+        print('arr2:', arr2, ' len:', len(arr2))
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        arr2 = ctx.get('arr2')
+        self.assertEqual(5, len(arr2.elems))
+
     def test_type_nums(self):
         code = '''
         a: int = 5

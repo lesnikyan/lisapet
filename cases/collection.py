@@ -31,6 +31,31 @@ def keyBorders(elems:list[Elem]):
     return open, close
 
 
+class CaseTuple(SubCase):
+    ''' (a, b, c) '''
+
+    def match(self, elems:list[Elem]) -> bool:
+        # trivial check
+        if not (isLex(elems[0], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')')):
+            return False
+        cs = CaseCommas()
+        return cs.match(elems[1:-1])
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        sub = elems[1:-1]
+        cs = CaseCommas()
+        subs = [sub]
+        if cs.match(sub):
+            _, subs = cs.split(sub)
+        exp = TupleExpr()
+        return exp, subs
+
+    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
+        print('CaseTuple.setSub: ', base, subs)
+        for exp in subs:
+            base.add(exp)
+        return base
+
 class CaseArray(SubCase):
     ''' [num, word, expr] '''
 
@@ -91,26 +116,27 @@ class CaseCollectElem(SubCase):
         elems[0]: varName, funcName + (expr), 
         more complex: obj.field, obj.method(expr)
         '''
+
+        if not self.matchOuter(elems):
+            return False
+        
+        opInd = findLastBrackets(elems)
+        if opInd < 1:
+            # means only brackets, no collection var before
+            return False
+
+        # prels('CaseCollectElem match1:', elems, opInd)
+        # prels('CaseCollectElem match2:', elems[opInd+1 : -1])
+        # filtering slice
+        hasColon = CaseColon().match(elems[opInd+1 : -1])
+        # print('CaseCollectElem hasColon', hasColon)
+        return not hasColon
+
+    def matchOuter(self, elems:list[Elem]):
+        ''' iaf expr is varExpr + [smth] '''
         if len(elems) < 4:
             return False
-        opIndex = afterNameBr(elems)
-        # oper = elems[opIndex]
-        if opIndex > -1 or not isLex(elems[-1], Lt.oper, ']'):
-            # case: var[key]
-            return False
-        xopen, close = keyBorders(elems)
-        prels('CaseCollectElem match1:', elems, xopen, close)
-        prels('CaseCollectElem match2:', elems[xopen+1 : close])
-        hasColon = CaseColon().match(elems[xopen+1 : close])
-        print('CaseCollectElem hasColon', hasColon)
-        return not hasColon
-        # return True
-        
-        # if len(elems) < 4:
-        #     return False
-        # assign to no-key case var[] = 123
-        
-        return False
+        return endsWithBrackets(elems, '[]')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         '''
@@ -119,18 +145,11 @@ class CaseCollectElem(SubCase):
         2. eval key|index expr
         3. get val from collection by index|key
         '''
-        # varElems = []
-        # keyElems = []
-        # for ee in elems:
-        #     if isLex(ee, Lt.oper, '['):
-        #         keyElems = elems[len(varElems)+1: -1]
-        #         break
-        #     varElems.append(ee)
 
         exp = CollectElemExpr()
-        xopen, close = keyBorders(elems)
-        varElems = elems[:xopen] # (array)[key-expr]
-        keyElems = elems[xopen+1 : close] # array[(key-expr)]
+        opInd = findLastBrackets(elems)
+        varElems = elems[:opInd] # (array)[key-expr]
+        keyElems = elems[opInd+1 : -1] # array[(key-expr)]
         return exp, [varElems, keyElems]
 
     def setSub(self, base:CollectElemExpr, subs:Expression|list[Expression])->Expression:
@@ -145,15 +164,13 @@ class CaseSlice(SubCase):
         ''' arr.expr[start-expr : end-expr] 
             TODO: super[key-expr][start : end]
         '''
-        if len(elems) < 4:
+        if not CaseCollectElem().matchOuter(elems):
             return False
+        
+        opInd = findLastBrackets(elems)
 
-        opIndex = afterNameBr(elems)
-        if opIndex > -1 or not isLex(elems[-1], Lt.oper, ']'):
-            return False
-        xopen, close = keyBorders(elems)
         cc = CaseColon()
-        subPart = elems[xopen+1 : close]
+        subPart = elems[opInd+1 : -1]
         hasColon = cc.match(subPart)
         _, ccParts = cc.split(subPart)
         print('CaseSlice match', hasColon, ccParts, len(ccParts))
@@ -161,13 +178,12 @@ class CaseSlice(SubCase):
 
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        xopen, close = keyBorders(elems)
-        subPart = elems[xopen+1 : close]
+        opInd = findLastBrackets(elems)
+        subPart = elems[opInd+1 : -1]
         cc = CaseColon()
         _, keys = cc.split(subPart)
-        varexp = elems[:xopen]
+        varexp = elems[:opInd]
         exp = SliceExpr()
-        # print('!@#', )
         return exp, [varexp]+ keys
 
     def setSub(self, base:CollectElemExpr, subs:Expression|list[Expression])->Expression:

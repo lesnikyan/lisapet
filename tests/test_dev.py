@@ -19,12 +19,11 @@ import pdb
 class TestDev(TestCase):
 
 
-    def test_list_slice_skip_both(self):
-        ''' arr[:] same as full copy '''
-        code='''
-        arr = [1,2,3,4,5,6,7,8,9]
-        arr2 = arr[:]
-        print('arr2:', arr2, ' len:', len(arr2))
+    def _test_tuple_assign_left(self):
+        ''' make vars and assign vals from tuple  '''
+        code = '''
+        (a, b, s) = 1,2,3
+        print('', a, b, c)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -32,58 +31,6 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        arr2 = ctx.get('arr2')
-        self.assertEqual(9, len(arr2.elems))
-
-
-    def test_list_slice_skip2(self):
-        ''' '''
-        code='''
-        arr = [1,2,3,4,5,6,7,8,9]
-        arr2 = arr[2:]
-        print('arr2:', arr2, ' len:', len(arr2))
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        arr2 = ctx.get('arr2')
-        self.assertEqual(7, len(arr2.elems))
-
-    def test_list_slice_skip1(self):
-        ''' '''
-        code='''
-        arr = [1,2,3,4,5,6,7,8,9]
-        arr2 = arr[:5]
-        # print('arr2:', arr2, ' len:', len(arr2))
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        arr2 = ctx.get('arr2')
-        self.assertEqual(5, len(arr2.elems))
-
-    def _test_list_slice(self):
-        ''' '''
-        code='''
-        arr = [1,2,3,4,5,6,7,8,9]
-        arr2 = arr[2:-2]
-        print('arr2:', arr2, ' len:', len(arr2))
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        arr2 = ctx.get('arr2')
-        self.assertEqual(5, len(arr2.elems))
-        
 
     def _test_struct_anon(self):
         code = '''
@@ -109,8 +56,8 @@ class TestDev(TestCase):
     [n * m | n <- arr1, m <- arr2] >> iterator over iterator
     [n + m | n <- arr, m = n / 10, k <- arr2 | m != k] >> add sub expression
     [n + m | n <- arr, m:int = int (n / 10), k <- arr2[m] | m > 0 && m < len(arr2)] ?? >> add sub expression
-        2. List slice
-    arr[0:5] ##### arr[3:] ##### arr[:3] ##### arr[2:-3] 
+        2. Struct methods.
+        3. tuple
         TODO tests:
     test assignment and read 
     global var and local block

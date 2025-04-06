@@ -19,7 +19,11 @@ rxExp = re.compile(r'^[0-9]+(?:\.[0-9]*)?e\-?[0-9]+$')
 
 
 def isLex(ee:Elem, xtype, text):
-    return ee.type == xtype and ee.text == text
+    if ee.type != xtype:
+        return False
+    if isinstance(text, list):
+        return ee.text in text
+    return ee.text == text
 
 
 def val(data, vtype):
@@ -47,7 +51,7 @@ def numLex(tx:str)->Var:
         order = 10 ** int(n)
         return val(float(m) * order, TypeFloat())
 
-    raise InerpretErr("Value is not number: '%s'" % tx)
+    raise InterpretErr("Value is not number: '%s'" % tx)
 
 
 def strLex(tx:str)->Var:

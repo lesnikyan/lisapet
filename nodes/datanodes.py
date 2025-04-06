@@ -161,3 +161,21 @@ class SliceExpr(Expression, CollectElem):
 
 class TupleExpr(CollectionExpr):
     ''' res = (a, b, c); res = a, b, c '''
+
+    def __init__(self):
+        super().__init__()
+        self.valsExpr:list[Expression] = []
+        self.obj:ListVar = None
+
+    def add(self, exp:Expression):
+        ''' add next elem of list'''
+        self.valsExpr.append(exp)
+
+    def do(self, ctx:Context):
+        self.obj = TupleVar(None)
+        for exp in self.valsExpr:
+            exp.do(ctx)
+            self.obj.addVal(exp.get())
+
+    def get(self):
+        return self.obj

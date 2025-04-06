@@ -172,6 +172,30 @@ class ListVar(Collection):
         return 'ListVar(%s, [%s])' % (nm, ', '.join(vals))
 
 
+class TupleVar(Collection):
+    ''' '''
+    def __init__(self, name=None, **kw):
+        super().__init__(None, name, TypeList)
+        ees = []
+        if 'elems' in kw:
+            ees = kw['elems']
+        self.elems:list[Var] = ees
+
+    def len(self)->int:
+        return len(self.elems)
+
+    def addVal(self, val:Var):
+        self.elems.append(val)
+
+    def getVal(self, key:Var|int):
+        i = key
+        if isinstance(key, Var):
+            i = key.get()
+        if i < len(self.elems):
+            return self.elems[i]
+        raise EvalErr('Tuple out of range by index %d ' % i)
+
+
 class DictVar(Collection):
     ''' classic List / Array object'''
     

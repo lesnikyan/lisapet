@@ -146,13 +146,13 @@ expCaseList = [
     CaseFuncDef(), CaseReturn(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseArrowR(), # CaseIterOper(),
     CaseStructBlockDef(), CaseStructDef(),
-    CaseSemic(), CaseAssign(), 
-    CaseBinAssign(),
+    CaseAssign(), CaseBinAssign(), CaseSemic(), CaseBinOper(), 
+    CaseTuple(),
     CaseDictBlock(), CaseListBlock(), 
     # CaseStructBlockConstr(),
     CaseDictLine(), CaseArray(), CaseCollectElem(), CaseSlice(), CaseFunCall(), CaseStructConstr(),
     # CaseDotOper(),
-    CaseVar_(), CaseVal(), CaseVar(), CaseBinOper(), CaseBrackets(), CaseUnar()]
+    CaseVar_(), CaseVal(), CaseVar(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:
     return expCaseList
