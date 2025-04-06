@@ -3,19 +3,9 @@
 
 #== change `iter(args)` magic implementstion to inbound function (custom python function func__iter(args)->IterGen )
 
-#== DONE!
-#@ 
-multiline comment
-@#
-x = 2 #@ inline comment @# + sum([10, 20])
-#@
 
 #== store content of comments as a runtime metadata
 
-#== dict DONE
-
-#== list slice # DONE
-subVals = arr[3:-2]
 
 # list | string math mult, concat
 
@@ -32,10 +22,56 @@ subVals = arr[3:-2]
 [x ** 2 | x <- [0..10] | x % 2 != 0]
 
 
+#== 
+# Named func args
+
+func foo(user:User, name: string, age: int)
+    user | getUser(name, age) # return user if not null, otherwize - return result of getUser()
+foo(age=22, name='Vasya')
+
+#== 
+# ternar operator ?:
+res = condition ? valueIfTrue : valueIfFalse
+
+
+#==
+# operator `in`
+# for list, finds val, the same for tuple
+value in [1,2,3] ...
+# for dict, finds key
+value in {'a':1, 'b':2,...}
+
+
+#==
+    `expr1 | expr2` # or-value, for non-numver values, 
+    # syntax sugar for ternar operator with condition: (expr1 != null and expr != false)
+    # operator that is returns left val if it not a null/false, otherwize - return second
+
+#==
+# lambdas 
+foo = \x -> x * 100
+
+# high-order function def
+func bar(fn:function, a:int):
+    b = a ** 2
+    fn([b, a, 5])
+
+# usage
+for i <- iter(20, 30)
+    bar(\x -> sum(x) - 100, i)
+
+#= 
+# native regexp
+
+
 #==
 ''' 
+python-like
 multistring
 '''
+
+#==
+# string formatting by % , or internal includes like {varName}, $varName, @varName, @{exp(res.sion)}
 
 #== multiline expr
 # concat all sublines before make expression process
@@ -52,6 +88,16 @@ if (expr1
 #     a % 2 != 0)
 #
 #
+
+
+#== multiline func, definition and call
+
+func foo (
+    arg1:int,
+    arg2: float,
+    arg3: string 
+)
+    arg1 * arg2 - sum(arg3)
 
 foo( ag1,
     arg2,
@@ -87,6 +133,41 @@ else
 
 #== sugar for collections - skip commas between lines in multiline constructor
 
+#== struct method
+inst.foo(11, 22)
+
+
+
+#== Think about tail-recursion.
+Tranform tail recursion to loop.
+
+func foo(arg)
+    if expr1
+        return expr2
+    arg2 = expr3
+    foo(arg2)
+
+@#
+
+#@
+--------- Done section: 
+
+
+#== DONE!
+#@ 
+multiline comment
+
+x = 2 #@ inline comment @# + sum([10, 20])
+
+@#
+#@
+
+#== dict DONE
+data = {'a': 1, 'b': 2, c: [5,6,7]}
+
+#== list slice # DONE
+subVals = arr[3:-2]
+
 #== list DONE
 hellos = list
     'Hello world!'
@@ -113,18 +194,5 @@ inst = TypeName
 
 inst.field1 = 'new value'
 print(inst.field1)
-
-inst.foo(11, 22)
-
-
-
-#== Think about tail-recursion.
-Tranform tail recursion to loop.
-
-func foo(arg)
-    if expr1
-        return expr2
-    arg2 = expr3
-    foo(arg2)
 
 @#
