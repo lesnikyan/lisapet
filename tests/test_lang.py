@@ -510,7 +510,7 @@ class TestLang(TestCase):
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             exp = lex2tree(clines)
-            ctx = Context(None)
+            ctx = rootContext()
             print('$$ eval expr ------------------')
             exp.do(ctx)
             res = ctx.get('res').get()
@@ -532,7 +532,7 @@ class TestLang(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
-        ctx = Context(None)
+        ctx = rootContext()
         print('$$ run test ------------------')
         exp.do(ctx)
         res = ctx.get('res')
@@ -688,9 +688,11 @@ class TestLang(TestCase):
             clines:CLine = elemStream(tlines)
             ex = lex2tree(clines)
             ress = []
-            ctx = Context(None)
+            ctx = rootContext()
             for k, v in ctdata.items():
-                ctx.addSet({k: Var(v, k, TypeInt)})
+                vv = Var(k, TypeInt)
+                vv.set(v)
+                ctx.addSet({k: vv})
             print('~~~~ test case: %s ~~~~' % code)
             ex.do(ctx)
 
@@ -771,7 +773,9 @@ class TestLang(TestCase):
         ress = []
         for x in data:
             ctx = Context(None)
-            ctx.addSet({'x': Var(x, 'x', TypeInt)})
+            vv = Var('x', TypeInt)
+            vv.set(x)
+            ctx.addSet({'x': vv})
             print('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             rr = [ctx.get('res').get(), ctx.get('a').get() , ctx.get('b').get()]
@@ -803,8 +807,10 @@ class TestLang(TestCase):
         ex = lex2tree(clines)
         ress = []
         for x in data:
-            ctx = Context(None)
-            ctx.addSet({'x': Var(x, 'x', TypeInt)})
+            ctx = rootContext()
+            vv = Var('x', TypeInt())
+            vv.set(Val(x, TypeInt()))
+            ctx.addSet({'x': vv})
             print('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             ress.append(ctx.get('res').get())
@@ -849,8 +855,10 @@ class TestLang(TestCase):
         ex = lex2tree(clines)
         ress = []
         for x in data:
-            ctx = Context(None)
-            ctx.addSet({'x': Var(x, 'x', TypeInt)})
+            ctx =rootContext()
+            vv = Var('x', TypeInt)
+            vv.set(Val(x, TypeInt))
+            ctx.addSet({'x': vv})
             print('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             ress.append(ctx.get('res').get())
@@ -887,8 +895,12 @@ class TestLang(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             mres = cs.match(elems)
-            ctx = Context(None)
-            ctx.addSet({v: Var(k, v) for v, k in ctxData.items()})
+            ctx = rootContext()
+            def tvar(k, v):
+                vv = Var(k, TypeAny)
+                vv.set(Val(v, TypeAny))
+                return vv
+            ctx.addSet({k: tvar(k, v) for k,v in ctxData.items()})
             print('#tc11', td, mres)
             ex = elems2expr(elems)
             ex.do(ctx)
@@ -938,7 +950,15 @@ class TestLang(TestCase):
             print('#tt1:', mc[0])
             ex = elems2expr(elems)
             ctx = Context(None)
-            ctx.addSet({v: Var(k, v) for v, k in mc[1].items()})
+            
+            def tvar(k, v):
+                print('## tvar:', k, v)
+                vv = Var(k, TypeAny)
+                vv.set(Val(v, TypeAny))
+                return vv
+            
+            ctx.addSet({k: tvar(k, v) for k, v in mc[1].items()})
+            ctx.print()
             ex.do(ctx)
             print('#t-CB1:', ex.get().get())
         

@@ -31,14 +31,14 @@ class ListExpr(CollectionExpr):
     def __init__(self):
         super().__init__()
         self.valsExprList:list[Expression] = []
-        self.listObj:ListVar = None
+        self.listObj:ListVal = None
 
     def add(self, exp:Expression):
         ''' add next elem of list'''
         self.valsExprList.append(exp)
 
     def do(self, ctx:Context):
-        self.listObj = ListVar(None)
+        self.listObj = ListVal()
         # print('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
         for exp in self.valsExprList:
             exp.do(ctx)
@@ -62,7 +62,7 @@ class DictExpr(CollectionExpr):
     def __init__(self):
         super().__init__()
         self.exprList:list[ServPairExpr] = []
-        self.data:DictVar = None
+        self.data:DictVal = None
 
     def add(self, exp:ServPairExpr):
         ''' add next elem of list'''
@@ -70,7 +70,7 @@ class DictExpr(CollectionExpr):
         self.exprList.append(exp)
 
     def do(self, ctx:Context):
-        self.data = DictVar(None)
+        self.data = DictVal(None)
         # print('## DictExpr.do1 self.data:', self.data)
         for exp in self.exprList:
             # print('dictExp. next:', exp)
@@ -126,7 +126,7 @@ class SliceExpr(Expression, CollectElem):
     ''' array[start : last+1] '''
 
     def __init__(self):
-        self.target:ListVar = None
+        self.target:ListVal = None
         self.varExpr:Expression = None
         self.beginExpr = None
         self.closeExpr = None
@@ -137,7 +137,7 @@ class SliceExpr(Expression, CollectElem):
     def setKeysExpr(self, beginExpr:Expression, closeExpr:Expression):
         ''' openExpr, closeExpr'''
         if isinstance(beginExpr, NothingExpr):
-            beginExpr = ValExpr(Var(0, None, TypeInt))
+            beginExpr = ValExpr(Val(0, TypeInt))
         # if isinstance(closeExpr, NothingExpr):
         #     closeExpr = ValExpr(Var(-1, None, TypeInt))
         self.beginExpr = beginExpr
@@ -150,7 +150,7 @@ class SliceExpr(Expression, CollectElem):
         self.beginExpr.do(ctx)
         self.closeExpr.do(ctx)
         if isinstance(self.closeExpr, NothingExpr):
-            self.closeExpr = ValExpr(Var(self.target.len(), None, TypeInt))
+            self.closeExpr = ValExpr(Val(self.target.len(), TypeInt))
         print('## self.target', self.target)
 
     def get(self)->Var:
@@ -165,14 +165,14 @@ class TupleExpr(CollectionExpr):
     def __init__(self):
         super().__init__()
         self.valsExpr:list[Expression] = []
-        self.obj:ListVar = None
+        self.obj:ListVal = None
 
     def add(self, exp:Expression):
         ''' add next elem of list'''
         self.valsExpr.append(exp)
 
     def do(self, ctx:Context):
-        self.obj = TupleVar(None)
+        self.obj = TupleVal()
         for exp in self.valsExpr:
             exp.do(ctx)
             self.obj.addVal(exp.get())

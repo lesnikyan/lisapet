@@ -301,8 +301,8 @@ class ServPairExpr(Expression):
 
 class VarStrict(Var):
     ''' strict typed var '''
-    def __init__(self, val, name, vtype):
-        super().__init__(val, name, None)
+    def __init__(self, name, vtype):
+        super().__init__(name, vtype)
         self.__type = vtype
     
     def getType(self):
@@ -312,17 +312,18 @@ class VarStrict(Var):
 class TypedVarExpr(VarExpr):
     ''' name: type '''
     def __init__(self, left, right):
-        var = Var(None)
-        super().__init__(var)
+        # var:Var = None
+        super().__init__(left)
         self.left = left
         self.right = right
+        self.val = None
 
     def do(self, ctx):
         self.right.do(ctx)
         tp = self.right.get()
         name = self.left.get().name
         # print('TypedVarExpr.do1 ', name, tp.get())
-        self.val = VarStrict(None, name, tp.get())
+        self.val = Var(name, tp.get(), strict=True)
         ctx.addVar(self.val)
 
 

@@ -1,13 +1,32 @@
+'''
+
+'''
+
+
+
+class InterpretErr(ValueError):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
+class EvalErr(ValueError):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
+class TypeErr(ValueError):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
+# def inst(self, *args)->Base:
+#     return VType()
 
 
 LANG_WORDS = [word.strip() for line in '''
 for while if else func type def var match case
 list dict struct
 '''.splitlines() for word in line.split(' ') if word.strip() != '']
-
-
-# def inst(self, *args)->Base:
-#     return VType()
 
 class Base:
     ''' '''
@@ -23,38 +42,84 @@ class VType(Base):
     ''' '''
     def __init__(self):
         pass
-    
-    # def get(self)->'VType':
-    #     pass
-    
+
+class Val(Base):
+    ''' 
+    Val is a value with type;
+    type should be defined
+    Val shouldn`t be changed after creation
+    '''
+    def __init__(self, val, vtype:VType):
+        self.val = val
+        self.vtype:VType = vtype
+
+    def get(self):
+        return self.val
+
+    def getVal(self):
+        return self.get()
+
+    def getType(self):
+        return self.vtype
+
+    def __str__(self):
+        # n = self.name
+        # if not n:
+        #     n = '#noname'
+        # tt = '#notype'
+        # if self.vtype is not None:
+        tt = self.vtype.name
+        return '%s(%s: %s)' % (self.__class__.__name__, self.val, tt)
 
 
 class Var(Base):
-    def __init__(self, val:Base, name=None, vtype:VType=None):
-        self.val:Base = val
-        self.name = name # if name is none - here Val, not Var
+    '''
+    Var contains Val or any children of Val: ListVal, DictVal, StructInstance
+    '''
+    def __init__(self, name, vtype:VType, **kw):
+        strict = False
+        mutable = True
+        if 'strict' in kw:
+            strict = kw['strict']
+        if 'const' in kw:
+            mutable = not kw['const']
+        # debug exception
+        if not isinstance(name, str):
+            print('name type:', type(name))
+            raise InterpretErr('OLD VAR USAGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %s ' % type(name))
+        self.val:Val = None
+        self.name:str = name # if name is none - here Val, not Var
         self.vtype:VType = vtype
-    
+        self._mutable = mutable # makes Var const
+        self._strict = strict # makes Var strict typed
+
     def set(self, val):
+        if self.val is not None and not self._mutable:
+            raise EvalErr('Attemps to change immutable variable %s ' % self.name)
         self.val = val
     
     def get(self):
         return self.val
     
+    def getVal(self):
+        return self.val.getVal()
+    
     def setType(self, t:VType):
+        if self._strict:
+            raise EvalErr('Attemps to change type (%s) of strict-typed variable %s : %s ' % (t.name, self.name, self.getType().name))
         self.vtype = t
     
     def getType(self):
         return self.vtype
     
-    # TODO: fix Var-to-string for all builit types: 
+    # TODO: fix Var-to-string for all builtin types: 
     # null, bool, int, float, complex-num, string,
     # list, dict, struct, tuple 
     def __str__(self):
         n = self.name
         if not n:
             n = '#noname'
-        tt = '#undefined'
+        tt = '#notype'
         if self.vtype is not None:
             tt = self.vtype.name
         return '%s(%s, %s: %s)' % (self.__class__.__name__, n, self.val, tt)

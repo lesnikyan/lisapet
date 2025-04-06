@@ -5,6 +5,11 @@
 
 from base import *
 
+
+class TypeType(VType):
+    name = 'type'
+
+
 class TypeNull(VType):
     name = 'null'
 
@@ -61,6 +66,9 @@ class TypeString(VType):
 
 class TypeStruct(TypeContainer):
     name = 'struct'
+    
+    def getName(self):
+        pass
 
 
 class TypeFunc(VType):

@@ -8,7 +8,7 @@ from lang import *
 from vars import *
 from nodes.expression import *
 from nodes.func_expr import FuncCallExpr
-from nodes.datanodes import DictVar, ListVar
+from nodes.datanodes import DictVal, ListVal
 
 
 class IterAssignExpr(Expression):
@@ -46,7 +46,7 @@ class IterAssignExpr(Expression):
         self.srcExpr.do(ctx) # make iter object
         iterSrc = self.srcExpr.get()
         # print('#iter-start2 itSrc', iterSrc)
-        if isinstance(iterSrc, (ListVar, DictVar)):
+        if isinstance(iterSrc, (ListVal, DictVal)):
             self.itExp = SrcIterator(iterSrc)
         elif isinstance(iterSrc.get(), (IndexIterator)):
             self.itExp = iterSrc.get()
@@ -107,7 +107,7 @@ class IndexIterator(NIterator):
         return self.index < self.last
 
     def get(self):
-        return Var(self.index, None, TypeInt)
+        return Val(self.index, TypeInt)
 
 class SrcIterator(NIterator):
     ''' x <- [10,20,30] '''

@@ -8,21 +8,6 @@ class ParseErr(ValueError):
         super().__init__(*args)
 
 
-class InterpretErr(ValueError):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-
-class EvalErr(ValueError):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-
-class TypeErr(ValueError):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-
 class Mk:
     empty = 0
     lex = 1 # any lexem
@@ -30,13 +15,15 @@ class Mk:
     fin = 3 # end of block
     line = 4 # start line
 
+
 class lex:
     def __init__(self, val=None, mark=None, **kw):
         self.val = val if type(val) is str else None
         # print('#4 ', type(val), '|', self.val)
         self.mark = mark if mark in [1,2,3, 4] else Mk.empty
         self.ltype = kw['type'] if 'type' in kw else 0
-        
+
+
 # lexType:
 class Lt:
     none = 0
@@ -67,20 +54,12 @@ class Lt:
         return 'bad#val'
 
 
-# class llt:
-#     ''' Lang lexem types '''
-#     space = 1
-#     word = 2
-#     oper = 3
-#     num = 4
-#     text = 5
-    
-
 class Elem:
     '''Code elem'''
     def __init__(self, type:Lt, text:str):
         self.type:Lt = type
         self.text:str = text
+
 
 class TLine:
     ''' Text line '''
@@ -88,6 +67,7 @@ class TLine:
         self.src = src
         self.lexems:list[lex] = lexems
         # print('#a4:', [n.val for n in self.lexems])
+
 
 class CLine:
     ''' Code line '''
@@ -100,7 +80,6 @@ class CLine:
         self.indent = indent
 
 
-
 KEYWORDS = '''
 import
 const
@@ -109,5 +88,3 @@ case match
 '''
 
 TYPES = 'num int float bool str list dict struct any null callab'
-
-

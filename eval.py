@@ -17,6 +17,15 @@ def rootContext():
     setNativeFunc(ctx, 'len', len, TypeInt)
     setNativeFunc(ctx, 'iter', loop_iter, TypeInt)
     setNativeFunc(ctx, 'type', type, TypeInt)
+    
+    constants = {
+    'true': (TypeBool, Val(True, TypeBool)),
+    'false': (TypeBool, Val(False, TypeBool)),
+    }
+    for name, cn in constants.items():
+        vv = Var(name, cn[0], const=True)
+        vv.set(cn[1])
+        ctx.addVar(vv)
 
     return ctx
 

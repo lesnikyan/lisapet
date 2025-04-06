@@ -26,8 +26,8 @@ def isLex(ee:Elem, xtype, text):
     return ee.text == text
 
 
-def val(data, vtype):
-    return Var(data, None, vtype)
+def val(data, vtype)->Val:
+    return Val(data, vtype)
 
 
 def numLex(tx:str)->Var:

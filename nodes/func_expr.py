@@ -15,7 +15,7 @@ class Function(FuncInst):
     '''
 
     def __init__(self, name):
-        super().__init__(None)
+        super().__init__()
         # self.argExpr:list[Expression] = None # like ListExpression: expr, expr, expr
         self.name = name
         self.vtype = TypeFunc
@@ -47,7 +47,7 @@ class Function(FuncInst):
         self.res = None
         self.block.storeRes = True # save last expr value
         inCtx = Context(None) # inner context, empty new for each call
-        inCtx.addVar(Var(1000001, 'debVal', TypeInt))
+        # inCtx.addVar(Var(1000001, 'debVal', TypeInt))
         for arg in self.argVars:
             # print('Fudo:', arg)
             inCtx.addVar(arg)
@@ -114,7 +114,7 @@ class FuncDefExpr(DefinitionExpr, Block):
         self.signExp:Expression = None # func signature : name (arg set) ???
 
     def addArg(self, arg:VarExpr):
-        ''' arg Var(noval|default, name, type)'''
+        ''' arg Var(name, type)'''
         self.argVars.append(arg.get())
 
     def add(self, exp:Expression):
@@ -185,7 +185,7 @@ class NFunc(Function):
                 a = arg.get()
             args.append(a)
         res = self.callFunc(*args)
-        self.res = value(res, self.resType)
+        self.res = Val(res, self.resType)
 
     def get(self)->Var:
         return self.res

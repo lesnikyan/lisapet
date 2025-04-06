@@ -12,11 +12,11 @@ Current context can find var|func name up to root context (module).
 from vars import *
 
 
-class FuncInst(Var):
+class FuncInst(Val):
     '''function object is stored in context, callable, returns result '''
 
-    def __init__(self, name):
-        super().__init__(name, TypeFunc)
+    def __init__(self):
+        super().__init__(None, TypeFunc)
 
     def do(self, ctx: 'Context'):
         pass
@@ -26,10 +26,7 @@ class FuncInst(Var):
 
 
 class Context(NSContext):
-    _defaultContextVals = {
-        'true': Var(True, 'true', TypeBool),
-        'false': Var(False, 'false', TypeBool),
-    }
+    # _defaultContextVals = {}
     def __init__(self, parent:'Context'=None):
         self.vars:dict = dict()
         self.types:dict[str, VType] = {}
@@ -48,20 +45,23 @@ class Context(NSContext):
 
 
     def addType(self, tp:VType):
-        print('ctx.addType: ', tp)
-        if tp.name in self.types:
-            raise EvalErr(f'Type {tp.name} already defined.')
-        if not isinstance(tp, (VType, VarType)):
+        print('ctx.addType: ', tp, '::', type(tp))
+        if not isinstance(tp, (VType, TypeVal)):
             raise EvalErr(f'Trying to put non-type {tp.name} to ctx.types.')
         # if tp.name not in self.types:
         name = tp.name if isinstance(tp, VType) else tp.get().name
-        if not isinstance(tp, VarType):
-            tp = VarType(tp)
+        if not isinstance(tp, TypeVal):
+            tp = TypeVal(tp)
+        elif isinstance(tp.get(), TypeStruct):
+            name = tp.get().getName()
+        if name in self.types:
+            raise EvalErr(f'Type {tp.name} already defined.')
+        print('>>>>>>> :tp:', tp)
         self.types[name] = tp
 
     def getType(self, name)->VType:
-        if name in Context._defaultContextVals:
-            return Context._defaultContextVals[name]
+        # if name in Context._defaultContextVals:
+        #     return Context._defaultContextVals[name]
         src = self
         while True:
             if name in self.types:
@@ -109,7 +109,7 @@ class Context(NSContext):
         # print('x.addVar1 ====> :', varName, varName.__class__.__name__, vtype, vtype.__class__.__name__)
         if isinstance(varName, str):
             # print('! Just name', varName)
-            var = Var(None, varName, vtype)
+            var = Var(varName, vtype)
         else:
             name = var.name
         #     print('#>> var.name:', var.name)
@@ -121,8 +121,8 @@ class Context(NSContext):
         self.addSet({name:var})
 
     def getVar(self, name)->Base:
-        if name in Context._defaultContextVals:
-            return Context._defaultContextVals[name]
+        # if name in Context._defaultContextVals:
+        #     return Context._defaultContextVals[name]
         src = self
         while True:
             # print('#Ctx-get,name:', name)
@@ -137,8 +137,8 @@ class Context(NSContext):
         return self.find(name)
 
     def find(self, name):
-        if name in Context._defaultContextVals:
-            return Context._defaultContextVals[name]
+        # if name in Context._defaultContextVals:
+        #     return Context._defaultContextVals[name]
         src = self
         print('#Ctx-get0,:', name)
         while src is not None:
@@ -174,7 +174,7 @@ class Context(NSContext):
 
 def instance(tp:VType)->Var:
     match tp.name:
-        case 'list': return ListVar()
-        case 'dict': return DictVar()
-        case _: return Var(None, None, tp)
+        case 'list': return ListVal()
+        case 'dict': return DictVal()
+        case _: return Var(None, tp)
 

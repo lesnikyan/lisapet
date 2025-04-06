@@ -50,6 +50,9 @@ class StructDef(TypeStruct):
     def getFields(self):
         return self.fields
 
+    def getName(self):
+        return self.name
+
     # def __str__(self):
     #     return 'type struct %s{}' % self.name
 
@@ -62,11 +65,11 @@ class DefaultStruct(StructDef):
         super().__init__('anonimous', fields)
 
 
-class StructInstance(Var, NSContext):
+class StructInstance(Val, NSContext):
     ''' data of struct '''
 
-    def __init__(self, name, stype:StructDef):
-        super().__init__(self, name, stype)
+    def __init__(self, stype:StructDef):
+        super().__init__(None, stype)
         print('StructInstance.__init__', '>>', stype)
         self.vtype:StructDef = stype
         self.data:dict[str, Var] = {}
@@ -145,7 +148,7 @@ class StructDefExpr(DefinitionExpr):
         self.fields.append(fexp)
 
     def do(self, ctx:Context):
-        tdef = StructDef(self.typeName)
+        strType = StructDef(self.typeName)
         for fexp in self.fields:
             fexp.do(ctx)
             field = fexp.get()
@@ -157,19 +160,19 @@ class StructDefExpr(DefinitionExpr):
                 print('@20>>', fn, ft)
                 fname = fn.name
                 ftype = ft.get()
-                print('@21>>', fname, ' >> ',  ftype, type(ftype))
+                print('@21>> type', self.typeName,',fname:', fname, ' >> ',  ftype, type(ftype))
                 if not isinstance(ftype, (VType)):
                     print('fname:', type(ft))
-                    raise EvalErr(f'Trying to put non-type {fname} to ctx.types.')
+                    raise EvalErr(f'Trying to put {fname} with no type.')
 
             elif isinstance(field, Var):
                 fname = field.name
             else:
                 raise EvalErr('Struct def error: fiels expression returns incorrect result: %s ' % field)
-            tdef.add(Var(None, fname, ftype))
+            strType.add(Var(fname, ftype))
         # register new type
-        tvar = VarType(tdef, TypeStruct)
-        ctx.addType(tdef)
+        typeVal = TypeVal(strType)
+        ctx.addType(typeVal)
 
     def get(self):
         raise EvalErr('Type(struct) definition expression can`t return result.')
@@ -190,7 +193,6 @@ class StructArgPair(Expression):
         self.res = None
         self.valExpr.do(ctx)
         val = self.valExpr.get()
-        # field = Var(None, self.name)
         print('StructArgPair.do1', self.name, val)
         self.res = self.name, val
     
@@ -216,7 +218,7 @@ class StructConstr(Expression):
         self.inst = None
         stype = ctx.getType(self.typeName)
         print('StructConstr.do1 >> ', stype)
-        inst = StructInstance(None, stype.get())
+        inst = StructInstance(stype.get())
         vals = []
         for fexp in self.fieldExp:
             fexp.do(ctx)
@@ -249,77 +251,3 @@ class StructConstr(Expression):
 class StructConstrBegin(StructConstr, MultilineVal):
     def __init__(self, typeName):
         super().__init__(typeName)
-
-
-# class StructField(Expression):
-#     ''' inst.field '''
-
-#     def __init__(self):
-#         self.objExp:VarExpr = None
-#         self.field:str = ''
-#         self.val:Var = None
-
-#     def set(self, inst:VarExpr, field:VarExpr):
-#         self.objExp = inst
-#         self.field = field.name
-
-#     def do(self, ctx:Context):
-#         # print('StructField.do1', self.objExp, self.field)
-#         self.objExp.do(ctx)
-#         inst:StructInstance = self.objExp.get()
-#         self.val = inst.get(self.field)
-#         # print('StructField.do2', inst, self.val)
-
-#     def get(self):
-#         return self.val
-
-
-
-# class _UserStruct(TypeStruct):
-#     ''' struct TypeName '''
-    
-#     def __init__(self, name:str):
-#         self._typeName = name
-#         self.fieldNames:list[str] = []
-#         self.fieldsTypes:dict[str, VType] = {}
-
-#     def addField(self, name:str, stype:VType):
-#         if name in self.fieldNames:
-#             raise EvalErr('Field %d in struct %s already defined.')
-#         self.fieldNames.append(name)
-#         self.fieldsTypes[name] = stype
-
-#     def typeName(self):
-#         return self._typeName
-
-
-# class _StructVar(Var):
-#     ''' instance of user-defined struct'''
-
-#     def __init__(self, name=None, stype=UserStruct):
-#         super().__init__(None, name, )
-#         self.type:UserStruct = stype
-#         self.data:dict[str,Var] = {}
-
-#     def checkField(self, name, val:Var=None):
-#         if name not in self.type.fieldNames:
-#             raise EvalErr('Struct %s doesn`t have field %s' % (name, self.type.typeName()))
-#         if val is not None:
-#             # field type doesn't change
-#             if name in self.data and self.type.fieldsTypes[name].name != val.getType().name:
-#                 raise EvalErr('Incorrect value type in struct  field assignments: %s != %s' 
-#                             % (self.data[name].getType().name, val.getType().name))
-
-#     def setVal(self, key:Var, val:Var):
-#         '''set value of a field by name'''
-#         k = key.get()
-#         self.checkField(k, val)
-#         self.data[k].setVal(val.getVal())
-
-#     def getVal(self, key:Var)->Var:
-#         fn = key.get()
-#         self.checkField(fn)
-#         if fn in self.data:
-#             return self.data[fn]
-#         raise EvalErr('Incorrect field name %s of struct %s ' % (fn, self.type.typeName()))
-

@@ -219,7 +219,7 @@ class CaseVar(ExpCase):
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value from context by var name'''
-        expr = VarExpr(Var(None, elems[0].text)) # TODO: try to define a type
+        expr = VarExpr(Var(elems[0].text, TypeAny)) # TODO: try to define a type
         return expr
 
 class CaseVar_(ExpCase):

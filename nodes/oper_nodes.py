@@ -68,13 +68,13 @@ class OpAssign(OperCommand):
         if isinstance(r0, VarExpr):
             exvar = r0.get()
             name = exvar.name
-            print('@@ exvar', name)
+            # print('@@ exvar', name)
             if InterpretContext.get().hasStruct(name):
-                print('@@ struct Type here ')
+                # print('@@ struct Type here ')
                 r0 = StructConstrBegin(name)
         
         if isinstance(r0, MultilineVal):
-            print('-- MultilineVal or Struct here')
+            # print('-- MultilineVal or Struct here')
             self.toBlock()
             right = r0
         self.right = right
@@ -95,10 +95,7 @@ class OpAssign(OperCommand):
             raise InterpretErr('Count of left and right parts of assignment are different '
                                'left = %d, right = %d' % (len(self.left), len(self.right)))
 
-        # 1 or more asignments: a, b, c = 1, 2, 3
-        ctx.print()
-        # print('#b3-srs0', src[0])
-        # print('#b3-dtcn', self.left[0])
+        # ctx.print()
         resSet:list[Var] = [None]*size
         for i in range(size):
             src[i].do(ctx)
@@ -109,14 +106,12 @@ class OpAssign(OperCommand):
             if isinstance(self.left[i], VarExpr_):
                 # skip _ var
                 continue
-            print(' (a = b) :1')
+            # print(' (a = b) :1')
             # eval left expressopm
             self.left[i].do(ctx)
             # print(' (a = b) :2')
             val = resSet[i]
-            # if isinstance(val, ObjectMember):
-            #     print('# struct field as right operand')
-            #     val = val.get()
+
             
             if isinstance(self.left[i], CollectElem):
                 ''' '''
@@ -131,10 +126,11 @@ class OpAssign(OperCommand):
             if isinstance(dest, VarUndefined):
                 # new var for assignment
                 isNew = True
-                newVar = Var(None, dest.name)
+                newVar = Var(dest.name, TypeAny)
                 # print('Assign new var', newVar)
                 ctx.addVar(newVar)
                 dest = newVar
+                dest.set(val)
                 
             # print('# op-assign set1, varX, valX:', self.left[i], src[i])
             # print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
@@ -143,27 +139,19 @@ class OpAssign(OperCommand):
                 
             if isinstance(dest, ObjectMember):
                 # struct field as left operand
-                dest.set(val)
                 # print('!!!!!! struct.2', dest)
                 return
-                
-            # if isinstance(val, VarType):
-            #     vtype = val.get()
-            #     if 
-            
-            # if isinstance(dest.getType(), TypeStruct):
-            #     dest.set(val)
-            #     return
-                
-                # dest.set()
+
+            # print(' (a = b) dest2: ', dest)
             # single var
             name = dest.name
-            dest = val
-            dest.name = name
+            # dest = val
+            # dest.name = name
+            # dest.set(val)
             ctx.update(dest.name, val)
-            ctx.update(dest.name, resSet[i])
+            # ctx.update(dest.name, resSet[i])
             saved = ctx.get(name)
-            print(' (a = b) saved ', saved)
+            # print(' (a = b) saved ', saved)
 
 
         # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
@@ -190,20 +178,19 @@ class OpMath(BinOper):
         # eval expressions
         self.left.do(ctx)
         self.right.do(ctx)
-        # get val objects from expressions
         # print('#bin-oper1:', self.left, self.right) # expressions
+        # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
         # print('#bin-oper2', a, b)
-        # print('#bin-oper3', a.get(), b.get())
-        print(' ( %s )' % self.oper, a.get(), b.get())
+        print(' ( %s )' % self.oper, a.getVal(), b.getVal())
         # print(' (%s %s %s)' % (a.getType(), self.oper, b.getType()))
         type = a.getType()
         if type != b.getType():
             # TODO fix different types
             pass
         # get numeric values and call math function 
-        val = ff[self.oper](a.get(), b.get())
-        self.res = Var(val, None, type)
+        val = ff[self.oper](a.getVal(), b.getVal())
+        self.res = Val(val, type)
         
     def plus(self, a, b):
         return a + b
@@ -250,13 +237,13 @@ class OpBinBool(BinOper):
         self.right.do(ctx)
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
-        print(' ( %s )' % self.oper, a.get(), b.get())
+        print(' ( %s )' % self.oper, a.getVal(), b.getVal())
         type = a.getType()
         if type != b.getType():
             # naive impl: different types are not equal
             return False
-        res = ff[self.oper](a.get(), b.get())
-        self.res = Var(res, None, a.getType())
+        res = ff[self.oper](a.getVal(), b.getVal())
+        self.res = Val(res, a.getType())
     
     def op_and(self, a, b):
         return a and b
@@ -287,7 +274,7 @@ class OpCompare(BinOper):
         a, b = self.left.get(), self.right.get()
         # print('( %s )' % self.oper,  self.left, self.right)
         # print('#--OpCompare.do2',  a, b)
-        print(' ( %s )' % self.oper,  a.get(), b.get())
+        print(' ( %s )' % self.oper,  a.getVal(), b.getVal())
         # print('#--OpCompare.do3',  a.getType(), b.getType())
         type = a.getType()
         if type != b.getType():
@@ -295,9 +282,9 @@ class OpCompare(BinOper):
             # return False
             # TODO: fix type comparison
             pass
-        res = ff[self.oper](a.get(), b.get())
+        res = ff[self.oper](a.getVal(), b.getVal())
         # print('# == == OpCompare.do ', res)
-        self.res = Var(res, None, TypeBool)
+        self.res = Val(res, TypeBool)
 
 
     def eq(self, a, b):
@@ -340,8 +327,8 @@ class OpBitwise(BinOper):
         if type != b.getType():
             # TODO type??
             return False
-        res = ff[self.oper](a.get(), b.get())
-        self.res = Var(res, None, a.getType())
+        res = ff[self.oper](a.getVal(), b.getVal())
+        self.res = Val(res, a.getType())
 
     def bt_and(self, a, b):
         return a & b
@@ -370,8 +357,9 @@ class BoolNot(UnarOper):
     def do(self, ctx:Context):
         self.inner.do(ctx)
         inVal = self.inner.get()
-        res = not inVal.get()
-        self.res = Var(res, None, inVal.getType())
+        # print(' !x', self.inner, inVal)
+        res = not inVal.getVal()
+        self.res = Val(res, inVal.getType())
 
 
 class BitNot(UnarOper):
@@ -381,8 +369,8 @@ class BitNot(UnarOper):
     def do(self, ctx:Context):
         self.inner.do(ctx)
         inVal = self.inner.get()
-        res = ~inVal.get()
-        self.res = Var(res, None, inVal.getType())
+        res = ~inVal.getVal()
+        self.res = Val(res, inVal.getType())
 
 
 class UnarSign(UnarOper):
@@ -393,10 +381,10 @@ class UnarSign(UnarOper):
     def do(self, ctx:Context):
         self.inner.do(ctx)
         inVal = self.inner.get()
-        num = inVal.get()
+        num = inVal.getVal()
         if self.oper == '-':
             num = -num
-        self.res = Var(num, None, inVal.getType())
+        self.res = Val(num, inVal.getType())
 
     # def negative(self, x):
     #     return -x
@@ -420,10 +408,10 @@ class MultiOper(OperCommand):
         return self.root.get()
 
 
-class ObjectMember(Var):
+class ObjectMember(Val):
     ''' '''
     def __init__(self, obj, member):
-        super().__init__(None, None, TypeAccess)
+        super().__init__(None, TypeAccess)
         self.object:StructInstance = None
         self.member:str = None
         self.setArgs(obj, member)
@@ -477,7 +465,7 @@ class OperDot(BinOper):
         # print('OperDot.do0', self.objExp, ' :: ', self.membExpr)
         self.objExp.do(ctx)
         inst:StructInstance = self.objExp.get()
-        print('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
+        # print('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
         # self.membExpr.do(inst)
         name = ''
         if isinstance(self.membExpr, VarExpr):
@@ -497,36 +485,3 @@ class OperDot(BinOper):
 
     def get(self):
         return self.val
-
-
-# class OpDot(BinOper):
-#     ''' inst.field
-#         expr.expr.expr.expr
-#         expr.method()
-#         get member from object
-#     '''
-
-#     def __init__(self, left:Expression=None, right:Expression=None):
-#         super().__init__('.', left, right)
-
-#     def do(self, ctx:Context):
-#         self.left.do(ctx) # find object (struct instance)
-#         inst = self.left.get()
-#         field = self.right.name
-#         self.res = inst.get(field)
-#         print('oper .... ', inst, field,' :: ', self.res)
-
-#     # def get(self):
-#     #     # print('# -> OperCommand.get() ', self.oper, self.res)
-#     #     return self.res
-
-
-# class OpColon(OperCommand):
-#     ''' `a : b` expr in dict '''
-
-#     def __init__(self,):
-#         super().__init__(':')
-
-#     def do(self, ctx:Context):
-        # pass
-

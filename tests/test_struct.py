@@ -220,9 +220,6 @@ class TestDev(TestCase):
         print('user data:', user.name, user.phone, user.sex)
         '''
         tt = '''
-        # print('phone:', user.phone)
-        user = User{name:'Catod', sex:male}
-        user = User{'Catod', 25, male, '123-45-67'}
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -255,14 +252,14 @@ class TestDev(TestCase):
     def test_struct_field_type(self):
         type1 = StructDef('Test1')
         fields = [
-            Var(None, 'amount', TypeInt),
-            Var(None, 'weight', TypeFloat),
-            Var(None, 'title', TypeString)
+            Var('amount', TypeInt()),
+            Var('weight', TypeFloat()),
+            Var('title', TypeString())
         ]
         for ff in fields:
             type1.add(ff)
-        inst = StructInstance('varName', type1)
-        inst.set('amount', value(12, TypeInt))
+        inst = StructInstance(type1)
+        inst.set('amount', Val(12, TypeInt()))
         print('## T >>> ', inst.get('amount'))
         # inst.set('amount', value('12', TypeString))
         # print('## T >>> ', inst.get('amount'))
