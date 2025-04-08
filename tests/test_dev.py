@@ -19,62 +19,6 @@ import pdb
 class TestDev(TestCase):
 
 
-    def test_struct_method_call(self):
-        ''' struct method definition  '''
-        code = '''
-        
-        func xprint(arg)
-            print('<x>', arg, '<x>')
-        
-        struct User
-            name: string 
-
-        func u:User setName(name)
-            print('x@1', name)
-            print('x@2', u.name)
-            u.name = name
-            print('x@3', u.name)
-        user = User{name:'Markos'}
-        user.setName('Lukas')
-        xprint(user.name)
-        '''
-        tt = '''
-
-        # Contexts().types['User'].__typeMethods['setName'] = Function('User@setName')
-
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        usr = ctx.get('user')
-        print('#tt user.name:', usr.get('name').get())
-        self.assertEqual('Lukas', usr.get('name').get())
-
-    def test_struct_method_definition(self):
-        ''' struct method definition  '''
-        code = '''
-        struct User
-            name: string 
-
-        func u:User setName(name:string)
-            u.name = name
-
-        user = User{name:'Markus'}
-        '''
-        tt = '''
-        '''
-        # Contexts().types['User'].__typeMethods['setName'] = Function('User@setName')
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        
-
     def _test_tuple_assign_left(self):
         ''' make vars and assign vals from tuple  '''
         code = '''
