@@ -12,19 +12,6 @@ Current context can find var|func name up to root context (module).
 from vars import *
 
 
-class FuncInst(Val):
-    '''function object is stored in context, callable, returns result '''
-
-    def __init__(self):
-        super().__init__(None, TypeFunc)
-
-    def do(self, ctx: 'Context'):
-        pass
-    
-    def get(self)->Var:
-        pass
-
-
 class Context(NSContext):
     # _defaultContextVals = {}
     def __init__(self, parent:'Context'=None):
@@ -102,6 +89,17 @@ class Context(NSContext):
         print('x.addFunc ===>  name:', name, ' var: ', fn)
         self.funcs[name] = fn
 
+    def getFunc(self, name):
+        fvar = self.find(name)
+
+    def addTypeMethod(self, typeName, func:FuncInst):
+        typeVal = self.getType(typeName)
+        xtype:TypeStruct = typeVal.get()
+        print('**addTypeMethod', typeName, xtype, func)
+        if not isinstance(xtype, TypeStruct):
+            raise EvalErr('Strange  type fpund by name `%s`' % typeName, xtype)
+        xtype.addMethod(func)
+
     def addVar(self, varName:Var|str, vtype:VType=None):
         # print('x.addVar0 >> var:', varName, varName.name)
         var = varName
@@ -120,18 +118,18 @@ class Context(NSContext):
         #     return
         self.addSet({name:var})
 
-    def getVar(self, name)->Base:
-        # if name in Context._defaultContextVals:
-        #     return Context._defaultContextVals[name]
-        src = self
-        while True:
-            # print('#Ctx-get,name:', name)
-            # print('#Ctx-get2', src.vars)
-            if name in src.vars:
-                return src.vars[name]
-            if src.upper == None:
-                raise EvalErr('Cant find var|name `%s` in current context' % name)
-            src = src.upper
+    # def _getVar(self, name)->Base:
+    #     # if name in Context._defaultContextVals:
+    #     #     return Context._defaultContextVals[name]
+    #     src = self
+    #     while True:
+    #         # print('#Ctx-get,name:', name)
+    #         # print('#Ctx-get2', src.vars, "\n\t\t\t", src.funcs)
+    #         if name in src.vars:
+    #             return src.vars[name]
+    #         if src.upper == None:
+    #             raise EvalErr('Cant find var|name `%s` in current context' % name)
+    #         src = src.upper
 
     def get(self, name)->Base:
         return self.find(name)
@@ -146,9 +144,14 @@ class Context(NSContext):
             # print('#Ctx-get2 vars', src.vars)
             # print('#Ctx-get3 funcs', (name in src.funcs), src.funcs)
             # print('#Ctx-depth', src.depth())
+            # print('#Ctx-get,name:', name)
+            # print('#Ctx-get2', src.vars, "\n\t\t\t", src.funcs)
             if name in src.types:
                 return src.types[name]
             if name in src.funcs:
+                print('CTX.find func:', name, '::', src.funcs[name])
+                # if name == 'xprint':
+                #     raise EvalErr('@@3')
                 return src.funcs[name]
             if name in src.vars:
                 return src.vars[name]
@@ -167,7 +170,7 @@ class Context(NSContext):
                     vstr = v.get()
                     if isinstance(v, Collection):
                         vstr = v.vals()
-                    print('x>', ' ' * ind, k, ':', vstr)
+                    print(' ' * ind, 'x>', k, ':', vstr)
             c = c.upper
             ind += 1
             

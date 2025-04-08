@@ -27,7 +27,7 @@ class C(A,B):
     pass
 
 
-class TestDev(TestCase):
+class TestStruts(TestCase):
 
 
     def test_struct_block_constr(self):
@@ -153,6 +153,9 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+        b0 = ctx.get('books').elems[0]
+        print('#tt b0:', b0.get('prod').get('price').get())
+        self.assertEqual(11.0, b0.get('prod').get('price').get())
 
     def test_deep_nesting_struct(self):
         ''' fix dot-operator for flexible access to submembers of struct inner fields.
@@ -183,6 +186,9 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+        c = ctx.get('c')
+        print('#tt b0:', c.get('cbb').get())
+        self.assertEqual('c-val2', c.get('cbb').get())
 
     def test_dot_oper(self):
         code='''

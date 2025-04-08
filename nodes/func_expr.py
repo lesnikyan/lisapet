@@ -25,21 +25,31 @@ class Function(FuncInst):
         self.defCtx:Context = None # for future: definition context (closure - ctx of module or upper block if function is local or lambda)
         self.res = None
 
+    def getName(self):
+        return self.name
+
     def addArg(self, arg:Var):
+        # if arg is None:
+        #     raise EvalErr('!23')
+        # if isinstance(arg, tuple):
+            # for xx in arg:
+            #     print('arg@@>', xx)
+            # raise EvalErr('!22')
         self.argVars.append(arg)
         self.argNum += 1
         # print('Fuuu, addArg', arg, self.argNum)
 
     # TODO: flow-number arguments
     def setArgVals(self, args:list[Var]):
-        print('! setArgVals')
+        nn = len(args)
+        print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
+        print('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
         if self.argNum != len(args):
             raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self.name, self.argNum, len(args)))
-        nn = len(args)
         for i in range(nn):
             arg = args[i]
+            print('set arg8  >> ', self.argVars[i], 'val:', arg)
             arg.name = self.argVars[i].name
-            print('arg  >> ', arg)
             self.argVars[i] = arg
             # self.argVars[i].set(arg.get())
 
@@ -77,9 +87,10 @@ class FuncCallExpr(Expression):
 
     def do(self, ctx: Context):
         # inne rcontext
+        print('FuncCallExpr.do')
         args:list[Var] = []
         self.func = ctx.get(self.name)
-        print('#1# func-call do1: ', self.name, self.func, 'line:', self.src)
+        print('#1# func-call do1: ', self.name, 'F:', self.func, 'line:', self.src)
         for exp in self.argExpr:
             # print('#1# func-call do2 exp=: ', exp)
             exp.do(ctx)
@@ -115,30 +126,48 @@ class FuncDefExpr(DefinitionExpr, Block):
 
     def addArg(self, arg:VarExpr):
         ''' arg Var(name, type)'''
+        if isinstance(arg, ServPairExpr):
+            arg = arg.getTypedVar()
+        # if isinstance(arg.get(), tuple):
+        #     print('', arg, type(arg))
+        #     for xx in arg.get():
+        #         print('arg>>', xx)
+        #     raise EvalErr('@@')
+        print('arg3>>>', arg, type(arg), arg.get())
+        # raise EvalErr('@@')
+        # print('arg4>>', arg)
         self.argVars.append(arg.get())
 
     def add(self, exp:Expression):
         ''' collect inner sequence of expressions'''
         print('Func-Def-Exp. add ', exp)
         self.blockLines.append(exp)
-    
+
+    def doFunc(self, ctx:Context):
+        func = Function(self.name)
+        return func
+
+    def regFunc(self, ctx:Context, func:FuncInst):
+        ctx.addFunc(func)
+
     def do(self, ctx:Context):
         ''''''
-        print('FuncDefExpr.do 1:', self.name)
-        func = Function(self.name)
+        print('FuncDefExpr.do 1:', self.name, self.argVars)
+        func = self.doFunc(ctx)
         for arg in self.argVars:
+            print('FuncDefExpr.do 2:', arg)
             func.addArg(arg)
         func.block = Block()
         # build inner block of function
         for exp in self.blockLines:
             func.block.add(exp)
         self.res = func
-        # print('FuncDefExpr.do 2:', func.name)
-        
-        ctx.addFunc(func)
+        print('FuncDefExpr.do 2:', func.name)
+        self.regFunc(ctx, func)
     
     def get(self)->Function:
         return self.res
+
 
 
 class ReturnExpr(Expression):
@@ -164,11 +193,11 @@ class ReturnExpr(Expression):
 
 class NFunc(Function):
     ''' '''
-    def __init__(self, name):
+    def __init__(self, name, rtype:VType=TypeAny()):
         super().__init__(name)
         self.callFunc:Callable = lambda *args : 1
         self.res:Var = None
-        self.resType:VType = TypeNull
+        self.resType:VType = rtype
 
     def setArgVals(self, args:list[Var]):
         self.argVars = []
@@ -190,7 +219,7 @@ class NFunc(Function):
     def get(self)->Var:
         return self.res
 
-def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeNull):
+def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
     func = NFunc(name)
     func.resType = rtype
     func.callFunc = fn

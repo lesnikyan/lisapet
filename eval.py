@@ -15,8 +15,8 @@ def rootContext():
     setDefaultTypes(ctx)
     setNativeFunc(ctx, 'print', print, TypeNull)
     setNativeFunc(ctx, 'len', len, TypeInt)
-    setNativeFunc(ctx, 'iter', loop_iter, TypeInt)
-    setNativeFunc(ctx, 'type', type, TypeInt)
+    setNativeFunc(ctx, 'iter', loop_iter, TypeIterator)
+    setNativeFunc(ctx, 'type', type, TypeType)
     
     constants = {
     'true': (TypeBool, Val(True, TypeBool)),

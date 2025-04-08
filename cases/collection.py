@@ -8,7 +8,7 @@ from vals import isDefConst, elem2val, isLex
 from cases.tcases import *
 
 from nodes.tnodes import *
-from nodes.oper_nodes import *
+# from nodes.oper_nodes import *
 from nodes.datanodes import *
 
 
@@ -56,7 +56,7 @@ class CaseTuple(SubCase):
             base.add(exp)
         return base
 
-class CaseArray(SubCase):
+class CaseList(SubCase):
     ''' [num, word, expr] '''
 
     def match(self, elems:list[Elem]) -> bool:
@@ -76,10 +76,11 @@ class CaseArray(SubCase):
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        print('CaseArray.setSub: ', base, subs)
+        print('CaseList.setSub: ', base, subs)
         for exp in subs:
             base.add(exp)
         return base
+
 
 
 class CaseListBlock(SubCase):

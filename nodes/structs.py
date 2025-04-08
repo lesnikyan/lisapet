@@ -13,6 +13,7 @@ AnonStructConstr *? : create instance of anonymous struct (json-like object)
 from nodes.expression import *
 from context import *
 from nodes.expression import ServPairExpr
+from nodes.func_expr import FuncDefExpr, FuncCallExpr, Function
 
 
 
@@ -29,6 +30,24 @@ class StructDef(TypeStruct):
         self.types:dict[str, VType] = {}
         if fields:
             self.__fillData(fields)
+        self.__typeMethods:dict[str,FuncInst] = {}
+
+    def addMethod(self, func:FuncInst):
+        name = func.getName()
+        print('struct.add Method:', name)
+        if name in self.__typeMethods:
+            raise EvalErr('Method `%s` already defined in type `%s`.' % (name, self.name))
+        self.__typeMethods[name] = func
+
+    def debug(self):
+        mm = [(k, v) for k, v in self.__typeMethods.items()]
+        print(mm)
+
+    def getMethod(self, name):
+        print('getMeth', name)
+        if not name in self.__typeMethods:
+            raise EvalErr('Method `%s` didn`t define in type `%s`.' % (name, self.name))
+        return self.__typeMethods[name]
 
     def find(self, name):
         if name in self.methods:
@@ -96,7 +115,7 @@ class StructInstance(Val, NSContext):
         print('StructInstance.set:', fname, val)
         # print('@3>> ', dir(self))
         # print('StructInstance.set type:', self.vtype, )
-        print('StructInstance.set types:', '>', self.vtype.types)
+        print('StructInstance.set types:', self.vtype.name, '>', self.vtype.types)
         if fname not in  self.vtype.types:
             raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
         # TODO: Fic to use types compatibility
@@ -107,10 +126,10 @@ class StructInstance(Val, NSContext):
         valType = val.getType()
         ftype = self.vtype.types[fname] # class inherited of VType or inst of StructInstance
         fclass = ftype.__class__
-        print('Type: name / members', self.vtype.name, self.vtype.types)
-        print('Type Check ???1:', valType, '<?>', ftype)
-        print('Type Check ???2:', valType.__class__, '<?>', fclass,' if:', isinstance(valType, fclass))
-        print('Type struct???3:', isinstance(valType, StructInstance))
+        print('Type: name / mtypes', self.vtype.name, self.vtype.types)
+        # print('Type Check ???1:', valType, '<?>', ftype)
+        # print('Type Check ???2:', valType.__class__, '<?>', fclass,' if:', isinstance(valType, fclass))
+        # print('Type struct???3:', isinstance(valType, StructInstance))
         if ftype == TypeAny:
             return # ok
         # if primitives or collections
@@ -144,7 +163,7 @@ class StructDefExpr(DefinitionExpr):
 
     def add(self, fexp:Expression):
         '''fexp - field expression: VarExpr | ServPairExpr '''
-        print('@@StructDefExpr.add1', fexp)
+        # print('@@StructDefExpr.add1', fexp)
         self.fields.append(fexp)
 
     def do(self, ctx:Context):
@@ -156,11 +175,11 @@ class StructDefExpr(DefinitionExpr):
             ctx.print()
             if isinstance(field, tuple) and len(field) == 2:
                 fn, ft = field
-                print('@2>>', field)
-                print('@20>>', fn, ft)
+                # print('@2>>', field)
+                # print('@20>>', fn, ft)
                 fname = fn.name
                 ftype = ft.get()
-                print('@21>> type', self.typeName,',fname:', fname, ' >> ',  ftype, type(ftype))
+                # print('@21>> type', self.typeName,',fname:', fname, ' >> ',  ftype, type(ftype))
                 if not isinstance(ftype, (VType)):
                     print('fname:', type(ft))
                     raise EvalErr(f'Trying to put {fname} with no type.')
@@ -251,3 +270,76 @@ class StructConstr(Expression):
 class StructConstrBegin(StructConstr, MultilineVal):
     def __init__(self, typeName):
         super().__init__(typeName)
+
+
+
+class MethodDefExpr(FuncDefExpr):
+    ''' '''
+    def __init__(self, name):
+        super().__init__(name)
+        self.instExpr:Expression = None
+        self.typeName = None
+        # raise EvalErr('DDD ', self.name)
+
+    def setInst(self, exp:ServPairExpr):
+        self.instExpr = exp.getTypedVar()
+
+    def doFunc(self, ctx):
+        func = Function(self.name)
+        self.instExpr.do(ctx)
+        inst = self.instExpr.get()
+        self.typeName = inst.getType().getName()
+        print('MethodDefExpr instType:', self.typeName)
+        print('MethodDefExpr doFunc:', self.instExpr, self.instExpr.get())
+        func.addArg(self.instExpr.get())
+        return func
+
+    def regFunc(self, ctx:Context, func:FuncInst):
+        ctx.addTypeMethod(self.typeName, func)
+
+    def do(self, ctx:Context):
+        '''''' 
+        super().do(ctx)
+
+
+class MethodCallExpr(FuncCallExpr):
+    ''' foo(agr1, 2, foo(3))  '''
+
+    def __init__(self, func:FuncCallExpr):
+        super().__init__(func.name, func.src)
+        self.inst:StructInstance = None
+        # self.name = name
+        # self.func:Function = None
+        self.argExpr:list[Expression] = func.argExpr
+
+    # def addArgExpr(self, exp:Expression):
+    #     self.argExpr.append(exp)
+
+    def setInstance(self, inst: StructInstance):
+        # print('MethCall set inst', inst)
+        self.inst = inst
+
+    def do(self, ctx: Context):
+        # print('MethodCallExpr.do')
+        # self.func = ctx.get(self.name)
+        tname = self.inst.getType().name
+        stype = ctx.getType(tname).get()
+        print('MethodCallExpr.do2', stype, stype.debug())
+        
+        self.func = stype.getMethod(self.name)
+        # instVar = self.inst[0].get(), self.inst[1].get()
+        print('instVar', self.inst, self.func.argVars)
+        args:list[Var] = [self.inst]
+        print('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
+        argInd = 0
+        avs = self.func.argVars
+        # print('#1# meth-call do2 exp=: ', avs, self.argExpr)
+        for exp in self.argExpr:
+            # print('#1# meth-call do20 exp=: ', exp)
+            exp.do(ctx)
+            # print('meth-call do3:', exp, exp.get())
+            args.append(exp.get())
+        self.func.setArgVals(args)
+        # TODO: add usage of Definishion Context instead of None
+        callCtx = Context(ctx)
+        self.func.do(callCtx)

@@ -31,28 +31,35 @@ func foo(user:User, name: string, age: int)
 foo(age=22, name='Vasya')
 
 #== 
-# ternar operator ? :
+# Ternar operator >>  expr ? expr : expr
 res = condition ? valueIfTrue : valueIfFalse
 
 
 #==
-# operator `in`
+# Operator `in`
 # for list, finds val, the same for tuple
 value in [1,2,3] ...
 # for dict, finds key
 value in {'a':1, 'b':2,...}
+# think about  non-word operators  instead of `in`
+if 'Herakl' ?? heroes ...
+if 'Herakl' ?> heroes ...
 
 
 #==
-    `expr1 ?: expr2` # or-value, for non-numver values, 
+    Val or Val operator  ?:
+    `expr1 ?: expr2` # for non-number values, 
     # syntax sugar for ternar operator with condition: (expr1 != null and expr != false)
     # operator that is returns left val if it not a null/false, otherwize - return second
 
-#==
-# lambdas 
-foo = \x -> x * 100
 
-# high-order function def
+#==
+# Lambdas, func-object, func-object call
+foo = \x -> x * 100
+foo(2)
+
+
+# High-order function def
 func bar(fn:function, a:int):
     b = a ** 2
     fn([b, a, 5])
@@ -62,7 +69,13 @@ for i <- iter(20, 30)
     bar(\x -> sum(x) - 100, i)
 
 #= 
-# native regexp
+# Native regexp
+pattern cases:  /pattern/mod ; |pattern|mod ; <pattern>mod ; %pattern%mod, 
+numsRx = /^[0-9]+$/in
+numsRx.match(strVal) # bool
+res = numRx.first(strVal) # string
+resList = numRx.find(strVal) # [string]
+grs = numsRx.groups(strVal) # [[string]]
 
 
 #==
@@ -135,6 +148,18 @@ else
 #== sugar for collections - skip commas between lines in multiline constructor
 
 #== struct method
+
+struct User
+    name: string 
+
+func u:User setName(name:string)
+    u.name = name
+
+# Contexts().types['User'].__typeMethods['setName'] = Function('User@setName')
+
+user = User{name:'Markus'}
+user.segName('Lukas')
+
 inst.foo(11, 22)
 
 

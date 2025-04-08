@@ -205,6 +205,8 @@ def makeOperExp(elem:Elem)->OperCommand:
         return ServPairExpr()
     if oper == '.':
         return OperDot()
+    if oper == '..':
+        return ListGenExpr()
     if oper =='<-':
         return IterAssignExpr() # TODO: could be extended for additional cases
     # undefined case:
@@ -356,58 +358,33 @@ def checkTypes(elems:list[Elem], exp:list[int]):
     return True
 
 
-# class _CaseDotOper(SubCase):
-    
-#     def match(self, elems:list[Elem]) -> bool:
-#         '''
-#         obj.member
-#         obj.member.member.member
-#         array[expr].member
-#         array[expr].member[key].member
-#         array[expr.member].member
-#         array[expr].member
-#         foo(args).member
-#         obj.fmember()
-#         obj.fmember(args)
-#         foo().bar().baz().member
-#         foo().bar().baz().member.member
-#         foo().bar().baz().member.method(args)
-#         array[foo()].member[key].method()
-#         '''
-#         if len(elems) < 3:
-#             return False
-#         return checkTypes(elems, [Lt.word, Lt.oper, Lt.word]) and elems[1].text == '.'
+class CaseListGen(SubCase):
+    ''' [startVal..endVal] '''
+    def match(self, elems:list[Elem]) -> bool:
+        # trivial check
+        # TODO: add check for complex cases like [] + []
+        # if isLex(elems[0], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']'):
+        #     return True
+        
+        if not isLex(elems[-1], Lt.oper, ']'):
+            return False
+        opInd = findLastBrackets(elems)
+        if opInd != 0:
+            return False
+        cs = CaseSeq('..')
+        return cs.match(elems[1:-1])
 
-#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-#         return OperDot(), [[elems[0]],[elems[2]]]
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        sub = elems[1:-1]
+        cs = CaseSeq('..')
+        subs = [sub]
+        if cs.match(sub):
+            _, subs = cs.split(sub)
+        exp = ListGenExpr()
+        return exp, subs
 
-#     def setSub(self, base:OperDot, subs:Expression|list[Expression])->Expression:
-#         print('CaseDotOper:', base, subs)
-#         # raise EvalErr('')
-#         base.set(subs[0], subs[1])
-#         return base
+    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
+        print('ListGenExpr.setSub: ', base, subs)
+        base.setArgs(*subs)
+        return base
 
-
-# class CaseColonPair(SubCase):
-#     ''' expr : expr '''
-    
-#     def match(self, elems:list[Elem]) -> bool:
-#         if elems[0].type != Lt.oper:
-#             return False
-#         if elems[0].text == '(' and elems[-1].text == ')':
-#             # only if other operator cases was failed
-#             # TODO: test: () smth ()
-#             return True
-#         return False
-    
-#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-#         ''' '''
-#         base = MultiOper()
-#         return base, [elems[1:-1]]
-    
-#     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
-#         ''' base - Multi-oper
-#             subs - just internal part
-#         '''
-#         base.setInner(subs[0])
-#         return base

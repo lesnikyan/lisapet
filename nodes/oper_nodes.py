@@ -9,6 +9,8 @@ from lang import *
 from vars import *
 from nodes.expression import *
 from nodes.structs import StructInstance
+from nodes.func_expr import FuncCallExpr
+from nodes.structs import MethodCallExpr
 
 
 class OperCommand(Expression):
@@ -139,7 +141,9 @@ class OpAssign(OperCommand):
                 
             if isinstance(dest, ObjectMember):
                 # struct field as left operand
-                # print('!!!!!! struct.2', dest)
+                # print('!!!!!! struct.2', dest, dest.object, dest.member)
+                dest.set(val)
+                # raise EvalErr(' = ObjMem')
                 return
 
             # print(' (a = b) dest2: ', dest)
@@ -458,30 +462,40 @@ class OperDot(BinOper):
 
     def setArgs(self, inst:VarExpr, member:VarExpr):
         self.objExp = inst
+        if isinstance(member, FuncCallExpr):
+            member = MethodCallExpr(member)
         self.membExpr = member
-        # print('   >> OperDot.set', self.objExp, self.membExpr)
+        print('   >> OperDot.set', self.objExp, self.membExpr)
 
     def do(self, ctx:NSContext):
         # print('OperDot.do0', self.objExp, ' :: ', self.membExpr)
         self.objExp.do(ctx)
         inst:StructInstance = self.objExp.get()
-        # print('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
+        print('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
         # self.membExpr.do(inst)
         name = ''
         if isinstance(self.membExpr, VarExpr):
-            name = self.membExpr.name # just name for struct, 
+            name = self.membExpr.name # just name for struct
+        elif isinstance(self.membExpr, MethodCallExpr):
+            print('OperDot.do3 method1 =', self.membExpr, type(self.membExpr))
+            # TODO: refactor to: 1. return func-member; 2. call method as usage of `()` operator
+            self.membExpr.setInstance(inst)
+            self.membExpr.do(ctx)
+            self.val = self.membExpr.get()
+            print('OperDot.do3 method res =', self.val)
+            return
         else:
             # exp.get() - for array or dimanic field name obj.(fieldName(args))
             self.membExpr.do(ctx)
             sub = self.membExpr.get()
             name = sub.get()
-        
+
         if isinstance(inst, ObjectMember):
             inst = inst.get()
-        # member = inst.find(self.membExpr.name)
+
         # print('OperDot.do2 <inst =', inst, 'name=', name ,'>')
         self.val = ObjectMember(inst, name)
-        # print('OperDot.do3 res=', self.val)
+        print('OperDot.do fin field =', self.val)
 
     def get(self):
         return self.val

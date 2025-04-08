@@ -64,8 +64,27 @@ class TypeString(VType):
     name = 'string'
 
 
+class FuncInst(Val):
+    '''function object is stored in context, callable, returns result '''
+
+    def __init__(self):
+        super().__init__(None, TypeFunc)
+
+    def getName(self):
+        pass
+
+    def do(self, ctx: 'Context'):
+        pass
+    
+    def get(self)->Var:
+        pass
+
+
 class TypeStruct(TypeContainer):
     name = 'struct'
+
+    def addMethod(self, name, func:FuncInst):
+        pass
     
     def getName(self):
         pass
@@ -78,6 +97,10 @@ class TypeFunc(VType):
 class TypeAccess(VType):
     '''  '''
     name = 'handler'
+
+
+class TypeIterator(VType):
+    name = 'iterator'
 
 
 class ComparT:

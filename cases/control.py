@@ -36,34 +36,15 @@ class CaseMatch(SubCase):
         return base
 
 
-# class _CaseCase(SubCase):
-#     ''' Sub element of CaseMatch '''
-
-#     def match(self, elems:list[Elem]) -> bool:
-#         ''' 
-#         first sub-level into match block
-#         expr -> expr '''
-#         if len(elems) < 3:
-#             return False
-        
-#         if isLex(elems[0], Lt.word, ''):
-#             return True
-#         return False
-
-#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-#         subs = elems[1:]
-        
-
-#     def setSub(self, base:Expression, subs:list[Expression])->Expression:
-#         pass
-
 class RawCase:
     ''' case we need do some post-operation '''
+
 
 class ArrOper(RawCase):
     def __init__(self, left=None, right=None):
         self.left:Expression = left
         self.right:Expression = right
+
 
 def findOper(elems:list[Elem], oper:str):
     ''' find first oper between words and brackets'''
@@ -89,7 +70,7 @@ def findOper(elems:list[Elem], oper:str):
         if i > 0:
             return i
     return -1
-    
+
 
 class CaseArrowR(SubCase):
     ''' multi pattern 
@@ -137,18 +118,7 @@ class CaseFor(BlockCase, SubCase):
         start = 1
         elen = len(elems)
         _, subs = CaseSemic().split(elems[1:])
-        # for i in range(1, elen):
-        #     prels('>>> %d ' % i, elems[i:])
-        #     ee = elems[i]
-        #     if ee.type == Lt.oper and ee.text == ';':
-        #         subs.append(elems[start:i])
-        #         start = i + 1
-        #     if i == elen - 1 and start < elen - 1:
-        #         # last elem
-        #         print('Last elem')
-        #         subs.append(elems[start:])
-        # if start > len(elems) - 1:
-        #     subs.append()
+
         exp:LoopBlock = None
         match len(subs):
             case 1: exp = LoopIterExpr()

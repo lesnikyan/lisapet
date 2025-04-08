@@ -322,7 +322,7 @@ class TypedVarExpr(VarExpr):
         self.right.do(ctx)
         tp = self.right.get()
         name = self.left.get().name
-        # print('TypedVarExpr.do1 ', name, tp.get())
+        print('TypedVarExpr.do1 ', name, tp.get())
         self.val = Var(name, tp.get(), strict=True)
         ctx.addVar(self.val)
 

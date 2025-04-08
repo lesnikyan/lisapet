@@ -24,6 +24,7 @@ from cases.collection import CaseDictLine
 from nodes.expression import *
 from nodes.structs import *
 
+
 class CaseStructDef(SubCase):
     ''' One-line struct definition, fields type = Any
     struct TypeName field1, field2, field3
@@ -174,6 +175,4 @@ class CaseStructBlockConstr(SubCase):
 #         base.set(subs[0], subs[1])
 #         return base
         
-    
-
     

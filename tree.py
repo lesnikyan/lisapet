@@ -18,6 +18,7 @@ from nodes.tnodes import *
 from nodes.oper_nodes import *
 from nodes.control import *
 from cases.structs import *
+from cases.funcs import *
 
 
 class CaseDebug(ExpCase):
@@ -31,14 +32,14 @@ class CaseDebug(ExpCase):
 
 expCaseList = [ 
     CaseEmpty(), CaseComment(), CaseDebug(),
-    CaseFuncDef(), CaseReturn(),
+    CaseFuncDef(), CaseReturn(), CaseMathodDef(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseArrowR(), # CaseIterOper(),
     CaseStructBlockDef(), CaseStructDef(),
     CaseAssign(), CaseBinAssign(), CaseSemic(), CaseBinOper(), 
     CaseTuple(),
-    CaseDictBlock(), CaseListBlock(), 
+    CaseDictBlock(), CaseListBlock(), CaseListGen(),
     # CaseStructBlockConstr(),
-    CaseDictLine(), CaseArray(), CaseCollectElem(), CaseSlice(), CaseFunCall(), CaseStructConstr(),
+    CaseDictLine(), CaseList(), CaseCollectElem(), CaseSlice(), CaseFunCall(), CaseStructConstr(),
     # CaseDotOper(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBrackets(), CaseUnar()]
 

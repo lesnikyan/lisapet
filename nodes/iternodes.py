@@ -45,10 +45,10 @@ class IterAssignExpr(Expression):
         # print('#iter-start1 self.srcExpr', self.srcExpr)
         self.srcExpr.do(ctx) # make iter object
         iterSrc = self.srcExpr.get()
-        # print('#iter-start2 itSrc', iterSrc)
+        print('#iter-start2 itSrc', iterSrc)
         if isinstance(iterSrc, (ListVal, DictVal)):
             self.itExp = SrcIterator(iterSrc)
-        elif isinstance(iterSrc.get(), (IndexIterator)):
+        elif isinstance(iterSrc.get(), (NIterator)):
             self.itExp = iterSrc.get()
         self.itExp.start()
         # print('#iter-start3', self.key, self.val)
@@ -82,6 +82,22 @@ class IterAssignExpr(Expression):
 
 class NIterator:
     ''' '''
+    
+    def start(self):
+        ''' reset iterator to start position '''
+        pass
+
+    def step(self):
+        ''' move to next pos '''
+        pass
+
+    def hasNext(self):
+        ''' if not last position '''
+        pass
+
+    def get(self):
+        ''' get current element '''
+        pass
 
 
 class IndexIterator(NIterator):
@@ -96,6 +112,7 @@ class IndexIterator(NIterator):
         self.last = b # not last, but next after last
         self.__step = c
         self.index = a
+        self.vtype = TypeIterator()
     
     def start(self):
         self.index = self.first
@@ -109,6 +126,7 @@ class IndexIterator(NIterator):
     def get(self):
         return Val(self.index, TypeInt)
 
+
 class SrcIterator(NIterator):
     ''' x <- [10,20,30] '''
     def __init__(self, src:list|dict):
@@ -119,6 +137,7 @@ class SrcIterator(NIterator):
         # if self._isDict:
             # self.iterFunc = self._iterDict
         self.iter = None
+        self.vtype = TypeIterator()
 
     def start(self):
         seq = self.src
@@ -141,4 +160,55 @@ class SrcIterator(NIterator):
         if self._isDict:
             key = self._keys[key]
         return self.src[key]
+
+
+class ListGenIterator(NIterator):
+    ''' [a..b] from a to b, step |1| '''
+
+    def __init__(self, a, b):
+        ''' a - begin, 
+            b - end '''
+        c = 1
+        if b < a:
+            c = -1
+        self.first = a
+        self.last = b # last val
+        self.__step = c
+        self.index = a
+        self.vtype = TypeIterator()
+    
+    def start(self):
+        self.index = self.first
+
+    def step(self):
+        self.index += self.__step
+
+    def hasNext(self):
+        return self.index <= self.last
+
+    def get(self):
+        return Val(self.index, TypeInt)
+
+
+class ListGenExpr(Expression):
+    ''' [a .. b] '''
+    def __init__(self):
+        self.iter:NIterator = None
+        self.beginExpr = None
+        self.endExpr = None
+
+    def setArgs(self, a:Expression, b:Expression):
+        self.beginExpr = a
+        self.endExpr = b
+
+    def do(self, ctx:Context):
+        self.beginExpr.do(ctx)
+        self.endExpr.do(ctx)
+        a = self.beginExpr.get()
+        b = self.endExpr.get()
+        self.iter = ListGenIterator(a.getVal(), b.getVal())
+        
+    def get(self):
+        return Val(self.iter, TypeIterator())
+    
 
