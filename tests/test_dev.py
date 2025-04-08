@@ -53,7 +53,7 @@ class TestDev(TestCase):
         print('#tt user.name:', usr.get('name').get())
         self.assertEqual('Lukas', usr.get('name').get())
 
-    def _test_struct_method_definition(self):
+    def test_struct_method_definition(self):
         ''' struct method definition  '''
         code = '''
         struct User
@@ -65,7 +65,6 @@ class TestDev(TestCase):
         user = User{name:'Markus'}
         '''
         tt = '''
-        user.segName('Lukas')
         '''
         # Contexts().types['User'].__typeMethods['setName'] = Function('User@setName')
         code = norm(code[1:])
