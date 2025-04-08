@@ -17,8 +17,20 @@ import pdb
 
 
 class TestDev(TestCase):
+    
 
 
+    def _test_list_gen_simplest(self):
+        ''' make vars and assign vals from tuple  '''
+        code = '''
+        sqrs = [x ** 2 | x <- [0..10]]
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
 
     def _test_tuple_assign_left(self):
         ''' make vars and assign vals from tuple  '''

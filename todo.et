@@ -1,13 +1,12 @@
 
 # TODO List
 
-#== change `iter(args)` magic implementstion to inbound function (custom python function func__iter(args)->IterGen )
-
 
 #== store content of comments as a runtime metadata
 
 
-# list | string math mult, concat
+#==
+ list | string math mult, concat
 
 'abc' * 3 -> 'abcabcabc'
 [1,2,3] * 2 -> [1,2,3,1,2,3,1,2,3]
@@ -15,8 +14,13 @@
 'acb ' + 'xyz' -> 'abc xyz'
 [1,2,3] + [4,5] -> [1,2,3,4,5]
 
-#== list generator
+
+#== DONE 
+# list generator
 [0..10]
+
+#==
+# list comprehention
 [x ** 2 | x <- [0..10]]
 [y * x | x <- [0..10], y <- ['a'..'n']]
 [x ** 2 | x <- [0..10] | x % 2 != 0]
@@ -166,9 +170,8 @@ func foo(arg)
 @#
 
 #@
-
---------- Done section: 
-
+########################### Done section ############################# 
+@#
 
 #== DONE!
 #@ 
@@ -177,8 +180,11 @@ multiline comment
 x = 2 #@ inline comment @# + sum([10, 20])
 
 @#
+
 #@
 
+#== DONE
+change `iter(args)` magic implementstion to inbound function (custom python function func__iter(args)->IterGen )
 
 #== dict DONE
 data = {'a': 1, 'b': 2, c: [5,6,7]}

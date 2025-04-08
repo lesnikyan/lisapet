@@ -20,6 +20,23 @@ import pdb
 class TestLang(TestCase):
 
 
+    def test_colon_vs_other(self):
+        ''' make vars and assign vals from tuple  '''
+        code = '''
+        d1 = {'a': 10 + 1}
+        struct T1 bb:int
+        t1 = T1{bb:4}
+        d2 = {'b': 20 / t1.bb}
+        
+        print(d1['a'], d2['b'])
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
     def test_func_typed_args(self):
         ''' make vars and assign vals from tuple  '''
         code = '''
