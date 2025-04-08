@@ -90,14 +90,15 @@ class FuncCallExpr(Expression):
         print('FuncCallExpr.do')
         args:list[Var] = []
         self.func = ctx.get(self.name)
+        if isinstance(self.func, VarUndefined):
+            raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
         print('#1# func-call do1: ', self.name, 'F:', self.func, 'line:', self.src)
         for exp in self.argExpr:
             # print('#1# func-call do2 exp=: ', exp)
             exp.do(ctx)
-            print('func-call do2:', exp, exp.get())
+            # print('func-call do2:', exp, exp.get())
             args.append(exp.get())
         self.func.setArgVals(args)
-        # TODO: add usage of Definishion Context instead of None
         callCtx = Context(ctx)
         self.func.do(callCtx)
 
@@ -126,17 +127,10 @@ class FuncDefExpr(DefinitionExpr, Block):
 
     def addArg(self, arg:VarExpr):
         ''' arg Var(name, type)'''
+        print('addArg1 :', arg, type(arg))
         if isinstance(arg, ServPairExpr):
             arg = arg.getTypedVar()
-        # if isinstance(arg.get(), tuple):
-        #     print('', arg, type(arg))
-        #     for xx in arg.get():
-        #         print('arg>>', xx)
-        #     raise EvalErr('@@')
-        print('arg3>>>', arg, type(arg), arg.get())
-        # raise EvalErr('@@')
-        # print('arg4>>', arg)
-        self.argVars.append(arg.get())
+        self.argVars.append(arg)
 
     def add(self, exp:Expression):
         ''' collect inner sequence of expressions'''
@@ -152,9 +146,11 @@ class FuncDefExpr(DefinitionExpr, Block):
 
     def do(self, ctx:Context):
         ''''''
-        print('FuncDefExpr.do 1:', self.name, self.argVars)
+        print('FuncDefExpr.do 1:', self.name, 'argExps:', self.argVars)
         func = self.doFunc(ctx)
         for arg in self.argVars:
+            if isinstance(arg, TypedVarExpr):
+                arg.do(ctx)
             print('FuncDefExpr.do 2:', arg)
             func.addArg(arg)
         func.block = Block()
@@ -162,7 +158,7 @@ class FuncDefExpr(DefinitionExpr, Block):
         for exp in self.blockLines:
             func.block.add(exp)
         self.res = func
-        print('FuncDefExpr.do 2:', func.name)
+        print('FuncDefExpr.do 3:', func.name)
         self.regFunc(ctx, func)
     
     def get(self)->Function:
@@ -202,7 +198,7 @@ class NFunc(Function):
     def setArgVals(self, args:list[Var]):
         self.argVars = []
         for arg in (args):
-            # print('~NFsetA', arg)
+            print('~NFsetA', arg)
             self.argVars.append(arg.get())
 
     def do(self, ctx: Context):

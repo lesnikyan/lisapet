@@ -110,14 +110,6 @@ class DebugExpr(Expression):
         print(" $$$ DEBUG: ", self.val)
 
 
-# class Command(Expression):
-#     def do(self, var:Var, src:Expression):
-#         pass
-    
-#     def get(self):
-#         return self.val
-
-
 class ControlExpr(Expression):
     ''' for, if, match '''
 

@@ -124,7 +124,7 @@ class OpAssign(OperCommand):
             #get destination var
             dest = self.left[i].get()
             isNew = False
-            
+            self.res = val
             if isinstance(dest, VarUndefined):
                 # new var for assignment
                 isNew = True
@@ -153,6 +153,7 @@ class OpAssign(OperCommand):
             # dest.name = name
             # dest.set(val)
             ctx.update(dest.name, val)
+            self.res = val
             # ctx.update(dest.name, resSet[i])
             saved = ctx.get(name)
             # print(' (a = b) saved ', saved)

@@ -8,10 +8,7 @@ from vars import *
 from vals import isDefConst, elem2val, isLex
 
 from nodes.tnodes import *
-# from nodes.oper_nodes import *
-# from nodes.datanodes import *
-# from nodes.control import *
-# from nodes.func_expr import *
+from nodes.func_expr import *
 from cases.tcases import *
 from cases.oper import *
 from cases.structs import MethodDefExpr, MethodCallExpr
@@ -31,21 +28,8 @@ class CaseFuncDef(BlockCase, SubCase):
         method:
             func u:User setName(name:string)
         '''
-        # detecting if struct method 
-        # cc = CaseColon()
-        # if len(elems) > 6 and cc.match(elems[1:4] and isLex(elems[5], Lt.oper, '(')):
-        #     # fname = elems[4].text
-        #     # stype = elems[1].text
-        #     # svar = elems[3].text
-        #     # instSub = elems[1:4]
-        #     return self.splitMethod(elems)
         
         fname = elems[1].text
-        # sub = elems[3:-1]
-        # cs = CaseCommas()
-        # subs = [sub]
-        # if cs.match(sub):
-        #     _, subs = cs.split(sub)
         exp = FuncDefExpr(fname)
         subs = self.splitArgs(elems[3:-1])
         return exp, subs
@@ -74,11 +58,7 @@ class CaseMathodDef(CaseFuncDef):
         return cc.match(elems[1:4])
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        # sub = elems[6:-1]
-        cs = CaseCommas()
-        # subs = [sub]
-        # if cs.match(sub):
-        #     _, subs = cs.split(sub)
+        # cs = CaseCommas()
         argSubs = self.splitArgs(elems[6:-1])
         instSub = elems[1:4]
         subs = [instSub] + argSubs

@@ -30,6 +30,30 @@ class C(A,B):
 class TestStruts(TestCase):
 
 
+    def test_method_typed_args(self):
+        ''' make vars and assign vals from tuple  '''
+        code = '''
+        
+        struct MyType name: string
+        
+        func st: MyType foo(nn: int, ff: float, arg4 )
+            print('arg4:', arg4)
+            div = ' ' * nn
+            st.name + div + '/'
+        
+        myt = MyType{name: 'Grrr'}
+        
+        print('p>>', myt.foo(4, 0.1, '4444'))
+        '''
+        tt = '''
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
     def test_struct_method_call(self):
         ''' struct method definition  '''
         code = '''

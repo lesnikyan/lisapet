@@ -30,6 +30,7 @@ func foo(user:User, name: string, age: int)
     # return user if not null, otherwize - return result of getUser()
 foo(age=22, name='Vasya')
 
+
 #== 
 # Ternar operator >>  expr ? expr : expr
 res = condition ? valueIfTrue : valueIfFalse
@@ -47,7 +48,7 @@ if 'Herakl' ?> heroes ...
 
 
 #==
-    Val or Val operator  ?:
+# Val or Val operator  ?:
     `expr1 ?: expr2` # for non-number values, 
     # syntax sugar for ternar operator with condition: (expr1 != null and expr != false)
     # operator that is returns left val if it not a null/false, otherwize - return second
@@ -64,9 +65,11 @@ func bar(fn:function, a:int):
     b = a ** 2
     fn([b, a, 5])
 
+
 # usage
 for i <- iter(20, 30)
     bar(\x -> sum(x) - 100, i)
+
 
 #= 
 # Native regexp
@@ -92,6 +95,12 @@ multistring
 
 if (expr1 
     && expr2)
+
+#==
+# sub-expression in if block 
+if val = foo(); val > 10 ...
+# last sub is condition
+
 
 #== possible sugar
 # case if: with no operator between line use && or defined default operator
@@ -145,25 +154,6 @@ else if cond2
 else
     expr3
 
-#== sugar for collections - skip commas between lines in multiline constructor
-
-#== struct method
-
-struct User
-    name: string 
-
-func u:User setName(name:string)
-    u.name = name
-
-# Contexts().types['User'].__typeMethods['setName'] = Function('User@setName')
-
-user = User{name:'Markus'}
-user.segName('Lukas')
-
-inst.foo(11, 22)
-
-
-
 #== Think about tail-recursion.
 Tranform tail recursion to loop.
 
@@ -176,6 +166,7 @@ func foo(arg)
 @#
 
 #@
+
 --------- Done section: 
 
 
@@ -188,37 +179,51 @@ x = 2 #@ inline comment @# + sum([10, 20])
 @#
 #@
 
+
 #== dict DONE
 data = {'a': 1, 'b': 2, c: [5,6,7]}
 
-#== list slice # DONE
-subVals = arr[3:-2]
+## Multiline collection constructor
 
 #== list DONE
 hellos = list
     'Hello world!'
     'Helo desktop!'
 
-#== DONE
+#== dict DONE
 data = dict
     'a': 1
     'b': 2
 
-#== struct
-# DONE
 
-struct TypeName
-    field1: str
-    field2: type
+#== DONE
+# sugar for collections - skip commas between lines in multiline constructor
 
-func TypeName.foo(inst, arg1, arg2)
-    expr1
-    espr2
-    inst.field1 = arg1
 
-inst = TypeName
+#== list slice # DONE
+subVals = arr[3:-2]
 
-inst.field1 = 'new value'
-print(inst.field1)
+
+#== DONE
+# struct method
+
+struct User
+    name: string 
+
+func u:User setName(name:string)
+    u.name = name
+
+# Contexts().types['User'].__typeMethods['setName'] = Function('User@setName')
+
+user = User{name:'Markus'}
+user.segName('Lukas')
+
+print(user.name)
+
+
+#== DONE
+# typed func args 
+func foo(name:string, age: int)
+
 
 @#
