@@ -32,6 +32,9 @@ class CaseFuncDef(BlockCase, SubCase):
         fname = elems[1].text
         exp = FuncDefExpr(fname)
         subs = self.splitArgs(elems[3:-1])
+        subs = [ees for ees in subs if len(ees) > 0]
+        for ees in subs:
+            print('--------------- >>>>>>>>>>>>>>', elemStr(ees))
         return exp, subs
 
     def splitArgs(self, elems):
@@ -58,8 +61,9 @@ class CaseMathodDef(CaseFuncDef):
         return cc.match(elems[1:4])
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        # cs = CaseCommas()
         argSubs = self.splitArgs(elems[6:-1])
+        argSubs = [ees for ees in argSubs if len(ees) > 0]
+        # return exp, subs
         instSub = elems[1:4]
         subs = [instSub] + argSubs
         fname = elems[4].text

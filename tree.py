@@ -59,12 +59,15 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
             # prels('#cml-exp1:', ee)
     if not expCase.sub():
         return base
+    
     if not subs or not subs[0]:
         return base
     subExp:list[Expression] = []
     for sub in subs:
         # prels('#complexExpr1:', sub)
         texpr = elems2expr(sub)
+        # if isinstance(texpr, NothingExpr):
+        #     continue
         subExp.append(texpr)
     expCase.setSub(base, subExp)
     return base

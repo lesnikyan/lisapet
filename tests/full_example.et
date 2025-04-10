@@ -48,7 +48,32 @@ For now we can:
     struct User name, age, sex, phone
     user = User{name:'Catod', age:25, sex:male, phone:'123-45-67'}
     print('phone:', user.phone)
-    TODO: block-definition, block-constructor, set val to struct.field (a.b = c)
+    
+10 Struct
+    block-definition
+    block-constructor, 
+    set val to struct.field (a.b = c)
+
+11. Methods of struct
+    func instance: TypeName foo(arg, arg)
+        # doing something with instance, args. Same as other functions
+
+12. types of func/  method arguments.
+
+
+13. List generator.
+    [beginVal .. lastVal]
+    useful for loops: 
+    for x <- [1..10] ...
+
+14. List comprehansions.
+    [res-elem ; elem <- src; subVar = expr; guard ]
+    [result-expression (element) ; element <- srcList; subVar = expression; bool-expression (filtre condition) ]
+    List comprehension an contain 
+        1 or more internal iterators (elem <- src), 
+        0 or more sub-vars for each iterator after iterator, 
+        1 filter condition for each iterator after iterator.
+        Next iterator can use elem from previous a source.
 
 --
 @#
@@ -167,5 +192,39 @@ func testBooks()
         printBook(bb)
 
 testBooks()
+
+# Methods of struct
+
+struct Type1
+    name: string
+    id: int
+
+func tip:Type1 setName(name:string)
+    tip.name = name
+
+func tip:Type1 getName()
+    tip.name
+
+func testType1()
+    tp1 = Type1 {name:'noname', id: 1}
+    tp1.setName('New-Name')
+    print('tp1 name:', tp1.getName())
+
+testType1()
+
+# List comprehension
+func testCompr()
+    nums1 = [[x ** 2, y] ; x <- [5..7]; y <- [1..3]]
+    print('nums1 = ', nums1)
+
+    src2 = [[5, 1], [5, 2], [5, 3], [6, 1], [6, 2], [6, 3], [7, 1], [7, 2], [7, 3]]
+    nums2 = [ x ; sub <- src2 ; x <- sub]
+    print('nums2 = ', nums2)
+
+    nums3 = [[x, x**3, y**2] ; x <- [1..10]; y = x ** 2; y < 50 && x ** 3 > 10]
+    print('nums = ', nums3)
+
+testCompr()
+
 #@
 @#

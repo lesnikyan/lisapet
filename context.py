@@ -49,10 +49,13 @@ class Context(NSContext):
     def getType(self, name)->VType:
         # if name in Context._defaultContextVals:
         #     return Context._defaultContextVals[name]
+        # print('Context.getType-1:', name)
+        # self.print()
         src = self
         while True:
-            if name in self.types:
-                return self.types[name]
+            # print('ctx cur types:', src.types.keys())
+            if name in src.types:
+                return src.types[name]
             if src.upper == None:
                 raise EvalErr('Cant find var|type name `%s` in current context' % name)
             src = src.upper
@@ -110,26 +113,8 @@ class Context(NSContext):
             var = Var(varName, vtype)
         else:
             name = var.name
-        #     print('#>> var.name:', var.name)
-        # print('x.addVar2 ====> :', name, var, ':', var.get(), var.getType().__class__.__name__)
-        # if isinstance(var, FuncInst):
-        #     print('x.addVar ===>  ADD func ====> name:', name, ' var: ', var)
-        #     self.funcs[name] = var
-        #     return
-        self.addSet({name:var})
 
-    # def _getVar(self, name)->Base:
-    #     # if name in Context._defaultContextVals:
-    #     #     return Context._defaultContextVals[name]
-    #     src = self
-    #     while True:
-    #         # print('#Ctx-get,name:', name)
-    #         # print('#Ctx-get2', src.vars, "\n\t\t\t", src.funcs)
-    #         if name in src.vars:
-    #             return src.vars[name]
-    #         if src.upper == None:
-    #             raise EvalErr('Cant find var|name `%s` in current context' % name)
-    #         src = src.upper
+        self.addSet({name:var})
 
     def get(self, name)->Base:
         return self.find(name)
@@ -165,7 +150,11 @@ class Context(NSContext):
     def print(self, ind=0):
         c:Context = self
         while c:
+            ttt = ['vars', 'types']
+            iii = 0
             for data in [c.vars, c.types]:
+                print('.' * ind, '  > ', ttt[iii])
+                iii += 1
                 for k, v in data.items():
                     vstr = v.get()
                     if isinstance(v, Collection):

@@ -289,7 +289,7 @@ class MethodDefExpr(FuncDefExpr):
         self.instExpr.do(ctx)
         inst = self.instExpr.get()
         self.typeName = inst.getType().getName()
-        print('MethodDefExpr instType:', self.typeName)
+        # print('MethodDefExpr instType:', self.typeName)
         print('MethodDefExpr doFunc:', self.instExpr, self.instExpr.get())
         func.addArg(self.instExpr.get())
         return func
@@ -317,22 +317,23 @@ class MethodCallExpr(FuncCallExpr):
 
     def setInstance(self, inst: StructInstance):
         # print('MethCall set inst', inst)
+        # raise XDebug('MethodCallExpr')
         self.inst = inst
 
     def do(self, ctx: Context):
-        # print('MethodCallExpr.do')
+        # print('MethodCallExpr.do 1', self.name, self.inst.getType())
         # self.func = ctx.get(self.name)
         tname = self.inst.getType().name
         stype = ctx.getType(tname).get()
-        print('MethodCallExpr.do2', stype, stype.debug())
+        # print('MethodCallExpr.do2', stype, stype.debug()) #
         
         self.func = stype.getMethod(self.name)
         # instVar = self.inst[0].get(), self.inst[1].get()
         print('instVar', self.inst, self.func.argVars)
         args:list[Var] = [self.inst]
         print('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
-        argInd = 0
-        avs = self.func.argVars
+        # argInd = 0
+        # avs = self.func.argVars
         # print('#1# meth-call do2 exp=: ', avs, self.argExpr)
         for exp in self.argExpr:
             # print('#1# meth-call do20 exp=: ', exp)

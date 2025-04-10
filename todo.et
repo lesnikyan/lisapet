@@ -2,6 +2,17 @@
 # TODO List
 
 
+#==
+''' 
+python-like
+multistring
+'''
+
+#==
+# string formatting by % , or internal includes like {varName}, $varName, @varName, @{exp(res.sion)}
+
+
+
 #== store content of comments as a runtime metadata
 
 
@@ -14,16 +25,6 @@
 'acb ' + 'xyz' -> 'abc xyz'
 [1,2,3] + [4,5] -> [1,2,3,4,5]
 
-
-#== DONE 
-# list generator
-[0..10]
-
-#==
-# list comprehention
-[x ** 2 | x <- [0..10]]
-[y * x | x <- [0..10], y <- ['a'..'n']]
-[x ** 2 | x <- [0..10] | x % 2 != 0]
 
 #==
 # Type inheritanse 
@@ -130,15 +131,6 @@ res = numRx.first(strVal) # string
 resList = numRx.find(strVal) # [string]
 grs = numsRx.groups(strVal) # [[string]]
 
-
-#==
-''' 
-python-like
-multistring
-'''
-
-#==
-# string formatting by % , or internal includes like {varName}, $varName, @varName, @{exp(res.sion)}
 
 #== multiline expr
 # concat all sublines before make expression process
@@ -276,6 +268,17 @@ print(user.name)
 #== DONE
 # typed func args 
 func foo(name:string, age: int)
+
+
+#== DONE 
+# list generator
+[0..10]
+
+#== DONE
+# list comprehention
+[x ** 2 | x <- [0..10]]
+[y * x | x <- [0..10], y <- ['a'..'n']]
+[x ** 2 | x <- [0..10] | x % 2 != 0]
 
 
 @#

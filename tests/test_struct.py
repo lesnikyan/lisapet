@@ -30,6 +30,33 @@ class C(A,B):
 class TestStruts(TestCase):
 
 
+    def test_structType_in_func(self):
+        ''' test if type defined in context above is accessible in function '''
+        code = '''
+        struct Type1
+            name: string
+            id: int
+
+        func tip:Type1 setName(name:string)
+            tip.name = name
+
+        func tip:Type1 getName()
+            tip.name
+
+        func testType1()
+            tp1 = Type1 {name:'noname', id: 1}
+            tp1.setName('New-Name')
+            print('tp1 name:', tp1.getName())
+
+        testType1()
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
     def test_method_typed_args(self):
         ''' make vars and assign vals from tuple  '''
         code = '''
