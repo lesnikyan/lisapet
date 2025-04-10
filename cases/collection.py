@@ -62,9 +62,20 @@ class CaseList(SubCase):
     def match(self, elems:list[Elem]) -> bool:
         # trivial check
         # TODO: add check for complex cases like [] + []
-        if isLex(elems[0], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']'):
-            return True
-        return False
+        if not (isLex(elems[0], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']')):
+            return False
+        spl = OperSplitter()
+        opInd = spl.mainOper(elems)
+        if opInd != 0:
+            return False
+        subElems = elems[1:-1]
+        opInd = spl.mainOper(subElems)
+        print('CaseList main oper: ', opInd, subElems[opInd].text)
+        # -1 : 1 varname
+        # > 0 and elem = `,` : several elems
+        # > 0 and elem not in [:;] one somplex expression
+        return opInd == -1 or (opInd > 0 and subElems[opInd].text not in ';:')
+        # return False
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         exp = ListExpr()
@@ -104,11 +115,15 @@ class CaseCollectElem(SubCase):
     ''' 
     case array[index-expr]
     case dict[key-expr]
+    case tuple[index]
+    case getValExpr[key]: foo()[key] ; val[key][key]; obj.field[key]
+        obj.foo(args...).field.foo().field[key].foo().field[key][key][key]
+        fing pattern: {word () [] . } * + { word () [] } + []
     usage:
     get: a = arr[expr]; 
     set: arr[expr] = expr
     varName_Expression [ indexVal_Expression ]
-    [] - access to array operator
+    [] - access to element of sequence operator
     '''
 
     def match(self, elems:list[Elem]) -> bool:
@@ -118,12 +133,16 @@ class CaseCollectElem(SubCase):
         more complex: obj.field, obj.method(expr)
         '''
 
-        if not self.matchOuter(elems):
+        if not isGetValExpr(elems):
             return False
-        
+
         opInd = findLastBrackets(elems)
+
         if opInd < 1:
             # means only brackets, no collection var before
+            return False
+        if not isLex(elems[-1], Lt.oper, ']'):
+            # not [] brackets
             return False
 
         # prels('CaseCollectElem match1:', elems, opInd)
@@ -134,7 +153,7 @@ class CaseCollectElem(SubCase):
         return not hasColon
 
     def matchOuter(self, elems:list[Elem]):
-        ''' iaf expr is varExpr + [smth] '''
+        ''' if expr is varExpr + [smth] '''
         if len(elems) < 4:
             return False
         return endsWithBrackets(elems, '[]')

@@ -25,6 +25,42 @@
 [y * x | x <- [0..10], y <- ['a'..'n']]
 [x ** 2 | x <- [0..10] | x % 2 != 0]
 
+#==
+# Type inheritanse 
+
+struct A member1: int
+
+struct B (A) member2: bool
+# or
+struct B
+    type A
+    member2: bool
+
+#==
+# struct constructors
+struct A a:int, b:int, c:bool
+
+func newA(a, b, c)
+    A{a:a, b:b, c:c}
+
+func new.A(a, b, c)
+    A{a:a, b:b, c:c}
+
+#== overloading
+func new.A(a, b)
+    A{a:a, b:b, c:true}
+
+#==  func type
+func foo(a:int, b:int): int
+    a + b
+# or 
+func foo(int, int): int
+foo(a, b)
+    a + b
+
+#== Type alising
+type intN3 [int, int, int]
+type intN3 int[3]
 
 #== 
 # Named func args
@@ -41,6 +77,13 @@ res = condition ? valueIfTrue : valueIfFalse
 
 
 #==
+# Val or Val operator  ?:
+    `expr1 ?: expr2` # for non-number values, 
+    # syntax sugar for ternar operator with condition: (expr1 != null and expr != false)
+    # operator that is returns left val if it not a null/false, otherwize - return second
+
+
+#==
 # Operator `in`
 # for list, finds val, the same for tuple
 value in [1,2,3] ...
@@ -52,25 +95,28 @@ if 'Herakl' ?> heroes ...
 
 
 #==
-# Val or Val operator  ?:
-    `expr1 ?: expr2` # for non-number values, 
-    # syntax sugar for ternar operator with condition: (expr1 != null and expr != false)
-    # operator that is returns left val if it not a null/false, otherwize - return second
-
-
-#==
 # Lambdas, func-object, func-object call
 foo = \x -> x * 100
 foo(2)
 
 
 # High-order function def
+#@ questions: 
+1. instance of function: create, store, call
+2. local context around function and into it
+3. closures: how to store local declarations (local <1 lvl upper> context), controll list of used vars, or use them all?
+#@
 func bar(fn:function, a:int):
     b = a ** 2
     fn([b, a, 5])
 
 
 # usage
+#@
+phases of implementation
+1. just pure function: get args, return result, no usage of vars out of lambda
+2. use near local context (where lambda was defined)
+@#
 for i <- iter(20, 30)
     bar(\x -> sum(x) - 100, i)
 

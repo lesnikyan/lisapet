@@ -39,7 +39,7 @@ expCaseList = [
     CaseTuple(),
     CaseDictBlock(), CaseListBlock(), CaseListGen(),
     # CaseStructBlockConstr(),
-    CaseDictLine(), CaseList(), CaseCollectElem(), CaseSlice(), CaseFunCall(), CaseStructConstr(),
+    CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), CaseFunCall(), CaseStructConstr(),
     # CaseDotOper(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBrackets(), CaseUnar()]
 

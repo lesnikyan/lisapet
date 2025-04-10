@@ -6,6 +6,8 @@ from lang import *
 from vars import *
 from vals import isDefConst, elem2val, isLex
 
+from cases.utils import *
+
 from nodes.tnodes import *
 from nodes.oper_nodes import *
 from nodes.datanodes import *
@@ -13,13 +15,8 @@ from nodes.control import *
 from nodes.func_expr import *
 
 
-SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
 EXT_ASSIGN_OPERS = '+= -= *= /= %='.split(' ')
 
-
-def elemStr(elems:list[Elem]):
-    # print('debug elemStr', elems)
-    return ' '.join([ee.text for ee in elems])
 
 def afterLeft(elems:list[Elem])->int:
     ''' find index of elem after var, vars and possible brackets of collections elem
@@ -145,13 +142,6 @@ def bracketsPart(elems:list[Elem])->int:
             break
     return res
 
-
-def isBrPair(elems:list[Elem], opn, cls):
-    return isLex(elems[0], Lt.oper, opn) and isLex(elems[-1], Lt.oper, cls)
-
-
-def prels(pref, elems:list[Elem], *args):
-    print(pref, [n.text for n in elems], *args)
 
 
 class ExpCase:

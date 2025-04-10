@@ -5,6 +5,7 @@ from lang import *
 from vars import *
 from vals import isDefConst, elem2val, isLex
 
+from cases.utils import *
 from cases.tcases import *
 from nodes.oper_nodes import *
 from nodes.datanodes import *
@@ -78,7 +79,7 @@ class CaseAssign(SubCase):
 
 
 
-operPrior = ('() [] . , -x !x ~x , ** , * / % , + - ,'
+_operPrior = ('() [] . , -x !x ~x , ** , * / % , + - ,'
 ' << >> , < <= > >= -> !> ?>, <-, == != , &, ^ , | , && , ||, : , = += -= *= /= %=  ')
 
 
@@ -90,7 +91,7 @@ class CaseBinOper(SubCase):
     3. unfold to execution tree'''
     
     def __init__(self):
-        priorGroups = operPrior.split(',')
+        priorGroups = _operPrior.split(',')
         self.priorGroups = [[ n for n in g.split(' ') if n.strip()] for g in priorGroups]
         self.opers = [oper for nn in self.priorGroups[:-1] for oper in nn]
 
@@ -386,5 +387,63 @@ class CaseListGen(SubCase):
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
         print('ListGenExpr.setSub: ', base, subs)
         base.setArgs(*subs)
+        return base
+
+
+
+class CaseListComprehension(SubCase):
+    '''
+    List comprehantion. As possible used haskell-like syntax.
+    We don`t use verticall bar (| as haskell) because it olready is used as a bitwise OR with another precedence.
+    Semicolon (;) is used for split internal sub-parts instead.
+    cases:
+    [x ; x <- listVar] # just one-2-one copy Case0
+    [ x + 2 ; x <- [a .. b]] # with simple modificator of each element Case1
+    # with filtering conditions. Last sub-part will be an condition of filter. Case2
+    [ x ; x <- listVar ; x > 5 ] 
+    [ x ; x <- listVar ? x > 5 ]
+    # with declaration part. Case3
+    [ x ; x <- listVar ; y = x ** 2, z = 2 * x ; x + y > 100 && y - z < 1000 ] # comma bitween assignments (declined, wrong precedens)
+    [ x ; x <- listVar ; y, z = x ** 2 , 2 * x ; x + y > 100 && y - z < 1000 ] # multiassignment (for next gen assignment of left-tuple)
+    
+    [x + y ; x <- list1, y <- list2 ; x != y] # several iterators next in loop of prev. Case3
+
+    # to think # flatten list of lists [[1],[2,3],[4,5]] -> [1,2,3,4,5]
+    [x ; (sub <- listOfLists) x <- sub ;  len(sub) > 3] 
+    [x ; x <- [sub <- listOfLists] ; len(sub) > 2] # nested iterators
+    [x ; sub <- listOfLists ; x <- sub ; len(sub) > 2] # if next part is iterator - run loop
+    [x ; sub <- listOfLists , x <- sub ; len(sub) > 2] # the same as Case3 ??
+     '''
+    def match(self, elems:list[Elem]) -> bool:
+        
+        if len(elems) < 7:
+            return False
+        if not (isLex(elems[0], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']') ):
+            return False
+        
+        # opInd = findLastBrackets(elems)
+        # if opInd != 0:
+        #     return False
+        
+        spl = OperSplitter()
+        opInd = spl.mainOper(elems)
+        if opInd != 0:
+            return False
+        subElems = elems[1:-1]
+        opInd = spl.mainOper(subElems)
+        return opInd > 0 and subElems[opInd].text == ';'
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        sub = elems[1:-1]
+        cs = CaseSemic()
+        subs = []
+        if cs.match(sub):
+            _, subs = cs.split(sub)
+        exp = ListComprExpr()
+        return exp, subs
+
+    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
+        print('CaseListComprehension.setSub: ', base, subs)
+        base.setInner(subs)
         return base
 

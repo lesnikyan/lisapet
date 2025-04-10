@@ -7,6 +7,7 @@ Mostly for usage into for-loop or generators.
 from lang import *
 from vars import *
 from nodes.expression import *
+from nodes.oper_nodes import OpAssign
 from nodes.func_expr import FuncCallExpr
 from nodes.datanodes import DictVal, ListVal
 
@@ -20,6 +21,7 @@ class IterAssignExpr(Expression):
         # local vars in: key, val <- iterExpr
         self.key:Var = None
         self.val:Var = None
+        self._first_iter = False
 
     def setArgs(self, target, src):
         print('(iter =1)', target, )
@@ -51,12 +53,13 @@ class IterAssignExpr(Expression):
         elif isinstance(iterSrc.get(), (NIterator)):
             self.itExp = iterSrc.get()
         self.itExp.start()
+        self._first_iter = True
         # print('#iter-start3', self.key, self.val)
-        for vv in [self.key, self.val]:
-            # print('>>', vv)
-            if not vv or isinstance(vv, Var_):
-                continue
-            ctx.addVar(vv)
+        # for vv in [self.key, self.val]:
+        #     # print('>>', vv)
+        #     if not vv or isinstance(vv, Var_):
+        #         continue
+        #     ctx.addVar(vv)
     
     def cond(self)->bool:
         return self.itExp.hasNext()
@@ -67,6 +70,13 @@ class IterAssignExpr(Expression):
     def do(self, ctx:Context):
         ''' put vals into LOCAL context '''
         # print('IterAssignExpr.do', self.itExp)
+        if self._first_iter:
+            self._first_iter = False
+            for vv in [self.key, self.val]:
+                print(' first iter >>', vv)
+                if not vv or isinstance(vv, Var_):
+                    continue
+                ctx.addVar(vv)
         val = self.itExp.get()
         # print('IterAssignExpr.do1', val)
         key = Var_()
@@ -210,5 +220,131 @@ class ListGenExpr(Expression):
         
     def get(self):
         return Val(self.iter, TypeIterator())
+
+
+class EmptyFilter(Expression):
+    def do(self, ctx:Context):
+        pass
     
+    def get(self) -> Var|list[Var]:
+        return Val(True, TypeBool)
+
+
+class ListComprExpr(Expression):
+    '''
+    List comprehantion. As possible used haskell-like syntax.
+    We don`t use verticall bar (| as haskell) because it olready is used as a bitwise OR with another precedence.
+    Semicolon (;) is used for split internal sub-parts instead.
+    cases:
+    [x ; x <- listVar] # just one-2-one copy Case0
+    [ x + 2 ; x <- [a .. b]] # with simple modificator of each element Case1
+    [ x ; x <- listVar ; x > 5 ] # with filtering conditions. Last sub-part will be an condition of filter. Case2
+    [ x ; x <- listVar ; y, z = x ** 2 , 2 * x ; x + y > 100 && y - z < 1000 ] # with declaration part. Case3
+    [x + y ; x <- list1, y <- list2 ; x != y] # several iterators, next in loop of prev. Case3
+
+    Actually comprehantion implements: map, filter (possibly - flat)
+    
+    [result ; iterator1 ; iteratorN; declarations; filter-condition ]
+    
+     '''
+    def __init__(self):
+        super().__init__()
+        self.iter:NIterator = None
+        self.iterNodes:IterAssignExpr = [] # 1 or more iterators: listVar, [n..m], iter(size)
+        self.resExpr = None # result expression, first in parts
+        self.declarations:list[list[OpAssign]] = [] # declaration expressions, pre-last part
+        self.filter = [] # filter condition, last part
+        self.res:ListVal = ListVal() # result of comprehansion expression
+
+    def setInner(self, subs:Expression):
+        ''' set of expression lists
+            1. result-expr
+            2. [IterAssignExpr, ... ]
+            3. declaration-expr (single assign or multi)
+            4. condition-expr
+            e.g.:
+            x + a ; x <- iter , y <- iter; a = y * 10; a < 100
+            x + a ; x <- iter ; x > 2
+        '''
+        lexp = len(subs)
+        if lexp < 2:
+            raise InterpretErr(f'Too little subparts of comprehension: {lexp}')
+        self.resExpr = subs[0]
+        curIt = -1
+        for exp in subs[1:]:
+            print('ListComprExpr.setInner' ,exp, type(exp), 'curIt=', curIt)
+            if isinstance(exp, IterAssignExpr):
+                # basic case
+                if curIt > 0 and len(self.filter[curIt]) == 0:
+                    # fix prev empty filter by True condition
+                    # print(' ### EMPTY FILtER for ', curIt)
+                    self.filter[curIt] = EmptyFilter()
+                curIt += 1
+                self.iterNodes.append(exp)
+                self.declarations.append([])
+                self.filter.append(EmptyFilter())
+            elif curIt > -1 and isinstance(exp, OpAssign):
+                # declarations part after iterator
+                self.declarations[curIt].append(exp)
+            elif curIt > -1:
+                # filter condition here. can`t be before iterator`
+                self.filter[curIt] = exp
+
+    def doDecl(self, ctx:Context, decl:Expression):
+        if len(decl) > 0:
+            for dex in decl:
+                # updating final context by current declaration expressions
+                print('$** doDecl', decl)
+                # ctx.print()
+                dex.do(ctx)
+
+    def doElem(self, ctx:Context):
+        # self.doDecl(ctx, decl)
+        # filter.do(ctx)
+        # fcond = filter.get()
+        # if not fcond:
+        #     return
+        self.resExpr.do(ctx)
+        res = self.resExpr.get()
+        self.res.addVal(res)
+
+    def iterLoop(self, index, ctx:Context):
+        print('ListComprExpr.iterLoop %d of %d ' % (index, len(self.iterNodes)), self.iterNodes)
+        q='''
+        [a, b, c] ; a <- aaa; a > 10;    b <- bbb; c = a + b;  b > 20;   
+        '''
+        inod:IterAssignExpr = self.iterNodes[index]
+        inod.start(ctx)
+        decl = self.declarations[index]
+        filt = self.filter[index]
+        print(' $$ 1',)
+        ctx.print()
+        while inod.cond():
+            subCtx = Context(ctx) # ctx for sub-iter
+            inod.do(subCtx) # make iterator
+            self.doDecl(subCtx, decl)
+            # print('iterLoop.. filt:', self.filter, index)
+            print(' $$ 2 ',)
+            subCtx.print()
+            filt.do(subCtx)
+            fcond = filt.get().get()
+            if fcond:  
+                if index + 1 < len(self.iterNodes):
+                    # continue dive into iterators chainfilt
+                    self.iterLoop(index + 1, subCtx)
+                else:
+                    # eval elem result expression
+                    self.doElem(subCtx)
+            inod.step()
+
+    def do(self, ctx:Context):
+        print('ListComprExpr.do0')
+        if len(self.iterNodes) == 0:
+            return
+        self.iterLoop(0, ctx)
+
+    def get(self):
+        return self.res
+    
+
 

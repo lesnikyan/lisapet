@@ -10,6 +10,7 @@ from vals import numLex
 from context import Context
 from nodes.tnodes import Var
 from nodes import setNativeFunc, Function
+from cases.utils import *
 from tree import *
 from eval import *
 import pdb
@@ -19,6 +20,52 @@ import pdb
 
 class TestLang(TestCase):
 
+
+    def test_find_main_operator(self):
+        '''find position of main operator in string
+        '''
+        code = '''
+        12 + 5 - 7 * 9 # 3
+        2 * 3 - 4 * -5 ** 2 + 6 ** 3 * 7 # 10
+        a = 5 * 2 # 1
+        b = qq || ww # 1
+        (1,2,3) + [4,5,6] # 7
+        a + b ?: d - 111 # 3
+        [1,2,3] * 2 ** 2 # 7
+        foo(x, y.abc) > 5 && len(bar([..100], 7)) < 5 * z # 10
+        a, b <- c # 3
+        'aa' : 11, 'bb' : 22, cc : 33, dd(arg, arg) : 44 # 11
+        a, b, c = f1(), f2(), {a:1, b:2} # 5
+        foo().memb[bar(5)] # 3
+        x + 2 ; x <- [3 .. 9] ; x % 2 == 0 # 11
+        foo() # -1
+        bar # -1
+        1 + 2 , 3 # 3
+        1 , 2 # 1
+        ( 1, 2, 3 ) # 0
+        [(0), [111], {22:222}] # 0
+        [1 .. 2] # 0
+        [a + 2 : -1] # 0
+        [x + 2 ; x <- [5 .. 10] ; x % 2 > 0] # 0
+        {'aa' : 11, 'bb' : 22, cc : 33, dd(arg, arg) : 44} # 0
+        
+        '''
+        code = norm(code[1:])
+        src = code.splitlines()
+        spl = OperSplitter()
+        for sline in src:
+            if len(sline) == 0:
+                continue
+            tsrc, exp = sline.split('#')
+            exp = int(exp.strip())
+            # print(exp, sline)
+            # continue
+            tlines = splitLexems(tsrc)
+            clines:CLine = elemStream(tlines)
+            elems = clines[0].code
+            pos = spl.mainOper(elems)
+            print('tt `%s`' % sline, ' >>> ', pos)
+            self.assertEqual(exp, pos)
 
     def test_colon_vs_other(self):
         ''' make vars and assign vals from tuple  '''
@@ -115,6 +162,7 @@ class TestLang(TestCase):
     def test_struct_field_full(self):
         ''' full test of obj.member cases '''
         code='''
+        # object member
         obj.member
         obj.member.member.member
         array[expr].member
@@ -128,8 +176,25 @@ class TestLang(TestCase):
         foo().bar().baz().member.member
         foo().bar().baz().member.method(args)
         array[foo()].member[key].method()
+        # --- collection elem
+        nums[1][2]
+        names[key]['vasya']
+        foo(args, [1,2,3]).member.sub[1][2]
+        obj.foo(args).member[1][2][3]
+        obj.foo1(foo2(foo3([[],[{'a':[[[[1]]]], 'b'[[[[2]]]]}]])))[obj.membr.foo4().name]
         '''
         code = norm(code[1:])
+        # code = 'nums[1][2]'
+        for line in code.splitlines():
+            tlines = splitLexems(line)
+            clines:CLine = elemStream(tlines)
+            if len(clines) == 0 or len(clines[0].code) == 0:
+                continue
+            elems = clines[0].code
+            # if len(elems) == 0:
+            #     continue
+            res = isGetValExpr(elems)
+            self.assertTrue(res, 'Line >> %s ' % line)
 
     def test_dict_multiline(self):
         # # multiline

@@ -15,3 +15,10 @@ def loop_iter(*args):
         case 3: beg, over, step = args
     it = IndexIterator(beg, over, step)
     return it
+
+# def buit_print(*args):
+#     pargs = []
+#     for n in args:
+#         if isinstance()
+#         data = []
+        

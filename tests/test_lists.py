@@ -18,7 +18,113 @@ from tree import *
 # import pdb
 
 
-class TestDev(TestCase):
+class TestLists(TestCase):
+
+
+
+    def test_list_gen_sub_assignment(self):
+        ''' list generator  '''
+        code = '''
+        # nums = [x ** 2 ; x <- [1..10]; x % 5 > 0 && x > 3]
+        # nums = [[x ** 2, y] ; x <- [1..10]; y <- [1..3]; x % 5 > 0 && x > 3]
+        # src = [ [ a; a <- [y .. y + x]] ; x <- [1..3]; y <- [10, 20, 30] ]
+        debVar = 100000
+        nums = [[x, x**3, y**2] ; x <- [1..10]; y = x ** 2; y < 50 && x ** 3 > 10]
+        # print('src = ', src)
+        print('nums = ', nums)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+    def test_list_compr_filter(self):
+        ''' list generator. flatten list of lists. 2-nd iterator uses sublist from 1-st  '''
+        code = '''
+        srcGen = [x ** 2 ; x <- [1..10]]
+        # filterRes = [x ; x <- src; x % 5 > 0 && x > 10]
+        # full expr:
+        nums = [x ** 2 ; x <- [1..10]; x % 5 > 0 && x ** 2 > 15]
+        print('nums = ', nums)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+    def test_list_compr_flatten_subs(self):
+        ''' list generator. '''
+        code = '''
+        srcGen = [[x, y] ; x <- [5..7]; y <- [1..3]]
+        src = [[5, 1], [5, 2], [5, 3], [6, 1], [6, 2], [6, 3], [7, 1], [7, 2], [7, 3]]
+        nums = [ x ; sub <- src ; x <- sub]
+        print('nums = ', nums)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+    def test_list_compr_sublists(self):
+        ''' list generator. '''
+        code = '''
+        nums = [[x ** 2, y] ; x <- [5..7]; y <- [1..3]]
+        print('nums = ', nums)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+    def test_list_compr_2_lists(self):
+        ''' list generator. iterator in iterator '''
+        code = '''
+        nums = [x + y * 1000 ; x <- [5..7]; y <- [1..3]]
+        print('nums = ', nums)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+    def test_list_compr_from_gen(self):
+        ''' list generator. simplest case  '''
+        code = '''
+        nums = [x ** 2 ; x <- [1..5]]
+        print('src = ', src)
+        print('nums = ', nums)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+    def test_list_comprehention_simplest(self):
+        ''' list generator. simplest case  '''
+        code = '''
+        src = [1,2,3,4,5]
+        nums = [x ** 2 ; x <- src]
+        print('src = ', src)
+        print('nums = ', nums)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
 
     def test_list_gen_assign(self):
         ''' list generator [from : to]'''
@@ -45,6 +151,20 @@ class TestDev(TestCase):
             print('  n >>', n)
             res += n
         print('res >>', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+    def test_list_in_list(self):
+        code = '''
+        a = [1, 2, ['aa','bb']]
+        a[2][0] = 'a222'
+        print('list_a', a[0], a[2][0], a[2][1])
+        print(a[2][:1])
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)

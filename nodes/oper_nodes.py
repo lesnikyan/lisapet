@@ -277,7 +277,7 @@ class OpCompare(BinOper):
         self.right.do(ctx)
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
-        # print('( %s )' % self.oper,  self.left, self.right)
+        print('( %s )' % self.oper,  self.left, self.right)
         # print('#--OpCompare.do2',  a, b)
         print(' ( %s )' % self.oper,  a.getVal(), b.getVal())
         # print('#--OpCompare.do3',  a.getType(), b.getType())
