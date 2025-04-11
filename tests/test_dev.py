@@ -24,6 +24,22 @@ class TestDev(TestCase):
 
         
 
+
+    def _test_tuple_list_as_result(self):
+        '''   '''
+        code = '''
+        src = ['aaa', 'bbb', 'ccc']
+        res = [('uu', s) ; s <- src;]
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+
     def _test_list_gen_by_strings(self):
         '''   '''
         code = '''
