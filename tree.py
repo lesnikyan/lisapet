@@ -33,14 +33,12 @@ class CaseDebug(ExpCase):
 expCaseList = [ 
     CaseEmpty(), CaseComment(), CaseDebug(),
     CaseFuncDef(), CaseReturn(), CaseMathodDef(),
-    CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseArrowR(), # CaseIterOper(),
+    CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseArrowR(),
     CaseStructBlockDef(), CaseStructDef(),
     CaseAssign(), CaseBinAssign(), CaseSemic(), CaseBinOper(), 
     CaseTuple(),
     CaseDictBlock(), CaseListBlock(), CaseListGen(),
-    # CaseStructBlockConstr(),
     CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), CaseFunCall(), CaseStructConstr(),
-    # CaseDotOper(),
     CaseVar_(), CaseVal(), CaseVar(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:

@@ -27,7 +27,8 @@ pref = {
     Lt.num: []
 }
 
-def charType(prev:int, s:str) -> int:
+def charType(prevs:int, s:str) -> int:
+    prevChars, prev = prevs
     base = Lt.none
     if s in c_space:
         base = Lt.space
@@ -63,6 +64,15 @@ def charType(prev:int, s:str) -> int:
         return Lt.text # TODO: add check for types of strig opener ' , "
     # print(' >> ', Lt.name(prev), Lt.name(base))
     if prev == Lt.num and s in ext_in[Lt.num]:
+        if s == '.' and s in prevChars:
+            # here we found second dot `.` in number
+            # print('Num correction 2')
+            if prevChars[-1] != '.':
+                # wrong syntax
+                raise ParseErr('incorrect sequence of input: %s ' % ''.join(prevChars + [s]))
+            # returned tuple is a sygnal that we have change of expected type
+            return (prevChars[:-1], ['.','.'], Lt.oper)
+            
         return prev
     if prev == Lt.word and base == Lt.num:
         return prev
@@ -159,8 +169,15 @@ def splitLine(src: str, prevType:int=Lt.none) -> tuple[TLine, int]:
     for s in src:
         i += 1
         # print('#6 ', cur, " s='%s'"%s, curType, '|')
-        sType = charType(curType, s)
+        sType = charType((cur, curType), s)
         # print('#stype:', sType)
+        
+        if isinstance(sType, tuple):
+            # unexpected changing of prev type
+            donePart, nextPart, nextType = sType
+            nextRes(donePart, curType, '')
+            cur, curType = nextPart, nextType
+            continue
         
         # close multi-comment
         if curType == Lt.mtcomm:

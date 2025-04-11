@@ -937,8 +937,23 @@ class TestLang(TestCase):
             res, etype = splitLine(src)
             print([n.val for n in res.lexems])
             print([(n.val, n.mark, n.ltype) for n in res.lexems])
+
+    def test_parsing_list_gen_(self):
+        ''' Case where whole expression consists of valid number chars:
+            'j', 'x', 'b', 'o',  '.', 'a', 'b', 'c', 'd', 'e', 'f' 
+            '''
+        code = '''
         
-    
+        x = 4
+        n = [1..x]
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
     def test_lex_type(self):
         ''' charType(prev:int, s:str) '''
         args = [(' ',0,Lt.space), ('\t', 0,Lt.space), ('\n', 0,Lt.space), ('\r', 0,Lt.space), 
@@ -966,7 +981,7 @@ class TestLang(TestCase):
                 ]
         # print('space %d, word %d, num %d, oper %d, text %d, quot %d, esc %d' % (Lt.space, Lt.word, Lt.num, Lt.oper, Lt.text, Lt.quot, Lt.esc))
         for tt in args:
-            rt = charType(tt[1], tt[0])
+            rt = charType(([], tt[1]), tt[0])
             print("Args: '%s', %s; exp: %s ? %s" % (tt[0], Lt.name(tt[1]), Lt.name(tt[2]), Lt.name(rt)))
             errmsg = "Args: '%s', %s, %s res = %s" % (tt[0], Lt.name(tt[1]), Lt.name(tt[2]), Lt.name(rt))
             self.assertEqual(rt, tt[2], errmsg)
