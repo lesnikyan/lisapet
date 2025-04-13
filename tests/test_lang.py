@@ -23,6 +23,8 @@ class TestLang(TestCase):
 
     def test_find_main_operator(self):
         '''find position of main operator in string
+            main opertaor is an operator which will split line to 2 operands.
+            if result == 0 it means that it unary or opening brackets.
         '''
         code = '''
         12 + 5 - 7 * 9 # 3
@@ -40,6 +42,9 @@ class TestLang(TestCase):
         x + 2 ; x <- [3 .. 9] ; x % 2 == 0 # 11
         foo() # -1
         bar # -1
+        - 1000 # 0
+        ! (true && foo()) # 0
+        - 2 * (abc - 7) # 0
         1 + 2 , 3 # 3
         1 , 2 # 1
         ( 1, 2, 3 ) # 0

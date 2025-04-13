@@ -16,6 +16,7 @@ oper group replacement:
 operPrior = ('( ) [ ] { } , . , -x !x ~x , ** , * / % , + - ,'
 ' << >> , < <= > >= -> !> ?>, == != , &, ^ , | , && , ||, ?, ?:, : , `1`, <- , = += -= *= /= %= , ; ')
 
+unaryOperators = '- ! ~'.split(' ')
 
 SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
 
@@ -121,16 +122,20 @@ class OperSplitter:
 
                 if el.type != Lt.oper:
                     continue
+                # print(' >> ## :', i, el.text)
                 # TODO: fix unary cases, like: 5 * -3,  7 ** -2, x == ! true, (-12)
                 if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
                     # unary case found, skip current pos
+                    # print(' >> == unary case found:', i, el.text)
                     continue
                 if el.text in self.priorGroups[prior]:
                     # we found current split item
                     print('oper-found> [%d ? %d]' % (i, curPos), '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
 
                     return curPos # The main Result
-
+        if isLex(elems[0], Lt.oper, unaryOperators):
+            print('oper-found> unary [0 : %s]' % elems[0].text ) 
+            return 0
         return -1 # debug output, won't happened in real case
 
 

@@ -12,9 +12,11 @@ multistring
 # string formatting by % , or internal includes like {varName}, $varName, @varName, @{exp(res.sion)}
 
 
-
-#== store content of comments as a runtime metadata
-
+#== 
+# delete operator, find nearest context with var by name and remove it from found context
+nums = [1.2.3.4.5]
+x = 123
+delete nums, x
 
 #==
  list | string math mult, concat
@@ -63,14 +65,6 @@ foo(a, b)
 type intN3 [int, int, int]
 type intN3 int[3]
 
-#== 
-# Named func args
-
-func foo(user:User, name: string, age: int)
-    user ?: getUser(name, age) 
-    # return user if not null, otherwize - return result of getUser()
-foo(age=22, name='Vasya')
-
 
 #== 
 # Ternar operator >>  expr ? expr : expr
@@ -95,10 +89,47 @@ if 'Herakl' ?? heroes ...
 if 'Herakl' ?> heroes ...
 
 
+#== 
+# Named func args
+
+func foo(user:User=null, name: string, age: int)
+    user ?: getUser(name, age) 
+    # return user if not null, otherwize - return result of getUser()
+user = foo(age=22, name='Vasya')
+
+
+#==
+# Variadic  functions, just preliminary thinking
+
+
+foo(arg1:string, arg2:float, ...args3:int) # any number of values after 2-nd arg.
+
+# after vaiadic var-list only named args (future feature) can be used. declaration:
+func foo2(arg1:float, arg2:float, ...arg3:int, narg1:string, narg2:string) ...
+func foo2(arg1:float, arg2:float, arg3:int ... , narg1:string, narg2:string) ...
+
+# arg:int ... the same as:  arg:int [] for usage  in function body 
+# call:
+foo2(1.1, 2.2, 31, 32, 33, 34, narg1:'a', narg2:'b')
+
+# unpack list using as many vals
+func foo3(...args) -> for val <- args ...
+
+# call
+args = [1,2,3,4,5]
+foo3(args...)
+
+
+
+#== func object
+
+foo = func (args...)
+
 #==
 # Lambdas, func-object, func-object call
 foo = \x -> x * 100
 foo(2)
+delete foo # delete func object
 
 
 # High-order function def
@@ -132,6 +163,9 @@ resList = numRx.find(strVal) # [string]
 grs = numsRx.groups(strVal) # [[string]]
 
 
+#== store content of comments as a runtime metadata
+
+
 #== multiline expr
 # concat all sublines before make expression process
 
@@ -155,7 +189,7 @@ if val = foo(); val > 10 ...
 #
 
 
-#== multiline func, definition and call
+#== multiline func, definition and call (multiline in-brackets expression)
 
 func foo (
     arg1:int,
@@ -175,8 +209,9 @@ str = (
     "new string!"
 )
 
+
 #== Next line operator, next line after beginning, 
-# Second line starts with operator after 1 indent (like subline in block). 
+# Second line starts with operator after 1 indent (like subline in block). If no indent - just new expression with unary operator (or error)
 # Next lines after 2-nd - the same indent.
 res = (long_expressions)
     + (next-expression) * (next-expression)
@@ -188,7 +223,7 @@ if long-condition
     || 3rd-condition && condition
     if-block-expressions
 
-#== else if - sugar for `if` into `else` block 
+#== else if - `sugar` for `if` into `else` block 
 if cond2
     expr1
 else if cond2

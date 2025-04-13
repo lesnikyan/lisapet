@@ -21,7 +21,7 @@ from eval import *
 
 # TODO: add asserts to each test
 
-class TestLang(TestCase):
+class TestFunc(TestCase):
     
 
     def test_local_defined_function(self):
