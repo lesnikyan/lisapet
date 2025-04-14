@@ -5,7 +5,6 @@ from unittest import TestCase, main
 
 import os
 import pdb
-from pathlib import Path
 
 
 from lang import CLine
@@ -15,10 +14,7 @@ from context import Context
 from tree import *
 # from nodes.func_expr import setNativeFunc
 from eval import rootContext
-
-
-def filepath(fname):
-    return Path(__file__).with_name(fname)
+from tests.utils import *
 
 
 class TestEvalFile(TestCase):

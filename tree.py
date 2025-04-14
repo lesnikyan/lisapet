@@ -39,7 +39,7 @@ expCaseList = [
     CaseTuple(),
     CaseDictBlock(), CaseListBlock(), CaseListGen(),
     CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), CaseFunCall(), CaseStructConstr(),
-    CaseVar_(), CaseVal(), CaseVar(), CaseBrackets(), CaseUnar()]
+    CaseVar_(), CaseVal(), CaseMString(), CaseVar(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:
     return expCaseList
@@ -122,15 +122,25 @@ def lex2tree(src:list[CLine]) -> Block:
     parents:list[Block] = []
     curInd = 0 # indent
     print('~~~~~~~~~~~` start tree builder ~~~~~~~~~~~~')
+    i = -1
+    slen = len(src)
     for cline in src:
-        print('  -  -  -')
+        i += 1
+        print('  -  -  - ')
         indent = cline.indent
         print('#code-src: `%s`' % cline.src.src, '$ind=',  indent, '; curInd=', curInd)
-        prels('#cline-code:', cline.code)
+        # prels('#cline-code1:', cline.code)
+        # print('#cline-code2:', [(ee.text, Lt.name(ee.type)) for ee in cline.code])
         if len(cline.code) == 0:
             continue
-        expr = line2expr(cline)
+
+        # prepare multiline
+        if i < slen - 1:
+            print('!!!!!!!!!!!!!!!!!!!!!!!!!! lextree # multiline TODO: opened brackets ({[ / ')
+            pass
         
+        # get expression
+        expr = line2expr(cline)
         
         # print('lex2tree-14:', expr, expr.__class__.__name__, type(expr))
         if isinstance(expr, CaseComment):
@@ -163,22 +173,12 @@ def lex2tree(src:list[CLine]) -> Block:
             continue
         print('lex2tree-4:', expr, expr.__class__.__name__, type(expr), 'isBlock:' , expr.isBlock())
         stepBlock = expr.isBlock()
-        # if stepBlock:
-        #     if isinstance(expr, CaseExpr):
-        #         # can be 1-line
-        #         # if 1-line, it just will be reset by next case line 
-        #         if not expr.block.isEmpty():
-        #             stepBlock = False
+
         
         if stepBlock:
-            
             # start new sub-level
             # if definition of func, type: add to upper level context
-            # if isinstance(expr, ElseExpr):
-            #     # specific `else` case.
-                
-            #     # `else if` case need additional logic
-            #     continue
+
             # print('!! in-block', parents, curBlock, expr)
             curBlock.add(expr)
             parents.append(curBlock)
@@ -187,6 +187,5 @@ def lex2tree(src:list[CLine]) -> Block:
             print('-=-= indent cur:', curInd)
             continue
         curBlock.add(expr)
-        # curBlock.ctx.add(ctx)
-        # context?
+
     return root

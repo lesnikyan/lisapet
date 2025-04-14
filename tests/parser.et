@@ -1,0 +1,96 @@
+
+''' mstring
+abc
+def'''
+"""
+mstring2 
+aabbcc
+"""
+```
+abc
+def 2 + 3
+```
+mstr = '''
+string 
+content
+' ' " " ` ` ``` 22 ``` """ 33 """
+'' 1 '' "" 2 "" `` 3 ``  
+\s
+ \n \t \r \\ \' \" \` ( +- )
+<a href='main-page.html'>Main page</a>
+'''
+
+strLine = "A + b = C. \" name and name\". Any words: 'aaa', \'bbb\', `ccc`, \`ddd\`. #ff0000. #@ Part like a comment. @# "
+
+#--------------------------------------------------------------------
+
+#@ a11 
+multi 
+comment
+b22 @#
+
+struct A 
+    a: int
+    b: bool
+    c: float
+    d: list
+    e: dict
+    f: string
+
+struct B
+    a: A
+    b: any
+
+func foo(a:int, b:int)
+    a + b
+
+func a:A afunc(x:string, y:string):
+    a.f = x + ' ' y
+
+func foo2(arg:int, args:int ...)
+    [arg + n; n <- args;]
+
+names = list
+    'Adam'
+    'Bobr'
+    'Cyclon'
+
+nums = [x - 5 ;x<-[1..10]]
+{"a":11,"b":22,"c":33,"d":44}
+
+oper1 = 123 ?: 543
+oper2 = abc ? 111: 222
+oper3 = 'Arnold' ?> names
+
+lambda1 = \x -> x ** 2
+
+
+# comment 
+expr + expr # and comment
+
+----------------------------------------
+
+#@
+Mulitline
+comment
+part
+@#
+
+''' Q
+Here multi-line
+string \'\' " " ` `
+value.
+'''
+mstr = '''
+string 
+content
+' ' " " ` ` ``` 22 ``` """ 33 """
+'' 1 '' "" 2 "" `` 3 ``  
+\s
+ \n \t \r \\ \' \" \` ( +- )
+<a href='main-page.html'>Main page</a>
+'''
+'''
+next multiline
+'''
+a = 1

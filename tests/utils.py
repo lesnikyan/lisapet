@@ -1,5 +1,8 @@
 
 
+from pathlib import Path
+
+
 def norm(code):
     ''' Normalize input code: 
     - cut extra indent'''
@@ -10,3 +13,8 @@ def norm(code):
         else:
             break
     return '\n'.join([s[ind:] for s in code.splitlines()])
+
+
+def filepath(fname):
+    return Path(__file__).with_name(fname)
+

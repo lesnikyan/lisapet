@@ -17,12 +17,98 @@ from nodes.structs import *
 from context import Context
 from tree import *
 from eval import rootContext
+
+from tests.utils import *
+
 import pdb
 
+"""
+
+#@
+if True
+    text = '''
+    Multiline value
+    in the block.
+    Indent should be cut to current level.
+    '''
+
+
+# multilene expression in brackets
+a = 1
+b = 2
+c = 3
+if ( a < b 
+    && b > 0
+    && c != 5
+    )
+    print(a, b, c)
+
+func foo (a:int, 
+    b: string)
+    b * a
+
+foo(
+    5,
+    'AAAAAAAA aaaaaaaaa '
+)
+
+nums = [
+    1, 2, 3, 4,
+    5, 6, 7, 8
+]
+
+@#
+"""
 
 class TestDev(TestCase):
 
         
+
+
+        
+    def _test_multiline2(self):
+        '''' '''
+        fpath = filepath('parser.et')
+        with open(fpath, 'r') as f:
+            code = f.read()
+            tlines = splitLexems(code)
+            for tl in tlines:
+                print('tl>> ', tl.src, '\n :>> ', 
+                      ' , '.join([ '`%s`:%s' %(xx.val, Lt.name(xx.ltype)) for xx in tl.lexems]))
+            # clines:CLine = elemStream(tlines)
+            # exp = lex2tree(clines)
+
+        
+    def test_multiline(self):
+        '''' '''
+        expVal = '''
+        
+        string
+        content
+        ' ' " " ` ` ``` 22 ``` """ 33 """
+        '' 1 '' "" 2 "" `` 3 ``
+        \t
+        \\ / \' \" ` ( +- )
+        <a href='main-page.html'>Main page</a>
+        '''
+        
+        expVal = norm(expVal[1:])[:-1]
+        fpath = filepath('multilines.et')
+        with open(fpath, 'r') as f:
+            code = f.read()
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            exp = lex2tree(clines)
+            ctx = rootContext()
+            print('$$ run test ------------------')
+            exp.do(ctx)
+            mstr1 = ctx.get('mstr')
+            res = mstr1.get()
+            # print('#tt e>', [s for s in expVal])
+            # print('#tt r>', [s for s in res])
+            # for i in range(len(res)):
+            #     self.assertEqual(res[i], expVal[i], ' i: %d / `%s`<>`%s` ' % (i, res[i], expVal[i]) )
+            self.assertEqual(expVal, res)
 
 
     def _test_tuple_list_as_result(self):

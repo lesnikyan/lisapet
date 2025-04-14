@@ -816,6 +816,37 @@ class TestLang(TestCase):
                     # print('')
                     continue
                 s.append(lx.val)
+
+    def test_parse_numbers(self):
+        '''' '''
+        # fpath = filepath('parser.et')
+        # with open(fpath, 'r') as f:
+        text = '''
+        11.22 # 11.22
+        0xff00 # 0xff00
+        1..9 # 1 .. 9
+        2:-1 # 2 : - 1
+        1,25 # 1 , 25
+        0b10101 # 0b10101
+        0o123 # 0o123
+        11.22.33 # 11.22 . 33
+        11.22.cc # 11.22 . cc
+        11.22.ss # 11.22 . ss
+        11. # 11.
+        11.() # 11. ( )
+        '''
+        src = norm(text[1:]).splitlines()
+        for line in src:
+            code, exps = line.split('#')
+            if len(code.strip()) == 0 or len(exps.strip()) == 0:
+                # skip empty case
+                continue
+            exp = exps.strip().split(' ')
+            tlines = splitLexems(code.strip())
+            parsed = tlines[0].lexems
+            res = [n.val for n in parsed]
+            print('#tt>> ',code, ' : ', [n.val for n in parsed])
+            self.assertEqual(res, exp, '%s != %s ' % (';'.join(res), exps))
     
     def test_split_oper(self):
         args = ['=++', '++=', '!=-', '-=!', '()++', '()=>()', '++;(-)', '=[-()]']
@@ -832,7 +863,9 @@ class TestLang(TestCase):
         for tt in args:
             src, exp = tt
             print('space %d, word %d, num %d, oper %d, text %d, quot %d, esc %d' % (Lt.space, Lt.word, Lt.num, Lt.oper, Lt.text, Lt.quot, Lt.esc))
-            res, etype = splitLine(src)
+            # res, etype = splitLine(src)
+            lastType, extArg = Lt.none, {}
+            res, etype, r3 = splitLine(src, lastType, **extArg)
             print([n.val for n in res.lexems])
             print([(n.val, n.mark, n.ltype) for n in res.lexems])
 

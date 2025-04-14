@@ -64,6 +64,10 @@ class TypeString(VType):
     name = 'string'
 
 
+class TypeMString(TypeString):
+    name='mstring'
+
+
 class FuncInst(Val):
     '''function object is stored in context, callable, returns result '''
 

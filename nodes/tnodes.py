@@ -7,16 +7,19 @@ from lang import *
 from vars import *
 from nodes.expression import *
 
-# class Node:
-#     def __init__(self):
-#         command = 0
-#         arg = 0
-        
-
 
 # Expression
 
 
+class MString(ValExpr, MultilineVal):
+    
+    def __init__(self, val):
+        super().__init__(val)
+        self.val = Val(''.join(val), TypeMString())
+
+    def add(self, next:'MString'):
+        text = self.val.val + next.val.val
+        self.val.val = text
 
 
 class Module(Block):

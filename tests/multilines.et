@@ -1,0 +1,56 @@
+#@
+Mulitline
+comment
+part
+@#
+
+''' Q
+Here multi-line
+string \'\' " " ` `
+value.
+'''
+mstr = '''
+string
+content
+' ' " " ` ` ``` 22 ``` """ 33 """
+'' 1 '' "" 2 "" `` 3 ``
+\t
+\\ \/ \' \" \` ( +- )
+<a href='main-page.html'>Main page</a>
+'''
+'''
+next multiline
+'''
+a = 1
+
+mstr2 = """
+doub-q
+mstring ''' ```
+"""
+
+mstr3 = ```
+back-q
+m-string ''' """
+```
+
+mlist = list
+    '''
+    mstr 1 ' " `
+    '''
+    """
+    mstr 2 ' " `
+    """
+    ```
+    mstr 3 ' " `
+    ```
+
+#@ TODO: multi-string in func call
+
+func mlines(src)
+    src
+
+mstr10 = mfoo("""
+mstring in 
+func args
+""")
+@#

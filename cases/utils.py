@@ -20,6 +20,8 @@ unaryOperators = '- ! ~'.split(' ')
 
 SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
 
+def getOperPriors():
+    return [raw.replace('`1`', ',') for raw in operPrior.split(',')]
 
 def isGetValExpr(elems:list[Elem]):
     ''' If solid  expressions 
