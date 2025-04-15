@@ -165,7 +165,7 @@ class TupleExpr(CollectionExpr):
     def __init__(self):
         super().__init__()
         self.valsExpr:list[Expression] = []
-        self.obj:ListVal = None
+        self.obj:TupleVal = None
 
     def add(self, exp:Expression):
         ''' add next elem of list'''

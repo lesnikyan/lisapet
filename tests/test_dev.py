@@ -92,10 +92,8 @@ class TestDev(TestCase):
     def _test_list_gen_empty_end(self):
         ''' list generator. [... expr;] empty last sub-case after semicolon'''
         code = '''
-        # nums = [x ** 2 ; x <- [1..10]; x % 5 > 0 && x > 3]
-        nums = [[x ** 2, y] ; x <- [5..7]; y <- [1..3]]
-        # src = [ [ a; a <- [y .. y + x]] ; x <- [1..3]; y <- [10, 20, 30] ]
-        # print('src = ', src)
+        nums = [[x ** 2] ; x <- [2..5] ;]
+        nums = [[x ** 2] ; x <- [2..5] ; ]
         print('nums = ', nums)
         '''
         code = norm(code[1:])
@@ -105,20 +103,6 @@ class TestDev(TestCase):
         ctx = rootContext()
         ex.do(ctx)
 
-
-    def _test_tuple_list_as_result(self):
-        '''   '''
-        code = '''
-        src = ['aaa', 'bbb', 'ccc']
-        res = [('uu', s) ; s <- src;]
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
 
     def _test_tuple_assign_left(self):
         ''' make vars and assign vals from tuple  '''
@@ -145,6 +129,10 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+
+    def _test_bin_opers_cases(self):
+        ''' test all operators in mixed cases: 
+            assignment, math | bool expressions, separators (, ; :), brackets. '''
 
 
     _ = '''

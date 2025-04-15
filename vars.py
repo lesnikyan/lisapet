@@ -88,20 +88,21 @@ class ListVal(Collection):
     ''' classic List / Array object'''
     
     def __init__(self, **kw):
-        super().__init__(None, TypeList)
+        super().__init__(None, TypeList())
         ees = []
         if 'elems' in kw:
             ees = kw['elems']
-        self.elems:list[Var] = ees
+        self.elems:list[Val] = ees
 
     def len(self)->int:
         return len(self.elems)
     
-    def addVal(self, val:Var):
+    def addVal(self, val:Val):
         # not sure, we need whole Var or just internal value?
+        print('ListVar.addVal:', val)
         self.elems.append(val)
     
-    def setVal(self, key:Var, val:Var):
+    def setVal(self, key:Val, val:Val):
         i = key.get()
         # print('ListVar.setVal', i, val, 'Len=', len(self.elems), i < len(self.elems), self.elems)
         if i >= len(self.elems):
@@ -109,7 +110,7 @@ class ListVal(Collection):
         self.elems[i] = val
 
     def getVal(self, key:Val|int):
-        print('ListVar.getVal1, key:', key)
+        print('ListVar.getVal1, index:', key)
         # print('ListVar.getVal1, elems:', self.elems)
         i = key
         if isinstance(key, Val):
@@ -137,7 +138,7 @@ class ListVal(Collection):
         # if not nm:
             # nm = '#list-noname'
         def strv(var):
-            # print('@>>', var, var.getType())
+            # print('@>>', var, var.getType(),  isinstance(var.getType(), TypeContainer), ' str:', str(var))
             if isinstance(var.getType(), TypeContainer):
                 return str(var)
             return str(var.get())
@@ -148,7 +149,7 @@ class ListVal(Collection):
 class TupleVal(Collection):
     ''' '''
     def __init__(self, **kw):
-        super().__init__(None, TypeList)
+        super().__init__(None, TypeTuple())
         ees = []
         if 'elems' in kw:
             ees = kw['elems']
@@ -156,6 +157,10 @@ class TupleVal(Collection):
 
     def len(self)->int:
         return len(self.elems)
+    
+    def get(self):
+        return tuple([n.get() for n in self.elems])
+        # return tuple(self.elems)
 
     def addVal(self, val:Val):
         self.elems.append(val)
@@ -168,12 +173,16 @@ class TupleVal(Collection):
             return self.elems[i]
         raise EvalErr('Tuple out of range by index %d ' % i)
 
+    def __str__(self):
+        vals = ', '.join([ '%s' % n.get() for n in self.elems])
+        return 'TupleVal(%s)' %  (vals)
+
 
 class DictVal(Collection):
     ''' classic List / Array object'''
     
     def __init__(self, name=None):
-        super().__init__(None, TypeDict)
+        super().__init__(None, TypeDict())
         self.data:dict[str|int|bool,Val] = {}
 
     def len(self)->int:
@@ -204,7 +213,6 @@ class DictVal(Collection):
         return {k: v.get() for k,v in self.data.items()}
 
     def __str__(self):
-        # tt = self.vtype.name
         def key(k):
             if isinstance(k, str):
                 return "'%s'" % k

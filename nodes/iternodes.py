@@ -299,14 +299,11 @@ class ListComprExpr(Expression):
                 dex.do(ctx)
 
     def doElem(self, ctx:Context):
-        # self.doDecl(ctx, decl)
-        # filter.do(ctx)
-        # fcond = filter.get()
-        # if not fcond:
-        #     return
         self.resExpr.do(ctx)
         res = self.resExpr.get()
+        # print('COMPRH . doElem. rexpr:', self.resExpr, 'res:', res)
         self.res.addVal(res)
+        
 
     def iterLoop(self, index, ctx:Context):
         print('ListComprExpr.iterLoop %d of %d ' % (index, len(self.iterNodes)), self.iterNodes)
