@@ -106,6 +106,7 @@ class CaseArrowR(SubCase):
         if len(subs) > 1 and isinstance(subs[1], Expression):
             base.right = subs[1]
 
+from cases.oper import CaseBrackets
 
 class CaseFor(BlockCase, SubCase):
     ''' '''
@@ -114,17 +115,18 @@ class CaseFor(BlockCase, SubCase):
             return True
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        subs = []
-        start = 1
-        elen = len(elems)
-        _, subs = CaseSemic().split(elems[1:])
+
+        expSub = elems[1:]
+        if CaseBrackets().match(expSub):
+            expSub = expSub[1:-1]
+        _, subs = CaseSemic().split(expSub)
 
         exp:LoopBlock = None
         match len(subs):
             case 1: exp = LoopIterExpr()
             case 2|3: exp = LoopExpr()
             case _ :pass
-        print('# CaseFor.split-', elen,  exp, 'len-subs=', len(subs))
+        print('# CaseFor.split-', len(elems),  exp, 'len-subs=', len(subs))
         for ees in subs:
             prels('>>', ees)
         return exp, subs

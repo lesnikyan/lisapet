@@ -26,16 +26,19 @@ import pdb
 class TestDev(TestCase):
 
 
-    def _test_unclosed_brackets_for(self):
+    def test_unclosed_brackets_for(self):
         ''' 
         currently brackets in the `for` statement has strange meaning 
-        TODO: implement for with brackets. mostly for multiline expressions in `for`.
-            It should be the same as case without brackets: init-expr ; if-expr ; post-iter-expr
-            `(i=1; i < 10 ; i+=1)` == `i=1; i < 10 ; i+=1`
+        implement for with brackets. mostly for multiline expressions in `for`.
+        It should be the same as case without brackets: init-expr ; if-expr ; post-iter-expr
+        `(i=1; i < 10 ; i+=1)` == `i=1; i < 10 ; i+=1`
         '''
         code = '''
         res = 45
-        for (i = 1; i <= 10; i +=1)
+        for (i = 1; 
+            i <= 10; 
+            i +=1
+        )
             res += i
             print(res)
         
