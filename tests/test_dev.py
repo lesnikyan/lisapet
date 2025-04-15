@@ -22,101 +22,24 @@ from tests.utils import *
 
 import pdb
 
-"""
-
-#@
-if True
-    text = '''
-    Multiline value
-    in the block.
-    Indent should be cut to current level.
-    '''
-
-
-# multilene expression in brackets
-a = 1
-b = 2
-c = 3
-if ( a < b 
-    && b > 0
-    && c != 5
-    )
-    print(a, b, c)
-
-func foo (a:int, 
-    b: string)
-    b * a
-
-foo(
-    5,
-    'AAAAAAAA aaaaaaaaa '
-)
-
-nums = [
-    1, 2, 3, 4,
-    5, 6, 7, 8
-]
-
-@#
-"""
 
 class TestDev(TestCase):
 
-        
 
-
-        
-    def _test_multiline2(self):
-        '''' '''
-        fpath = filepath('parser.et')
-        with open(fpath, 'r') as f:
-            code = f.read()
-            tlines = splitLexems(code)
-            for tl in tlines:
-                print('tl>> ', tl.src, '\n :>> ', 
-                      ' , '.join([ '`%s`:%s' %(xx.val, Lt.name(xx.ltype)) for xx in tl.lexems]))
-            # clines:CLine = elemStream(tlines)
-            # exp = lex2tree(clines)
-
-        
-    def test_multiline(self):
-        '''' '''
-        expVal = '''
-        
-        string
-        content
-        ' ' " " ` ` ``` 22 ``` """ 33 """
-        '' 1 '' "" 2 "" `` 3 ``
-        \t
-        \\ / \' \" ` ( +- )
-        <a href='main-page.html'>Main page</a>
+    def _test_unclosed_brackets_for(self):
+        ''' 
+        currently brackets in the `for` statement has strange meaning 
+        TODO: implement for with brackets. mostly for multiline expressions in `for`.
+            It should be the same as case without brackets: init-expr ; if-expr ; post-iter-expr
+            `(i=1; i < 10 ; i+=1)` == `i=1; i < 10 ; i+=1`
         '''
-        
-        expVal = norm(expVal[1:])[:-1]
-        fpath = filepath('multilines.et')
-        with open(fpath, 'r') as f:
-            code = f.read()
-            tlines = splitLexems(code)
-            clines:CLine = elemStream(tlines)
-            exp = lex2tree(clines)
-            ctx = rootContext()
-            print('$$ run test ------------------')
-            exp.do(ctx)
-            mstr1 = ctx.get('mstr')
-            res = mstr1.get()
-            # print('#tt e>', [s for s in expVal])
-            # print('#tt r>', [s for s in res])
-            # for i in range(len(res)):
-            #     self.assertEqual(res[i], expVal[i], ' i: %d / `%s`<>`%s` ' % (i, res[i], expVal[i]) )
-            self.assertEqual(expVal, res)
-
-
-    def _test_tuple_list_as_result(self):
-        '''   '''
         code = '''
-        src = ['aaa', 'bbb', 'ccc']
-        res = [('uu', s) ; s <- src;]
-        print('res = ', res)
+        res = 45
+        for (i = 1; i <= 10; i +=1)
+            res += i
+            print(res)
+        
+        print('res=', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -124,6 +47,11 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+        ctx.print()
+        res = ctx.get('res')
+        print('tt>', res.get())
+        exp = 100
+        self.assertEqual(exp, res.get())
 
 
     def _test_list_gen_by_strings(self):
@@ -140,22 +68,6 @@ class TestDev(TestCase):
         ctx = rootContext()
         ex.do(ctx)
 
-
-    def _test_list_gen_empty_end(self):
-        ''' list generator. [... expr;] empty last sub-case'''
-        code = '''
-        # nums = [x ** 2 ; x <- [1..10]; x % 5 > 0 && x > 3]
-        nums = [[x ** 2, y] ; x <- [5..7]; y <- [1..3]]
-        # src = [ [ a; a <- [y .. y + x]] ; x <- [1..3]; y <- [10, 20, 30] ]
-        # print('src = ', src)
-        print('nums = ', nums)
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
 
     def _test_list_gen_comprehention_iter_by_string(self):
         ''' list generator and strings
@@ -177,6 +89,36 @@ class TestDev(TestCase):
         ctx = rootContext()
         ex.do(ctx)
 
+    def _test_list_gen_empty_end(self):
+        ''' list generator. [... expr;] empty last sub-case after semicolon'''
+        code = '''
+        # nums = [x ** 2 ; x <- [1..10]; x % 5 > 0 && x > 3]
+        nums = [[x ** 2, y] ; x <- [5..7]; y <- [1..3]]
+        # src = [ [ a; a <- [y .. y + x]] ; x <- [1..3]; y <- [10, 20, 30] ]
+        # print('src = ', src)
+        print('nums = ', nums)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+
+
+    def _test_tuple_list_as_result(self):
+        '''   '''
+        code = '''
+        src = ['aaa', 'bbb', 'ccc']
+        res = [('uu', s) ; s <- src;]
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
 
     def _test_tuple_assign_left(self):
         ''' make vars and assign vals from tuple  '''
@@ -207,26 +149,15 @@ class TestDev(TestCase):
 
     _ = '''
         TODO features:
-        1. List comprehetion / generator
+        1. generators extra features
     [-10..10]; [..10] >> IterGen(beg, over, step)
-    [n.name | n <- arr] ##### [2 * n | n <- [0..10]] ##### [2 * n | n <- iter(10)] >> add over-item expression
-    [n <- iter(10) | n %2 == 0] >> add sub-condition
-    [n | subArr <- arr n <- subArr] >> flat sub-list
-    [n * m | n <- arr1, m <- arr2] >> iterator over iterator
-    [n + m | n <- arr, m = n / 10, k <- arr2 | m != k] >> add sub expression
-    [n + m | n <- arr, m:int = int (n / 10), k <- arr2[m] | m > 0 && m < len(arr2)] ?? >> add sub expression
-        2. Struct methods.
+
         3. tuple
+        
         TODO tests:
     test assignment and read 
     global var and local block
     local var and function-block
-    var <- val
-    var <- var
-    var <- array
-    array <- var
-    dict of items str : array
-    array of dicts
     
     '''
 

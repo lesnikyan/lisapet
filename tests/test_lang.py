@@ -21,6 +21,233 @@ import pdb
 class TestLang(TestCase):
 
 
+
+    def test_unclosed_comprehansion(self):
+        '''   '''
+        code = '''
+        res = 54
+
+        for i <- [ x ** 2 * y ;
+            x <- [1..10] ;
+            y = (x % 4) + 1 ;
+            y > 0        ]
+            res += i
+            # print(res)
+        
+        # print('res=', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        ctx.print()
+        res = ctx.get('res')
+        print('tt>', res.get())
+        exp = 1000
+        self.assertEqual(exp, res.get())
+
+    def test_unclosed_brackets_if_cond(self):
+        '''   '''
+        code = '''
+        res = 1
+        a = 1
+        b = 2
+        c = 3
+        if ( a < b 
+            && b > 0
+            && c != 5
+            )
+            res = 100
+        
+        print('res=', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        ctx.print()
+        res = ctx.get('res')
+        print('tt>', res.get())
+        exp = 100
+        self.assertEqual(exp, res.get())
+
+    def test_unclosed_brackets_dict(self):
+        '''   '''
+        code = '''
+        dd = {
+            'a':1,
+            'b':2
+        }
+        
+        res = dd
+        print('res=', dd)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        ctx.print()
+        res = ctx.get('res')
+        print('tt>', res.vals())
+        exp = {'a': 1, 'b': 2}
+        self.assertEqual(exp, res.vals())
+
+
+    def test_unclosed_brackets_list(self):
+        '''   '''
+        code = '''
+        aa = [
+            'aa aa aa',
+            'bb bb bb',
+            [1,2,3]
+        ]
+        
+        res = aa
+        print('res=', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        res = ctx.get('res')
+        print('tt>', res.get())
+        exp = ['aa aa aa', 'bb bb bb', [1, 2, 3]]
+        self.assertEqual(exp, res.get())
+
+    def test_unclosed_brackets_func(self):
+        '''   '''
+        code = '''
+        func foo(
+            a, b, 
+            c)
+            r = a + b
+            [r, a, b]
+        
+        res = foo(
+            1,2,
+            3
+            )
+        print('res=', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        res = ctx.get('res')
+        print('tt>', res.get())
+        self.assertEqual([3,1,2], res.get())
+
+    def test_unclosed_brackets_expr(self):
+        
+        data = [
+            ('(', 1),
+            ('foo(', 1),
+            ('3 *(2 + ', 1),
+            ('foo(1, arg2', 1),
+            (' [] + foo ( [], {"":123}, ', 1),
+            ('{"aaa":1, "bbb":2', 1),
+            ('(1+2) * (b-c', 1),
+            ('[[1], [2], [3],', 1),
+        ]
+        cs = CaseUnclosedBrackets()
+        for tt in data:
+            code, exp = tt
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            # res = cs.match(clines[0].code)
+            # msg = 'src: %s, exp: %s' % (code, bool(exp))
+            res = cs.expr(clines[0].code)
+            print('tt> ', res, code)
+            self.assertIsInstance(res, UnclosedExpr)
+
+    def test_unclosed_brackets_case(self):
+        ''' '''
+        data = [
+            ('(', 1),
+            ('foo(', 1),
+            ('3 *(2 + ', 1),
+            ('foo(1, arg2', 1),
+            (' [] + foo ( [], {"":123}, ', 1),
+            ('{"aaa":1, "bbb":2', 1),
+            ('(1+2) * (b-c', 1),
+            ('[[1], [2], [3],', 1),
+            
+            ('foo()', 0),
+            ('123', 0),
+            ('varName', 0),
+            ('a + b', 0),
+            ('1,2,3', 0),
+            ('(1,2,3)', 0),
+            ('() + [] + {}', 0),
+            ('foo([1,2,3], (1+2)*3)', 0),
+            ('[1,2,3,foo(4)]', 0),
+            ('{[], ([{}, {}]), {}}', 0),
+        ]
+        
+        cs = CaseUnclosedBrackets()
+        for tt in data:
+            code, exp = tt
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            res = cs.match(clines[0].code)
+            msg = 'src: %s, exp: %s' % (code, bool(exp))
+            if exp > 0:
+                self.assertTrue(res, msg)
+            else:
+                self.assertFalse(res, msg)
+
+    def test_multiline(self):
+        ''' Multiline strings with triple quotes '''
+        expVal = '''
+        
+        string
+        content
+        ' ' " " ` ` ``` 22 ``` """ 33 """
+        '' 1 '' "" 2 "" `` 3 ``
+        \t
+        \\ / \' \" ` ( +- )
+        <a href='main-page.html'>Main page</a>
+        '''
+        
+        expVal = norm(expVal[1:])[:-1]
+        fpath = filepath('multilines.et')
+        with open(fpath, 'r') as f:
+            code = f.read()
+            tlines = splitLexems(code)
+            clines:CLine = elemStream(tlines)
+            exp = lex2tree(clines)
+            ctx = rootContext()
+            print('$$ run test ------------------')
+            exp.do(ctx)
+            mstr1 = ctx.get('mstr')
+            res = mstr1.get()
+            # print('#tt e>', [s for s in expVal])
+            # print('#tt r>', [s for s in res])
+            # for i in range(len(res)):
+            #     self.assertEqual(res[i], expVal[i], ' i: %d / `%s`<>`%s` ' % (i, res[i], expVal[i]) )
+            self.assertEqual(expVal, res)
+
+    def test_multiline2(self):
+        ''' Simple smoke-test of correct parsing. '''
+        fpath = filepath('parser.et')
+        with open(fpath, 'r') as f:
+            code = f.read()
+            tlines = splitLexems(code)
+            for tl in tlines:
+                print('tl>> ', tl.src, '\n :>> ', 
+                      ' , '.join([ '`%s`:%s' %(xx.val, Lt.name(xx.ltype)) for xx in tl.lexems]))
+            clines:CLine = elemStream(tlines)
+
     def test_find_main_operator(self):
         '''find position of main operator in string
             main opertaor is an operator which will split line to 2 operands.
@@ -388,73 +615,73 @@ class TestLang(TestCase):
             rrs.append((res, barr,))
         print('# tt>> ', rrs)
 
-    def _test_CaseBinAssign_split(self):
-        srcT = '''
-        x *= 0; res = x
-        varr += 1; res = varr
-        arr[2] += 2; res = arr[2]
-        arr[a + b] += 3; res = arr[a + b]
-        data[key] += 4; res = data[key]
-        varr -= 6; res = varr
-        varr /= 7; res = varr
-        arr[1] %= 8; res = arr[1]
-        '''
-        src = norm(srcT[1:])
-        data = src.splitlines()
-        cs = CaseBinAssign()
-        for code in data:
-            lines = code.split('; ')
-            code = lines[0]
-            tlines = splitLexems(code)
-            clines:CLine = elemStream(tlines)
-            elems = clines[0].code
-            exp, subs = cs.split(elems)
-            print('# tt>>>', exp, subs)
+    # def _test_CaseBinAssign_split(self):
+    #     srcT = '''
+    #     x *= 0; res = x
+    #     varr += 1; res = varr
+    #     arr[2] += 2; res = arr[2]
+    #     arr[a + b] += 3; res = arr[a + b]
+    #     data[key] += 4; res = data[key]
+    #     varr -= 6; res = varr
+    #     varr /= 7; res = varr
+    #     arr[1] %= 8; res = arr[1]
+    #     '''
+    #     src = norm(srcT[1:])
+    #     data = src.splitlines()
+    #     cs = CaseBinAssign()
+    #     for code in data:
+    #         lines = code.split('; ')
+    #         code = lines[0]
+    #         tlines = splitLexems(code)
+    #         clines:CLine = elemStream(tlines)
+    #         elems = clines[0].code
+    #         exp, subs = cs.split(elems)
+    #         print('# tt>>>', exp, subs)
 
-    def _test_CaseBinAssign_match(self):
-        srcT = '''
-        x *= 0
-        varr += 1
-        arr[2] += 2
-        arr[a + b] += 3
-        data[key] += 4
-        data[foo(arg, arg)] += 5
-        varr -= 6
-        varr /= 7
-        arr[foo(arg)] %= 8
-        '''
-        src = norm(srcT[1:])
-        data = src.splitlines()
-        cs = CaseBinAssign()
-        for code in data:
-            tlines = splitLexems(code)
-            clines:CLine = elemStream(tlines)
-            elems = clines[0].code
-            res = cs.match(elems)
-            print('## t:', code, '>>>', res, elems[res])
-            self.assertTrue(res)
+    # def _test_CaseBinAssign_match(self):
+    #     srcT = '''
+    #     x *= 0
+    #     varr += 1
+    #     arr[2] += 2
+    #     arr[a + b] += 3
+    #     data[key] += 4
+    #     data[foo(arg, arg)] += 5
+    #     varr -= 6
+    #     varr /= 7
+    #     arr[foo(arg)] %= 8
+    #     '''
+    #     src = norm(srcT[1:])
+    #     data = src.splitlines()
+    #     cs = CaseBinAssign()
+    #     for code in data:
+    #         tlines = splitLexems(code)
+    #         clines:CLine = elemStream(tlines)
+    #         elems = clines[0].code
+    #         res = cs.match(elems)
+    #         print('## t:', code, '>>>', res, elems[res])
+    #         self.assertTrue(res)
         
-        srcF = '''
-        x = 10
-        y - 11
-        varr =-12
-        arr[] = 13
-        data[key] = 14
-        varr
-        12 + 10
-        foo(...)
-        [2, 3, 4]
-        '''
-        src = norm(srcF[1:])
-        data = src.splitlines()
-        cs = CaseBinAssign()
-        for code in data:
-            tlines = splitLexems(code)
-            clines:CLine = elemStream(tlines)
-            elems = clines[0].code
-            res = cs.match(elems)
-            print('## t:', code, '>>>', res, elems[res])
-            self.assertFalse(res)
+    #     srcF = '''
+    #     x = 10
+    #     y - 11
+    #     varr =-12
+    #     arr[] = 13
+    #     data[key] = 14
+    #     varr
+    #     12 + 10
+    #     foo(...)
+    #     [2, 3, 4]
+    #     '''
+    #     src = norm(srcF[1:])
+    #     data = src.splitlines()
+    #     cs = CaseBinAssign()
+    #     for code in data:
+    #         tlines = splitLexems(code)
+    #         clines:CLine = elemStream(tlines)
+    #         elems = clines[0].code
+    #         res = cs.match(elems)
+    #         print('## t:', code, '>>>', res, elems[res])
+    #         self.assertFalse(res)
 
     def _test_afterNameBr(self):
         data = [
@@ -739,9 +966,9 @@ class TestLang(TestCase):
     def test_CaseBinOper_split(self):
         ''' '''
         data = [
-            # ('1+2-3 * 4 + 5'),
-            ('5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8', {'b':100, 'c':4, 'd':3}) # -97.54545454545455
-            # ('5 + (2 - 1) * (3 - 4)/ (1)',{})
+            ('1+2-3 * 4 + 5', {}),
+            ('5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8', {'b':100, 'c':4, 'd':3}), # -97.54545454545455
+            ('5 + (2 - 1) * (3 - 4)/ (1)',{}),
             # ('5 + sum([1,2,3, b, c + 3])', {})
         ]
         cs = CaseBinOper()
@@ -788,7 +1015,6 @@ class TestLang(TestCase):
             res = numLex(d)
             print('', res.get(), res.getType().__class__.name)
 
-    
     def test_split(self):
         code_input1 = '''
         x = 5

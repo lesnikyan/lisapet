@@ -30,12 +30,52 @@ class CaseDebug(ExpCase):
         ''' return base expression, Sub(elems) '''
         return DebugExpr(' '.join([e.text for e in elems]))
 
+
+class UnclosedExpr:
+    ''' '''
+    def __init__(self, elems, indent=0):
+        # super().__init__('')
+        self.elems:list = elems
+        self.indent = indent
+
+    def add(self, part):
+        prels('Uncl.add: ', part)
+        self.elems.extend(part)
+
+
+class CaseUnclosedBrackets(ExpCase):
+    
+    def match(self, elems:list[Elem])-> bool:
+        # prels('--', elems)
+        inBr = 0
+        maxLvl = 0
+        for el in elems:
+            if el.type != Lt.oper:
+                continue
+            if el.text in '([{':
+                inBr += 1
+                if maxLvl < inBr:
+                    maxLvl = inBr
+                continue
+            if el.text in ')]}':
+                inBr -= 1
+            
+        return maxLvl > 0 and inBr > 0
+                
+        
+    def expr(self, elems:list[Elem])-> Expression:
+        ''' return elems covered by operation case '''
+        return UnclosedExpr(elems)
+
+
 expCaseList = [ 
     CaseEmpty(), CaseComment(), CaseDebug(),
+    CaseUnclosedBrackets(),
     CaseFuncDef(), CaseReturn(), CaseMathodDef(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseArrowR(),
     CaseStructBlockDef(), CaseStructDef(),
-    CaseAssign(), CaseBinAssign(), CaseSemic(), CaseBinOper(), 
+    # CaseAssign(), CaseBinAssign(),
+    CaseSemic(), CaseBinOper(),
     CaseTuple(),
     CaseDictBlock(), CaseListBlock(), CaseListGen(),
     CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), CaseFunCall(), CaseStructConstr(),
@@ -124,10 +164,14 @@ def lex2tree(src:list[CLine]) -> Block:
     print('~~~~~~~~~~~` start tree builder ~~~~~~~~~~~~')
     i = -1
     slen = len(src)
+    unclosed = None
     for cline in src:
         i += 1
         print('  -  -  - ')
-        indent = cline.indent
+        if unclosed is None:
+            indent = cline.indent
+        else:
+            indent = unclosed.indent
         print('#code-src: `%s`' % cline.src.src, '$ind=',  indent, '; curInd=', curInd)
         # prels('#cline-code1:', cline.code)
         # print('#cline-code2:', [(ee.text, Lt.name(ee.type)) for ee in cline.code])
@@ -139,9 +183,24 @@ def lex2tree(src:list[CLine]) -> Block:
             print('!!!!!!!!!!!!!!!!!!!!!!!!!! lextree # multiline TODO: opened brackets ({[ / ')
             pass
         
+        if unclosed is not None:
+            # unclosed = None
+            unclosed.add(cline.code)
+            cline.code = unclosed.elems
+            prels('unclosed: ', unclosed.elems)
+        
         # get expression
         expr = line2expr(cline)
         
+        if isinstance(expr, UnclosedExpr):
+            if unclosed is None:
+                unclosed = expr
+                unclosed.indent = indent
+            continue
+        else:
+            if unclosed is not None:
+                unclosed = None
+
         # print('lex2tree-14:', expr, expr.__class__.__name__, type(expr))
         if isinstance(expr, CaseComment):
             # nothing for comment now

@@ -93,7 +93,7 @@ class CaseBinOper(SubCase):
     def __init__(self):
         priorGroups = _operPrior.split(',')
         self.priorGroups = [[ n for n in g.split(' ') if n.strip()] for g in priorGroups]
-        self.opers = [oper for nn in self.priorGroups[:-1] for oper in nn]
+        self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
 
     def match(self, elems:list[Elem]) -> bool:
         elen = len(elems)
@@ -191,6 +191,7 @@ def makeOperExp(elem:Elem)->OperCommand:
     # TODO: make oper command by cases: math, logical, assign and math+assign, bit operators, brackets
     oper = elem.text
     mathOpers = '+ - * / % ** << >>'.split(' ')
+    binAssgn = '+= -= *= /= %='.split(' ')
     if oper in mathOpers:
         return OpMath(oper)
     boolOpers = '&& ||'.split(' ')
@@ -202,6 +203,10 @@ def makeOperExp(elem:Elem)->OperCommand:
     btOpers = '& | ^'.split(' ')
     if oper in btOpers:
         return OpBitwise(oper)
+    if oper == '=':
+        return OpAssign()
+    if oper in binAssgn:
+        return OpBinAssign(oper)
     if oper == ':':
         return ServPairExpr()
     if oper == '.':
@@ -310,7 +315,7 @@ class CaseBrackets(SubCase):
         return base
 
 
-class CaseBinAssign(CaseAssign):
+class _CaseBinAssign(CaseAssign):
     ''' += -= *= /= %=  
     var += val -> var = (var + val)
     
@@ -345,6 +350,7 @@ class CaseBinAssign(CaseAssign):
         # new Assign-like sequence: (x += 2) -> (x = x + 2)
         assignElems = left + [asgn] + left + [oper] + right
         return super().split(assignElems)
+     
     
     def setSub(self, base:Expression, subs:list[Expression])->Expression:
         return super().setSub(base, subs)

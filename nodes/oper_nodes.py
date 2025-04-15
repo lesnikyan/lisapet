@@ -11,6 +11,7 @@ from nodes.expression import *
 from nodes.structs import StructInstance
 from nodes.func_expr import FuncCallExpr
 from nodes.structs import MethodCallExpr
+from nodes.structs import StructConstrBegin
 
 
 class OperCommand(Expression):
@@ -43,8 +44,6 @@ class BinOper(OperCommand):
         self.left = left
         self.right = right
 
-from nodes.structs import StructConstrBegin
-
 class OpAssign(OperCommand):
     ''' Set value `=` '''
     def __init__(self, left:Expression|list[Expression]=None, right:Expression|list[Expression]=None):
@@ -58,9 +57,10 @@ class OpAssign(OperCommand):
         right - src
         '''
         print('OpAssign__setArgs1', left, right)
+        if isinstance(left, ServPairExpr):
+            left = left.getTypedVar()
+
         self.left = left
-        # print('isinstance(right, MultilineVal) = ', isinstance(right, MultilineVal))
-        # print('isinstance(right, ) = ', right))
         r0 = None
         if isinstance(right, list):
             r0 = right[0]
@@ -123,19 +123,20 @@ class OpAssign(OperCommand):
             
             #get destination var
             dest = self.left[i].get()
+            print('Assign dest1 =', dest)
             isNew = False
             self.res = val
             if isinstance(dest, VarUndefined):
                 # new var for assignment
                 isNew = True
                 newVar = Var(dest.name, TypeAny)
-                # print('Assign new var', newVar)
+                print('Assign new var', newVar)
                 ctx.addVar(newVar)
                 dest = newVar
                 dest.set(val)
                 
             # print('# op-assign set1, varX, valX:', self.left[i], src[i])
-            # print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
+            print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
             # print('# op-assign set,',' val = ', type(resSet[i]))
             print(' (a = b) dest =', dest, ' val = ', val, 'isNew:', isNew)
                 
@@ -156,11 +157,28 @@ class OpAssign(OperCommand):
             self.res = val
             # ctx.update(dest.name, resSet[i])
             saved = ctx.get(name)
-            # print(' (a = b) saved ', saved)
+            print(' (a = b) saved ', saved)
 
 
         # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
         # TODO: thik about one way of assignment: (something) = (something)
+
+
+class OpBinAssign(OpAssign):
+    ''' += -= *= /= %= '''
+    def __init__(self, oper):
+        super().__init__()
+        self.oper = oper
+        self.moper = self.splitOper(oper)
+
+    def splitOper(self, oper):
+        print('OpBinAssign biOper:', oper)
+        return OpMath(oper[0])
+
+    def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
+        super().setArgs(left, right)
+        self.moper.setArgs(self.left, self.right)
+        self.right = self.moper
 
 
 class OpMath(BinOper):

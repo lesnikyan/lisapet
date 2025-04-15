@@ -174,7 +174,7 @@ class DictVal(Collection):
     
     def __init__(self, name=None):
         super().__init__(None, TypeDict)
-        self.data:dict[Var,Var] = {}
+        self.data:dict[str|int|bool,Val] = {}
 
     def len(self)->int:
         return len(self.data)
@@ -182,7 +182,7 @@ class DictVal(Collection):
     def inKey(self, key:Var)->str:
         return '%s__%s' % (key.get(), key.getType().__class__.__name__)
 
-    def setVal(self, key:Var, val:Var):
+    def setVal(self, key:Val, val:Val):
         # k = self.inKey(key)
         self.data[key.get()] = val
 
@@ -193,7 +193,7 @@ class DictVal(Collection):
             res.addVal(k)
         return res
 
-    def getVal(self, key:Var):
+    def getVal(self, key:Val):
         # k = self.inKey(key)
         k = key.get()
         if k in self.data:
@@ -202,4 +202,14 @@ class DictVal(Collection):
 
     def vals(self):
         return {k: v.get() for k,v in self.data.items()}
+
+    def __str__(self):
+        # tt = self.vtype.name
+        def key(k):
+            if isinstance(k, str):
+                return "'%s'" % k
+            return '%s' % k
+        
+        vals = '{%s}' % ', '.join([ '%s : %s' %(key(k), v) for k, v in self.vals().items()])
+        return 'DictVal(%s)' %  (vals)
 
