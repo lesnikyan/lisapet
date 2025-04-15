@@ -22,6 +22,36 @@ class TestLang(TestCase):
 
 
 
+    def test_unclosed_brackets_for(self):
+        ''' 
+        currently brackets in the `for` statement has strange meaning 
+        implement for with brackets. mostly for multiline expressions in `for`.
+        It should be the same as case without brackets: init-expr ; if-expr ; post-iter-expr
+        `(i=1; i < 10 ; i+=1)` == `i=1; i < 10 ; i+=1`
+        '''
+        code = '''
+        res = 45
+        for (i = 1; 
+            i <= 10; 
+            i +=1
+        )
+            res += i
+            print(res)
+        
+        print('res=', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        ctx.print()
+        res = ctx.get('res')
+        print('tt>', res.get())
+        exp = 100
+        self.assertEqual(exp, res.get())
+
     def test_unclosed_comprehansion(self):
         '''   '''
         code = '''
@@ -515,10 +545,10 @@ class TestLang(TestCase):
         r1 = 0
         b = 3
         match a
-            1 -> r1 = 100
-            10 -> r1 = 200
-            b -> r1 = 300
-            _ -> r1 = -2
+            1  !- r1 = 100
+            10 !- r1 = 200
+            b  !- r1 = 300
+            _  !- r1 = -2
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -529,8 +559,8 @@ class TestLang(TestCase):
         r1 = ctx.get('r1').get()
         print('#t >>> r:', r1)
 
-    def test_CaseArrowR_match(self):
-        cs = CaseArrowR()
+    def test_CaseMatchSub_match(self):
+        cs = CaseMatchCase()
         rrs = []
         def checkRes(code, exp):
             print('$$ run test ------------------')
@@ -541,17 +571,18 @@ class TestLang(TestCase):
             elems = clines[0].code
             res = cs.match(elems)
             print('#tt >>> ', code, res)
+            msg = 'Tried use code: %s' % code
             if exp:
-                self.assertTrue(res)
+                self.assertTrue(res, msg)
             else:
-                self.assertFalse(res)
+                self.assertFalse(res, msg)
             
         src = ''''
-        val -> expr
-        123 -> a + b
-        234 -> r = 2 + 3
-        3 -> res = 4
-        user(123)-> res
+        val !- expr
+        123 !- a + b
+        234 !- r = 2 + 3
+        3 !- res = 4
+        user(123) !- res
         '''
         src = norm(src[1:].rstrip())
         data = src.splitlines()

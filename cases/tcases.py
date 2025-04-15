@@ -276,7 +276,7 @@ class BlockCase(ExpCase):
     '''
 
 
-class CaseSeq(ExpCase):
+class CaseSeq(SubCase):
     ''' sequence of expressions in one line '''
     
     def __init__(self, delim=' '):
@@ -336,7 +336,13 @@ class CaseSeq(ExpCase):
         #     res = [[]] + res
         if isLex(elems[-1], Lt.oper, self.delim):
             res.append([])
-        return None, res
+        return SequenceExpr(), res
+
+    def setSub(self, base:SequenceExpr, subs:Expression|list[Expression])->Expression:
+        print('CaseSeq(%s) setSub: ' % self.delim, base, subs)
+        for sub in subs:
+            base.add(sub)
+        return base
 
 
 def endsWithBrackets(elems:list[Elem], br='()'):
@@ -383,6 +389,7 @@ def findLastBrackets(elems:list[Elem]):
             continue
     return -2 # just for debug needs
 
+
 def splitLastBrackets(elems:list[Elem]):
     pass
 
@@ -397,7 +404,7 @@ class CaseSemic(CaseSeq, SubCase):
         super().__init__(';')
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        print('IterOper: ', base, subs)
+        print('CaseSemic setSub: ', base, subs)
 
 
 class CaseCommas(CaseSeq):
@@ -416,3 +423,15 @@ class CaseDot(CaseSeq):
     ''' key.val  '''
     def __init__(self):
         super().__init__('.')
+
+
+class RawCase:
+    ''' case we need do some post-operation '''
+
+
+class ArrOper(RawCase):
+    def __init__(self, left=None, right=None):
+        self.left:Expression = left
+        self.right:Expression = right
+
+

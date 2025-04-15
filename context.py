@@ -92,8 +92,8 @@ class Context(NSContext):
         print('x.addFunc ===>  name:', name, ' var: ', fn)
         self.funcs[name] = fn
 
-    def getFunc(self, name):
-        fvar = self.find(name)
+    # def getFunc(self, name):
+    #     fvar = self.find(name)
 
     def addTypeMethod(self, typeName, func:FuncInst):
         typeVal = self.getType(typeName)
@@ -131,6 +131,8 @@ class Context(NSContext):
             # print('#Ctx-depth', src.depth())
             # print('#Ctx-get,name:', name)
             # print('#Ctx-get2', src.vars, "\n\t\t\t", src.funcs)
+            if name in src.vars:
+                return src.vars[name]
             if name in src.types:
                 return src.types[name]
             if name in src.funcs:
@@ -138,8 +140,6 @@ class Context(NSContext):
                 # if name == 'xprint':
                 #     raise EvalErr('@@3')
                 return src.funcs[name]
-            if name in src.vars:
-                return src.vars[name]
             if src.upper is None:
                 # raise EvalErr('Can`t find var|type name `%s` in current context' % name)
                 var = VarUndefined(name)

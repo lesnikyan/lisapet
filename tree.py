@@ -72,13 +72,15 @@ expCaseList = [
     CaseEmpty(), CaseComment(), CaseDebug(),
     CaseUnclosedBrackets(),
     CaseFuncDef(), CaseReturn(), CaseMathodDef(),
-    CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseArrowR(),
+    CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), 
+    CaseLambda(), CaseArrowR(), CaseMatchCase(),
     CaseStructBlockDef(), CaseStructDef(),
     # CaseAssign(), CaseBinAssign(),
-    CaseSemic(), CaseBinOper(),
+    CaseSemic(), CaseBinOper(), CaseCommas(),
     CaseTuple(),
     CaseDictBlock(), CaseListBlock(), CaseListGen(),
-    CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), CaseFunCall(), CaseStructConstr(),
+    CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), 
+    CaseFunCall(), CaseStructConstr(), CaseLambda(),
     CaseVar_(), CaseVal(), CaseMString(), CaseVar(), CaseBrackets(), CaseUnar()]
 
 def getCases()->list[ExpCase]:
@@ -90,7 +92,7 @@ def simpleExpr(expCase:ExpCase, elems)->Expression:
 
 def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     base, subs = expCase.split(elems)
-    print('#complex-case:', expCase)
+    print('#complex-case:', expCase, base, subs)
     print('#complexExpr', base, [elemStr(s) for s in subs])
     # if isinstance(subs, list):
     #     for ee in subs:
@@ -111,7 +113,7 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     return base
 
 def makeExpr(expCase:ExpCase, elems:list[Elem])->Expression:
-    # print('#b2', [n.text for n in elems])
+    print('makeExpr', [n.text for n in elems])
     if expCase.sub():
         return complexExpr(expCase, elems)
     return simpleExpr(expCase, elems)
@@ -124,7 +126,7 @@ def elems2expr(elems:list[Elem])->Expression:
             #     return complexExpr(expCase, elems)
             print('Case found::', expCase.__class__.__name__, '', elemStr(elems))
             expr = makeExpr(expCase, elems)
-            # print('#b5', expr)
+            print('#EL2EX . expr:', expr)
             return expr
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
 

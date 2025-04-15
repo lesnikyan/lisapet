@@ -24,6 +24,63 @@ from eval import *
 class TestFunc(TestCase):
     
 
+    def test_lambda_as_arg(self):
+        ''' function object as argument of function. '''
+        code = r'''
+        func foo(ff, arg)
+            ff(arg + 10)
+        f1 = \x -> x * 3
+        nn = foo(f1, 5)
+        print('nn = ', nn)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        self.assertEqual(45, ctx.get('nn').get())
+
+    def test_lambda_match(self):
+        ''' Lambda and match-case in one example.
+        Resolved conflict between lambdas and preavious syntax of matches. '''
+        code = r'''
+        c = 5
+        res = 0
+        match c
+            1 !- res = 10
+            2 !- res = c * 2
+            _ !- res = 100
+
+        foo = \x, y -> x ** 2
+        nn = foo(res, 2)
+        print('nn = ', nn)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        self.assertEqual(10000, ctx.get('nn').get())
+
+    def test_lambda_def(self):
+        ''' simple case - definition and call. '''
+        code = r'''
+        foo = \x, y -> x ** 2
+        nn = foo(5, 2)
+        print('nn = ', nn)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        self.assertEqual(25, ctx.get('nn').get())
+
     def test_local_defined_function(self):
         '''  test usage of function, defined within another function '''
         code = '''

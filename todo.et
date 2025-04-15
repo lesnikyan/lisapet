@@ -2,15 +2,47 @@
 # TODO List
 
 
+
+#== func object
+
+foo = func (args...)
+
+#== DONE
+# Lambdas, func-object, func-object call
+foo = \x -> x * 100
+foo(2)
+
 #==
-''' 
-python-like
-multistring
-'''
+# delete lambda (for what?)
+delete foo # delete func object
+
+
+# High-order function def
+#@ questions: 
+1. instance of function: create, store, call
+2. local context around function and into it
+3. closures: how to store local declarations (local <1 lvl upper> context), controll list of used vars, or use them all?
+#@
+func bar(fn:function, a:int):
+    b = a ** 2
+    fn([b, a, 5])
+
+
+# usage
+#@
+phases of implementation
+1. just pure function: get args, return result, no usage of vars out of lambda
+2. use near local context (where lambda was defined)
+@#
+for i <- iter(20, 30)
+    bar(\x -> sum(x) - 100, i)
+
 
 #==
 # string formatting by % , or internal includes like {varName}, $varName, @varName, @{exp(res.sion)}
 
+#==
+# i++ i--
 
 #== 
 # delete operator, find nearest context with var by name and remove it from found context
@@ -121,38 +153,6 @@ foo3(args...)
 
 
 
-#== func object
-
-foo = func (args...)
-
-#==
-# Lambdas, func-object, func-object call
-foo = \x -> x * 100
-foo(2)
-delete foo # delete func object
-
-
-# High-order function def
-#@ questions: 
-1. instance of function: create, store, call
-2. local context around function and into it
-3. closures: how to store local declarations (local <1 lvl upper> context), controll list of used vars, or use them all?
-#@
-func bar(fn:function, a:int):
-    b = a ** 2
-    fn([b, a, 5])
-
-
-# usage
-#@
-phases of implementation
-1. just pure function: get args, return result, no usage of vars out of lambda
-2. use near local context (where lambda was defined)
-@#
-for i <- iter(20, 30)
-    bar(\x -> sum(x) - 100, i)
-
-
 #= 
 # Native regexp
 pattern cases:  /pattern/mod ; |pattern|mod ; <pattern>mod ; %pattern%mod, 
@@ -165,18 +165,14 @@ grs = numsRx.groups(strVal) # [[string]]
 
 #== store content of comments as a runtime metadata
 
-
-#== multiline expr
-# concat all sublines before make expression process
-
-if (expr1 
-    && expr2)
-
 #==
 # sub-expression in if block 
 if val = foo(); val > 10 ...
 # last sub is condition
 
+
+
+#== multiline expr
 
 #== possible sugar
 # case if: with no operator between line use && or defined default operator
@@ -188,20 +184,6 @@ if val = foo(); val > 10 ...
 #
 #
 
-
-#== multiline func, definition and call (multiline in-brackets expression)
-
-func foo (
-    arg1:int,
-    arg2: float,
-    arg3: string 
-)
-    arg1 * arg2 - sum(arg3)
-
-foo( ag1,
-    arg2,
-    bar( a, b, c)
-)
 
 #== concat strings
 str = (
@@ -314,6 +296,63 @@ func foo(name:string, age: int)
 [x ** 2 | x <- [0..10]]
 [y * x | x <- [0..10], y <- ['a'..'n']]
 [x ** 2 | x <- [0..10] | x % 2 != 0]
+
+
+#== DONE
+''' 
+python-like
+multistring
+'''
+
+
+#== DONE
+# multiline func, definition and call (multiline in-brackets expression)
+
+func foo (
+    arg1:int,
+    arg2: float,
+    arg3: string 
+)
+    arg1 * arg2 - sum(arg3)
+
+foo( ag1,
+    arg2,
+    bar( a, b, c)
+)
+
+#= DONE
+# the same about for, if statements, 
+
+# concat all sublines before make expression process
+
+# if - DONE
+if (expr1 
+    && expr2)
+
+# for - DONE
+for (i=0; i<5; i += 1)
+
+# dict DONE
+
+d = {
+    a: 1,
+    b:2
+}
+
+# list DONE
+
+nn = [1,2,
+    3,4,
+    5] 
+
+# comprehension DONE
+nn = [
+    x + y;
+    x <- nums1;
+    y <- nums2;
+    z = (x + y) ** 3;
+    z % 5 > 1
+]
 
 
 @#

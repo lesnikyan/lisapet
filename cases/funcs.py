@@ -12,6 +12,7 @@ from nodes.func_expr import *
 from cases.tcases import *
 from cases.oper import *
 from cases.structs import MethodDefExpr, MethodCallExpr
+from cases.utils import OperSplitter
 
 
 class CaseFuncDef(BlockCase, SubCase):
@@ -48,6 +49,53 @@ class CaseFuncDef(BlockCase, SubCase):
     def setSub(self, base:FuncDefExpr, subs:Expression|list[Expression])->Expression:
         for exp in subs:
             base.addArg(exp)
+
+from cases.utils import OperSplitter
+
+class CaseLambda(CaseFuncDef):
+    ''' \ args -> expr '''
+    
+    def match(self, elems:list[Elem]) -> bool:
+        if len(elems) < 4:
+            return False
+        if not isLex(elems[0], Lt.oper, '\\'):
+            return False
+        main = OperSplitter().mainOper(elems[1:])
+        print('CaseLambda elems[main]', elems[main+1].text, main)
+        return isLex(elems[main+1], Lt.oper, '->')
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        ''' func name (arg, arg, arg, ..) 
+        method:
+            func u:User setName(name:string)
+        '''
+        
+        # fname = elems[1].text
+        # subs = self.splitArgs(elems[3:-1])
+        
+        # splitInx = OperSplitter().mainOper(elems[1:])
+        # argsPart = elems[1:splitInx]
+        # bodyPart = elems[splitInx:]
+        # subs = self.splitArgs(argsPart)
+        # subs = [ees for ees in subs if len(ees) > 0]
+        # subs = subs + [bodyPart]
+        # for ees in subs:
+        #     print('--------------- >>>>>>>>>>>>>>', elemStr(ees))
+        exp = FuncDefExpr(None) # lambda has no name
+        return exp, [elems[1:]]
+
+    def setSub(self, base:FuncDefExpr, subs:Expression|list[Expression])->Expression:
+        sub:ArrOper = subs[0]
+        print('CaseLambda. setSub', base,  ' \\ ', sub.left, ' -->> ', sub.right)
+        
+        if isinstance(sub.left, SequenceExpr):
+            for arg in sub.left.subs:
+                base.addArg(arg)
+        else:
+            base.addArg(sub.left)
+        
+        base.add(sub.right)
+        return base
 
 
 class CaseMathodDef(CaseFuncDef):

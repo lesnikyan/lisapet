@@ -20,9 +20,9 @@ For now we can:
 
 4. match-case
     match expr
-        a -> expr1
-        b -> expr2
-        _ -> default-expression
+        a !- expr1
+        b !- expr2
+        _ !- default-expression
 
 5. complex math expressions, including unary (-): 
     res = a + b * (c -10 ** 2) / (7 - 5 * d)

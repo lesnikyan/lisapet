@@ -5,12 +5,13 @@ from lang import *
 from vars import *
 from vals import isDefConst, elem2val, isLex
 
-from cases.tcases import *
+# from cases.tcases import *
 
 # from nodes.tnodes import *
 # from nodes.oper_nodes import *
 from nodes.control import *
 from cases.tcases import *
+from cases.oper import CaseBrackets
 
 class CaseMatch(SubCase):
     ''' very specaial case. 
@@ -35,15 +36,6 @@ class CaseMatch(SubCase):
         base.setMatch(subs[0])
         return base
 
-
-class RawCase:
-    ''' case we need do some post-operation '''
-
-
-class ArrOper(RawCase):
-    def __init__(self, left=None, right=None):
-        self.left:Expression = left
-        self.right:Expression = right
 
 
 def findOper(elems:list[Elem], oper:str):
@@ -73,11 +65,11 @@ def findOper(elems:list[Elem], oper:str):
 
 
 class CaseArrowR(SubCase):
-    ''' multi pattern 
+    ''' pair left -> right (higher priority than `=`)
         1. lambda case
-            \arg -> expr
-        2. case of match:
-            expr -> expr
+            \\arg -> expr
+        # 2. case of match:
+        #    expr !- expr
         3. put elem to collection (?)
             12 -> array
     '''
@@ -87,16 +79,20 @@ class CaseArrowR(SubCase):
         expr -> expr '''
         if len(elems) < 2:
             return False
-        oper = '->'
-        oind = findOper(elems, oper)
-        print('# match-found: ', oind)
-        if oind < 1:
-            return False
+        # oper = '->'
+        # oind = findOper(elems, oper)
+        # print('# match-found: ', oind)
+        # if oind < 1:
+        #     return False
         
-        return elems[oind].text == oper
+        main = OperSplitter().mainOper(elems)
+        print('CaseArrowR elems[main]', elems[main].text, main)
+        return isLex(elems[main], Lt.oper, '->')
+        # return elems[oind].text == oper
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        arrInd = findOper(elems, '->')
+        # arrInd = findOper(elems, '->')
+        arrInd = OperSplitter().mainOper(elems)
         exp = ArrOper()
         subs = [elems[:arrInd], elems[arrInd+1:]]
         return exp, subs
@@ -106,7 +102,37 @@ class CaseArrowR(SubCase):
         if len(subs) > 1 and isinstance(subs[1], Expression):
             base.right = subs[1]
 
-from cases.oper import CaseBrackets
+
+class CaseMatchCase(SubCase):
+    ''' pair left !- right (lower priority than `=` )
+        case of match:
+            match expr
+                case1 !- expr
+                case2 !- expr
+        '''
+
+    def match(self, elems:list[Elem]) -> bool:
+        '''
+        expr -> expr '''
+        if len(elems) < 2:
+            return False
+
+        main = OperSplitter().mainOper(elems)
+        print('CaseMatchCase elems[main]', elems[main].text, main)
+        return isLex(elems[main], Lt.oper, '!-')
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        # arrInd = findOper(elems, '->')
+        arrInd = OperSplitter().mainOper(elems)
+        exp = ArrOper()
+        subs = [elems[:arrInd], elems[arrInd+1:]]
+        return exp, subs
+
+    def setSub(self, base:ArrOper, subs:list[Expression])->Expression:
+        base.left = subs[0]
+        if len(subs) > 1 and isinstance(subs[1], Expression):
+            base.right = subs[1]
+
 
 class CaseFor(BlockCase, SubCase):
     ''' '''

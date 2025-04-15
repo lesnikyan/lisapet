@@ -25,36 +25,43 @@ import pdb
 
 class TestDev(TestCase):
 
-
-    def test_unclosed_brackets_for(self):
-        ''' 
-        currently brackets in the `for` statement has strange meaning 
-        implement for with brackets. mostly for multiline expressions in `for`.
-        It should be the same as case without brackets: init-expr ; if-expr ; post-iter-expr
-        `(i=1; i < 10 ; i+=1)` == `i=1; i < 10 ; i+=1`
-        '''
-        code = '''
-        res = 45
-        for (i = 1; 
-            i <= 10; 
-            i +=1
-        )
-            res += i
-            print(res)
         
-        print('res=', res)
+
+
+
+    def _test_match_for_if_lambda(self):
+        ''' '''
+        code = r'''
+        c = 5
+        res = 0
+        func foo2(ff)
+            ff(11)
+        rrs = [0 ; x <- [0..11]]
+        f = \\x -> x * 10
+        for i <- [1..10]
+            match c
+                1 !- res = 10
+                2 !- if res > 0
+                    res *= 10
+                3 !- res = foo2(\\x -> x ** 2)
+                4 !- f = \\x -> x * 100
+                5 !- for i=0; i < 5; i += 1
+                    res += i
+                _ !- res = 1000
+            rrs[i] = res
+
+        # foo = \\x, y -> x ** 2
+        # nums = foo(5, 2)
+        print('rrs = ', rrs)
         '''
         code = norm(code[1:])
+        # print('>>\n', code)
+        # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        ctx.print()
-        res = ctx.get('res')
-        print('tt>', res.get())
-        exp = 100
-        self.assertEqual(exp, res.get())
 
 
     def _test_list_gen_by_strings(self):
@@ -108,7 +115,27 @@ class TestDev(TestCase):
 
 
     def _test_tuple_assign_left(self):
-        ''' make vars and assign vals from tuple  '''
+        ''' make vars and assign vals from tuple
+            
+            A) tuple as a result of comma-separated expression: var = a, b, c
+            Shuold do:
+            1. any value-returning sub-expression, like list constructor
+            2. think about common case of `x, x, x` expression; not sure.
+            tuple as destination of assignment operator, or: result-to-tuple mapping
+            Should do:
+            1. reuse defined vars.
+            2. declare new vars
+            3. allow `_` var
+            4. allow type declaration (a:int, b:float) = foo()
+            Should not:
+            1. contain non-var expressions, like func call, collection constuctors (except tuple), const expr like strings or numbers.
+            2. contain incorrect var-type
+            -- Thoughts:
+                a) left-tuple should have extra property like self.isLeft. 
+                    In such case tuple can allow call tuple.setVal(args...)
+                b) isLeft sould be changable only in assertion operator in .setArgs method.
+                c) mapping list to tuple with the same size looks ok.
+            '''
         code = '''
         (a, b, s) = 1,2,3
         print('', a, b, c)

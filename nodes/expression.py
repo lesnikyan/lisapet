@@ -343,3 +343,13 @@ class InterpretContext:
         return cc.__inst
 
 
+class SequenceExpr(Expression):
+    
+    def __init__(self, val=None, src = ''):
+        super().__init__(val, src)
+        self.subs = []
+    
+    def add(self, exp:Expression):
+        self.subs.append(exp)
+
+
