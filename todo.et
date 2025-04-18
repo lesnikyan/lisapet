@@ -1,35 +1,14 @@
 
 # TODO List
 
-
+#==
+# add to list, back order of `->` opertator
+nums = []
+nums <- 12
 
 #== func object
 
 foo = func (args...)
-
-#== DONE
-# Lambdas, func-object, func-object call
-foo = x -> x ** 2
-n1 = foo(7)
-foo2 = x, y -> x ** 2
-n2 = foo2(5, 2)
-foo3 = (x, y, z) -> (x + y) * z
-n3 = foo3(2, 3, 100)
-
-
-# High-order function def
-#@ questions: 
-1. instance of function: create, store, call
-2. local context around function and into it
-3. closures: how to store local declarations (local <1 lvl upper> context), controll list of used vars, or use them all?
-#@
-
-func foo(ff, arg)
-    ff(arg * 2)
-
-f1 = x -> x * 3
-n1 = foo(f1, 5)
-n2 = foo( x -> 2 ** x , 5)
 
 
 # closures of passed or returned lambdas / local funcs
@@ -360,6 +339,31 @@ nn = [
     z = (x + y) ** 3;
     z % 5 > 1
 ]
+
+
+#== DONE
+# Lambdas, func-object, func-object call
+foo = x -> x ** 2
+n1 = foo(7)
+foo2 = x, y -> x ** 2
+n2 = foo2(5, 2)
+foo3 = (x, y, z) -> (x + y) * z
+n3 = foo3(2, 3, 100)
+
+
+# High-order function def
+#@ questions: 
+1. instance of function: create, store, call
+2. local context around function and into it
+3. closures: how to store local declarations (local <1 lvl upper> context), controll list of used vars, or use them all?
+#@
+
+func foo(ff, arg)
+    ff(arg * 2)
+
+f1 = x -> x * 3
+n1 = foo(f1, 5)
+n2 = foo( x -> 2 ** x , 5)
 
 
 @#

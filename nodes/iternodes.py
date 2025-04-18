@@ -9,7 +9,27 @@ from vars import *
 from nodes.expression import *
 from nodes.oper_nodes import OpAssign
 from nodes.func_expr import FuncCallExpr
-from nodes.datanodes import DictVal, ListVal
+from nodes.datanodes import DictVal, ListVal, TupleVal
+
+
+class NIterator:
+    ''' '''
+    
+    def start(self):
+        ''' reset iterator to start position '''
+        pass
+
+    def step(self):
+        ''' move to next pos '''
+        pass
+
+    def hasNext(self):
+        ''' if not last position '''
+        pass
+
+    def get(self):
+        ''' get current element '''
+        pass
 
 
 class IterAssignExpr(Expression):
@@ -43,7 +63,7 @@ class IterAssignExpr(Expression):
         print('> IterAssignExpr setSrc', exp)
         self.srcExpr = exp
 
-    def start(self, ctx:Context):
+    def _start(self, ctx:Context):
         # print('#iter-start1 self.srcExpr', self.srcExpr)
         self.srcExpr.do(ctx) # make iter object
         iterSrc = self.srcExpr.get()
@@ -58,23 +78,27 @@ class IterAssignExpr(Expression):
         print('#iter-start3 self.itExp', self.itExp)
         self.itExp.start()
         self._first_iter = True
-        # print('#iter-start3', self.key, self.val)
-        # for vv in [self.key, self.val]:
-        #     # print('>>', vv)
-        #     if not vv or isinstance(vv, Var_):
-        #         continue
-        #     ctx.addVar(vv)
+    
+    def setIter(self, itExp:NIterator):
+        print('@# setIter', itExp)
+        self.itExp = itExp
+    
+    def start(self):
+        self.itExp.start()
+        self._first_iter = True
     
     def cond(self)->bool:
         return self.itExp.hasNext()
     
     def step(self):
+        print('@# iterAsgn-step', )
         self.itExp.step()
     
     def do(self, ctx:Context):
         ''' put vals into LOCAL context '''
-        # print('IterAssignExpr.do', self.itExp)
+        print('IterAssignExpr.do', self.itExp)
         if self._first_iter:
+            print('IterAssignExpr.do1 >>>>')
             self._first_iter = False
             for vv in [self.key, self.val]:
                 print(' first iter >>', vv)
@@ -82,7 +106,7 @@ class IterAssignExpr(Expression):
                     continue
                 ctx.addVar(vv)
         val = self.itExp.get()
-        # print('IterAssignExpr.do1', val)
+        print('IterAssignExpr.do2', val)
         key = Var_()
         if isinstance(val, tuple):
             key, val = val
@@ -92,26 +116,6 @@ class IterAssignExpr(Expression):
         if key and not isinstance(key, Var_):
             ctx.update(k.name, key)
         ctx.update(v.name, val)
-
-
-class NIterator:
-    ''' '''
-    
-    def start(self):
-        ''' reset iterator to start position '''
-        pass
-
-    def step(self):
-        ''' move to next pos '''
-        pass
-
-    def hasNext(self):
-        ''' if not last position '''
-        pass
-
-    def get(self):
-        ''' get current element '''
-        pass
 
 
 class IndexIterator(NIterator):
@@ -228,6 +232,105 @@ class ListGenExpr(Expression):
         return Val(self.iter, TypeIterator())
 
 
+class Append(Expression):
+    ''' [] <- 12 '''
+    
+    def __init__(self, left, right):
+        super().__init__(None, '')
+        self.target:Collection = None
+        self.src:Var = None
+        if left and right:
+            self.setArgs(left, right)
+
+    def setArgs(self, targ:Collection, src:Var|Val):
+        print('Append setArgs:', targ, src)
+        self.target = targ
+        self.src = src
+
+    def do(self, ctx:Context):
+        # key, val for DictVal. src should be a tuple
+        print('Append do:', self.target, self.src)
+        key, val = None, None
+        if isinstance(self.src, TupleVal):
+            src = self.src.elems
+            k, v = src
+            key = var2val(k)
+        else:
+            v = self.src
+        val = var2val(v)
+        
+        if isinstance(self.target, ListVal):
+            self.target.addVal(val)
+        elif isinstance(self.target, DictVal):
+            self.target.setVal(key, val)
+
+
+class LeftArrowExpr(Expression):
+    ''' '''
+
+    def __init__(self, src = ''):
+        super().__init__(None, src)
+        self.leftExpr:Expression = None
+        self.rightExpr:Expression = None
+        self.left:Var|Collection = None
+        self.right:Var|NIterator = None
+        self.expr = None
+        self.isIter = False
+        
+    def setArgs(self, left, right):
+        self.leftExpr = left
+        self.rightExpr = right
+    
+    # def start(self, ctx:Context):
+    #     self.expr.start()
+        
+    
+    def init(self, ctx:Context):
+        ''' get left, right, decide what the case here: iter or append '''
+        # left expression defines type of case
+        self.leftExpr.do(ctx)
+        ltArg  = self.leftExpr.get()
+        
+        self.rightExpr.do(ctx) # make iter object
+        rtArg = self.rightExpr.get()
+
+        print('Arr <-2 ltArg', ltArg)
+        print('Arr <-3 rtArg:', rtArg)
+        if isinstance(ltArg.get(), Collection):
+            # append case
+            self.expr = Append(ltArg.get(), rtArg)
+        else:
+            if isinstance(rtArg, Var):
+                rtArg = rtArg.get() # extract collection from var
+            print('Arr <-4 rtArg:', rtArg)
+            itExp = None
+            if isinstance(rtArg, (Collection)):
+                itExp = SrcIterator(rtArg)
+            elif isinstance(rtArg.get(), (NIterator)):
+                itExp = rtArg.get()
+            
+            print('Arr<-5 itExp:', itExp)
+            if isinstance(itExp, NIterator):
+                # iter case
+                self.expr = IterAssignExpr()
+                self.expr.setTarget(ltArg)
+                self.expr.setIter(itExp)
+                self.isIter = True
+            else:
+                raise EvalErr('Undefined case of left-arrow operator (%s <- %s)' % (ltArg, rtArg))
+    
+    def doCase(self, ctx:Context):
+        self.expr.do(ctx)
+        if not self.isIter:
+            self.expr = None
+    
+    def do(self, ctx:Context):
+        print('Exp<-do1:', self.expr)
+        if self.expr is None:
+            self.init(ctx)
+        self.doCase(ctx)
+
+
 class EmptyFilter(Expression):
     def do(self, ctx:Context):
         pass
@@ -279,7 +382,9 @@ class ListComprExpr(Expression):
         curIt = -1
         for exp in subs[1:]:
             print('ListComprExpr.setInner' ,exp, type(exp), 'curIt=', curIt)
-            if isinstance(exp, IterAssignExpr):
+            # if isinstance(exp, LeftArrowExpr):
+            #     exp.init()
+            if isinstance(exp, (LeftArrowExpr,IterAssignExpr)):
                 # basic case
                 if curIt > 0 and len(self.filter[curIt]) == 0:
                     # fix prev empty filter by True condition
@@ -316,8 +421,12 @@ class ListComprExpr(Expression):
         q='''
         [a, b, c] ; a <- aaa; a > 10;    b <- bbb; c = a + b;  b > 20;   
         '''
-        inod:IterAssignExpr = self.iterNodes[index]
-        inod.start(ctx)
+        inod:IterAssignExpr|LeftArrowExpr = self.iterNodes[index]
+        
+        if isinstance(inod, LeftArrowExpr):
+            inod.init(ctx)
+            inod = inod.expr
+            inod.start()
         decl = self.declarations[index]
         filt = self.filter[index]
         print(' $$ 1',)

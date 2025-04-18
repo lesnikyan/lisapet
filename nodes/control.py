@@ -184,21 +184,31 @@ class LoopIterExpr(LoopBlock):
     def __init__(self):
         super().__init__()
         
-        self.iter:IterAssignExpr = None
+        self.iter:LeftArrowExpr = None
+        self._origIter = None
+        # self.iter:IterAssignExpr = None
         self.storeRes = False
 
-    def setIter(self, iter:IterAssignExpr):
+    # def setIter(self, iter:IterAssignExpr):
+    def setIter(self, iter:LeftArrowExpr):
+        # raise EvalErr('LoopIterExpr setIter: ', iter)
         self.iter = iter
 
     def add(self, exp:Expression):
         self.block.add(exp)
 
     def do(self, ctx:Context):
-        self.iter.start(ctx)
+        subCtx = Context(ctx)
+        if isinstance(self.iter, LeftArrowExpr):
+            self.iter.init(subCtx)
+            if isinstance(self.iter.expr, IterAssignExpr):
+                self._origIter = self.iter
+                self.iter = self.iter.expr
+        self.iter.start()
         while self.iter.cond():
             print('# loop iter ----------------------------------')
-            self.iter.do(ctx)
-            self.block.do(ctx)
+            self.iter.do(subCtx)
+            self.block.do(subCtx)
             blockRes = self.block.get()
             if isinstance(blockRes, FuncRes):
                 # return expr

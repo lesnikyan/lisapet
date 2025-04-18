@@ -227,6 +227,8 @@ func testCompr()
 
 testCompr()
 
+# Lambda function and high-order function
+
 func testLambdas()
     
     func foo(f, a, b)

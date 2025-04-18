@@ -25,9 +25,55 @@ import pdb
 
 class TestDev(TestCase):
 
+
+
+
+
+    def _test_elem_to_dict_operator(self):
+        ''' both cases of `<-` operator for dict
+        '''
+        code = r'''
+        nn = [1, 2, 3]
+        keys = ['a','b','c']
+        nr = {}
+        for i <- [0..2]
+            nr <- (keys[i], nn[i])
+        print('nr:', nr)
+        rr = []
+        for key, val <- nr
+            rr <- key
+        print('rr:', rr)
+        '''
+        _ = r'''
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('nr').get()
+        self.assertEqual({'a' : 1, 'b' : 2, 'c' : 3}, rvar.vals())
+
+    def _test_barr(self):
+        ''' '''
+        code = r'''
+        res = 0
         
-
-
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res')
+        self.assertEqual(0, rvar.getVal())
 
     def _test_match_for_if_lambda(self):
         ''' '''

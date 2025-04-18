@@ -62,15 +62,21 @@ class CaseList(SubCase):
     def match(self, elems:list[Elem]) -> bool:
         # trivial check
         # TODO: add check for complex cases like [] + []
+        lem = len(elems)
+        if lem < 2:
+            return False
         if not (isLex(elems[0], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']')):
             return False
+        if len(elems) == 2:
+            return True
         spl = OperSplitter()
         opInd = spl.mainOper(elems)
         if opInd != 0:
             return False
         subElems = elems[1:-1]
         opInd = spl.mainOper(subElems)
-        print('CaseList main oper: ', opInd, subElems[opInd].text)
+        print('CaseList main oper ind: ', opInd)
+        print('CaseList main oper text: ', subElems[opInd].text)
         # -1 : 1 varname
         # > 0 and elem = `,` : several elems
         # > 0 and elem not in [:;] one somplex expression

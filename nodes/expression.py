@@ -149,7 +149,7 @@ class Block(Expression):
                 # Skip actions with result
                 continue
             lastInd = i
-            lineRes = None
+            # lineRes = None
             lineRes = expr.get()
             if isinstance(lineRes, FuncRes):
                 print(' - return::', lineRes)

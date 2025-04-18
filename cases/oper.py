@@ -214,7 +214,8 @@ def makeOperExp(elem:Elem)->OperCommand:
     if oper == '..':
         return ListGenExpr()
     if oper =='<-':
-        return IterAssignExpr() # TODO: could be extended for additional cases
+        return LeftArrowExpr() # TODO: could be extended for additional cases
+        # return IterAssignExpr() # TODO: could be extended for additional cases
     # undefined case:
     raise InterpretErr('!!>>> appropriate case didnt found for oper `%s`' % oper)
     return OperCommand(elem.text)
@@ -315,45 +316,45 @@ class CaseBrackets(SubCase):
         return base
 
 
-class _CaseBinAssign(CaseAssign):
-    ''' += -= *= /= %=  
-    var += val -> var = (var + val)
+# class _CaseBinAssign(CaseAssign):
+#     ''' += -= *= /= %=  
+#     var += val -> var = (var + val)
     
-    '''
+#     '''
 
-    def match(self, elems:list[Elem]) -> bool:
-        '''  '''
-        if elems[0].type != Lt.word or elems[0].text in SPEC_WORDS:
-            return False
-        afterInd = afterLeft(elems)
-        if afterInd == -1:
-            return False
-        if afterInd > len(elems):
-            return False
-        elem = elems[afterInd]
-        print('CaseBinAssign,split', afterInd, elem.text)
-        if elem.type != Lt.oper or elem.text not in EXT_ASSIGN_OPERS:
-            return False
-        return True
+#     def match(self, elems:list[Elem]) -> bool:
+#         '''  '''
+#         if elems[0].type != Lt.word or elems[0].text in SPEC_WORDS:
+#             return False
+#         afterInd = afterLeft(elems)
+#         if afterInd == -1:
+#             return False
+#         if afterInd > len(elems):
+#             return False
+#         elem = elems[afterInd]
+#         print('CaseBinAssign,split', afterInd, elem.text)
+#         if elem.type != Lt.oper or elem.text not in EXT_ASSIGN_OPERS:
+#             return False
+#         return True
 
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        ''' Reusing OpAssign expression object'''
-        opIndex = afterLeft(elems)
-        biOper = elems[opIndex]
-        prels('CaseBinAssign.split1', elems)
-        print('biOper:', biOper.text)
-        mOper = biOper.text[0] # get math oper, e.g.: + from +=
-        left = elems[:opIndex]
-        right = elems[opIndex+1:]
-        oper = Elem(Lt.oper, mOper)
-        asgn = Elem(Lt.oper, '=')
-        # new Assign-like sequence: (x += 2) -> (x = x + 2)
-        assignElems = left + [asgn] + left + [oper] + right
-        return super().split(assignElems)
+#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+#         ''' Reusing OpAssign expression object'''
+#         opIndex = afterLeft(elems)
+#         biOper = elems[opIndex]
+#         prels('CaseBinAssign.split1', elems)
+#         print('biOper:', biOper.text)
+#         mOper = biOper.text[0] # get math oper, e.g.: + from +=
+#         left = elems[:opIndex]
+#         right = elems[opIndex+1:]
+#         oper = Elem(Lt.oper, mOper)
+#         asgn = Elem(Lt.oper, '=')
+#         # new Assign-like sequence: (x += 2) -> (x = x + 2)
+#         assignElems = left + [asgn] + left + [oper] + right
+#         return super().split(assignElems)
      
     
-    def setSub(self, base:Expression, subs:list[Expression])->Expression:
-        return super().setSub(base, subs)
+#     def setSub(self, base:Expression, subs:list[Expression])->Expression:
+#         return super().setSub(base, subs)
 
 
 def checkTypes(elems:list[Elem], exp:list[int]):

@@ -22,6 +22,36 @@ class TestLists(TestCase):
 
 
 
+    def test_elem_to_list_operator(self):
+        ''' both cases of `<-` operator
+        # if left is a collection: put right elem to the end of left list|dict (append val case)
+        # TODO: implement dict case
+        nums = [1,2,3]
+        nums <- 4
+        # if left not a collection (right must be)
+        # val from right list to left var according to the internal index of list (iterator case)
+        i <- [1,2,3]
+        '''
+        code = r'''
+        nn = [1, 2, 3]
+        nr = []
+        for i <- nn
+            nr <- i * 10
+        nr <- 500
+        print('nr:', nr)
+        '''
+        _ = r'''
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('nr').get()
+        self.assertEqual([10, 20, 30, 500], rvar.get())
 
     def test_tuple_list_as_result(self):
         '''   '''
