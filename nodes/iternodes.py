@@ -48,10 +48,14 @@ class IterAssignExpr(Expression):
         self.srcExpr.do(ctx) # make iter object
         iterSrc = self.srcExpr.get()
         print('#iter-start2 itSrc', iterSrc)
+        if isinstance(iterSrc, Var):
+            iterSrc = iterSrc.get() # extract collection from var
         if isinstance(iterSrc, (ListVal, DictVal)):
             self.itExp = SrcIterator(iterSrc)
         elif isinstance(iterSrc.get(), (NIterator)):
             self.itExp = iterSrc.get()
+            
+        print('#iter-start3 self.itExp', self.itExp)
         self.itExp.start()
         self._first_iter = True
         # print('#iter-start3', self.key, self.val)
@@ -113,6 +117,8 @@ class NIterator:
 class IndexIterator(NIterator):
     ''' x <- iter(0, 10, 2)'''
     def __init__(self, a, b=None, c=None):
+        print('IndexIterator:', self, 'a=', a, 'b=', b, 'c=', c)
+        # raise DebugExpr('')
         if c is None:
             c = 1
         if b is None:

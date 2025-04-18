@@ -37,20 +37,20 @@ class TestDev(TestCase):
         func foo2(ff)
             ff(11)
         rrs = [0 ; x <- [0..11]]
-        f = \\x -> x * 10
+        f = x -> x * 10
         for i <- [1..10]
             match c
                 1 !- res = 10
                 2 !- if res > 0
                     res *= 10
-                3 !- res = foo2(\\x -> x ** 2)
-                4 !- f = \\x -> x * 100
+                3 !- res = foo2(x -> x ** 2)
+                4 !- f = x -> x * 100
                 5 !- for i=0; i < 5; i += 1
                     res += i
                 _ !- res = 1000
             rrs[i] = res
 
-        # foo = \\x, y -> x ** 2
+        # foo = (x, y) -> x ** 2
         # nums = foo(5, 2)
         print('rrs = ', rrs)
         '''

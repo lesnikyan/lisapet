@@ -7,6 +7,7 @@ Eval tree nodes: operators.
 
 from lang import *
 from vars import *
+# from typex import *
 from nodes.expression import *
 from nodes.structs import StructInstance
 from nodes.func_expr import FuncCallExpr
@@ -100,7 +101,9 @@ class OpAssign(OperCommand):
         # ctx.print()
         resSet:list[Var] = [None]*size
         for i in range(size):
+            print('OpAssign.do src[i]', src[i])
             src[i].do(ctx)
+            ctx.print()
             tVal:Var = src[i].get() # val (anon var obj) from expression
             # print('## op-assign, src.get() -> ', tVal, ':', tVal.name, tVal.get(), tVal.getType())
             resSet[i] = tVal
@@ -113,7 +116,8 @@ class OpAssign(OperCommand):
             self.left[i].do(ctx)
             # print(' (a = b) :2')
             val = resSet[i]
-
+            if isinstance(val, Var):
+                val = val.get()
             
             if isinstance(self.left[i], CollectElem):
                 ''' '''
@@ -129,11 +133,11 @@ class OpAssign(OperCommand):
             if isinstance(dest, VarUndefined):
                 # new var for assignment
                 isNew = True
-                newVar = Var(dest.name, TypeAny)
-                print('Assign new var', newVar)
+                newVar = Var(dest.name, val.getType())
+                print('Assign new var', newVar, 'val-type:', val.getType())
                 ctx.addVar(newVar)
                 dest = newVar
-                dest.set(val)
+            dest.set(val)
                 
             # print('# op-assign set1, varX, valX:', self.left[i], src[i])
             print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
@@ -153,7 +157,9 @@ class OpAssign(OperCommand):
             # dest = val
             # dest.name = name
             # dest.set(val)
-            ctx.update(dest.name, val)
+            
+            # ctx.update(dest.name, val)
+            
             self.res = val
             # ctx.update(dest.name, resSet[i])
             saved = ctx.get(name)
@@ -201,7 +207,7 @@ class OpMath(BinOper):
         # eval expressions
         self.left.do(ctx)
         self.right.do(ctx)
-        # print('#bin-oper1:', self.left, self.right) # expressions
+        print('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
         # print('#bin-oper2', a, b)
@@ -261,12 +267,16 @@ class OpBinBool(BinOper):
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
         print(' ( %s )' % self.oper, a.getVal(), b.getVal())
-        type = a.getType()
-        if type != b.getType():
-            # naive impl: different types are not equal
-            return False
+        print(' (types)', a.getType(), b.getType())
+        # TODOO: type check needs further development
+        # vtype = a.getType()
+        # if not isinstance(vtype, TypeAny) and not isinstance(b.getType(), TypeAny) and vtype != b.getType():
+        #     # naive impl: different types are not equal
+        #     print('break comarison because types not equal %s <> %s' % (a.getType(), b.getType()) )
+        #     return False
         res = ff[self.oper](a.getVal(), b.getVal())
-        self.res = Val(res, a.getType())
+        print('# == == OpCompare.do ', res)
+        self.res = Val(res, TypeBool)
     
     def op_and(self, a, b):
         return a and b
@@ -446,6 +456,7 @@ class ObjectMember(Val):
 
     def get(self):
         ''' res = obj.member; foo(obj.member); obj.member() '''
+        print('self.member, get :: ',self.object, type(self.object), '::', self.member)
         val = self.object.get(self.member)
         
         # print('self.member, get :: ', self.member, val)
@@ -460,7 +471,7 @@ class ObjectMember(Val):
     
     def set(self, val:Var):
         ''' obj.member = expr; obj.member[key] = expr (looks like a.b[c] is an subcase of a.b) '''
-        # print('self.member, val :: ', self.member, val)
+        print('ObjectMember.set self.member, val :: ', self.member, val)
         self.object.set(self.member, val)
 
     def __str__(self):
@@ -487,22 +498,28 @@ class OperDot(BinOper):
         print('   >> OperDot.set', self.objExp, self.membExpr)
 
     def do(self, ctx:NSContext):
-        # print('OperDot.do0', self.objExp, ' :: ', self.membExpr)
+        print('OperDot.do0', self.objExp, '; type=', type(self.objExp), ' :: ', self.membExpr)
         self.objExp.do(ctx)
-        inst:StructInstance = self.objExp.get()
+        objVar = self.objExp.get()
+        print('OperDot.do00', objVar, '; type=', type(objVar))
+        if isinstance(objVar, Var):
+            objVar = objVar.get()
+        inst:StructInstance = objVar
         print('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
         # self.membExpr.do(inst)
         name = ''
-        if isinstance(self.membExpr, VarExpr):
-            name = self.membExpr.name # just name for struct
-        elif isinstance(self.membExpr, MethodCallExpr):
-            print('OperDot.do3 method1 =', self.membExpr, type(self.membExpr))
+        
+        if isinstance(self.membExpr, MethodCallExpr):
+            print('OperDot.do3 method1 =', self.membExpr, type(self.membExpr), '; methodname:', self.membExpr.name)
             # TODO: refactor to: 1. return func-member; 2. call method as usage of `()` operator
             self.membExpr.setInstance(inst)
             self.membExpr.do(ctx)
             self.val = self.membExpr.get()
-            print('OperDot.do3 method res =', self.val)
+            print('OperDot.do4 method res =', self.val)
             return
+        
+        if isinstance(self.membExpr, VarExpr):
+            name = self.membExpr.name # just name for struct
         else:
             # exp.get() - for array or dimanic field name obj.(fieldName(args))
             self.membExpr.do(ctx)
@@ -514,7 +531,7 @@ class OperDot(BinOper):
 
         # print('OperDot.do2 <inst =', inst, 'name=', name ,'>')
         self.val = ObjectMember(inst, name)
-        print('OperDot.do fin field =', self.val)
+        print('OperDot.do5 fin field =', self.val)
 
     def get(self):
         return self.val

@@ -65,17 +65,14 @@ class FuncRes(Val):
 
 # Collections
 
-class Container(Val):
-    ''' Contaiter Var list, dict, etc '''
-    
+
+class Collection(Container):
+
     def setVal(self, key:Var, val:Var):
         pass
 
     def getVal(self, key:Var):
         pass
-
-
-class Collection(Container):
     
     def len(self)->int:
         return 0
@@ -103,7 +100,7 @@ class ListVal(Collection):
         self.elems.append(val)
     
     def setVal(self, key:Val, val:Val):
-        i = key.get()
+        i = key.getVal()
         # print('ListVar.setVal', i, val, 'Len=', len(self.elems), i < len(self.elems), self.elems)
         if i >= len(self.elems):
             raise EvalErr('List out of range by index %d ' % i)
@@ -113,8 +110,9 @@ class ListVal(Collection):
         print('ListVar.getVal1, index:', key)
         # print('ListVar.getVal1, elems:', self.elems)
         i = key
-        if isinstance(key, Val):
-            i = key.get()
+        # if isinstance(key, Val):
+        #     i = key.get()
+        i = key.getVal()
         print('@ i=', i)
         if i < len(self.elems):
             return self.elems[i]
@@ -166,9 +164,10 @@ class TupleVal(Collection):
         self.elems.append(val)
 
     def getVal(self, key:Val|int):
-        i = key
-        if isinstance(key, Val):
-            i = key.get()
+        # i = key
+        # if isinstance(key, Val):
+        #     i = key.get()
+        i = key.getVal()
         if i < len(self.elems):
             return self.elems[i]
         raise EvalErr('Tuple out of range by index %d ' % i)
@@ -204,7 +203,7 @@ class DictVal(Collection):
 
     def getVal(self, key:Val):
         # k = self.inKey(key)
-        k = key.get()
+        k = key.getVal()
         if k in self.data:
             return self.data[k]
         raise EvalErr('List out of range by key %s ' % k)
@@ -221,3 +220,10 @@ class DictVal(Collection):
         vals = '{%s}' % ', '.join([ '%s : %s' %(key(k), v) for k, v in self.vals().items()])
         return 'DictVal(%s)' %  (vals)
 
+
+def var2val(var:Var|Val):
+    if isinstance(var, Val):
+        return var
+    tp = var.getType()
+    val = var.getVal()
+    return Val(val, tp)

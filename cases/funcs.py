@@ -50,51 +50,40 @@ class CaseFuncDef(BlockCase, SubCase):
         for exp in subs:
             base.addArg(exp)
 
-from cases.utils import OperSplitter
-
 class CaseLambda(CaseFuncDef):
-    ''' \ args -> expr '''
+    ''' args -> expr '''
     
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) < 4:
             return False
-        if not isLex(elems[0], Lt.oper, '\\'):
-            return False
-        main = OperSplitter().mainOper(elems[1:])
-        print('CaseLambda elems[main]', elems[main+1].text, main)
-        return isLex(elems[main+1], Lt.oper, '->')
+
+        main = OperSplitter().mainOper(elems)
+        print('CaseLambda elems[main]', elems[main].text, main)
+        return isLex(elems[main], Lt.oper, '->')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' func name (arg, arg, arg, ..) 
         method:
             func u:User setName(name:string)
         '''
-        
-        # fname = elems[1].text
-        # subs = self.splitArgs(elems[3:-1])
-        
-        # splitInx = OperSplitter().mainOper(elems[1:])
-        # argsPart = elems[1:splitInx]
-        # bodyPart = elems[splitInx:]
-        # subs = self.splitArgs(argsPart)
-        # subs = [ees for ees in subs if len(ees) > 0]
-        # subs = subs + [bodyPart]
-        # for ees in subs:
-        #     print('--------------- >>>>>>>>>>>>>>', elemStr(ees))
+        idx = OperSplitter().mainOper(elems)
+        args = elems[:idx]
+        if CaseBrackets().match(args):
+            args = args[1:-1]
+        body = elems[idx+1:]
         exp = FuncDefExpr(None) # lambda has no name
-        return exp, [elems[1:]]
+        return exp, [args, body]
 
     def setSub(self, base:FuncDefExpr, subs:Expression|list[Expression])->Expression:
-        sub:ArrOper = subs[0]
-        print('CaseLambda. setSub', base,  ' \\ ', sub.left, ' -->> ', sub.right)
-        
-        if isinstance(sub.left, SequenceExpr):
-            for arg in sub.left.subs:
+        print('CaseLambda. setSub', base,  ' \\ ', subs)
+        args, body = subs
+        if isinstance(args, SequenceExpr):
+            for arg in args.subs:
                 base.addArg(arg)
         else:
-            base.addArg(sub.left)
+            base.addArg(args)
         
-        base.add(sub.right)
+        base.add(body)
         return base
 
 

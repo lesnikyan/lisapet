@@ -227,6 +227,27 @@ func testCompr()
 
 testCompr()
 
+func testLambdas()
+    
+    func foo(f, a, b)
+        a + f(b)
+
+    f1 = x -> x * 10
+    n1 = foo(f1, 2, 3)
+
+    n2 = foo(x -> x * 100, 4, 5)
+
+    # TODO: 1) append val to list : nums <- 5
+    nn = [0,0,0,0,0]
+    for i <- [1..5]
+        nn[i-1] = foo(x -> x ** 2 , 1, i)
+    
+    print('lambda test:', n1, n2, nn)
+
+testLambdas()
+
+
+
 #@
 @#
 

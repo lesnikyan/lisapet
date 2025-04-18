@@ -42,8 +42,11 @@ class ListExpr(CollectionExpr):
         # print('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
         for exp in self.valsExprList:
             exp.do(ctx)
-            self.listObj.addVal(exp.get())
-        # print('## ListExpr.do2 self.listObj:', self.listObj)
+            v = exp.get()
+            print('ListExpr.do1', exp, v)
+            val = var2val(v)
+            self.listObj.addVal(val)
+        print('## ListExpr.do2 self.listObj:', self.listObj)
 
     def get(self):
         # print('## ListExpr.get self.listObj:', self.listObj)
@@ -55,6 +58,7 @@ class ListConstr(MultilineVal, ListExpr):
 
     def __init__(self):
         super().__init__()
+
 
 
 class DictExpr(CollectionExpr):
@@ -75,7 +79,9 @@ class DictExpr(CollectionExpr):
         for exp in self.exprList:
             # print('dictExp. next:', exp)
             exp.do(ctx)
-            key, val = exp.get()
+            k, v = exp.get()
+            key = var2val(k)
+            val = var2val(v)
             self.data.setVal(key, val)
         # print('## DictExpr.do2 self.data:', self.data)
 
@@ -106,9 +112,14 @@ class CollectElemExpr(Expression, CollectElem):
 
     def do(self, ctx:Context):
         self.target = None
+        print('## COLL[x1] self.varExpr', self.varExpr)
         self.varExpr.do(ctx) # before []
-        self.target = self.varExpr.get() # found collection
-        # print('## self.target', self.target)
+        target = self.varExpr.get() # found collection
+        print('## COLL[x2] target1', self.target)
+        if isinstance(target, Var):
+            target = target.get()
+        self.target = target
+        print('## COLL[x3] target2', self.target)
         self.keyExpr.do(ctx) #  [ into ]
 
     def set(self, val:Var):
@@ -146,7 +157,11 @@ class SliceExpr(Expression, CollectElem):
     def do(self, ctx:Context):
         self.target = None
         self.varExpr.do(ctx) # before []
-        self.target = self.varExpr.get() # found collection
+        target = self.varExpr.get() # found collection
+        print('SliceExpr.do1', target)
+        if isinstance(target, Var):
+            target = target.getVal()
+        self.target = target
         self.beginExpr.do(ctx)
         self.closeExpr.do(ctx)
         if isinstance(self.closeExpr, NothingExpr):

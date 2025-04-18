@@ -316,12 +316,14 @@ class MethodCallExpr(FuncCallExpr):
     #     self.argExpr.append(exp)
 
     def setInstance(self, inst: StructInstance):
-        # print('MethCall set inst', inst)
+        print('MethCall set inst', inst)
         # raise XDebug('MethodCallExpr')
         self.inst = inst
 
     def do(self, ctx: Context):
-        # print('MethodCallExpr.do 1', self.name, self.inst.getType())
+        if not isinstance(self.inst, StructInstance):
+            raise EvalErr('Incorrect instance of struct: %s ', self.inst)
+        print('MethodCallExpr.do 1', self.name, self.inst.getType())
         # self.func = ctx.get(self.name)
         tname = self.inst.getType().name
         stype = ctx.getType(tname).get()
@@ -338,7 +340,7 @@ class MethodCallExpr(FuncCallExpr):
         for exp in self.argExpr:
             # print('#1# meth-call do20 exp=: ', exp)
             exp.do(ctx)
-            # print('meth-call do3:', exp, exp.get())
+            print('meth-call do3:', exp, exp.get())
             args.append(exp.get())
         self.func.setArgVals(args)
         # TODO: add usage of Definishion Context instead of None

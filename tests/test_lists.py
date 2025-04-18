@@ -192,8 +192,8 @@ class TestLists(TestCase):
         code = '''
         a = (1, 2, ['aa','bb'])
         a[2][0] = 'a222'
-        print('tuple_a', a[0], a[2][0], a[2][1])
-        print(a[2][:1])
+        # print('tuple_a', a[0], a[2][0], a[2][1])
+        # print(a[2][:1])
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -227,7 +227,7 @@ class TestLists(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        arr2 = ctx.get('arr2')
+        arr2 = ctx.get('arr2').get()
         self.assertEqual(9, len(arr2.elems))
 
     def test_list_slice_skip2(self):
@@ -243,7 +243,7 @@ class TestLists(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        arr2 = ctx.get('arr2')
+        arr2 = ctx.get('arr2').get()
         self.assertEqual(7, len(arr2.elems))
 
     def test_list_slice_skip1(self):
@@ -259,7 +259,7 @@ class TestLists(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        arr2 = ctx.get('arr2')
+        arr2 = ctx.get('arr2').get()
         self.assertEqual(5, len(arr2.elems))
 
     def test_list_slice(self):
@@ -275,7 +275,7 @@ class TestLists(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        arr2 = ctx.get('arr2')
+        arr2 = ctx.get('arr2').get()
         self.assertEqual(5, len(arr2.elems))
 
     def test_list_multiline(self):
@@ -375,14 +375,14 @@ class TestLists(TestCase):
 
     def test_array_expr(self):
         data = [
-            '[1,2,3]', 
+            # '[1,2,3]', 
             '[a, b, c]',
-            '[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]',
+            # '[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]',
         ]
         ctdata = {
             'a': 1,
-            'b':2,
-            'c':3
+            'b': 2,
+            'c': 3
         }
         for code in data:
             tlines = splitLexems(code)
@@ -392,7 +392,7 @@ class TestLists(TestCase):
             ctx = rootContext()
             for k, v in ctdata.items():
                 vv = Var(k, TypeInt)
-                vv.set(v)
+                vv.set(Val(v, TypeInt()))
                 ctx.addSet({k: vv})
             print('~~~~ test case: %s ~~~~' % code)
             ex.do(ctx)

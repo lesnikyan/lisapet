@@ -75,6 +75,11 @@ class Val(Base):
         return '%s(%s: %s)' % (self.__class__.__name__, self.val, tt)
 
 
+class Container(Val):
+    ''' Contaiter Var list, dict, etc '''
+
+
+
 class Var(Base):
     '''
     Var contains Val or any children of Val: ListVal, DictVal, StructInstance
@@ -104,7 +109,12 @@ class Var(Base):
     def get(self):
         return self.val
     
+    def getName(self):
+        return self.name
+    
     def getVal(self):
+        if isinstance(self.val, Container):
+            return self.val
         return self.val.getVal()
     
     def setType(self, t:VType):

@@ -6,9 +6,6 @@ from vars import *
 from vals import isDefConst, elem2val, isLex
 
 # from cases.tcases import *
-
-# from nodes.tnodes import *
-# from nodes.oper_nodes import *
 from nodes.control import *
 from cases.tcases import *
 from cases.oper import CaseBrackets
@@ -64,44 +61,6 @@ def findOper(elems:list[Elem], oper:str):
     return -1
 
 
-class CaseArrowR(SubCase):
-    ''' pair left -> right (higher priority than `=`)
-        1. lambda case
-            \\arg -> expr
-        # 2. case of match:
-        #    expr !- expr
-        3. put elem to collection (?)
-            12 -> array
-    '''
-
-    def match(self, elems:list[Elem]) -> bool:
-        '''
-        expr -> expr '''
-        if len(elems) < 2:
-            return False
-        # oper = '->'
-        # oind = findOper(elems, oper)
-        # print('# match-found: ', oind)
-        # if oind < 1:
-        #     return False
-        
-        main = OperSplitter().mainOper(elems)
-        print('CaseArrowR elems[main]', elems[main].text, main)
-        return isLex(elems[main], Lt.oper, '->')
-        # return elems[oind].text == oper
-
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        # arrInd = findOper(elems, '->')
-        arrInd = OperSplitter().mainOper(elems)
-        exp = ArrOper()
-        subs = [elems[:arrInd], elems[arrInd+1:]]
-        return exp, subs
-
-    def setSub(self, base:ArrOper, subs:list[Expression])->Expression:
-        base.left = subs[0]
-        if len(subs) > 1 and isinstance(subs[1], Expression):
-            base.right = subs[1]
-
 
 class CaseMatchCase(SubCase):
     ''' pair left !- right (lower priority than `=` )
@@ -113,7 +72,7 @@ class CaseMatchCase(SubCase):
 
     def match(self, elems:list[Elem]) -> bool:
         '''
-        expr -> expr '''
+        expr !- expr '''
         if len(elems) < 2:
             return False
 
@@ -122,7 +81,6 @@ class CaseMatchCase(SubCase):
         return isLex(elems[main], Lt.oper, '!-')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        # arrInd = findOper(elems, '->')
         arrInd = OperSplitter().mainOper(elems)
         exp = ArrOper()
         subs = [elems[:arrInd], elems[arrInd+1:]]

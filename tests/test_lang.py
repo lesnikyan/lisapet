@@ -21,6 +21,25 @@ import pdb
 class TestLang(TestCase):
 
 
+    def test_bool_unary(self):
+        ''' test inversion bool. '''
+        code = r'''
+        func unar(cond)
+            inv = false
+            if cond && ! inv
+                print('inverted')
+                return true
+            false
+                
+        res = unar(true)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        self.assertEqual(True, ctx.get('res').getVal())
 
     def test_unclosed_brackets_for(self):
         ''' 
@@ -48,9 +67,9 @@ class TestLang(TestCase):
         ex.do(ctx)
         ctx.print()
         res = ctx.get('res')
-        print('tt>', res.get())
+        print('tt>', res.getVal())
         exp = 100
-        self.assertEqual(exp, res.get())
+        self.assertEqual(exp, res.getVal())
 
     def test_unclosed_comprehansion(self):
         '''   '''
@@ -74,9 +93,9 @@ class TestLang(TestCase):
         ex.do(ctx)
         ctx.print()
         res = ctx.get('res')
-        print('tt>', res.get())
+        print('tt>', res.getVal())
         exp = 1000
-        self.assertEqual(exp, res.get())
+        self.assertEqual(exp, res.getVal())
 
     def test_unclosed_brackets_if_cond(self):
         '''   '''
@@ -101,9 +120,9 @@ class TestLang(TestCase):
         ex.do(ctx)
         ctx.print()
         res = ctx.get('res')
-        print('tt>', res.get())
+        print('tt>', res.getVal())
         exp = 100
-        self.assertEqual(exp, res.get())
+        self.assertEqual(exp, res.getVal())
 
     def test_unclosed_brackets_dict(self):
         '''   '''
@@ -123,7 +142,7 @@ class TestLang(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         ctx.print()
-        res = ctx.get('res')
+        res = ctx.get('res').get()
         print('tt>', res.vals())
         exp = {'a': 1, 'b': 2}
         self.assertEqual(exp, res.vals())
@@ -147,7 +166,7 @@ class TestLang(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        res = ctx.get('res')
+        res = ctx.get('res').get()
         print('tt>', res.get())
         exp = ['aa aa aa', 'bb bb bb', [1, 2, 3]]
         self.assertEqual(exp, res.get())
@@ -173,8 +192,8 @@ class TestLang(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        res = ctx.get('res')
-        print('tt>', res.get())
+        res = ctx.get('res').get()
+        print('tt>', res.vals())
         self.assertEqual([3,1,2], res.get())
 
     def test_unclosed_brackets_expr(self):
@@ -260,7 +279,7 @@ class TestLang(TestCase):
             print('$$ run test ------------------')
             exp.do(ctx)
             mstr1 = ctx.get('mstr')
-            res = mstr1.get()
+            res = mstr1.getVal()
             # print('#tt e>', [s for s in expVal])
             # print('#tt r>', [s for s in res])
             # for i in range(len(res)):
@@ -381,7 +400,7 @@ class TestLang(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        res = ctx.get('c').get()
+        res = ctx.get('c').getVal()
         self.assertEqual(res, 50)
 
     def test_struct_field_full(self):
@@ -634,7 +653,7 @@ class TestLang(TestCase):
             print('$$ run test ------------------')
             lines = code.split('; ')
             code = '\n'.join(init+lines)
-            print('CODE:','\n'+code)
+            print('CODE:','\n\n'+code)
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             exp = lex2tree(clines)

@@ -84,11 +84,10 @@ class OperSplitter:
         e.g. + or - for math expressions with + - / *
         or || for logical expressions. 
         '''
+        
         # print('#a51:', [n.text for n in elems])
         src = elemStr(elems)
         lowesPrior = len(self.priorGroups) - 1
-        # inBr = 0
-        # maxInd = len(elems)-1
         obr='([{'
         cbr = ')]}'
         inBrs = [] # brackets which was opened from behind
@@ -98,7 +97,6 @@ class OperSplitter:
             return -1 # empty input
         for prior in range(lowesPrior, -1, -1):
             curPos = lem
-            # skip = -1
             # print('prior=', prior, self.priorGroups[prior] )
             for i in range(lem - 1, -1, -1):
                 curPos -= 1
@@ -110,7 +108,6 @@ class OperSplitter:
                 # counting brackets from tne end, closed is first
                 if etx in cbr:
                     inBrs.append(etx)
-                    # print(' >> ',etx)
                     continue
                 if etx in obr:
                     last = inBrs.pop()
@@ -124,8 +121,6 @@ class OperSplitter:
 
                 if el.type != Lt.oper:
                     continue
-                # print(' >> ## :', i, el.text)
-                # TODO: fix unary cases, like: 5 * -3,  7 ** -2, x == ! true, (-12)
                 if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
                     # unary case found, skip current pos
                     # print(' >> == unary case found:', i, el.text)

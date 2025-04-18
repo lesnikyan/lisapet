@@ -68,7 +68,10 @@ class TestStruts(TestCase):
             div = ' ' * nn
             st.name + div + '/'
         
+        dd = {'a':1}
+        
         myt = MyType{name: 'Grrr'}
+        myt.name = 'Rrrr'
         
         print('p>>', myt.foo(4, 0.1, '4444'))
         '''
@@ -111,7 +114,7 @@ class TestStruts(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        usr = ctx.get('user')
+        usr = ctx.get('user').get()
         print('#tt user.name:', usr.get('name').get())
         self.assertEqual('Lukas', usr.get('name').get())
 
@@ -244,6 +247,7 @@ class TestStruts(TestCase):
             Book{title:'Blue, blue sky', author:'Ani Arabesquin', pages:200, prod: Product{price:20., amount:2222}}
             Book{title:'Silver sword of small town', author:'Arnold Whiteshvartz', pages:300, prod: Product{price:20., amount:3333}}
 
+        @debug 123321
         books[0].prod.price *= 1.1
         func printBook(book)
             print(book.title, book.author, book.pages, book.prod.price)
@@ -259,7 +263,7 @@ class TestStruts(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        b0 = ctx.get('books').elems[0]
+        b0 = ctx.get('books').get().elems[0]
         print('#tt b0:', b0.get('prod').get('price').get())
         self.assertEqual(11.0, b0.get('prod').get('price').get())
 
@@ -272,13 +276,17 @@ class TestStruts(TestCase):
         @debug field assign
         a.nname = 'AA2222'
         print(a.nname)
+        
         struct B aa:A
         b = B{aa:a}
+        
         struct C bb:B, cbb:string
         struct D cc:C
+        
         c = C{bb:b, cbb:'c-val'}
         d = D{cc:c}
         d.cc.cbb = 'c-val2'
+        
         print(b.aa.nname)
         print(d.cc.bb.aa.nname, d.cc.cbb)
         aaa = [1,2,3,4,5]
@@ -292,7 +300,7 @@ class TestStruts(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        c = ctx.get('c')
+        c = ctx.get('c').get()
         print('#tt b0:', c.get('cbb').get())
         self.assertEqual('c-val2', c.get('cbb').get())
 

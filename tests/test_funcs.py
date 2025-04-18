@@ -19,19 +19,33 @@ from eval import *
 
 
 
-# TODO: add asserts to each test
-
 class TestFunc(TestCase):
     
 
-    def test_lambda_as_arg(self):
-        ''' function object as argument of function. '''
+
+    def test_lambda_in_func(self):
+        ''' test in function. '''
         code = r'''
-        func foo(ff, arg)
-            ff(arg + 10)
-        f1 = \x -> x * 3
-        nn = foo(f1, 5)
-        print('nn = ', nn)
+        func testLambdas()
+            
+            func foo(f, a, b)
+                # print('>>==', f, a, b)
+                a + f(b)
+            
+            f1 = x -> x * 10
+            n1 = foo(f1, 2, 3)
+            
+            n2 = foo(x -> x * 100, 4, 5)
+            n2 = foo(x -> x * 100, 6, 7)
+            
+            # # TODO: 1) append val to list : nums <- 5
+            nn = [0,0,0,0,0]
+            for i <- [1..5]
+                nn[i-1] = foo(x -> x ** 2 , 1, i)
+            
+            print('lambda test:', n1, n2, nn)
+            
+        testLambdas()
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -39,7 +53,25 @@ class TestFunc(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        self.assertEqual(45, ctx.get('nn').get())
+
+    def test_lambda_as_arg(self):
+        ''' function object as argument of function. '''
+        code = r'''
+        func foo(ff, arg)
+            ff(arg * 2)
+        f1 = x -> x * 3
+        n1 = foo(f1, 5)
+        n2 = foo( x -> 2 ** x , 5)
+        print('n1,2 = ', n1, n2)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        self.assertEqual(30, ctx.get('n1').getVal())
+        self.assertEqual(1024, ctx.get('n2').getVal())
 
     def test_lambda_match(self):
         ''' Lambda and match-case in one example.
@@ -52,9 +84,11 @@ class TestFunc(TestCase):
             2 !- res = c * 2
             _ !- res = 100
 
-        foo = \x, y -> x ** 2
-        nn = foo(res, 2)
-        print('nn = ', nn)
+        f1 = x -> x ** 2
+        f2 = (x, y) -> x * y
+        n1 = f1(7)
+        n2 = f2(res, 111)
+        print('nn = ', n1, n2)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -62,14 +96,21 @@ class TestFunc(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        self.assertEqual(10000, ctx.get('nn').get())
+        self.assertEqual(49, ctx.get('n1').getVal())
+        self.assertEqual(11100, ctx.get('n2').getVal())
 
     def test_lambda_def(self):
         ''' simple case - definition and call. '''
         code = r'''
-        foo = \x, y -> x ** 2
-        nn = foo(5, 2)
-        print('nn = ', nn)
+        n1=0
+        n2=0
+        foo = x -> x ** 2
+        n1 = foo(7)
+        foo2 = x, y -> x ** 2
+        n2 = foo2(5, 2)
+        foo3 = (x, y, z) -> (x + y) * z
+        n3 = foo3(2, 3, 100)
+        print('n1,2,3 = ', n1, n2, n3)
         '''
         code = norm(code[1:])
         # print('>>\n', code)
@@ -79,7 +120,9 @@ class TestFunc(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        self.assertEqual(25, ctx.get('nn').get())
+        self.assertEqual(49, ctx.get('n1').getVal())
+        self.assertEqual(25, ctx.get('n2').getVal())
+        self.assertEqual(500, ctx.get('n3').getVal())
 
     def test_local_defined_function(self):
         '''  test usage of function, defined within another function '''
@@ -105,7 +148,7 @@ class TestFunc(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         exp = [5005, 10005, 15005, 20005, 25005]
-        resVal = ctx.get('res')
+        resVal = ctx.get('res').get()
         print(resVal)
         self.assertListEqual(exp, resVal.get())
 
@@ -166,7 +209,7 @@ class TestFunc(TestCase):
         exp = lex2tree(clines)
         ctx = rootContext()
         exp.do(ctx)
-        res = ctx.get('res').get()
+        res = ctx.get('res').getVal()
         print('#t >>> r:', res)
         self.assertEqual(res, 15)
 
@@ -190,8 +233,8 @@ class TestFunc(TestCase):
         ctx = rootContext()
         # print('$$ run test ------------------')
         exp.do(ctx)
-        r1 = ctx.get('r1').get()
-        r2 = ctx.get('r2').get()
+        r1 = ctx.get('r1').getVal()
+        r2 = ctx.get('r2').getVal()
         self.assertEqual(r1, 1035)
         self.assertEqual(r2, 2000)
 

@@ -73,9 +73,9 @@ expCaseList = [
     CaseUnclosedBrackets(),
     CaseFuncDef(), CaseReturn(), CaseMathodDef(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), 
-    CaseLambda(), CaseArrowR(), CaseMatchCase(),
+    CaseLambda(), CaseMatchCase(),
     CaseStructBlockDef(), CaseStructDef(),
-    # CaseAssign(), CaseBinAssign(),
+    # CaseAssign(), CaseBinAssign(), CaseArrowR(), 
     CaseSemic(), CaseBinOper(), CaseCommas(),
     CaseTuple(),
     CaseDictBlock(), CaseListBlock(), CaseListGen(),
@@ -165,7 +165,7 @@ def lex2tree(src:list[CLine]) -> Block:
     curInd = 0 # indent
     print('~~~~~~~~~~~` start tree builder ~~~~~~~~~~~~')
     i = -1
-    slen = len(src)
+
     unclosed = None
     for cline in src:
         i += 1
@@ -179,11 +179,6 @@ def lex2tree(src:list[CLine]) -> Block:
         # print('#cline-code2:', [(ee.text, Lt.name(ee.type)) for ee in cline.code])
         if len(cline.code) == 0:
             continue
-
-        # prepare multiline
-        if i < slen - 1:
-            print('!!!!!!!!!!!!!!!!!!!!!!!!!! lextree # multiline TODO: opened brackets ({[ / ')
-            pass
         
         if unclosed is not None:
             # unclosed = None

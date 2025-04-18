@@ -34,7 +34,7 @@ class IfExpr(ControlBlock):
         # TODO: add init block for if-statement, like Golang has
 
     def setCond(self, expr:Expression):
-        print('# setCond ', expr)
+        print('#IfExpr setCond ', expr)
         self.cond = expr
     
     def add(self, exp:Expression):
@@ -45,11 +45,12 @@ class IfExpr(ControlBlock):
         self.curBlock = self.elseBlock
 
     def do(self, ctx:Context):
-        print('# IfExpr.do1 ', self.cond)
+        print('# IfExpr.do1 ', self.cond, type(self.cond))
         self.cond.do(ctx)
         target:Block = self.mainBlock
         self.lastRes = None
         condRes = self.cond.get()
+        print('# IfExpr.do02 ', condRes, type(condRes))
         print('## Cond-get', condRes, condRes.get())
         if not condRes.get():
             print('## IF_ELSE')

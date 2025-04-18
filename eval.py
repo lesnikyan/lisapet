@@ -14,7 +14,7 @@ def rootContext():
     ctx = Context(None)
     setDefaultTypes(ctx)
     setNativeFunc(ctx, 'print', print, TypeNull)
-    setNativeFunc(ctx, 'len', len, TypeInt)
+    setNativeFunc(ctx, 'len', buit_len, TypeInt)
     setNativeFunc(ctx, 'iter', loop_iter, TypeIterator)
     setNativeFunc(ctx, 'type', type, TypeType)
     

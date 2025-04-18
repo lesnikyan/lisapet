@@ -88,7 +88,7 @@ class Context(NSContext):
             src = src.upper
 
     def addFunc(self, fn:FuncInst):
-        name = fn.name
+        name = fn.getName()
         print('x.addFunc ===>  name:', name, ' var: ', fn)
         self.funcs[name] = fn
 
@@ -113,8 +113,9 @@ class Context(NSContext):
             var = Var(varName, vtype)
         else:
             name = var.name
-
-        self.addSet({name:var})
+        print('x.addVar2: ', name, var)
+        self.vars[name] = var
+        # self.addSet({name:var})
 
     def get(self, name)->Base:
         return self.find(name)
@@ -136,7 +137,9 @@ class Context(NSContext):
             if name in src.types:
                 return src.types[name]
             if name in src.funcs:
-                print('CTX.find func:', name, '::', src.funcs[name])
+                print('CTX.find func ?', name, src.funcs[name].__class__.__name__)
+                if src.funcs[name].__class__.__name__ != 'NFunc':
+                    print('CTX.find func:`%s`' % name, '::', src.funcs[name])
                 # if name == 'xprint':
                 #     raise EvalErr('@@3')
                 return src.funcs[name]
@@ -150,16 +153,18 @@ class Context(NSContext):
     def print(self, ind=0):
         c:Context = self
         while c:
-            ttt = ['vars', 'types']
+            ttt = ['vars', 'types', 'funcs']
             iii = 0
-            for data in [c.vars, c.types]:
+            for data in [c.vars, c.types, c.funcs]:
                 print('.' * ind, '  > ', ttt[iii])
                 iii += 1
                 for k, v in data.items():
                     vstr = v.get()
                     if isinstance(v, Collection):
                         vstr = v.vals()
-                    print(' ' * ind, 'x>', k, ':', vstr)
+                    elif isinstance(v, FuncInst):
+                        vstr = 'Function(%s)' % v.getName()
+                    print(' ' * ind, 'x>', k, v.__class__.__name__, ':', vstr)
             c = c.upper
             ind += 1
             

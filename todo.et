@@ -9,12 +9,12 @@ foo = func (args...)
 
 #== DONE
 # Lambdas, func-object, func-object call
-foo = \x -> x * 100
-foo(2)
-
-#==
-# delete lambda (for what?)
-delete foo # delete func object
+foo = x -> x ** 2
+n1 = foo(7)
+foo2 = x, y -> x ** 2
+n2 = foo2(5, 2)
+foo3 = (x, y, z) -> (x + y) * z
+n3 = foo3(2, 3, 100)
 
 
 # High-order function def
@@ -23,32 +23,39 @@ delete foo # delete func object
 2. local context around function and into it
 3. closures: how to store local declarations (local <1 lvl upper> context), controll list of used vars, or use them all?
 #@
-func bar(fn:function, a:int):
-    b = a ** 2
-    fn([b, a, 5])
+
+func foo(ff, arg)
+    ff(arg * 2)
+
+f1 = x -> x * 3
+n1 = foo(f1, 5)
+n2 = foo( x -> 2 ** x , 5)
 
 
-# usage
+# closures of passed or returned lambdas / local funcs
 #@
 phases of implementation
 1. just pure function: get args, return result, no usage of vars out of lambda
 2. use near local context (where lambda was defined)
 @#
 for i <- iter(20, 30)
-    bar(\x -> sum(x) - 100, i)
+    bar(x -> sum(x) - 100, i)
 
 
 #==
 # string formatting by % , or internal includes like {varName}, $varName, @varName, @{exp(res.sion)}
 
+
 #==
 # i++ i--
+
 
 #== 
 # delete operator, find nearest context with var by name and remove it from found context
 nums = [1.2.3.4.5]
 x = 123
 delete nums, x
+
 
 #==
  list | string math mult, concat
