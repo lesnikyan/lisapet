@@ -6,9 +6,11 @@ Mostly for usage into for-loop or generators.
 
 from lang import *
 from vars import *
+from vals import *
 from nodes.expression import *
 from nodes.oper_nodes import OpAssign
 from nodes.func_expr import FuncCallExpr
+import nodes.datanodes
 from nodes.datanodes import DictVal, ListVal, TupleVal
 
 
@@ -96,7 +98,7 @@ class IterAssignExpr(Expression):
     
     def do(self, ctx:Context):
         ''' put vals into LOCAL context '''
-        print('IterAssignExpr.do', self.itExp)
+        print('IterAssignExpr.do', self.itExp, self.key, self.val)
         if self._first_iter:
             print('IterAssignExpr.do1 >>>>')
             self._first_iter = False
@@ -112,7 +114,8 @@ class IterAssignExpr(Expression):
             key, val = val
         k, v = self.key, self.val
         # TODO: right way set values to local vars key, val
-        # print('IterAssignExpr.do2', key, val)
+        print('IterAssignExpr.do3', key, val)
+        print('IterAssignExpr.do4', k, v)
         if key and not isinstance(key, Var_):
             ctx.update(k.name, key)
         ctx.update(v.name, val)
@@ -149,10 +152,17 @@ class IndexIterator(NIterator):
 
 class SrcIterator(NIterator):
     ''' x <- [10,20,30] '''
-    def __init__(self, src:list|dict):
-        self.src = src.elems
+    def __init__(self, src:ListVal|DictVal):
+        self.src = None
+        match src:
+            case ListVal():
+                self.src = src.elems
+            case DictVal():
+                self.src = src.data
+        # print('SrcIterator.__init:', src, self.src)
+        # raise EvalErr('@@')
+        self._isDict = isinstance(src, DictVal)
         # self.iterFunc = self._iterList
-        self._isDict = isinstance(self.src, dict)
         self._keys = None
         # if self._isDict:
             # self.iterFunc = self._iterDict
@@ -162,11 +172,10 @@ class SrcIterator(NIterator):
     def start(self):
         seq = self.src
         if self._isDict:
-            seq = seq.keys()
+            seq = list(seq.keys())
             self._keys = seq
             # self.iterFunc = self._iterDict
         self.iter = IndexIterator(0, len(seq))
-        
 
     def step(self):
         self.iter.step()
@@ -179,6 +188,9 @@ class SrcIterator(NIterator):
         key = self.iter.get().get()
         if self._isDict:
             key = self._keys[key]
+            val = self.src[key]
+            print('Iter-dict get: key, val', key, val)
+            return (raw2val(key), val)
         return self.src[key]
 
 
@@ -278,6 +290,7 @@ class LeftArrowExpr(Expression):
         self.isIter = False
         
     def setArgs(self, left, right):
+        print('Arr <- setArgs1', left, right)
         self.leftExpr = left
         self.rightExpr = right
     
@@ -289,35 +302,47 @@ class LeftArrowExpr(Expression):
         ''' get left, right, decide what the case here: iter or append '''
         # left expression defines type of case
         self.leftExpr.do(ctx)
-        ltArg  = self.leftExpr.get()
+        print('Arr <- init1 ltArg', self.leftExpr)
+        ltArg = Var_()
+        if isinstance(self.leftExpr, SequenceExpr):
+            if self.leftExpr.getDelim() == ',':
+                # comma-separated sequence, can interpret as tuple
+                print('Arr <- init011', 'comma-separated sequence')
+                # use 2 first vars for key-val of dict
+                # TODO: change to multival assignmens
+                ltVals = self.leftExpr.getVals(ctx)
+                ltArg = ltVals[:2]
+        else:
+            ltArg  = self.leftExpr.get()
         
         self.rightExpr.do(ctx) # make iter object
         rtArg = self.rightExpr.get()
 
-        print('Arr <-2 ltArg', ltArg)
-        print('Arr <-3 rtArg:', rtArg)
-        if isinstance(ltArg.get(), Collection):
+        print('Arr <-2 init ltArg', ltArg)
+        print('Arr <-3 init rtArg:', rtArg)
+        if not isinstance(ltArg, list) and isinstance(ltArg.get(), (ListVal, DictVal)):
             # append case
             self.expr = Append(ltArg.get(), rtArg)
+            return
+
+        if isinstance(rtArg, Var):
+            rtArg = rtArg.get() # extract collection from var
+        print('Arr <- init4 rtArg:', rtArg)
+        itExp = None
+        if isinstance(rtArg, (Collection)):
+            itExp = SrcIterator(rtArg)
+        elif isinstance(rtArg.get(), (NIterator)):
+            itExp = rtArg.get()
+        
+        print('Arr<- init5 itExp:', itExp)
+        if isinstance(itExp, NIterator):
+            # iter case
+            self.expr = IterAssignExpr()
+            self.expr.setTarget(ltArg)
+            self.expr.setIter(itExp)
+            self.isIter = True
         else:
-            if isinstance(rtArg, Var):
-                rtArg = rtArg.get() # extract collection from var
-            print('Arr <-4 rtArg:', rtArg)
-            itExp = None
-            if isinstance(rtArg, (Collection)):
-                itExp = SrcIterator(rtArg)
-            elif isinstance(rtArg.get(), (NIterator)):
-                itExp = rtArg.get()
-            
-            print('Arr<-5 itExp:', itExp)
-            if isinstance(itExp, NIterator):
-                # iter case
-                self.expr = IterAssignExpr()
-                self.expr.setTarget(ltArg)
-                self.expr.setIter(itExp)
-                self.isIter = True
-            else:
-                raise EvalErr('Undefined case of left-arrow operator (%s <- %s)' % (ltArg, rtArg))
+            raise EvalErr('Undefined case of left-arrow operator (%s <- %s)' % (ltArg, rtArg))
     
     def doCase(self, ctx:Context):
         self.expr.do(ctx)

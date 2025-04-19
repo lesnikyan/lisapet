@@ -30,6 +30,19 @@ def val(data, vtype)->Val:
     return Val(data, vtype)
 
 
+def raw2val(raw):
+    ''' native val to Val '''
+    if isinstance(raw, Val):
+        return raw
+    t = TypeAny
+    match raw:
+        case int(): t = TypeInt
+        case float(): t= TypeFloat
+        case str(): t = TypeString
+
+    return Val(raw, t)
+
+
 def numLex(tx:str)->Var:
     ''' 123, 12.3, 1.2e3, 0b1001, 0o137, 0xabc01, 1.5j2.3 '''
     if rxInt.match(tx):

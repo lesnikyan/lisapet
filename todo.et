@@ -37,7 +37,7 @@ delete nums, x
 
 
 #==
- list | string math mult, concat
+# list | string - mult *, concat +
 
 'abc' * 3 -> 'abcabcabc'
 [1,2,3] * 2 -> [1,2,3,1,2,3,1,2,3]
@@ -119,7 +119,6 @@ user = foo(age=22, name='Vasya')
 #==
 # Variadic  functions, just preliminary thinking
 
-
 foo(arg1:string, arg2:float, ...args3:int) # any number of values after 2-nd arg.
 
 # after vaiadic var-list only named args (future feature) can be used. declaration:
@@ -130,7 +129,7 @@ func foo2(arg1:float, arg2:float, arg3:int ... , narg1:string, narg2:string) ...
 # call:
 foo2(1.1, 2.2, 31, 32, 33, 34, narg1:'a', narg2:'b')
 
-# unpack list using as many vals
+# unpack list using it as many vals
 func foo3(...args) -> for val <- args ...
 
 # call

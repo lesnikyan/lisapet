@@ -75,6 +75,27 @@ For now we can:
         1 filter condition for each iterator after iterator.
         Next iterator can use elem from previous a source.
 
+15. Lambda-functions and high-order  functions.
+
+    # 1 arg
+    f1 = x -> x + 2
+
+    # many args
+    f2 = (a, b, c) -> a * b - c
+
+    # usage
+    func foo(f, a)
+        f(a)
+    
+    foo(x -> x + 2, 10)
+
+    func bar(f, a, b, c)
+        f(a, b) + c
+    
+    bar((x, y)-> x * y, 2, 3, 100)
+
+16. 
+
 --
 @#
 
@@ -170,6 +191,14 @@ printVal(lorem, 0)
 
 printVal(colors, 'green')
 printVal(weekDays, 2)
+
+func testDictIter(data)
+    for key, val <- data
+        print('dict-data', key, val)
+
+testDictIter(colors)
+
+# Structs
 
 struct Product
     price:float

@@ -336,7 +336,7 @@ class CaseSeq(SubCase):
         #     res = [[]] + res
         if isLex(elems[-1], Lt.oper, self.delim):
             res.append([])
-        return SequenceExpr(), res
+        return SequenceExpr(self.delim), res
 
     def setSub(self, base:SequenceExpr, subs:Expression|list[Expression])->Expression:
         print('CaseSeq(%s) setSub: ' % self.delim, base, subs)

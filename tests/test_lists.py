@@ -22,6 +22,38 @@ class TestLists(TestCase):
 
 
 
+    def test_elem_to_dict_operator(self):
+        ''' both cases of `<-` operator for dict
+        #TODO:
+        '''
+        code = r'''
+        nn = [1, 2, 3]
+        keys = ['a','b','c']
+        nr = {}
+        for i <- [0..2]
+            nr <- (keys[i], nn[i])
+        print('nr:', nr)
+        rr = []
+        rr <- 'preval'
+        for key, val <- nr
+            rr <- key
+        print('rr:', rr)
+        '''
+        _ = r'''
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('nr').get()
+        self.assertEqual({'a' : 1, 'b' : 2, 'c' : 3}, rvar.vals())
+        rvar = ctx.get('rr').get()
+        self.assertEqual(['preval', 'a', 'b', 'c'], rvar.vals())
+
     def test_elem_to_list_operator(self):
         ''' both cases of `<-` operator
         # if left is a collection: put right elem to the end of left list|dict (append val case)

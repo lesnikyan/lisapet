@@ -200,6 +200,8 @@ class LoopIterExpr(LoopBlock):
     def do(self, ctx:Context):
         subCtx = Context(ctx)
         if isinstance(self.iter, LeftArrowExpr):
+            print('For iter')
+            # subCtx.print()
             self.iter.init(subCtx)
             if isinstance(self.iter.expr, IterAssignExpr):
                 self._origIter = self.iter

@@ -29,34 +29,6 @@ class TestDev(TestCase):
 
 
 
-    def _test_elem_to_dict_operator(self):
-        ''' both cases of `<-` operator for dict
-        '''
-        code = r'''
-        nn = [1, 2, 3]
-        keys = ['a','b','c']
-        nr = {}
-        for i <- [0..2]
-            nr <- (keys[i], nn[i])
-        print('nr:', nr)
-        rr = []
-        for key, val <- nr
-            rr <- key
-        print('rr:', rr)
-        '''
-        _ = r'''
-        '''
-        code = norm(code[1:])
-        # print('>>\n', code)
-        # return
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        rvar = ctx.get('nr').get()
-        self.assertEqual({'a' : 1, 'b' : 2, 'c' : 3}, rvar.vals())
-
     def _test_barr(self):
         ''' '''
         code = r'''
@@ -113,9 +85,14 @@ class TestDev(TestCase):
     def _test_list_gen_by_strings(self):
         '''   '''
         code = '''
-        src = ['aaa', 'bbb', 'ccc']
-        nums = [x ; ns <- src; x <- ns ; x % 5 > 0]
-        print('nums = ', nums)
+        strline = 'abcdefg'
+        res1 = []
+        for s <- strline:
+            res1 <- s
+        print('res1', res1)
+        # src = ['aaa', 'bbb', 'ccc']
+        # nums = [x ; ns <- src; x <- ns ; x % 5 > 0]
+        # print('nums = ', nums)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)

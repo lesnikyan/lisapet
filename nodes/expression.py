@@ -345,11 +345,22 @@ class InterpretContext:
 
 class SequenceExpr(Expression):
     
-    def __init__(self, val=None, src = ''):
-        super().__init__(val, src)
+    def __init__(self, delim=None, src = ''):
+        super().__init__(None, src)
+        self.delim = delim
         self.subs = []
     
     def add(self, exp:Expression):
         self.subs.append(exp)
 
+    def getDelim(self):
+        return self.delim
+
+    def getVals(self, ctx:Context):
+        res = []
+        for sub in self.subs:
+            print('SEQ getTuple:', sub)
+            sub.do(ctx)
+            res.append(sub.get())
+        return res
 
