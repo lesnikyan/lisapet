@@ -6,6 +6,7 @@ Line-interpretation scripting as a possibly executable tree.
 Linear interpretable script automation project of executable tree.
 Linear interpretable script automatic parser of executable tree.
 Linear interpretable syntax analyzer and parser of executable tree.
+Lexical interpreter of scripting and arithmetical parser of executable tree.
 ico: Fox pet on the bicycle
 
 Syntax draft:

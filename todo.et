@@ -1,10 +1,6 @@
 
 # TODO List
 
-#==
-# add to list, back order of `->` opertator
-nums = []
-nums <- 12
 
 #== func object
 
@@ -26,24 +22,33 @@ for i <- iter(20, 30)
 
 
 #==
-# i++ i--
-
-
-#== 
-# delete operator, find nearest context with var by name and remove it from found context
-nums = [1.2.3.4.5]
-x = 123
-delete nums, x
+# unary increment, decrement
+i++ # i += 1
+i-- # i -= 1
 
 
 #==
+# list pop
+nums = [1,2,3]
+x = nums --
+x = nums[-1]
+delete nums[-1]
+
+#== 
+# delete operator, find nearest context with var by name and remove it from found context
+nums = [1,2,3,4,5]
+x = 123
+delete nums[2], x
+
+
+#== works as is by native pythons functionality
 # list | string - mult *, concat +
 
-'abc' * 3 -> 'abcabcabc'
-[1,2,3] * 2 -> [1,2,3,1,2,3,1,2,3]
+'abc' * 3 --> 'abcabcabc'
+[1,2,3] * 2 --> [1,2,3,1,2,3,1,2,3]
 
-'acb ' + 'xyz' -> 'abc xyz'
-[1,2,3] + [4,5] -> [1,2,3,4,5]
+'acb ' + 'xyz' --> 'abc xyz'
+[1,2,3] + [4,5] --> [1,2,3,4,5]
 
 
 #==
@@ -363,6 +368,15 @@ func foo(ff, arg)
 f1 = x -> x * 3
 n1 = foo(f1, 5)
 n2 = foo( x -> 2 ** x , 5)
+
+
+#== DONE
+# add to list or dict, back order of `<-` opertator: right add to the left
+nums = []
+nums <- 12
+data = {}
+data <- ('key', val)
+
 
 
 @#

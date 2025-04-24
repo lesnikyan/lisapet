@@ -19,7 +19,7 @@ from tree import *
 
 
 class TestLists(TestCase):
-
+    ''' Testing lists, iterators, generators, other collections '''
 
 
     def test_elem_to_dict_operator(self):

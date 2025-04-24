@@ -15,8 +15,8 @@ For now we can:
     else
         expr-blok
 
-3. compare operators and complex bool-expressions, including unary (!)
-    a < 100 && b > 4 || a + b >= 1
+3. compare operators and complex bool-expressions, including unary bool-inversion (!)
+    a < 100 && b > 4 || a + b >= 1 || !(a > b * 10)
 
 4. match-case
     match expr
@@ -52,14 +52,15 @@ For now we can:
 10 Struct
     block-definition
     block-constructor, 
-    set val to struct.field (a.b = c)
+    usage of nested member: struct.struct.field = val; val = struct.struct.field
 
 11. Methods of struct
-    func instance: TypeName foo(arg, arg)
+    func inst:TypeName foo(arg1, arg2)
         # doing something with instance, args. Same as other functions
+        inst.field = arg1 + arg2 * inst.field
 
 12. types of func/  method arguments.
-
+    func foo(a:int, b:string) ...
 
 13. List generator.
     [beginVal .. lastVal]
@@ -71,9 +72,9 @@ For now we can:
     [result-expression (element) ; element <- srcList; subVar = expression; bool-expression (filtre condition) ]
     List comprehension an contain 
         1 or more internal iterators (elem <- src), 
-        0 or more sub-vars for each iterator after iterator, 
+        0 or more sub-vars / sub-expressions for each iterator after iterator, 
         1 filter condition for each iterator after iterator.
-        Next iterator can use elem from previous a source.
+        Next iterator can use elem from previous as a source (nice feature for flatten list of lists).
 
 15. Lambda-functions and high-order  functions.
 
@@ -94,7 +95,28 @@ For now we can:
     
     bar((x, y)-> x * y, 2, 3, 100)
 
-16. 
+16. Tuple type
+val = (1, 2, c+3)
+# TODO: left-arg tuple as a multi-declaration / multi-assignment
+
+17. left-arrow operator `<-`
+    # 1. Case: iter-assignment
+    # for list, generator, list comprehentions
+    for i <- [0..10]
+        print(i)
+    # for dict
+    dictVal = {1:11, 2:22, 3:33}
+    for key, val <- dictVal
+        print(key, val)
+
+    # 2. Case: append to collecition.
+    # list
+    nums = [1,2]
+    nums <- 3
+    # dict
+    args = {'a', 1, 'b': 2}
+    args <- ('c', 3)
+
 
 --
 @#
