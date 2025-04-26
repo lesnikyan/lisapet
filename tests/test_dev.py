@@ -28,11 +28,105 @@ class TestDev(TestCase):
 
 
 
+    def test_func_arg_type(self):
+        ''' '''
+        code = r'''
+        res = 0
+        
+        func summ(a, b)
+            a + b
+        
+        func concat(str1, str2)
+            str1 + str2
+        
+        struct A a1:int
+        
+        func aa:A afoo(n)
+            aa.a1 += n
+        
+        avar = A{a1:100}
+        
+        r1 = summ(10, 2)
+        r2 = concat('abc', 'def')
+        avar.afoo(11)
+        r3 = avar.a1
+        
+        print('res = ', r1, r2, r3)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        r1 = ctx.get('r1')
+        r2 = ctx.get('r2')
+        r3 = ctx.get('r3')
+        self.assertEqual(12, r1.getVal())
+        self.assertIsInstance(r1.getType(), TypeInt)
+        self.assertEqual('abcdef', r2.getVal())
+        self.assertIsInstance(r2.getType(), TypeString)
+        self.assertEqual(111, r3.getVal())
+        self.assertIsInstance(r3.getType(), TypeInt)
+
+
+
+    def __tt(self):
+        '''
+        # thoughts about OOP
+        
+        struct C c:int
+        struct D(A,C) d1:int, d2:float
+        
+        func d:D f1(x, y)
+            d.f1(x, y)
+            d.a1 = 1
+            d.A.f1(x, y) # ??
+            d.super().f1(x, y) # ??
+            super(d).f1(x, y) # for methods only # ??
+        
+        #struct D:(A,C) d1:int, d2:float
+        
+        struct E(A,B)
+            A, B
+            e1:int
+            e2:D
+        '''
 
     def _test_barr(self):
         ''' '''
         code = r'''
         res = 0
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res')
+        self.assertEqual(0, rvar.getVal())
+
+    def _test_print(self):
+        ''' '''
+        code = r'''
+        struct A a:int
+        struct B(A) b:string
+        
+        
+        a = 11
+        b = 12.5
+        c = false
+        d = null
+        e = 'str-abc'
+        aa = A{a:1}
+        bb = B{a:111, b:'B-b-b'}
         
         print('res = ', res)
         '''

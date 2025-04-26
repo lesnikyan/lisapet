@@ -45,8 +45,26 @@ class CaseStructDef(SubCase):
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         typeName = elems[1].text
-        sub = elems[2:]
+        prels('CaseStructDef.split', elems)
+        # struct B(A,C)
+        superNames = []
+        subStart = 2
+        if len(elems) > 2 and isLex(elems[2], Lt.oper, '('):
+            # we have super-struct here
+            brInd = bracketsPart(elems[2:])
+            print('Strc.split, brInd: ', brInd, elems[brInd+1].text)
+            superPart = elems[3:brInd+1]
+            prels('CaseStructDef.split supers:', superPart)
+            _, spl = CaseCommas().split(superPart)
+            print('## spl:', [(n) for n in spl])
+            superNames = [elemStr(n) for n in spl]
+            print('## superNames:', superNames)
+            subStart = brInd+2
+            
+        
+        sub = elems[subStart:]
         exp = StructDefExpr(typeName)
+        exp.setSuper(superNames)
         subs = []
         if sub:
             subs = [sub]
@@ -54,6 +72,8 @@ class CaseStructDef(SubCase):
         if cs.match(sub):
             _, subs = cs.split(sub)
         InterpretContext.get().addStruct(typeName)
+        # if typeName == 'B':
+            # raise XDebug('')
         return exp, subs
 
     def setSub(self, base:StructDefExpr, subs:list[Expression])->Expression:

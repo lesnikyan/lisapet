@@ -116,9 +116,10 @@ def bracketsPart(elems:list[Elem])->int:
         return -1
     for i in range(len(elems)):
         ee = elems[i]
+        print(' >>> ', ee.text)
         # if inBr:
         if ee.text in cbr :
-            # print('#close', ee.text)
+            print('#close', ee.text)
             if obr.index(inBr[-1]) != cbr.index(ee.text):
                 # print('# ee:', ee.text, 'inbr:', inBr)
                 raise ParseErr('Incorrect brackets combinations %s on position %d %s ' % ''.join([n.text for n in elems]))
@@ -133,7 +134,7 @@ def bracketsPart(elems:list[Elem])->int:
         if ee.type == Lt.oper and  ee.text in obr:
             # enter into brackets
             inBr += ee.text
-            # print('#open:', inBr)
+            print('#open:', inBr)
             continue
         if inBr:
             continue
@@ -236,7 +237,7 @@ class CaseVar(ExpCase):
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value from context by var name'''
-        expr = VarExpr(Var(elems[0].text, TypeAny)) # TODO: try to define a type
+        expr = VarExpr(Var(elems[0].text, TypeAny())) # Any for non-typed vars
         return expr
 
 class CaseVar_(ExpCase):

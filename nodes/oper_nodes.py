@@ -105,7 +105,7 @@ class OpAssign(OperCommand):
             src[i].do(ctx)
             ctx.print()
             tVal:Var = src[i].get() # val (anon var obj) from expression
-            # print('## op-assign, src.get() -> ', tVal, ':', tVal.name, tVal.get(), tVal.getType())
+            print('## op-assign, src.get() -> ', tVal, ':', tVal.get(), tVal.getType())
             resSet[i] = tVal
         for  i in range(size):
             if isinstance(self.left[i], VarExpr_):
@@ -114,10 +114,15 @@ class OpAssign(OperCommand):
             # print(' (a = b) :1')
             # eval left expressopm
             self.left[i].do(ctx)
-            # print(' (a = b) :2')
             val = resSet[i]
+            valType = val.getType()
+            print(' (a = b) :2', val)
+            if isinstance(val, ObjectMember):
+                val = val.get()
+            print(' (a = b) :3', val)
             if isinstance(val, Var):
                 val = val.get()
+            print(' (a = b) :4', val)
             
             if isinstance(self.left[i], CollectElem):
                 ''' '''
@@ -127,14 +132,14 @@ class OpAssign(OperCommand):
             
             #get destination var
             dest = self.left[i].get()
-            print('Assign dest1 =', dest)
+            print('Assign dest1 =', dest, '; val=', val)
             isNew = False
             self.res = val
             if isinstance(dest, VarUndefined):
                 # new var for assignment
                 isNew = True
-                newVar = Var(dest.name, val.getType())
-                print('Assign new var', newVar, 'val-type:', val.getType())
+                newVar = Var(dest.name, valType)
+                print('Assign new var', newVar, 'val-type:', valType)
                 ctx.addVar(newVar)
                 dest = newVar
             dest.set(val)
@@ -210,9 +215,9 @@ class OpMath(BinOper):
         print('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
-        # print('#bin-oper2', a, b)
+        print('#bin-oper2', a, b)
         print(' ( %s )' % self.oper, a.getVal(), b.getVal())
-        # print(' (%s %s %s)' % (a.getType(), self.oper, b.getType()))
+        print(' (%s %s %s)' % (a.getType(), self.oper, b.getType()))
         type = a.getType()
         if type != b.getType():
             # TODO fix different types
@@ -454,13 +459,16 @@ class ObjectMember(Val):
         self.object = obj
         self.member = member
 
+    def getVal(self):
+        return self.get().getVal()
+
     def get(self):
         ''' res = obj.member; foo(obj.member); obj.member() '''
         print('self.member, get :: ',self.object, type(self.object), '::', self.member)
         val = self.object.get(self.member)
         
-        # print('self.member, get :: ', self.member, val)
-        if isinstance(val, StructInstance):
+        print('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
+        if isinstance(val, (StructInstance, Val)):
             # print('membrr get struct')
             return val
         return val.get()
@@ -469,7 +477,7 @@ class ObjectMember(Val):
         val = self.object.get(self.member)
         return val.getType()
     
-    def set(self, val:Var):
+    def set(self, val:Val):
         ''' obj.member = expr; obj.member[key] = expr (looks like a.b[c] is an subcase of a.b) '''
         print('ObjectMember.set self.member, val :: ', self.member, val)
         self.object.set(self.member, val)

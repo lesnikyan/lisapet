@@ -25,6 +25,8 @@ class Function(FuncInst):
         self.vtype = TypeFunc()
         self.argNum = 0
         self.argVars:list[Var] = []
+        self.argTypes:dict[str, VType] = {}
+        self.callArgs = []
         self.block:Block = None
         self.defCtx:Context = None # for future: definition context (closure - ctx of module or upper block if function is local or lambda)
         self.res = None
@@ -40,29 +42,43 @@ class Function(FuncInst):
             #     print('arg@@>', xx)
             # raise EvalErr('!22')
         self.argVars.append(arg)
+        self.argTypes[arg.getName()] = arg.getType()
         self.argNum += 1
         print('Fuuu, addArg', arg, self.argNum)
 
     # TODO: flow-number arguments
-    def setArgVals(self, args:list[Var]):
+    def setArgVals(self, args:list[Val]):
         nn = len(args)
         print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
         print('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
         if self.argNum != len(args):
             raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
+        self.callArgs = []
         for i in range(nn):
             arg = args[i]
+            aname = self.argVars[i].getName()
+            self.checkArgType(aname, arg)
+            atype = self.argVars[i].getType()
+            argVar = Var(aname, atype)
+            argVar.set(arg)
+            print('FN setArgVals-4: ', atype, aname)
+            if isinstance(atype, TypeAny):
+                argVar.setType(arg.getType())
             print('set arg8  >> ', self.argVars[i], 'val:', arg)
             # arg.name = self.argVars[i].name
-            self.argVars[i].set(arg)
+            self.callArgs.append(argVar)
             # self.argVars[i].set(arg.get())
+
+    def checkArgType(self, name, val):
+        '''Use val.getType() and types compatibility '''
+        return True
 
     def do(self, ctx: Context):
         self.res = None
         self.block.storeRes = True # save last expr value
         inCtx = Context(None) # inner context, empty new for each call
         # inCtx.addVar(Var(1000001, 'debVal', TypeInt))
-        for arg in self.argVars:
+        for arg in self.callArgs:
             print('Fudo:', arg)
             inCtx.addVar(arg)
         inCtx.get('debVal')

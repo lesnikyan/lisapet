@@ -162,6 +162,7 @@ class CaseFunCall(SubCase):
     def setSub(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 
         ''' base - FuncCallExpr, subs - argVal expressions '''
         for exp in subs:
+            print('FN Call sub:', exp)
             base.addArgExpr(exp)
         return base
 

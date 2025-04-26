@@ -30,6 +30,43 @@ class C(A,B):
 class TestStruts(TestCase):
 
 
+
+    def test_struct_inheritance(self):
+        ''' '''
+        code = r'''
+        struct Aaaa a1: int, a2: string
+        
+        func a:Aaaa f1(x:int, y:int)
+            a.a1 = x + y
+        
+        struct Cccc c:int
+        
+        struct B(Aaaa, Cccc) b:int
+        
+        b1 = B{b:1, a1:12, a2:'B-aa'}
+        b2 = B{b:2}
+        
+        b2.f1(3, 4)
+        
+        b2.a1 += 10
+        
+        res = b2.a1
+        res2 = b1.a2
+        print('res = ', res, res2)
+        '''
+        _='''
+        
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        # ctx.print()
+        rvar = ctx.get('res')
+        self.assertEqual(17, rvar.getVal())
+
     def test_structType_in_func(self):
         ''' test if type defined in context above is accessible in function '''
         code = '''

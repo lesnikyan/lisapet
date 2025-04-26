@@ -26,11 +26,19 @@ class StructDef(TypeStruct):
     def __init__(self, name, fields:list[Var]=[]):
         self.name=name
         self.fields = []
+        self.__parents:dict[str,TypeStruct] = {}
         self.methods:dict[str,FuncInst] = []
         self.types:dict[str, VType] = {}
         if fields:
             self.__fillData(fields)
         self.__typeMethods:dict[str,FuncInst] = {}
+
+    def addParent(self, superType: TypeStruct):
+        print('StructDef. addParent1 :', superType)
+        self.__parents[superType.getName()] = superType
+        
+    def getParents(self):
+        return self.__parents
 
     def addMethod(self, func:FuncInst):
         name = func.getName()
@@ -39,15 +47,22 @@ class StructDef(TypeStruct):
             raise EvalErr('Method `%s` already defined in type `%s`.' % (name, self.name))
         self.__typeMethods[name] = func
 
-    def debug(self):
-        mm = [(k, v) for k, v in self.__typeMethods.items()]
-        print(mm)
-
     def getMethod(self, name):
         print('getMeth', name)
         if not name in self.__typeMethods:
+            for sname, stype in self.__parents.items():
+                print('StDef.getMethod ', sname, stype)
+                try:
+                    mt = stype.getMethod(name)
+                    return mt
+                except EvalErr:
+                    pass
             raise EvalErr('Method `%s` didn`t define in type `%s`.' % (name, self.name))
         return self.__typeMethods[name]
+
+    def debug(self):
+        mm = [(k, v) for k, v in self.__typeMethods.items()]
+        print(mm)
 
     def find(self, name):
         if name in self.methods:
@@ -92,12 +107,44 @@ class StructInstance(Val, NSContext):
         print('StructInstance.__init__', '>>', stype)
         self.vtype:StructDef = stype
         self.data:dict[str, Var] = {}
+        self.supers:dict = {}
+        self.initSuper()
+
+    def initSuper(self):
+        superTypes = self.vtype.getParents()
+        for pname, st in superTypes.items():
+            # pname = st.getName()
+            self.supers[pname] = StructInstance(st)
+
+    def initDefVals(self, skip=[]):
+        '''
+        ignore already filled in child instance (?)
+        '''
+        # set current
+        for fname in self.vtype.fields:
+            if fname not in self.data and fname not in skip:
+                ftype = self.vtype.types[fname]
+                dv = defaultValOfType(ftype) # default by type: 0, null, false, "", [], {}, (,)
+                self.data[fname] = dv
+        skip += self.vtype.fields
+        # set parents
+        if self.supers:
+            for _, sup in self.supers.items():
+                skip = sup.initDefVals(skip)
+        return skip
 
     def get(self, fname=None):
         if fname is None:
             # print('StructInstance.DEBUG::: getting enmpty fieldname')
-            return '@struct debug / ' + str(self) # debug 
-        return self.data[fname]
+            return '@struct <debug!> / ' + str(self) # debug
+        if fname in self.vtype.fields:
+            return self.data[fname]
+        if self.supers:
+            for _, sup in self.supers.items():
+                if fname not in sup.vtype.fields:
+                    continue
+                return sup.get(fname)
+        raise EvalErr(f'Incorrect field `{fname}` of struct `{self.vtype.getName()}` ')
     
     def find(self, fname):
         ''' find sub-field by name'''
@@ -116,11 +163,16 @@ class StructInstance(Val, NSContext):
         # print('@3>> ', dir(self))
         # print('StructInstance.set type:', self.vtype, )
         print('StructInstance.set types:', self.vtype.name, '>', self.vtype.types)
-        if fname not in  self.vtype.types:
-            raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
-        # TODO: Fic to use types compatibility
-        self.checkType(fname, val)
-        self.data[fname] = val
+        if fname in self.vtype.fields:
+            self.checkType(fname, val)
+            self.data[fname] = val
+            return
+        if self.supers:
+            for _, sup in self.supers.items():
+                if fname not in sup.vtype.fields:
+                    continue
+                return sup.set(fname, val)
+        raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
 
     def checkType(self, fname, val:Var):
         valType = val.getType()
@@ -160,6 +212,10 @@ class StructDefExpr(DefinitionExpr):
         super().__init__()
         self.typeName:str = typeName
         self.fields:list = [] # fields expressions
+        self.superNames:list = [] # names of super types (parents)
+
+    def setSuper(self, names):
+        self.superNames = names
 
     def add(self, fexp:Expression):
         '''fexp - field expression: VarExpr | ServPairExpr '''
@@ -189,6 +245,11 @@ class StructDefExpr(DefinitionExpr):
             else:
                 raise EvalErr('Struct def error: fiels expression returns incorrect result: %s ' % field)
             strType.add(Var(fname, ftype))
+        for sname in self.superNames:
+            supType = ctx.getType(sname)
+            if not supType:
+                raise EvalErr('Supertype `%s` of type `%s` wasn`t found.' % (sname, self.typeName))
+            strType.addParent(supType.get())
         # register new type
         typeVal = TypeVal(strType)
         ctx.addType(typeVal)
@@ -261,6 +322,7 @@ class StructConstr(Expression):
                 raise EvalErr('Struct def error: fiels expression returns incorrect result: %s ' % expRes)
         if len(vals) > 0:
             inst.setVals(vals)
+        inst.initDefVals()
         self.inst = inst
 
     def get(self):
@@ -288,6 +350,7 @@ class MethodDefExpr(FuncDefExpr):
         func = Function(self.name)
         self.instExpr.do(ctx)
         inst = self.instExpr.get()
+        print('MethodDefExpr.doFunc', inst, self.name)
         self.typeName = inst.getType().getName()
         # print('MethodDefExpr instType:', self.typeName)
         print('MethodDefExpr doFunc:', self.instExpr, self.instExpr.get())

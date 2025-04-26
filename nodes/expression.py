@@ -67,9 +67,9 @@ class VarExpr(Expression):
         self.name = var.name
     
     def do(self, ctx:Context):
-        print('VarExpr.do ctx:', ctx, 'name=', self.name)
+        # print('VarExpr.do ctx:', ctx, 'name=', self.name)
         newVal = ctx.get(self.name)
-        print('VarExpr.do:', newVal)
+        # print('VarExpr.do:', newVal)
         self.val = newVal
     
     # def set(self, val:Var):
@@ -107,7 +107,7 @@ class DebugExpr(Expression):
         self.val = txt
     
     def do(self, ctx:Context):
-        print(" $$$ DEBUG: ", self.val)
+        print(" $$$ >>> >>> DEBUG: ", self.val)
 
 
 class ControlExpr(Expression):
@@ -152,12 +152,8 @@ class Block(Expression):
             # lineRes = None
             lineRes = expr.get()
             if isinstance(lineRes, FuncRes):
-                print(' - return::', lineRes)
-            # if not isinstance(expr, Block) or expr.storeRes:
-            #     lineRes = expr.get()
-            # print(' - - Block.iter lineRes', lineRes)
-            if isinstance(lineRes, FuncRes):
                 # return expr
+                print(' - return::', lineRes)
                 self.lastVal = lineRes
                 return
         if self.storeRes:
