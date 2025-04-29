@@ -31,6 +31,9 @@ class Function(FuncInst):
         self.defCtx:Context = None # for future: definition context (closure - ctx of module or upper block if function is local or lambda)
         self.res = None
 
+    def setDefContext(self, ctx:Context):
+        self.defCtx = ctx
+
     def getName(self):
         return self._name
 
@@ -76,13 +79,13 @@ class Function(FuncInst):
     def do(self, ctx: Context):
         self.res = None
         self.block.storeRes = True # save last expr value
-        inCtx = Context(None) # inner context, empty new for each call
+        inCtx = Context(self.defCtx) # inner context, empty new for each call
         # inCtx.addVar(Var(1000001, 'debVal', TypeInt))
         for arg in self.callArgs:
             print('Fudo:', arg)
             inCtx.addVar(arg)
-        inCtx.get('debVal')
-        inCtx.upper = ctx
+        # inCtx.get('debVal')
+        # inCtx.upper = ctx
         self.block.do(inCtx)
         res = self.block.get()
         if isinstance(res, FuncRes):
@@ -118,6 +121,8 @@ class FuncCallExpr(Expression):
         # inne rcontext
         print('FuncCallExpr.do')
         args:list[Var] = []
+        print(f'Function `{self.name}`:')
+        ctx.print()
         func = ctx.get(self.name)
         # unpack function from var
         print('#1# func-call do00: ', self.name, 'F:', func)
@@ -136,7 +141,7 @@ class FuncCallExpr(Expression):
                 arg = arg.get()
             args.append(arg)
         self.func.setArgVals(args)
-        callCtx = Context(ctx)
+        callCtx = Context(None)
         self.func.do(callCtx)
 
     def get(self):
@@ -194,6 +199,7 @@ class FuncDefExpr(DefinitionExpr, Block):
         # build inner block of function
         for exp in self.blockLines:
             func.block.add(exp)
+        func.setDefContext(ctx)
         self.res = func
         print('FuncDefExpr.do 3:', func.getName())
         if not func.isLambda:

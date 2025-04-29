@@ -23,6 +23,108 @@ class TestFunc(TestCase):
     
 
 
+    def test_rerun_list_iter_in_funcs(self):
+        ''' src-iter/func/src-iter '''
+        code = r'''
+        func foo(a:int, b:int)
+            a + b
+        
+        func list3(a, b, c)
+            [a, b, c]
+        
+        func lsum(nums)
+            res = 100 * nums[0]
+            for n <- nums
+                res += n
+            res
+        
+        func bar(a:int)
+            bres = []
+            for i <- [1..a]
+                if i % 2 == 0
+                    for n <- iter(i, i+3)
+                        sm = foo(n, n % 4)
+                        bres <- sm + 100
+                else
+                    nn = list3(i, i%3, i%7)
+                    for n <- nn
+                        bres <- n
+            bres
+        
+        rr = {}
+        rr2 = []
+            
+        func test()
+            for i <- [2,4,6,3,5,7]
+                br = bar(i)
+                sb = lsum(br) + 0
+                rr <- (i, sb)
+                rr2 <- i
+        
+        test()
+        print('res = ', rr)
+        '''
+        _='''
+        
+        rr = []
+        rr2 = []
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rr = ctx.get('rr')
+        rr2 = ctx.get('rr2')
+        # self.assertEqual(0, rr.get().data)
+        self.assertEqual({2: 417, 4: 741, 6: 1079, 3: 423, 5: 753, 7: 1087}, rr.get().vals())
+        # print('>>', rr.get())
+        print('>>', rr2.get())
+
+    def test_func_arg_type(self):
+        ''' Auto-define type of args on-the-fly if func definition doesn`t have type of arguments. '''
+        code = r'''
+        res = 0
+        
+        func summ(a, b)
+            a + b
+        
+        func concat(str1, str2)
+            str1 + str2
+        
+        struct A a1:int
+        
+        func aa:A afoo(n)
+            aa.a1 += n
+        
+        avar = A{a1:100}
+        
+        r1 = summ(10, 2)
+        r2 = concat('abc', 'def')
+        avar.afoo(11)
+        r3 = avar.a1
+        
+        print('res = ', r1, r2, r3)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        r1 = ctx.get('r1')
+        r2 = ctx.get('r2')
+        r3 = ctx.get('r3')
+        self.assertEqual(12, r1.getVal())
+        self.assertIsInstance(r1.getType(), TypeInt)
+        self.assertEqual('abcdef', r2.getVal())
+        self.assertIsInstance(r2.getType(), TypeString)
+        self.assertEqual(111, r3.getVal())
+        self.assertIsInstance(r3.getType(), TypeInt)
+
     def test_lambda_in_func(self):
         ''' test in function. '''
         code = r'''
