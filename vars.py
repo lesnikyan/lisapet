@@ -96,7 +96,7 @@ class ListVal(Collection):
     
     def addVal(self, val:Val):
         # not sure, we need whole Var or just internal value?
-        print('ListVar.addVal:', val)
+        print('ListVal.addVal:', val)
         self.elems.append(val)
     
     def setVal(self, key:Val, val:Val):
@@ -107,8 +107,8 @@ class ListVal(Collection):
         self.elems[i] = val
 
     def getVal(self, key:Val|int):
-        print('ListVar.getVal1, index:', key)
-        # print('ListVar.getVal1, elems:', self.elems)
+        print('ListVal.getVal1, index:', key)
+        # print('ListVal.getVal1, elems:', self.elems)
         i = key
         # if isinstance(key, Val):
         #     i = key.get()
@@ -129,7 +129,10 @@ class ListVal(Collection):
         # return self.elems
 
     def vals(self):
-        return [str(n.get()) for n in self.elems[:10]]
+        return [(n.get()) for n in self.elems[:10]]
+
+    def rawVals(self):
+        return [n for n in self.elems[:]]
 
     def __str__(self):
         # nm = self.name
@@ -222,8 +225,10 @@ class DictVal(Collection):
 
 
 def var2val(var:Var|Val):
-    if isinstance(var, Val):
+    if isinstance(var, (Val, Collection)):
         return var
     tp = var.getType()
     val = var.getVal()
+    if isinstance(val, (Val, Collection)):
+        return val
     return Val(val, tp)

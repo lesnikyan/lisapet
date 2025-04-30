@@ -411,10 +411,10 @@ class ListComprExpr(Expression):
             #     exp.init()
             if isinstance(exp, (LeftArrowExpr,IterAssignExpr)):
                 # basic case
-                if curIt > 0 and len(self.filter[curIt]) == 0:
-                    # fix prev empty filter by True condition
-                    # print(' ### EMPTY FILtER for ', curIt)
-                    self.filter[curIt] = EmptyFilter()
+                # if curIt > 0 and len(self.filter) == 0:
+                #     # fix prev empty filter by True condition
+                #     # print(' ### EMPTY FILtER for ', curIt)
+                #     self.filter[curIt] = EmptyFilter()
                 curIt += 1
                 self.iterNodes.append(exp)
                 self.declarations.append([])
@@ -437,8 +437,8 @@ class ListComprExpr(Expression):
     def doElem(self, ctx:Context):
         self.resExpr.do(ctx)
         res = self.resExpr.get()
-        # print('COMPRH . doElem. rexpr:', self.resExpr, 'res:', res)
-        self.res.addVal(res)
+        # print('COMPRH . doElem. rexpr:', self.resExpr, 'res:', res, 'val:', var2val(res))
+        self.res.addVal(var2val(res))
         
 
     def iterLoop(self, index, ctx:Context):
@@ -455,14 +455,14 @@ class ListComprExpr(Expression):
         decl = self.declarations[index]
         filt = self.filter[index]
         print(' $$ 1',)
-        ctx.print()
+        # ctx.print()
         while inod.cond():
             subCtx = Context(ctx) # ctx for sub-iter
             inod.do(subCtx) # make iterator
             self.doDecl(subCtx, decl)
             # print('iterLoop.. filt:', self.filter, index)
             print(' $$ 2 ',)
-            subCtx.print()
+            # subCtx.print()
             filt.do(subCtx)
             fcond = filt.get().get()
             if fcond:  

@@ -27,68 +27,6 @@ class TestDev(TestCase):
 
 
 
-    def test_nesting_blocks(self):
-        ''' if/match/for/func/method/ '''
-        code = r'''
-        # res = 0
-        func foo(a:int, b:int)
-            a + b
-        
-        func list3(a, b, c)
-            [a, b, c]
-        
-        func lsum(nums)
-            res = 100 * nums[0]
-            for n <- nums
-                res += n
-            res
-        
-        func bar(a:int)
-            bres = []
-            for i <- iter(1,a+1)
-                if i % 2 == 0
-                    for n <- iter(i, i+3)
-                        sm = foo(n, n % 4)
-                        bres <- sm + 100
-                else
-                    nn = list3(i, i%3, i%7)
-                    for n <- nn
-                        bres <- n
-            bres
-        
-        rr = []
-        rr2 = []
-            
-        func test()
-            for i <- [5..9]
-                br = bar(i)
-                sb = lsum(br) + 0
-                rr <- (i, sb)
-                rr2 <- i
-        
-        test()
-        print('res = ', rr)
-        '''
-        _='''
-        
-        rr = []
-        rr2 = []
-        '''
-        code = norm(code[1:])
-        # print('>>\n', code)
-        # return
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        rr = ctx.get('rr')
-        rr2 = ctx.get('rr2')
-        # self.assertEqual(0, rr.get().data)
-        self.assertEqual(['753', '1079', '1087', '1417', '1428'], rr.get().vals())
-        print('>>', rr.get())
-        print('>>', rr2.get())
-
     def __tt(self):
         '''
         # thoughts about OOP

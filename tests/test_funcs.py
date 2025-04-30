@@ -23,6 +23,66 @@ class TestFunc(TestCase):
     
 
 
+    def test_nesting_blocks(self):
+        ''' if/match/for/func/method/ '''
+        code = r'''
+        # res = 0
+        
+        func f1(m, k)
+            r = 1
+            match k - m
+                1 !- r += m
+                2 !- r = 2 * (k + m)
+                _ !- k * 10 + m
+            r
+        
+        func f2(m, k)
+            rem = k % m
+            if rem > 0
+                return rem
+            else
+                return toint(k / m)
+        
+        func f3(n)
+            r = 0
+            for i <- [1..n]
+                t = f1(i, n)
+                r += t
+            r
+            
+        struct Abc a:int
+        
+        func abc:Abc f4(x)
+            x * abc.a
+        
+        func test()
+            r = []
+            aa = Abc{a:5}
+            for i <- [1..10]
+                r1 = f3(i)
+                r2 = f2(i, r1)
+                r <- aa.f4(r2)
+            r
+        
+        rr = test()
+        print('res = ', rr)
+        '''
+        _='''
+        
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rr = ctx.get('rr')
+        self.assertEqual([5, 5, 20, 10, 20, 25, 5, 10, 15, 20], rr.get().vals())
+        # print('>>', rr.get().vals())
+        # print('>>', [n.get() for n in rr.get().elems])
+
     def test_rerun_list_iter_in_funcs(self):
         ''' src-iter/func/src-iter '''
         code = r'''

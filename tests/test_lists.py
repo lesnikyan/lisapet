@@ -85,6 +85,38 @@ class TestLists(TestCase):
         rvar = ctx.get('nr').get()
         self.assertEqual([10, 20, 30, 500], rvar.get())
 
+    def test_list_comprh_multi_case(self):
+        ''' multiline and multi-expression  '''
+        code = '''
+        nums = [
+            {x:a, y:b, z:c};
+            x <- [3..7];
+            a = x * 10;
+            x % 2 > 0;
+            y <- [1..10];
+            b = 2 ** y;
+            y <= 5;
+            z <- [1..3];
+            c = 10 ** z;
+            a + b + c < 1000
+        ]
+        res = [x ; i <-iter(len(nums)); x = nums[i]; i < 5 || i > 26]
+        # print('src = ', src)
+        print('nums = ', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        nums = ctx.get('res').get()
+        nvals = [n.vals() for n in nums.rawVals()]
+        print('#tt', nvals)
+        exp = [{3: 30, 1: 10}, {3: 30, 1: 2, 2: 100}, {3: 30, 2: 4, 1: 10}, {3: 30, 2: 100},
+               {3: 8, 1: 10}, {7: 70, 4: 16, 2: 100}, {7: 70, 5: 32, 1: 10}, {7: 70, 5: 32, 2: 100}]
+        self.assertEqual(exp, nvals)
+
     def test_tuple_list_as_result(self):
         '''   '''
         code = '''
@@ -120,7 +152,7 @@ class TestLists(TestCase):
     def test_list_compr_filter(self):
         ''' list generator. flatten list of lists. 2-nd iterator uses sublist from 1-st  '''
         code = '''
-        srcGen = [x ** 2 ; x <- [1..10]]
+        # srcGen = [x ** 2 ; x <- [1..10]]
         # filterRes = [x ; x <- src; x % 5 > 0 && x > 10]
         # full expr:
         nums = [x ** 2 ; x <- [1..10]; x % 5 > 0 && x ** 2 > 15]

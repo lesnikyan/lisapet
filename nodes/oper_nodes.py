@@ -126,6 +126,7 @@ class OpAssign(OperCommand):
             
             if isinstance(self.left[i], CollectElem):
                 ''' '''
+                # print('(=) if dest CollectElem, val: ', val)
                 val.name = None
                 self.left[i].set(val)
                 return

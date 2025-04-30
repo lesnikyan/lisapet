@@ -27,3 +27,7 @@ def buit_len(arg):
     return arg.len()
 
 
+def built_int(x):
+    return int(x.getVal())
+
+
