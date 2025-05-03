@@ -132,7 +132,7 @@ class ListVal(Collection):
         return [(n.get()) for n in self.elems[:10]]
 
     def rawVals(self):
-        return [n for n in self.elems[:]]
+        return [n for n in self.elems]
 
     def __str__(self):
         # nm = self.name
@@ -174,6 +174,9 @@ class TupleVal(Collection):
         if i < len(self.elems):
             return self.elems[i]
         raise EvalErr('Tuple out of range by index %d ' % i)
+
+    def rawVals(self):
+        return [n for n in self.elems]
 
     def __str__(self):
         vals = ', '.join([ '%s' % n.get() for n in self.elems])

@@ -52,21 +52,14 @@ class OpAssign(OperCommand):
         self.left:Var|list[Expression]|Expression = left
         self.right:Expression|list[Expression] = right # maybe 1 only, tuple Expression with several subs inside
 
-    def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
+    def setArgs(self, left:Expression, right:Expression):
         '''
         left - dest
         right - src
         '''
         print('OpAssign__setArgs1', left, right)
-        if isinstance(left, ServPairExpr):
-            left = left.getTypedVar()
-
         self.left = left
-        r0 = None
-        if isinstance(right, list):
-            r0 = right[0]
-        else:
-            r0 = right
+        r0 = right
         
         if isinstance(r0, VarExpr):
             exvar = r0.get()
@@ -89,31 +82,53 @@ class OpAssign(OperCommand):
     def do(self, ctx:Context):
         ''' var = src'''
         src = self.right
-        if not isinstance(src, list):
-            src = [src]
-        size = len(src)
-        if not isinstance(self.left, list):
-            self.left = [self.left]
-        if len(self.left) != size:
-            raise InterpretErr('Count of left and right parts of assignment are different '
-                               'left = %d, right = %d' % (len(self.left), len(self.right)))
+        
+        # prepare left operand
+        if isinstance(self.left, SequenceExpr):
+            left = self.left.getSubs()
+        else:
+            left = [self.left]
+        
+        pleft = []
+        for lexp in left:
+            if isinstance(lexp, ServPairExpr):
+                lexp = lexp.getTypedVar()
+            pleft.append(lexp)
+        left = pleft
 
-        # ctx.print()
-        resSet:list[Var] = [None]*size
-        for i in range(size):
-            print('OpAssign.do src[i]', src[i])
-            src[i].do(ctx)
-            ctx.print()
-            tVal:Var = src[i].get() # val (anon var obj) from expression
+        # Do right (val expr)
+        print('OpAssign.do src', src)
+        resSet:list[Var] = []
+        if isinstance(src, SequenceExpr):
+            print('## op-assign, SequenceExpr src -> ', src, )
+            resSet = src.getVals(ctx)
+        else:
+            src.do(ctx)
+            tVal:Var = src.get() # val (anon var obj) from expression
             print('## op-assign, src.get() -> ', tVal, ':', tVal.get(), tVal.getType())
-            resSet[i] = tVal
+            resSet.append(tVal)
+        ctx.print()
+        
+        if len(left) > 1 and len(resSet) == 1:
+            # unpack colelction here
+            tval = resSet[0]
+            if isinstance(tval, Var):
+                tval = resSet[0].getVal()
+            
+            print('resSet[0] to unpack:', resSet[0], tval)
+            if not isinstance(tval, (ListVal, TupleVal)):
+                raise EvalErr('Count of left and right parts of assignment are different '
+                               'left = %d, right = %d' % (len(left), len(resSet)))
+            resSet = tval.rawVals()
+        
+        size = len(left)
         for  i in range(size):
-            if isinstance(self.left[i], VarExpr_):
+            if isinstance(left[i], VarExpr_):
                 # skip _ var
                 continue
             # print(' (a = b) :1')
             # eval left expressopm
-            self.left[i].do(ctx)
+            left[i].do(ctx)
             val = resSet[i]
             valType = val.getType()
             print(' (a = b) :2', val)
@@ -124,15 +139,15 @@ class OpAssign(OperCommand):
                 val = val.get()
             print(' (a = b) :4', val)
             
-            if isinstance(self.left[i], CollectElem):
+            if isinstance(left[i], CollectElem):
                 ''' '''
                 # print('(=) if dest CollectElem, val: ', val)
                 val.name = None
-                self.left[i].set(val)
+                left[i].set(val)
                 return
             
             #get destination var
-            dest = self.left[i].get()
+            dest = left[i].get()
             print('Assign dest1 =', dest, '; val=', val)
             isNew = False
             self.res = val
@@ -145,7 +160,7 @@ class OpAssign(OperCommand):
                 dest = newVar
             dest.set(val)
                 
-            # print('# op-assign set1, varX, valX:', self.left[i], src[i])
+            # print('# op-assign set1, varX, valX:', left[i], src[i])
             print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
             # print('# op-assign set,',' val = ', type(resSet[i]))
             print(' (a = b) dest =', dest, ' val = ', val, 'isNew:', isNew)
@@ -544,3 +559,30 @@ class OperDot(BinOper):
 
     def get(self):
         return self.val
+
+class TernarExpr(BinOper):
+    ''' cond ? expr1 : expr2 '''
+    
+    def __init__(self):
+        super().__init__('?')
+        self.cond:Expression = None
+        self.res1Exp:Expression = None # res if true
+        self.res2Exp:Expression = None # res if false
+        self.res:Val|Var= None
+
+    def setArgs(self, cond:Expression, res:ServPairExpr):
+        self.cond = cond
+        res1, res2 = res.left, res.right
+        self.res1Exp= res1
+        self.res2Exp = res2
+
+    def do(self, ctx:NSContext):
+        self.cond.do(ctx)
+        resExp = self.res2Exp
+        if self.cond.get().getVal():
+            resExp = self.res1Exp
+        resExp.do(ctx)
+        self.res = var2val(resExp.get())
+
+    def get(self):
+        return self.res

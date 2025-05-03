@@ -352,6 +352,9 @@ class SequenceExpr(Expression):
     def getDelim(self):
         return self.delim
 
+    def getSubs(self):
+        return self.subs
+
     def getVals(self, ctx:Context):
         res = []
         for sub in self.subs:

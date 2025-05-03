@@ -27,6 +27,50 @@ class TestDev(TestCase):
 
 
 
+
+    def test_barr_ternar(self):
+        ''' '''
+        code = r'''
+        res = 0
+        a = 3
+        b = 5
+        c = 4
+        
+        res = a < b ? 2 : 1 + 2 # 2
+        res += (b % a < 3 ? 1 : 1 + 1 ) # 3
+        res += a - b >= 1 ? 5 : c # 7 
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res')
+        self.assertEqual(7, rvar.getVal())
+
+    def _test_barr(self):
+        ''' '''
+        code = r'''
+        res = 0
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res')
+        self.assertEqual(0, rvar.getVal())
+
     def __tt(self):
         '''
         # thoughts about OOP
@@ -48,24 +92,6 @@ class TestDev(TestCase):
             e1:int
             e2:D
         '''
-
-    def _test_barr(self):
-        ''' '''
-        code = r'''
-        res = 0
-        
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-        # print('>>\n', code)
-        # return
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        rvar = ctx.get('res')
-        self.assertEqual(0, rvar.getVal())
 
     def _test_print(self):
         ''' '''

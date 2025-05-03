@@ -22,6 +22,79 @@ class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
 
+
+    def test_multi_assign_unpack_tuple(self):
+        ''' unpack tuple to multiple vars '''
+        code = r'''
+        func foo()
+            (1, 2, 3)
+
+        a, b, c = foo()
+        x = (4, 5)
+        d, e = x
+
+        res = {'a': a, 'b': b, 'c':c, 'd':d, 'e':e}
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rval = ctx.get('res').get()
+        exp = {'a': 1, 'b': 2, 'c': 3, 'd':4, 'e':5}
+        self.assertEqual(exp, rval.vals())
+
+    def test_multi_assign_unpack_list(self):
+        ''' unpack list to multiple vars '''
+        code = r'''
+        
+        func foo()
+            [1, 2, 3]
+        
+        a, b, c = foo()
+        
+        x = [4, 5]
+        d, e = x
+        
+        res = {'a': a, 'b': b, 'c':c, 'd':d, 'e':e}
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rval = ctx.get('res').get()
+        exp = {'a': 1, 'b': 2, 'c': 3, 'd':4, 'e':5}
+        self.assertEqual(exp, rval.vals())
+
+    def test_multi_assign_base(self):
+        ''' multiple asignment '''
+        code = r'''
+        x = 5
+        a, b, c = 1, 2, x
+        
+        res = [a,b,c]
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rval = ctx.get('res').get()
+        self.assertEqual([1, 2, 5], rval.vals())
+
     def test_elem_to_dict_operator(self):
         ''' both cases of `<-` operator for dict
         #TODO:
