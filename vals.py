@@ -90,6 +90,6 @@ def elem2val(elem:Elem)->Var:
         if elem.text in bool_constants:
             return val(bool(elem.text), TypeBool)
         if elem.text == 'null':
-            return val(None, TypeNull)
+            return Val(Null(), TypeNull())
             
 

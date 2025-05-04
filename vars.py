@@ -16,7 +16,7 @@ class Var_(Var):
     ''' expr: _ '''
     name = '_'
     def __init__(self):
-        self.vtype:VType = TypeNull
+        self.vtype:VType = TypeNull()
         self.val = None
 
 
@@ -25,14 +25,27 @@ class VarUndefined(Var):
         super().__init__(name, Undefined)
 
 
-class VarNull(Var):
-    ''' None|null'''
+# class NullisNull:
+#     ''' '''
 
-    def __init__(self, name=None):
-        super().__init__(name, TypeNull)
+class Null:
+    '''null'''
 
-    def setType(self, t:VType):
-        pass
+    def __init__(self):
+        self.val = 0
+        # super().__init__(0, TypeNull())
+
+    def __str__(self):
+        return 'null{0}'
+
+    def __repr__(self):
+        return 'null'
+
+    # def get(self):
+    #     return Null()
+
+    # def setType(self, t:VType):
+    #     pass
 
 
 def value(val, vtype:VType)->Val:
@@ -225,6 +238,19 @@ class DictVal(Collection):
         
         vals = '{%s}' % ', '.join([ '%s : %s' %(key(k), v) for k, v in self.vals().items()])
         return 'DictVal(%s)' %  (vals)
+
+
+# not sure, maybe simple struct will be enough?
+class Nothing(Val):
+    ''' x = nop '''
+    def __init__(self):
+        super().__init__(None, TypeMaybe())
+
+
+class Thing(Val):
+    ''' x = yep(1) '''
+    def __init__(self, val):
+        super().__init__(val, TypeMaybe())
 
 
 def var2val(var:Var|Val):

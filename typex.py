@@ -21,7 +21,6 @@ class TypeAny(VType):
 class Undefined(VType):
     name='undefined'
 
-
 class TypeNum(VType):
     name = 'num'
     defVal = 0
@@ -46,6 +45,10 @@ class TypeComplex(TypeNum):
 class TypeBool(VType):
     name = 'bool'
     defVal = False
+
+
+class TypeMaybe(VType):
+    name='maybe'
 
 
 class TypeContainer(VType):
@@ -135,7 +138,7 @@ def find(self, name)->Base:
 
 def builtinTypes()->list[VType]:
     return [TypeAny, TypeBool, TypeInt, TypeFloat, TypeComplex, 
-            TypeString, TypeList, TypeDict, TypeStruct, TypeNull, TypeTuple, TypeFunc]
+            TypeString, TypeList, TypeDict, TypeStruct, TypeTuple, TypeFunc]
 
 
 def defaultValOfType(tp: VType):

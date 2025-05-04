@@ -586,3 +586,55 @@ class TernarExpr(BinOper):
 
     def get(self):
         return self.res
+
+
+
+class FalseOrExpr(BinOper):
+    ''' expr1 ?: expr2 
+        if bool(expr1) == true: expr1
+        else: expr2
+    '''
+    
+    def __init__(self):
+        super().__init__('?:')
+        # self.cond:Expression = None
+        self.res1Exp:Expression = None # res if true
+        self.res2Exp:Expression = None # res if false
+        self.res:Val|Var= None
+
+    def setArgs(self, res1:ServPairExpr, res2:ServPairExpr):
+        # res1, res2 = res.left, res.right
+        self.res1Exp= res1
+        self.res2Exp = res2
+
+    def isOk(self, res:Var|Val):
+        ''' means - non zero val'''
+        if isinstance(res, Var):
+            res = res.get()
+        if isinstance(res.getType(), (TypeNull, Undefined)):
+            return False
+        if isinstance(res, (StructInstance)):
+            return True
+        if isinstance(res, (ListVal, TupleVal)):
+            return res.len() > 0
+        if isinstance(res,(Val)):
+            return res.getVal() not in ['', 0, False]
+        return False
+
+    def do(self, ctx:NSContext):
+        self.res1Exp.do(ctx)
+        res1 = self.res1Exp.get()
+        # okVal = isinstance(res1, (ListVal, DictVal, TupleVal, StructInstance))
+        # okVal = okVal or (isinstance(res1,(Var, Val)) and res1.getVal())
+        # okVal = okVal and not isinstance(res1.getType(), (TypeNull))
+        res = None
+        if self.isOk(res1):
+            res = self.res1Exp.get()
+        else:
+            self.res2Exp.do(ctx)
+            res = self.res2Exp.get()
+        self.res = var2val(res)
+
+    def get(self):
+        return self.res
+

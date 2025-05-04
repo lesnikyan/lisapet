@@ -191,6 +191,8 @@ class CaseVal(ExpCase):
             return False
         if elems[0].type in [Lt.num, Lt.text, Lt.mttext]:
             return True
+        if isLex(elems[0], Lt.word, 'null'):
+            return True
         return False
     
     def expr(self, elems:list[Elem])-> Expression:
