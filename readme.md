@@ -272,6 +272,17 @@ x = a < b ? 10 : 20
 # returns val1 if not null, zero num, empty string, list or tuple, otherwize returns val2
 x = val1 ?: va2
 
+19. val-in-collection `?>` operator
+
+isValIn = val ?> collection
+
+# val for list|tuple
+if val ?> [1,2,3] ...
+if val ?> ('a', 'b', 'c') ...
+
+# key for dict
+if 'a' ?> {'a':1, 'b':2} ...
+
 
 
 NN.Next: 

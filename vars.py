@@ -142,10 +142,17 @@ class ListVal(Collection):
         # return self.elems
 
     def vals(self):
-        return [(n.get()) for n in self.elems[:10]]
+        return [(n.get()) for n in self.elems]
 
     def rawVals(self):
         return [n for n in self.elems]
+
+    def has(self, val:Val):
+        v = val.getVal()
+        for el in self.elems:
+            if v == el.getVal():
+                return True
+        return False
 
     def __str__(self):
         # nm = self.name
@@ -168,6 +175,7 @@ class TupleVal(Collection):
         if 'elems' in kw:
             ees = kw['elems']
         self.elems:list[Val] = ees
+        # self.vals:list = [] # TODO: optimization by store vals only
 
     def len(self)->int:
         return len(self.elems)
@@ -180,9 +188,6 @@ class TupleVal(Collection):
         self.elems.append(val)
 
     def getVal(self, key:Val|int):
-        # i = key
-        # if isinstance(key, Val):
-        #     i = key.get()
         i = key.getVal()
         if i < len(self.elems):
             return self.elems[i]
@@ -190,6 +195,13 @@ class TupleVal(Collection):
 
     def rawVals(self):
         return [n for n in self.elems]
+
+    def has(self, val:Val):
+        v = val.getVal()
+        for el in self.elems:
+            if v == el.getVal():
+                return True
+        return False
 
     def __str__(self):
         vals = ', '.join([ '%s' % n.get() for n in self.elems])
@@ -227,6 +239,10 @@ class DictVal(Collection):
             return self.data[k]
         raise EvalErr('List out of range by key %s ' % k)
 
+    def has(self, key:Val):
+        k = key.getVal()
+        return k in self.data
+
     def vals(self):
         return {k: v.get() for k,v in self.data.items()}
 
@@ -241,16 +257,34 @@ class DictVal(Collection):
 
 
 # not sure, maybe simple struct will be enough?
-class Nothing(Val):
+
+class Maybe(Val):
+    ''' '''
+
+    def has(self, val:Val):
+        return False
+
+
+class Nothing(Maybe):
     ''' x = nop '''
     def __init__(self):
         super().__init__(None, TypeMaybe())
 
 
-class Thing(Val):
+class Thing(Maybe):
     ''' x = yep(1) '''
     def __init__(self, val):
         super().__init__(val, TypeMaybe())
+
+    def has(self, val:Val):
+        return self.val == val
+
+
+def valFrom(src:Var|Val):
+    if isinstance(src, (Val, Collection)):
+        return src
+    if isinstance(src, (Var)):
+        return src.get()
 
 
 def var2val(var:Var|Val):

@@ -78,7 +78,6 @@ class CaseAssign(SubCase):
         return base
 
 
-
 _operPrior = ('() [] . , -x !x ~x , ** , * / % , + - ,'
 ' << >> , < <= > >= !> ?>, == != , &, ^ , | , && , ||, ?: , : , ? , <- , = += -= *= /= %=  ')
 
@@ -213,6 +212,8 @@ def makeOperExp(elem:Elem)->OperCommand:
         return TernarExpr()
     if oper == '?:':
         return FalseOrExpr()
+    if oper == '?>':
+        return IsInExpr()
     if oper == '.':
         return OperDot()
     if oper == '..':

@@ -560,6 +560,7 @@ class OperDot(BinOper):
     def get(self):
         return self.val
 
+
 class TernarExpr(BinOper):
     ''' cond ? expr1 : expr2 '''
     
@@ -576,7 +577,7 @@ class TernarExpr(BinOper):
         self.res1Exp= res1
         self.res2Exp = res2
 
-    def do(self, ctx:NSContext):
+    def do(self, ctx:Context):
         self.cond.do(ctx)
         resExp = self.res2Exp
         if self.cond.get().getVal():
@@ -588,7 +589,6 @@ class TernarExpr(BinOper):
         return self.res
 
 
-
 class FalseOrExpr(BinOper):
     ''' expr1 ?: expr2 
         if bool(expr1) == true: expr1
@@ -597,13 +597,11 @@ class FalseOrExpr(BinOper):
     
     def __init__(self):
         super().__init__('?:')
-        # self.cond:Expression = None
         self.res1Exp:Expression = None # res if true
         self.res2Exp:Expression = None # res if false
         self.res:Val|Var= None
 
     def setArgs(self, res1:ServPairExpr, res2:ServPairExpr):
-        # res1, res2 = res.left, res.right
         self.res1Exp= res1
         self.res2Exp = res2
 
@@ -621,12 +619,9 @@ class FalseOrExpr(BinOper):
             return res.getVal() not in ['', 0, False]
         return False
 
-    def do(self, ctx:NSContext):
+    def do(self, ctx:Context):
         self.res1Exp.do(ctx)
         res1 = self.res1Exp.get()
-        # okVal = isinstance(res1, (ListVal, DictVal, TupleVal, StructInstance))
-        # okVal = okVal or (isinstance(res1,(Var, Val)) and res1.getVal())
-        # okVal = okVal and not isinstance(res1.getType(), (TypeNull))
         res = None
         if self.isOk(res1):
             res = self.res1Exp.get()
@@ -634,6 +629,38 @@ class FalseOrExpr(BinOper):
             self.res2Exp.do(ctx)
             res = self.res2Exp.get()
         self.res = var2val(res)
+
+    def get(self):
+        return self.res
+
+
+class IsInExpr(BinOper):
+    ''' val ?> list|dict|tuple '''
+    
+    def __init__(self):
+        super().__init__('?:')
+        self.valExpr:Expression = None # val we find in
+        self.collExp:Expression = None # collection expr
+        self.res:Val|Var= None
+
+    def setArgs(self, left:Expression, right:Expression):
+        self.valExpr= left
+        self.collExp = right
+
+    def do(self, ctx:Context):
+        # print('IsInExpr ?>> (1)', )
+        self.valExpr.do(ctx)
+        val = self.valExpr.get()
+        val = valFrom(self.valExpr.get())
+        self.collExp.do(ctx)
+        coll = valFrom(self.collExp.get())
+        res = False
+        # print('IsInExpr ?>>', coll)
+        if isinstance(coll, (ListVal, DictVal, TupleVal, Maybe)):
+            res = coll.has(val)
+        if isinstance(coll.getType(), TypeString):
+            res = val.getVal() in coll.getVal()
+        self.res = Val(res, TypeBool())
 
     def get(self):
         return self.res

@@ -14,16 +14,6 @@ if val = foo(); val > 10 ...
 # last sub is condition
 
 
-#==
-# Operator `in` as condition "collection has elem"
-# for list, finds val, the same for tuple
-value in [1,2,3] ...
-# for dict, finds key
-value in {'a':1, 'b':2,...}
-# for anonimous struct?
-# think about  non-word operators  instead of `in`
-if 'Herakl' ?? heroes ...
-if 'Herakl' ?> heroes ...
 
 
 #==
@@ -415,6 +405,16 @@ res = condition ? valueIfTrue : valueIfFalse
     # syntax sugar for ternar operator with condition: (expr1 != null and expr != false)
     # operator that is returns left val if it not a null/false, otherwize - return second
 
+
+#== DONE
+# Operator `in` as condition "collection has elem"
+# for list, finds val, the same for tuple
+value in [1,2,3] ...
+# for dict, finds key
+value in {'a':1, 'b':2,...}
+# for anonimous struct?
+# think about  non-word operators  instead of `in`
+if 'Herakl' ?> heroes 
 
 
 @#
