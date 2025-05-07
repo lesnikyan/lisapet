@@ -52,6 +52,10 @@ else
     x = x ** 2
     res = 1000 + x - 500
 
+# if with sub-expressions: if sub-expr; condition ... 
+if a = foo(); x < bar(a) ...
+
+
 4. Math operators 
 y = 5 + x * -3
 

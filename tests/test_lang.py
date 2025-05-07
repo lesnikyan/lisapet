@@ -22,6 +22,31 @@ class TestLang(TestCase):
 
 
 
+
+    def test_if_preset(self):
+        ''' '''
+        code = r'''
+        
+        res = []
+        for i <- [1..4]
+            if n = 10 * i ; n < 30
+                res <- n
+            else
+                res <- i * 3
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([10, 20, 9, 12], rvar.vals())  
+
     def test_null_struct(self):
         ''' null, val, var, structVar = null '''
         code = r'''

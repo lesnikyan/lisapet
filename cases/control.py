@@ -141,8 +141,15 @@ class CaseIf(BlockCase, SubCase):
         exp = IfExpr()
         return exp, [elems[1:]]
     
-    def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression: 
-        base.setCond(subs[0])
+    def setSub(self, base:IfExpr, subs:list[Expression])->Expression:
+        cond = subs[0]
+        subExp = []
+        if isinstance(cond, SequenceExpr):
+            # `if` with sub-expressions
+            subExp = [sx for sx in cond.getSubs()]
+            cond = subExp[-1]
+            subExp = subExp[:-1]
+        base.setCond(cond, subExp)
         return base
 
 

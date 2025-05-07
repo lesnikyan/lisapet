@@ -29,13 +29,15 @@ class IfExpr(ControlBlock):
         self.mainBlock:Block = Block()
         self.elseBlock:Block = None
         self.cond = cond
+        self.preSubs:list[Expression] = [] # sub-expressions before conditions
         self.lastRes = None
         self.curBlock = self.mainBlock
         # TODO: add init block for if-statement, like Golang has
 
-    def setCond(self, expr:Expression):
-        print('#IfExpr setCond ', expr)
+    def setCond(self, expr:Expression, subExp:list[Expression]=[]):
+        print('#IfExpr setCond ', expr, subExp)
         self.cond = expr
+        self.preSubs = subExp
     
     def add(self, exp:Expression):
         self.curBlock.add(exp)
@@ -46,7 +48,10 @@ class IfExpr(ControlBlock):
 
     def do(self, ctx:Context):
         print('# IfExpr.do1 ', self.cond, type(self.cond))
-        self.cond.do(ctx)
+        inCtx = Context(ctx)
+        for sub in self.preSubs:
+            sub.do(inCtx)
+        self.cond.do(inCtx)
         target:Block = self.mainBlock
         self.lastRes = None
         condRes = self.cond.get()
@@ -60,7 +65,7 @@ class IfExpr(ControlBlock):
             # enter to else-block
             target = self.elseBlock
         print('# IfExpr.do2 ', target)
-        target.do(ctx)
+        target.do(inCtx)
         self.lastRes = target.get() # for case if we need result from if block or one-line-if
         print('# IfExpr.do2 ', self.lastRes)
 
