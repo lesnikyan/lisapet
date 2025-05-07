@@ -240,7 +240,7 @@ n1 = foo(f1, 5)
 # lambda arg as val
 n2 = foo( x -> 2 ** x , 5)
 
-16. match-statement
+16. match-statement. TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
 # !- is a case-operator: 
 # value|template !- expressions
 a = 4
@@ -274,7 +274,8 @@ x = val1 ?: va2
 
 19. val-in-collection `?>` operator
 
-isValIn = val ?> collection
+# base usage 
+val ?> collection
 
 # val for list|tuple
 if val ?> [1,2,3] ...

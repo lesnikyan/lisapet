@@ -139,7 +139,9 @@ class ListVal(Collection):
 
     def get(self):
         return  [n.get() for n in self.elems] # debug
-        # return self.elems
+
+    def delete(self, index:Val):
+        del self.elems[index.getVal()]
 
     def vals(self):
         return [(n.get()) for n in self.elems]
@@ -238,6 +240,12 @@ class DictVal(Collection):
         if k in self.data:
             return self.data[k]
         raise EvalErr('List out of range by key %s ' % k)
+    
+    def get(self):
+        return  self.vals() # debug
+    
+    def delete(self, key:Val):
+        del self.data[key.getVal()]
 
     def has(self, key:Val):
         k = key.getVal()

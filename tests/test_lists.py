@@ -23,6 +23,39 @@ class TestLists(TestCase):
 
 
 
+    def test_barr_del_collection_elem_minus(self):
+        ''' '''
+        code = r'''
+        
+        res = []
+        
+        a1 = [1,2,3]
+        r1 = a1 - [1]
+        
+        res <- r1
+        res <- a1
+        
+        d2 = {'a':11, 'b':22}
+        r2 = d2 - ['a']
+        
+        res <- r2
+        res <- d2
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        print('rvar.vals()', rvar.vals())
+        exp = [2, [1, 3], 11, {'b': 22}]
+        self.assertEqual(exp, rvar.vals())
+
     def test_multi_assign_unpack_tuple(self):
         ''' unpack tuple to multiple vars '''
         code = r'''

@@ -28,63 +28,27 @@ class TestDev(TestCase):
 
 
 
-    def test_in_coll_oper(self):
-        ''' val ?> list|dict|tuple 
-        true == 1, false == 0
-        '''
+    def _test_barr_1_line_block(self):
+        ''' expr1; expr2; expr3 
+        sequence of expressions in one line'''
         code = r'''
         
-        src1 = [1, 2, 3]
-        src2 = {'a':1, 'b':2,'c':3}
-        src3 = (11,0,3)
-        src4 = ['a', 'b', 'c']
-        src5 = 'lorem ipsum dolor'
+        a = 1; b = 2; c = 3
+        a = 10; b += 20; c -= 30;
         
-        res = []
-        
-        res <- 1 ?> src1
-        res <- 10 ?> src1
-        res <- 'a' ?> src2
-        res <- 'z' ?> src2
-        res <- 3 ?> src3
-        res <- -3 ?> src3
-        res <- 'b' ?> src4
-        res <- 0 ?> src4
-        
-        res <- true ?> src1
-        res <- true ?> src2
-        res <- true ?> src3
-        res <- true ?> src4
-        res <- false ?> src1
-        res <- false ?> src2
-        res <- false ?> src3
-        res <- false ?> src4
-        
-        res <- 1 ?> [1,2,3]
-        res <- 10 ?> [1,2,3]
-        res <- 2 ?> (2,3,4)
-        res <- 1 ?> (2,3,4)
-        
-        res <- 'a' ?> src5
-        res <- 'sum' ?> src5
-        res <- 'a' ?> "lorem ipsum dolor"
-        res <- 'sum' ?> 'lorem ipsum dolor'
-        
-        # print('res = ', res)
+        res = [a, b, c]
+        print('res = ', res)
         '''
         code = norm(code[1:])
+        # print('>>\n', code)
+        # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        rvar = ctx.get('res').get()
-        exp = [True, False, True, False, True, False, True, False, 
-               True, False, False, False, False, False, True, False,
-               True, False, True, False,
-               False, True, False, True]
-        # print(rvar.vals())
-        self.assertEqual(exp, rvar.vals())
+        rvar = ctx.get('res').get(0)
+        self.assertEqual(0, rvar.vals())
 
     def _test_barr(self):
         ''' '''

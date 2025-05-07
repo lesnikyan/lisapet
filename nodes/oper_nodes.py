@@ -232,14 +232,22 @@ class OpMath(BinOper):
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
         print('#bin-oper2', a, b)
-        print(' ( %s )' % self.oper, a.getVal(), b.getVal())
+        
+        # overloaded operators:
+        over, res = self.overs(a, b)
+        print('#bin-oper-over:', over, res)
+        if over:
+            self.res = res
+            return
+        
+        # print(' ( %s )' % self.oper, a.getVal(), b.getVal())
         print(' (%s %s %s)' % (a.getType(), self.oper, b.getType()))
         type = a.getType()
         if type != b.getType():
             # TODO fix different types
             pass
         # get numeric values and call math function 
-        val = ff[self.oper](a.getVal(), b.getVal())
+        val = ff[self.oper](valFrom(a).getVal(), valFrom(b).getVal())
         self.res = Val(val, type)
         
     def plus(self, a, b):
@@ -265,6 +273,23 @@ class OpMath(BinOper):
 
     def rshift(self, a, b):
         return a >> b
+
+    def collMinus(self, a:Collection, b:list):
+        ''' a:dict|list - b:[int] '''
+        key = b.getVal(Val(0, TypeInt()))
+        val = a.getVal(key)
+        a.delete(key)
+        return val
+
+    def overs(self, a, b):
+        a, b = valFrom(a), valFrom(b)
+        print('#bin-overs-1', a, b)
+        match self.oper:
+            case '-' :
+                if isinstance(a, (ListVal, DictVal)) and isinstance(b, ListVal):
+                    return (True, self.collMinus(a, b))
+            
+        return (False, 0)
 
 
 class OpMathAssign(OperCommand):
