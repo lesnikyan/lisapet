@@ -28,28 +28,6 @@ class TestDev(TestCase):
 
 
 
-    def _test_barr_1_line_block(self):
-        ''' expr1; expr2; expr3 
-        sequence of expressions in one line'''
-        code = r'''
-        
-        a = 1; b = 2; c = 3
-        a = 10; b += 20; c -= 30;
-        
-        res = [a, b, c]
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-        # print('>>\n', code)
-        # return
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        rvar = ctx.get('res').get(0)
-        self.assertEqual(0, rvar.vals())
-
     def _test_barr(self):
         ''' '''
         code = r'''

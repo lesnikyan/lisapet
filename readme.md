@@ -284,16 +284,17 @@ if val ?> ('a', 'b', 'c') ...
 # key for dict
 if 'a' ?> {'a':1, 'b':2} ...
 
+20. one-line blocks (expr; expr; expr)
+
+a = 1; b = 2; c = 3
+a = 10 + a; b += 20; c -= 30;
+res = [a, b, c]; res <- dd; res <- e
 
 
+--------------------------------------------------------
 NN.Next: 
-one-line blocks (expr; expr; expr)
-
 
 Drafts and thoughts:
-// ****************  Version 1 ********************* 
-DONE
-// ****************  Version 2 ********************* 
 
 import std.*
 import std.(reader, writer)

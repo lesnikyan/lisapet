@@ -406,8 +406,9 @@ class CaseSemic(CaseSeq, SubCase):
     def __init__(self):
         super().__init__(';')
 
-    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        print('CaseSemic setSub: ', base, subs)
+    # def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
+    #     print('CaseSemic setSub: ', base, subs)
+    #     base
 
 
 class CaseCommas(CaseSeq):

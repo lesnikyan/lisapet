@@ -25,6 +25,45 @@ import pdb
 class TestOper(TestCase):
 
 
+
+    def test_semicolon_diff_as_1_line_block(self):
+        ''' expr1; expr2; expr3 
+        sequence of expressions in one line'''
+        code = r'''
+        
+        func sum(nums)
+            r = 0
+            for n <- nums
+                r += n
+            r
+        
+        func bar(x, y)
+            r = 1; p = 0
+            r *= sum(x); p += sum(y); (r, p)
+        
+        a = 1; b = 2; c = 3
+        a = 10 + a; b += 20; c -= 30;
+        nn = [1,2,3,4,5]; dd = sum(nn)
+        e = 0; _ = [n; n <- [4..8]; e += n]
+        
+        res = [a, b, c]; res <- dd; res <- e
+        g = [3..5]; h = [3..7]; vv = bar(g, h); k, m = vv; res <- k; res <- m
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # print('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exp = [11, 22, -27, 15, 30, 12, 25]
+        self.assertEqual(exp, rvar.vals())
+        # SequenceExpr, CaseSemic
+
     def test_in_coll_oper(self):
         ''' val ?> list|dict|tuple 
         true == 1, false == 0

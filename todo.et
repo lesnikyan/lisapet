@@ -4,13 +4,13 @@
 # Necessary things: 
 
 1. String formatting.
-2. one-line block: expr; expr; expr
+2. !DONE! one-line block: expr; expr; expr
 3. import modules
 4. save code-source into expression (at least whole line)
 5. error handling (with printing source code)
 6. else if
 7. if sub-expression: if x=foo(); x < 5 ...
-8.  logging
+8. logging
 9. input-output: files, console, network, db,
 10 serialization: 1) lang objects (collections, struct inst) 2) whole executive tree (prepared exec file)
 

@@ -242,6 +242,13 @@ def lex2tree(src:list[CLine]) -> Block:
             curInd += 1
             print('-=-= indent cur:', curInd)
             continue
+        # if 1-line block
+        if isinstance(expr, SequenceExpr):
+            if expr.delim == ';':
+                for subExp in expr.getSubs():
+                    curBlock.add(subExp)
+            continue
+        
         curBlock.add(expr)
 
     return root
