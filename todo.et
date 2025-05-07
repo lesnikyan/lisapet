@@ -1,11 +1,33 @@
 
 # TODO List
 
+# Necessary things: 
+
+1. String formatting.
+2. one-line block: expr; expr; expr
+3. import modules
+4. save code-source into expression (at least whole line)
+5. error handling (with printing source code)
+6. else if
+7. if sub-expression: if x=foo(); x < 5 ...
+8.  logging
+9. input-output: files, console, network, db,
+10 serialization: 1) lang objects (collections, struct inst) 2) whole executive tree (prepared exec file)
+
+
+# Perspective things: 
+1. Maybe type 
+2. default, unnecessary and named function args
+3. tail-recursion optimization
+4. anonimous structs
+5. composition of function
+6. carrying
+7. common types: (tree, queue, set, pair ) with operations: applay func to each, clone, merge, insert, fold, map, etc.
+
 
 #== func object
 
 foo = func (args...)
-
 
 
 #==
@@ -14,16 +36,14 @@ if val = foo(); val > 10 ...
 # last sub is condition
 
 
-
-
 #==
 # string formatting by % , or internal includes like {varName}, $varName, @varName, @{exp(res.sion)}
 
 
 #==
 # Maybe type: Nothing, Thing
-x = maybe(1) # @yep(1)
-x = nothing # @nop
+x = maybe(1) # @yep(1), (? val)
+x = nothing # @nop , (?-)
 
 
 #==  func type
@@ -72,20 +92,6 @@ i++ # i += 1
 i-- # i -= 1
 
 
-#==
-# list pop
-nums = [1,2,3]
-x = nums --
-x = nums[-1]
-delete nums[-1]
-
-#== 
-# delete operator, find nearest context with var by name and remove it from found context
-nums = [1,2,3,4,5]
-x = 123
-delete nums[2], x
-
-
 #== works as is by native pythons functionality
 # list | string - mult *, concat +
 
@@ -95,6 +101,10 @@ delete nums[2], x
 'acb ' + 'xyz' --> 'abc xyz'
 [1,2,3] + [4,5] --> [1,2,3,4,5]
 
+
+#== Type alising, make sense only for strict typeing mode (not implemented)
+type intN3 [int, int, int]
+type intN3 int[3]
 
 
 #==
@@ -114,11 +124,6 @@ a = A.make(1,2)
 #== overloading
 func new.A(a, b)
     A{a:a, b:b, c:true}
-
-
-#== Type alising
-type intN3 [int, int, int]
-type intN3 int[3]
 
 
 #== 
@@ -163,7 +168,6 @@ grs = numsRx.groups(strVal) # [[string]]
 
 
 #== store content of comments as a runtime metadata
-
 
 
 #== multiline expr
@@ -415,6 +419,22 @@ value in {'a':1, 'b':2,...}
 # for anonimous struct?
 # think about  non-word operators  instead of `in`
 if 'Herakl' ?> heroes 
+
+
+#== Done as `-` minus opreator for left-collection
+# list pop
+nums = [1,2,3]
+x = nums[-1]
+delete nums[-1] # nums - index; nums - [0], nums - [-1],  # 
+dd = {'a':1, ..} # dd - ['a']
+
+#== Done as `-` minus opreator for left-collection
+# delete operator, find nearest context with var by name and remove it from found context
+nums = [1,2,3,4,5]
+x = 123
+delete nums[2], x
+
+
 
 
 @#
