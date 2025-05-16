@@ -10,6 +10,7 @@ from cases.tcases import *
 from nodes.oper_nodes import *
 from nodes.datanodes import *
 
+# from strformat import  StrFormatter
 
 class CaseAssign(SubCase):
     
@@ -231,6 +232,11 @@ unaryOpers = '- ! ~'.split(' ')
 # oneValExptRx = re.compile('[0-9a-z]+?(\(.*\))?')
 
 class CaseUnar(SubCase):
+    
+    def __init__(self, strformat=None):
+        super().__init__()
+        self.formatter:SFormatter = strformat
+    
     def match(self, elems:list[Elem]) -> bool:
         ''' -123, -0xabc, ~num, -sum([1,2,3]), !valid, !foo(1,2,3) '''
         if elems[0].type != Lt.oper or elems[0].text not in unaryOpers:
@@ -273,8 +279,14 @@ class CaseUnar(SubCase):
         ''' base - unaryExpr
             subs - left part
         '''
-        base.setInner(subs[0])
-    
+        sub = subs[0]
+        print('Unar.setSub', base, sub)
+        if self.formatter and isinstance(base, BitNot) and isinstance(sub, (StringExpr, MString)):
+            # FString detected
+            base = self.formatter.formatString(sub.get().getVal())
+            return base
+        base.setInner(sub)
+
     
     # next: BoolNot, BitNot, UnarSign
 def makeUnary(elem:Elem)->OperCommand:

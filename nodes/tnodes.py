@@ -12,16 +12,6 @@ from nodes.expression import *
 
 
 
-class MString(ValExpr, MultilineVal):
-    
-    def __init__(self, val):
-        super().__init__(val)
-        self.val = Val(''.join(val), TypeMString())
-
-    def add(self, next:'MString'):
-        text = self.val.val + next.val.val
-        self.val.val = text
-
 
 class Module(Block):
     ''' Level of one file. 

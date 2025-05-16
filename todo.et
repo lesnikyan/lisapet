@@ -3,16 +3,17 @@
 
 # Necessary things: 
 
-1. String formatting.
-2. !DONE! one-line block: expr; expr; expr
+1. #DONE String formatting.
+2. #DONE one-line block: expr; expr; expr
 3. import modules
 4. save code-source into expression (at least whole line)
 5. error handling (with printing source code)
 6. else if
-7. !DONE! if sub-expression: if x=foo(); x < 5 ...
+7. #DONE if sub-expression: if x=foo(); x < 5 ...
 8. logging
 9. input-output: files, console, network, db,
 10 serialization: 1) lang objects (collections, struct inst) 2) whole executive tree (prepared exec file)
+11. struct constructor without field names: A{1, 2.0, 'abc'}
 
 
 # Perspective things: 
@@ -36,60 +37,13 @@ if val = foo(); val > 10 ...
 # last sub is condition
 
 
-#==
-# string formatting by % , or internal includes like {varName}, $varName, @varName, @{exp(res.sion)}
-
-
-#==
-# Maybe type: Nothing, Thing
-x = maybe(1) # @yep(1), (? val)
-x = nothing # @nop , (?-)
-
-
-#==  func type
-func foo(a:int, b:int): int
-    a + b
-# or 
-func foo(int, int): int
-foo(a, b)
-    a + b
-
-
-#==
-# func overload (?)
-func foo()
-
-func foo(a:int, b:int)
-
-func foo(a:string, b:int)
-
-#==
-# composition of functions are possible, by `.` or another
-func foo(a)
-func bar(a)
-func buz(a)
-
-buz(bar(foo(12)))
-foo . bar . buz : (12)
-foo bar buz $ 12
-foo * bar * buz(12)
-foo + bar + buz(12)
-foo ~ bar ~ buz : 12
-
-# closures of passed or returned lambdas / local funcs
-#@
-phases of implementation
-1. just pure function: get args, return result, no usage of vars out of lambda
-2. use near local context (where lambda was defined)
-@#
-for i <- iter(20, 30)
-    bar(x -> sum(x) - 100, i)
-
-
-#==
-# unary increment, decrement
-i++ # i += 1
-i-- # i -= 1
+#== else if - `sugar` for `if` into `else` block 
+if cond2
+    expr1
+else if cond2
+    expr2
+else
+    expr3
 
 
 #== works as is by native pythons functionality
@@ -100,6 +54,60 @@ i-- # i -= 1
 
 'acb ' + 'xyz' --> 'abc xyz'
 [1,2,3] + [4,5] --> [1,2,3,4,5]
+
+
+#= 
+# Native regexp
+pattern cases:  /pattern/mod ; |pattern|mod ; <pattern>mod ; %pattern%mod, 
+numsRx = /^[0-9]+$/in
+numsRx.match(strVal) # bool
+res = numRx.first(strVal) # string
+resList = numRx.find(strVal) # [string]
+grs = numsRx.groups(strVal) # [[string]]
+
+
+#==
+# Maybe type: Nothing, Thing
+x = maybe(1) # @yep(1), (? val)
+x = nothing # @nop , (?-)
+
+
+#==
+# unary increment, decrement
+i++ # i += 1
+i-- # i -= 1
+
+
+#== store content of comments as a runtime metadata
+
+
+#== multiline expr
+#== possible sugar
+
+
+#== concat strings
+str = (
+    'Hello '
+    "new string!"
+)
+
+
+# case if: with no operator between line use && or defined default operator
+#    if (&& ..) if (|| .. ) - definition of default
+# e.g: 
+# if (||
+#     a > 5
+#     a % 2 != 0)
+#
+#
+
+
+#== Next line operator, next line after beginning, 
+# Second line starts with operator after 1 indent (like subline in block). If no indent - just new expression with unary operator (or error)
+# Next lines after 2-nd - the same indent.
+res = (long_expressions)
+    + (next-expression) * (next-expression)
+    - (3rd-line--expression)
 
 
 #== Type alising, make sense only for strict typeing mode (not implemented)
@@ -156,60 +164,45 @@ args = [1,2,3,4,5]
 foo3(args...)
 
 
-
-#= 
-# Native regexp
-pattern cases:  /pattern/mod ; |pattern|mod ; <pattern>mod ; %pattern%mod, 
-numsRx = /^[0-9]+$/in
-numsRx.match(strVal) # bool
-res = numRx.first(strVal) # string
-resList = numRx.find(strVal) # [string]
-grs = numsRx.groups(strVal) # [[string]]
+#==  func type
+func foo(a:int, b:int): int
+    a + b
+# or 
+func foo(int, int): int
+foo(a, b)
+    a + b
 
 
-#== store content of comments as a runtime metadata
+#==
+# func overload (?)
+func foo()
 
+func foo(a:int, b:int)
 
-#== multiline expr
+func foo(a:string, b:int)
 
-#== possible sugar
-# case if: with no operator between line use && or defined default operator
-#    if (&& ..) if (|| .. ) - definition of default
-# e.g: 
-# if (||
-#     a > 5
-#     a % 2 != 0)
-#
-#
+#==
+# composition of functions are possible, by `.` or another
+func foo(a)
+func bar(a)
+func buz(a)
 
+buz(bar(foo(12)))
+foo . bar . buz : (12)
+foo bar buz $ 12
+foo * bar * buz(12)
+foo + bar + buz(12)
+foo ~ bar ~ buz : 12
 
-#== concat strings
-str = (
-    'Hello '
-    "new string!"
-)
+# closures of passed or returned lambdas / local funcs
+#@
+phases of implementation
+1. just pure function: get args, return result, no usage of vars out of lambda
+2. use near local context (where lambda was defined)
+@#
+for i <- iter(20, 30)
+    bar(x -> sum(x) - 100, i)
 
-
-#== Next line operator, next line after beginning, 
-# Second line starts with operator after 1 indent (like subline in block). If no indent - just new expression with unary operator (or error)
-# Next lines after 2-nd - the same indent.
-res = (long_expressions)
-    + (next-expression) * (next-expression)
-    - (3rd-line--expression)
-
-# not sure about if-conditions:
-if long-condition
-    || next-condition && condition
-    || 3rd-condition && condition
-    if-block-expressions
-
-#== else if - `sugar` for `if` into `else` block 
-if cond2
-    expr1
-else if cond2
-    expr2
-else
-    expr3
 
 #== Think about tail-recursion.
 Tranform tail recursion to loop.
@@ -433,6 +426,11 @@ dd = {'a':1, ..} # dd - ['a']
 nums = [1,2,3,4,5]
 x = 123
 delete nums[2], x
+
+
+#== DONE
+# string formatting by %tpl
+# string formatting by internal includes like {varName}, $varName, @varName, @{exp(res.sion)}
 
 
 

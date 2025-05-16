@@ -20,6 +20,9 @@ from nodes.control import *
 from cases.structs import *
 from cases.funcs import *
 
+from parser import *
+from strformat import  *
+
 
 class CaseDebug(ExpCase):
     def match(self, elems:list[Elem])-> bool:
@@ -68,6 +71,42 @@ class CaseUnclosedBrackets(ExpCase):
         return UnclosedExpr(elems)
 
 
+
+
+class StrFormatter(SFormatter):
+    '''parse interpret includes, eval includes, build result line'''
+    
+    def __init__(self):
+        super().__init__()
+        self.fp = FormatParser()
+    
+    def subExpr(self, code:str):
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        print('SFm 1:', clines)
+        return line2expr(clines[0])
+
+    def partsToExpr(self, parts:str|subLex)->list[Expression]:
+        expp = []
+        fmOpPar = FmtOptParser()
+        for ss in parts:
+            if isinstance(ss, subLex):
+                valExpr = self.subExpr(ss.expr)
+                format = fmOpPar.parseSuff(ss.options)
+                expr = ExprFormat(valExpr, format)
+                expp.append(expr)
+            else:
+                val = Val(ss, TypeString)
+                expp.append(ValExpr(val))
+        rr = StrJoinExpr(expp)
+        return rr
+
+    def formatString(self, src:str):
+        ''' convers src string to expression '''
+        parts = self.fp.parse(src)
+        return self.partsToExpr(parts)
+
+
 expCaseList = [ 
     CaseEmpty(), CaseComment(), CaseDebug(),
     CaseUnclosedBrackets(),
@@ -81,10 +120,11 @@ expCaseList = [
     CaseDictBlock(), CaseListBlock(), CaseListGen(),
     CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), 
     CaseFunCall(), CaseStructConstr(), CaseLambda(),
-    CaseVar_(), CaseVal(), CaseMString(), CaseVar(), CaseBrackets(), CaseUnar()]
+    CaseVar_(), CaseVal(), CaseString(), CaseMString(), CaseVar(), CaseBrackets(), CaseUnar(StrFormatter())]
 
 def getCases()->list[ExpCase]:
     return expCaseList
+
 
 def simpleExpr(expCase:ExpCase, elems)->Expression:
     # print('#simple-case:', expCase)
@@ -109,7 +149,9 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
         # if isinstance(texpr, NothingExpr):
         #     continue
         subExp.append(texpr)
-    expCase.setSub(base, subExp)
+    bb = expCase.setSub(base, subExp)
+    if bb is not None:
+        base = bb
     return base
 
 def makeExpr(expCase:ExpCase, elems:list[Elem])->Expression:

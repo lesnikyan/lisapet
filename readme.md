@@ -294,6 +294,14 @@ a = 1; b = 2; c = 3
 a = 10 + a; b += 20; c -= 30;
 res = [a, b, c]; res <- dd; res <- e
 
+21. string formatting
+# `<<` classic %s-formatting. Uses native pathon % operator with %-templates
+'hello int:%d, float:%f, str:%s ' << (123, 12.5, 'Lalang')
+
+# `~`operator for string. Works like f-string in python, with {val:patterns}
+a, b, s = (123, 12.5, 'ABC')
+~'hello int:{a:05d}, float:{b:.3f}, str: `{s2:<5s}` '
+
 
 --------------------------------------------------------
 NN.Next: 

@@ -44,10 +44,8 @@ class NothingExpr(Expression):
 
 
 class ValExpr(Expression):
-    def __init__(self, var:Var):
-        # print('#tn2-valEx:', var, var.get())
-        super().__init__(var)
-        # self.val:Var = var
+    def __init__(self, val:Val):
+        super().__init__(val)
 
     def do(self, ctx:Context):
         pass
@@ -362,4 +360,28 @@ class SequenceExpr(Expression):
             sub.do(ctx)
             res.append(sub.get())
         return res
+
+
+class StringExpr(ValExpr):
+    def __init__(self, val:Val):
+        super().__init__(val)
+
+    def __str__(self):
+        return 'StrExpr(%s)' % self.val
+
+
+class MString(StringExpr, MultilineVal):
+    
+    def __init__(self, val):
+        super().__init__(val)
+        self.val = Val(''.join(val), TypeMString())
+
+    def add(self, next:'MString'):
+        text = self.val.val + next.val.val
+        self.val.val = text
+
+
+class SFormatter:
+    def formatString(self, code:str):
+        pass
 

@@ -4,15 +4,17 @@ Eval tree nodes: operators.
 
 '''
 
-
 from lang import *
 from vars import *
 # from typex import *
 from nodes.expression import *
+from nodes.tnodes import MString
 from nodes.structs import StructInstance
 from nodes.func_expr import FuncCallExpr
 from nodes.structs import MethodCallExpr
 from nodes.structs import StructConstrBegin
+
+# from formatter import  StrFormatter
 
 
 class OperCommand(Expression):
@@ -281,6 +283,18 @@ class OpMath(BinOper):
         a.delete(key)
         return val
 
+    def strLshift(self, a, b):
+        ''' "str pattern " << (vals) '''
+        if not isinstance(b, TupleVal):
+            t = b
+            b = TupleVal()
+            b.addVal(t)
+        # reuse python old format %
+        args = tuple(n.getVal() for n in b.rawVals())
+        tpl = a.getVal()
+        # print('tpl % args: ', tpl % args)
+        return Val(tpl % args, TypeString)
+
     def overs(self, a, b):
         a, b = valFrom(a), valFrom(b)
         print('#bin-overs-1', a, b)
@@ -288,6 +302,9 @@ class OpMath(BinOper):
             case '-' :
                 if isinstance(a, (ListVal, DictVal)) and isinstance(b, ListVal):
                     return (True, self.collMinus(a, b))
+            case '<<':
+                if isinstance(a.getVal(), (str)):
+                    return (True, self.strLshift(a, b))
             
         return (False, 0)
 
@@ -445,11 +462,31 @@ class BitNot(UnarOper):
     def __init__(self, oper:str, inner:Expression=None):
         super().__init__(oper, inner)
 
+    def strFormat(self, arg:str, ctx:Context)->Val:
+        val = '' # TODO: parse string, parse and interpret includes, eval includes, build result line
+        # fm = StrFormatter()
+        # expf = fm.toExpr(arg)
+        # expf.do(ctx)
+        # val = expf.get()
+        return val
+
     def do(self, ctx:Context):
         self.inner.do(ctx)
         inVal = self.inner.get()
-        res = ~inVal.getVal()
+        val = inVal.getVal()
+        
+        # overload for string: formatting by included vars
+        if isinstance(val, str):
+            self.res = self.strFormat(val, ctx)
+            return
+        res = ~val
         self.res = Val(res, inVal.getType())
+
+    def setInner(self, inner:Expression):
+        # if isinstance(inner, (StringExpr, MString)):
+        #     sf = StrFormatter()
+        #     inner = sf.toExpr(inner.val)
+        self.inner = inner
 
 
 class UnarSign(UnarOper):
@@ -464,9 +501,6 @@ class UnarSign(UnarOper):
         if self.oper == '-':
             num = -num
         self.res = Val(num, inVal.getType())
-
-    # def negative(self, x):
-    #     return -x
 
 
 class MultiOper(OperCommand):

@@ -32,7 +32,6 @@ class IfExpr(ControlBlock):
         self.preSubs:list[Expression] = [] # sub-expressions before conditions
         self.lastRes = None
         self.curBlock = self.mainBlock
-        # TODO: add init block for if-statement, like Golang has
 
     def setCond(self, expr:Expression, subExp:list[Expression]=[]):
         print('#IfExpr setCond ', expr, subExp)

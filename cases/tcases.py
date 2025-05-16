@@ -189,7 +189,7 @@ class CaseVal(ExpCase):
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) > 1:
             return False
-        if elems[0].type in [Lt.num, Lt.text, Lt.mttext]:
+        if elems[0].type in [Lt.num]:
             return True
         if isLex(elems[0], Lt.word, 'null'):
             return True
@@ -199,6 +199,21 @@ class CaseVal(ExpCase):
         ''' Value rom local const'''
         res = ValExpr(elem2val(elems[0]))
         # print('## CaseVal')
+        return res
+
+
+class CaseString(CaseVal):
+    ''' '''
+    def match(self, elems:list[Elem]) -> bool:
+        if len(elems) > 1:
+            return False
+        if elems[0].type in [Lt.text, Lt.mttext]:
+            return True
+        return False
+    
+    def expr(self, elems:list[Elem])-> Expression:
+        ''' Value rom local const'''
+        res = StringExpr(elem2val(elems[0]))
         return res
 
 
@@ -225,7 +240,7 @@ class CaseMString(ExpCase):
             if el.type == Lt.mttext:
                 res.append(el.text)
         res = MString(''.join(res))
-        print('## MString')
+        # print('## MString')
         return res
 
 class CaseVar(ExpCase):
