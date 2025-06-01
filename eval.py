@@ -9,9 +9,10 @@ from nodes.func_expr import setNativeFunc
 from nodes.builttins import *
 
 
-def rootContext():
+def rootContext(ctx:Context = None)->Context:
     ''' Make root context with builtin functions. '''
-    ctx = Context(None)
+    if ctx is None:
+        ctx = Context(None)
     setDefaultTypes(ctx)
     setNativeFunc(ctx, 'print', print, TypeNull)
     setNativeFunc(ctx, 'len', buit_len, TypeInt)
@@ -29,6 +30,11 @@ def rootContext():
         ctx.addVar(vv)
 
     return ctx
+
+
+def moduleContext()->ModuleContext:
+    mctx = ModuleContext()
+    return rootContext(mctx)
 
 def setDefaultTypes(ctx:Context):
     types = builtinTypes()

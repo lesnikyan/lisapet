@@ -110,6 +110,7 @@ class StrFormatter(SFormatter):
 expCaseList = [ 
     CaseEmpty(), CaseComment(), CaseDebug(),
     CaseUnclosedBrackets(),
+    CaseImport(),
     CaseFuncDef(), CaseReturn(), CaseMathodDef(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), 
     CaseLambda(), CaseMatchCase(),
@@ -127,7 +128,7 @@ def getCases()->list[ExpCase]:
 
 
 def simpleExpr(expCase:ExpCase, elems)->Expression:
-    # print('#simple-case:', expCase)
+    print('#simple-case:', expCase)
     return expCase.expr(elems)
 
 def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:

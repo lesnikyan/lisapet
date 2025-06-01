@@ -120,29 +120,53 @@ class Context(NSContext):
     def get(self, name)->Base:
         return self.find(name)
 
+    def findIn(self, name):
+        src = self
+        if name in src.vars:
+            return src.vars[name]
+        if name in src.types:
+            return src.types[name]
+        if name in src.funcs:
+            print('CTX.find func ?', name, src.funcs[name].__class__.__name__)
+            if src.funcs[name].__class__.__name__ != 'NFunc':
+                print('CTX.find func:`%s`' % name, '::', src.funcs[name])
+            # if name == 'xprint':
+            #     raise EvalErr('@@3')
+            return src.funcs[name]
+        # if src.upper is None:
+        #     # raise EvalErr('Can`t find var|type name `%s` in current context' % name)
+        #     var = VarUndefined(name)
+        #     # self.addVar(var)
+        #     return var
+        return None
+
     def find(self, name):
         # if name in Context._defaultContextVals:
         #     return Context._defaultContextVals[name]
         src = self
         print('#Ctx-get0,:', name)
         while src is not None:
-            # print('#Ctx-get,name:', name)
-            # print('#Ctx-get2 vars', src.vars)
-            # print('#Ctx-get3 funcs', (name in src.funcs), src.funcs)
-            # print('#Ctx-depth', src.depth())
-            # print('#Ctx-get,name:', name)
-            # print('#Ctx-get2', src.vars, "\n\t\t\t", src.funcs)
-            if name in src.vars:
-                return src.vars[name]
-            if name in src.types:
-                return src.types[name]
-            if name in src.funcs:
-                print('CTX.find func ?', name, src.funcs[name].__class__.__name__)
-                if src.funcs[name].__class__.__name__ != 'NFunc':
-                    print('CTX.find func:`%s`' % name, '::', src.funcs[name])
-                # if name == 'xprint':
-                #     raise EvalErr('@@3')
-                return src.funcs[name]
+            # # print('#Ctx-get,name:', name)
+            # # print('#Ctx-get2 vars', src.vars)
+            # # print('#Ctx-get3 funcs', (name in src.funcs), src.funcs)
+            # # print('#Ctx-depth', src.depth())
+            # # print('#Ctx-get,name:', name)
+            # # print('#Ctx-get2', src.vars, "\n\t\t\t", src.funcs)
+            # if name in src.vars:
+            #     return src.vars[name]
+            # if name in src.types:
+            #     return src.types[name]
+            # if name in src.funcs:
+            #     print('CTX.find func ?', name, src.funcs[name].__class__.__name__)
+            #     if src.funcs[name].__class__.__name__ != 'NFunc':
+            #         print('CTX.find func:`%s`' % name, '::', src.funcs[name])
+            #     # if name == 'xprint':
+            #     #     raise EvalErr('@@3')
+            #     return src.funcs[name]
+            res = src.findIn(name)
+            print('ctx.find res=', res)
+            if res:
+                return res
             if src.upper is None:
                 # raise EvalErr('Can`t find var|type name `%s` in current context' % name)
                 var = VarUndefined(name)
@@ -174,4 +198,104 @@ def instance(tp:VType)->Var:
         case 'list': return ListVal()
         case 'dict': return DictVal()
         case _: return Var(None, tp)
+
+
+
+class ModuleContext(Context):
+    ''' Top context, uses for modules '''
+    
+    def __init__(self, parent:'Context'=None):
+        # self.vars:dict = dict()
+        # self.types:dict[str, VType] = {}
+        # self.funcs:dict[str,FuncInst] = {}
+        # self.upper:Context = parent # upper level context
+        super().__init__(parent)
+        self.loaded:dict[str, ModuleTree] = {} # loaded modules
+        self.imported:dict[str, ModuleInst] = {} # imported modules contexts
+        self.aliases:dict[str, str] = {} # imported aliases
+        
+
+    def loadModule(self, module:ModuleTree):
+        name = module.getName()
+        self.loaded[name] = module
+        
+    def findloaded(self, name)->ModuleTree:
+        if name in self.loaded:
+            return self.loaded[name]
+        return None
+
+    def addModule(self, name, ctx:ModuleInst):
+        self.imported[name] = ctx
+        
+    def findModule(self, name)->ModuleInst:
+        if name in self.imported:
+            return self.imported[name]
+        return None
+    
+    # def starImport(self, ctx):
+    #     pass
+    
+    def addAlias(self, alias, orig):
+        self.aliases[alias] = orig
+    
+    def findIn(self, name):
+        ''' 
+        internal: `name`
+        full-imported by *: 'name'
+         -- imported module: 'module.name' # Not applicable
+        alias: 'name' -> `module.name`
+        '''
+        print('mctx.findIn:', name)
+        if name in self.aliases:
+            name = self.aliases[name]
+        res = super().findIn(name)
+        if res is not None:
+            return res
+        # find module
+        print('#-imported', [k for k in self.imported.keys()])
+        if name in self.imported:
+            return self.imported[name]
+        # find in modules
+        for k, mbox in self.imported.items():
+            if mbox.hasImported(name):
+                print('has', name, ' in ', k)
+                return mbox.get(name)
+        # Nothing was found
+        return None
+
+
+class ModuleBox(ModuleInst):
+    ''' imported module as object-container in context
+    MB has internal module-context tree'''
+    def __init__(self, name:str, ctx:ModuleContext):
+        # self.module:ModuleInst = module
+        self.name = name
+        self.mcontext:ModuleContext = ctx
+        self.inames = [] # imported names, if import module > names
+
+    def importAll(self):
+        nn = []
+        nn.extend([n for n in self.mcontext.vars.keys()])
+        nn.extend([n for n in self.mcontext.funcs.keys()])
+        nn.extend([n for n in self.mcontext.types.keys()])
+        self.inames = nn
+
+    def importThing(self, name):
+        self.inames.append(name)
+    
+    def hasImported(self, name):
+        print('hasImported1', name)
+        print('hasImported2', self.inames)
+        return name in self.inames
+
+    def get(self, name):
+        if len(self.inames) > 0 and name not in self.inames:
+            raise EvalErr(f'Trying use not imported name `{name}` from module `{self.name}`.')
+        return self.mcontext.get(name)
+
+    def getName(self):
+        return self.name
+
+    def getType(self):
+        return TypeModule()
 

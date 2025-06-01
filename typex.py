@@ -94,6 +94,41 @@ class FuncInst(Val):
         pass
 
 
+class TypeModule:
+    ''' imported module '''
+    name = 'module'
+    defVal = None
+
+
+class ModuleTree:
+    ''' Module tree of expressions '''
+
+    def getName(self):
+        pass
+    
+    def get(self, name=None):
+        pass
+
+
+
+class ModuleInst(Var):
+    
+    # def __init__(self):
+    #     super().__init__(None, TypeModule)
+
+    def getName(self):
+        pass
+
+    def hasImported(self, name):
+        pass
+
+    # def do(self, ctx: 'Context'):
+    #     pass
+    
+    def get(self, name):
+        pass
+
+
 class TypeStruct(TypeContainer):
     name = 'struct'
     defVal = None

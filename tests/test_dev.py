@@ -16,7 +16,7 @@ from nodes.structs import *
 
 from context import Context
 from tree import *
-from eval import rootContext
+from eval import rootContext, moduleContext
 
 from strformat import *
 
@@ -232,7 +232,11 @@ class TestDev(TestCase):
 
 
     def _test_list_gen_by_strings(self):
-        '''   '''
+        ''' thoughts:
+            1) [..;..;..] should be a list-generato, not string
+            2) [..; s <- "..."] in gen from string we want to get string
+            3) ~[s, s <- "..."] solutution (1) `~` operator as a list-to-string convertor
+        '''
         code = '''
         strline = 'abcdefg'
         res1 = []

@@ -3,13 +3,13 @@
 
 # Necessary things: 
 
-1. #DONE String formatting.
-2. #DONE one-line block: expr; expr; expr
+1. # DONE String formatting. ~"{var}", "... %s ..." << (var)
+2. # DONE one-line block: expr; expr; expr
 3. import modules
 4. save code-source into expression (at least whole line)
 5. error handling (with printing source code)
 6. else if
-7. #DONE if sub-expression: if x=foo(); x < 5 ...
+7. # DONE if sub-expression: if x=foo(); x < 5 ...
 8. logging
 9. input-output: files, console, network, db,
 10 serialization: 1) lang objects (collections, struct inst) 2) whole executive tree (prepared exec file)
@@ -24,6 +24,7 @@
 5. composition of function
 6. carrying
 7. common types: (tree, queue, set, pair ) with operations: applay func to each, clone, merge, insert, fold, map, etc.
+8. ~[s, s <- "..."] gen by string: solutution (1) `~` operator as a list-to-string convertor
 
 
 #== func object

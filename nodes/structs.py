@@ -232,10 +232,10 @@ class StructDefExpr(DefinitionExpr):
             if isinstance(field, tuple) and len(field) == 2:
                 fn, ft = field
                 # print('@2>>', field)
-                # print('@20>>', fn, ft)
+                print('@20>>', fn, ft)
                 fname = fn.name
                 ftype = ft.get()
-                # print('@21>> type', self.typeName,',fname:', fname, ' >> ',  ftype, type(ftype))
+                print('@21>> type', self.typeName,',fname:', fname, ' >> ',  ftype, type(ftype))
                 if not isinstance(ftype, (VType)):
                     print('fname:', type(ft))
                     raise EvalErr(f'Trying to put {fname} with no type.')

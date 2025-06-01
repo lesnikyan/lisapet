@@ -22,7 +22,7 @@ class StdBlock(Block):
         res = self.func(*self.args)
         if not isinstance(res, (list, tuple)):
             res = [res]
-            res = [Var(n) for n in res]
+        res = [Var(n, TypeAny()) for n in res]
         self.lastVal = res
 
 def stdFunc(func:Callable, args:list[Var]=None)->Function:

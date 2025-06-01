@@ -243,7 +243,7 @@ class OpMath(BinOper):
             return
         
         # print(' ( %s )' % self.oper, a.getVal(), b.getVal())
-        print(' (%s %s %s)' % (a.getType(), self.oper, b.getType()))
+        print('>types (%s %s %s)' % (a.getType(), self.oper, b.getType()))
         type = a.getType()
         if type != b.getType():
             # TODO fix different types
@@ -561,6 +561,23 @@ class ObjectMember(Val):
         return "node ObjectMember(inst=%s, name=%s)" % (self.object, self.member)
 
 
+class ModuleMember:
+    ''' member of module taken by `.` dot-operator '''
+    def __init__(self, module:ModuleBox):
+        self.module:ModuleBox = module
+        self.member = None
+    
+    def setMember(self, memb):
+        ''' member name for using in get() '''
+        self.member = memb
+    
+    def get(self):
+        return self.module.get(self.member)
+    
+    def getType(self):
+        return TypeModule()
+
+
 # BinOper
 class OperDot(BinOper):
     ''' inst.field '''
@@ -585,6 +602,14 @@ class OperDot(BinOper):
         self.objExp.do(ctx)
         objVar = self.objExp.get()
         print('OperDot.do00', objVar, '; type=', type(objVar))
+        
+        if isinstance(objVar, ModuleBox):
+            # process modules
+            mod = ModuleMember(objVar)
+            mod.setMember(self.membExpr.name)
+            self.val = mod
+            return
+            
         if isinstance(objVar, Var):
             objVar = objVar.get()
         inst:StructInstance = objVar
