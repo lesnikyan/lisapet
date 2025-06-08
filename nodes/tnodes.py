@@ -71,6 +71,7 @@ class ImportExpr(Expression):
     def __init__(self, path, elems:list[list[str]], src = ''):
         super().__init__(None, src)
         self.fullImport = False
+        # print('ImportExpr __init:', elems)
         if (len(path) > 1 and path[-1] == '*' and len(elems) == 0):
             self.fullImport = True
             path = path[:-1]
@@ -110,13 +111,14 @@ class ImportExpr(Expression):
             module.importAll()
         elif len(self.names) > 0:
             for nm, alias in self.names.items():
+                # print('import nm >>>>', nm, alias)
                 if nm != alias:
                     aliases[alias] = nm
                 module.importThing(nm)
-        
+        # raise EvalErr('')
         ctx.addModule(self.modName, module)
         # 2.1 Add aliases
-        for alias, orig in aliases:
+        for alias, orig in aliases.items():
             ctx.addAlias(alias, orig)
 
 

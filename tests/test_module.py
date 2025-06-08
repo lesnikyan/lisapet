@@ -105,6 +105,61 @@ class TestModule(TestCase):
         modEx.name = 'tfuncs'
         return modEx
 
+    def test_import_module_func_alias(self):
+
+        funMod = self.importFuncs()
+        code = '''
+        
+        import tfuncs > foo f1, sum f2, mult f3
+        
+        res = [f1(), f2(10, 200), f3(20, 17)]
+        print('res:', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        curMod = lex2tree(clines)
+
+        rootCtx = moduleContext()
+        rootCtx.loadModule(funMod)
+        curMod.do(rootCtx)
+
+        f1 = rootCtx.get('f1')
+        f2 = rootCtx.get('f2')
+        f3 = rootCtx.get('f3')
+        print('#TT 1>> ', f1, f2, f3)
+        res = rootCtx.get('res').get()
+        print('#TT 2>> ', res.vals())
+        self.assertEqual([123, 210, 340], res.vals())
+
+    def test_import_module_func_names(self):
+
+        funMod = self.importFuncs()
+        code = '''
+        
+        import tfuncs > foo, sum, mult
+        
+        # res = mult(20, 17)
+        res = [foo(), sum(10, 200), mult(20, 17)]
+        print('res:', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        curMod = lex2tree(clines)
+
+        rootCtx = moduleContext()
+        rootCtx.loadModule(funMod)
+        curMod.do(rootCtx)
+
+        f1 = rootCtx.get('foo')
+        f2 = rootCtx.get('sum')
+        f3 = rootCtx.get('mult')
+        print('#TT 1>> ', f1, f2, f3)
+        res = rootCtx.get('res').get()
+        print('#TT 2>> ', res.vals())
+        self.assertEqual([123, 210, 340], res.vals())
+
     def test_import_module_func(self):
         
         # imported part

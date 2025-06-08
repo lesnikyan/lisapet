@@ -480,6 +480,7 @@ class CaseImport(ExpCase):
 
     def splitElems(self, elems:list[Elem])->tuple:
         path = []
+        prels('Import Case splitElems: ', elems)
         # imnames = []
         # inPath = True
         afterMore = False
@@ -514,6 +515,7 @@ class CaseImport(ExpCase):
         
         part = []
         remElems = elems[cnt:]
+        prels('Import Case splitElems2: ', remElems)
         for ee in remElems:
             if isLex(ee, Lt.oper, ','):
                 # next name
@@ -523,5 +525,7 @@ class CaseImport(ExpCase):
             if ee.type == Lt.word:
                 part.append(ee.text)
                 continue
+        if part:
+            importList.append(part)
         return path, importList
 
