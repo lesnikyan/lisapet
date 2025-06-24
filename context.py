@@ -30,6 +30,13 @@ class Context(NSContext):
             src = src.upper
         return d
 
+    def getRoot(self):
+        ctx = self
+        while True:
+            if ctx.upper is None:
+                return ctx
+            ctx = ctx.upper
+        
 
     def addType(self, tp:VType):
         print('ctx.addType: ', tp, '::', type(tp))
@@ -200,20 +207,12 @@ def instance(tp:VType)->Var:
         case _: return Var(None, tp)
 
 
-
-class ModuleContext(Context):
-    ''' Top context, uses for modules '''
+class RootContext(Context):
+    ''' Top context '''
     
-    def __init__(self, parent:'Context'=None):
-        # self.vars:dict = dict()
-        # self.types:dict[str, VType] = {}
-        # self.funcs:dict[str,FuncInst] = {}
-        # self.upper:Context = parent # upper level context
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__(None)
         self.loaded:dict[str, ModuleTree] = {} # loaded modules
-        self.imported:dict[str, ModuleInst] = {} # imported modules contexts
-        self.aliases:dict[str, str] = {} # imported aliases
-        
 
     def loadModule(self, module:ModuleTree):
         name = module.getName()
@@ -223,6 +222,24 @@ class ModuleContext(Context):
         if name in self.loaded:
             return self.loaded[name]
         return None
+
+    def moduleContext(self)->'ModuleContext':
+        mctx = ModuleContext(self)
+        return mctx
+
+
+class ModuleContext(Context):
+    ''' Module-level context '''
+    
+    def __init__(self, parent:'Context'=None):
+        # self.vars:dict = dict()
+        # self.types:dict[str, VType] = {}
+        # self.funcs:dict[str,FuncInst] = {}
+        # self.upper:Context = parent # upper level context
+        super().__init__(parent)
+        self.imported:dict[str, ModuleInst] = {} # imported modules contexts
+        self.aliases:dict[str, str] = {} # imported aliases
+        
 
     def addModule(self, name, ctx:ModuleInst):
         self.imported[name] = ctx

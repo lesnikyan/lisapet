@@ -14,10 +14,6 @@ class TypeNull(VType):
     name = 'null'
 
 
-class TypeAny(VType):
-    name = 'Any'
-
-
 class Undefined(VType):
     name='undefined'
 

@@ -302,6 +302,21 @@ res = [a, b, c]; res <- dd; res <- e
 a, b, s = (123, 12.5, 'ABC')
 ~'hello int:{a:05d}, float:{b:.3f}, str: `{s2:<5s}` '
 
+22. import
+# import all 
+import some_module.*
+some_module.foo(123)
+
+# import names
+import some_module > foo, bar
+foo(123)
+bar(321)
+
+# import aliases
+import some_module > foo f1, bar f2
+f1(123)
+f2(321)
+
 
 --------------------------------------------------------
 NN.Next: 

@@ -280,7 +280,7 @@ class ServPairExpr(Expression):
         return TypedVarExpr(self.left, self.right)
 
     def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
-        # print('BinOper.setArgs', left, right)
+        print('ServPairExpr.setArgs', left, right)
         self.left = left
         self.right = right
 
@@ -306,10 +306,20 @@ class TypedVarExpr(VarExpr):
 
     def do(self, ctx):
         self.right.do(ctx)
-        tp = self.right.get()
+        tpv = self.right.get()
         name = self.left.get().name
-        print('TypedVarExpr.do1 ', name, tp.get())
-        self.val = Var(name, tp.get(), strict=True)
+        tpName = self.right.name
+        # print('TypedVarExpr.ctx print:')
+        # ctx.print()
+        tpInst = ctx.getType(tpName)
+        tpVal = TypeAny()
+        if not tpInst:
+            tpVal = Undefined()
+        else:
+            tpVal = tpInst.get()
+        print('TypedVarExpr.do1 ', name, 'tp:', tpv, '{%s: %s}' % (tpv.val, tpv.vtype), tpName)
+        
+        self.val = Var(name, tpVal, strict=True)
         ctx.addVar(self.val)
 
 

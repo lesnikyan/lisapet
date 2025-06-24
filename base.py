@@ -46,6 +46,11 @@ class VType(Base):
     def __init__(self):
         pass
 
+
+class TypeAny(VType):
+    name = 'Any'
+
+
 class Val(Base):
     ''' 
     Val is a value with type;
@@ -54,6 +59,8 @@ class Val(Base):
     '''
     def __init__(self, val, vtype:VType):
         self.val = val
+        if vtype is None:
+            vtype = TypeAny()
         self.vtype:VType = vtype
 
     def get(self):

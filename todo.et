@@ -5,14 +5,15 @@
 
 1. # DONE String formatting. ~"{var}", "... %s ..." << (var)
 2. # DONE one-line block: expr; expr; expr
-3. import modules
+3. # DONE import modules
+3.1 import x > * `instead of ` import x.* (?) thinking
 4. save code-source into expression (at least whole line)
 5. error handling (with printing source code)
 6. else if
 7. # DONE if sub-expression: if x=foo(); x < 5 ...
 8. logging
 9. input-output: files, console, network, db,
-10 serialization: 1) lang objects (collections, struct inst) 2) whole executive tree (prepared exec file)
+10 serialization: 1) data objects (collections, struct inst) 2) executive tree (prepared exec file)
 11. struct constructor without field names: A{1, 2.0, 'abc'}
 
 
@@ -20,14 +21,19 @@
 1. Maybe type 
 2. default, unnecessary and named function args
 3. tail-recursion optimization
-4. anonimous structs
-5. composition of function
+4.1 Duck-type for structs:: func f(arg:struct{foo(int, float), bar(string)}) // ? not sure
+4.2 anonimous structs inst = struct{name: 'Abc', num: 123}; possible sugar: ${name: '', num:123}
+5. composition of functions: foo . bar : arg ;; foo . bar < arg
 6. carrying
+    foo(a,b)
+    foo2 = foo(a;) -> func.carr[foo, a] -> foo2(b)
+    foo(a;) >> | (arg2) -> foo(a, arg2) |
+    foo2(arg2) -> foo(a, arg2) 
 7. common types: (tree, queue, set, pair ) with operations: applay func to each, clone, merge, insert, fold, map, etc.
-8. ~[s, s <- "..."] gen by string: solutution (1) `~` operator as a list-to-string convertor
+8. ~[s, s <- "..."] gen by string: solution (1) `~` operator as a list-to-string convertor
 
 
-#== func object
+#== anonimous func object (multiline)
 
 foo = func (args...)
 

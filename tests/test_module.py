@@ -63,7 +63,7 @@ class TestModule(TestCase):
         '''
         return self.loadCode(code, 'tstructs')
 
-    def _test_import_module_struct(self):
+    def test_import_module_struct(self):
         stMod = self.loadStructs()
         code = '''
         
@@ -78,9 +78,72 @@ class TestModule(TestCase):
         clines:CLine = elemStream(tlines)
         curMod = lex2tree(clines)
         
-        rootCtx = moduleContext()
-        rootCtx.loadModule(stMod)
-        curMod.do(rootCtx)
+        # rCtx = rootContext()
+        # rootCtx = moduleContext(rCtx)
+        # rCtx.loadModule(stMod)
+        
+        rCtx = rootContext()
+        curCtx = rCtx.moduleContext()
+        print('## Load module...')
+        rCtx.loadModule(stMod)
+        print('## Eval code ...')
+        curMod.do(curCtx)
+
+
+    def importFuncsAgrType(self):
+        code = '''
+        # module tfuncs
+        
+        func fill(val: string, num:int)
+            return [val; i <- iter(num)]
+        
+        func sum(a:int , b:int)
+            a + b
+        
+        func mult(a:float, b:float)
+            a * b
+        
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        modEx:Module = lex2tree(clines)
+        modEx.name = 'tfuncs'
+        return modEx
+
+    def test_import_module_func_arg_type(self):
+        funMod = self.importFuncsAgrType()
+    
+        code = '''
+        
+        import tfuncs.*
+        a, b, c = 1,2,3
+        st = fill('abc', 3)
+        b = sum(10, 200)
+        c = mult(20, 17)
+        # print('#1')
+        res = [st, b, c]
+        # print('res:', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        curMod = lex2tree(clines)
+        
+        rCtx = rootContext()
+        curCtx = rCtx.moduleContext()
+        print('## Load module...')
+        rCtx.loadModule(funMod)
+        print('## Eval code ...')
+        curMod.do(curCtx)
+        
+        # f1 = curCtx.get('foo')
+        # f2 = curCtx.get('sum')
+        # f3 = curCtx.get('mult')
+        # print('#TT 1>> ', f1, f2, f3)
+        res = curCtx.get('res').get()
+        print('#TT 2>> ', res.vals())
+        self.assertEqual([['abc', 'abc', 'abc'], 210, 340], res.vals())
 
     def importFuncs(self):
         code = '''
@@ -120,15 +183,18 @@ class TestModule(TestCase):
         clines:CLine = elemStream(tlines)
         curMod = lex2tree(clines)
 
-        rootCtx = moduleContext()
-        rootCtx.loadModule(funMod)
-        curMod.do(rootCtx)
+        rCtx = rootContext()
+        curCtx = rCtx.moduleContext()
+        print('## Load module...')
+        rCtx.loadModule(funMod)
+        print('## Eval code ...')
+        curMod.do(curCtx)
 
-        f1 = rootCtx.get('f1')
-        f2 = rootCtx.get('f2')
-        f3 = rootCtx.get('f3')
+        f1 = curCtx.get('f1')
+        f2 = curCtx.get('f2')
+        f3 = curCtx.get('f3')
         print('#TT 1>> ', f1, f2, f3)
-        res = rootCtx.get('res').get()
+        res = curCtx.get('res').get()
         print('#TT 2>> ', res.vals())
         self.assertEqual([123, 210, 340], res.vals())
 
@@ -147,25 +213,26 @@ class TestModule(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         curMod = lex2tree(clines)
+        
+        rCtx = rootContext()
+        curCtx = rCtx.moduleContext()
+        print('## Load module...')
+        rCtx.loadModule(funMod)
+        print('## Eval code ...')
+        curMod.do(curCtx)
 
-        rootCtx = moduleContext()
-        rootCtx.loadModule(funMod)
-        curMod.do(rootCtx)
-
-        f1 = rootCtx.get('foo')
-        f2 = rootCtx.get('sum')
-        f3 = rootCtx.get('mult')
+        f1 = curCtx.get('foo')
+        f2 = curCtx.get('sum')
+        f3 = curCtx.get('mult')
         print('#TT 1>> ', f1, f2, f3)
-        res = rootCtx.get('res').get()
+        res = curCtx.get('res').get()
         print('#TT 2>> ', res.vals())
         self.assertEqual([123, 210, 340], res.vals())
 
     def test_import_module_func(self):
         
         # imported part
-        # ctxFuncs = moduleContext()
         funMod = self.importFuncs()
-        # funMod.do(ctxFuncs)
         
         # importing part
         code = '''
@@ -179,19 +246,55 @@ class TestModule(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         curMod = lex2tree(clines)
-        rootCtx = moduleContext()
-        rootCtx.loadModule(funMod)
-        # rootCtx.loadModule('tfuncs', ctxFuncs)
-        curMod.do(rootCtx)
-        f1 = rootCtx.get('foo')
-        f2 = rootCtx.get('sum')
-        f3 = rootCtx.get('mult')
+        
+        rCtx = rootContext()
+        curCtx = rCtx.moduleContext()
+        print('## Load module...')
+        rCtx.loadModule(funMod)
+        print('## Eval code ...')
+        curMod.do(curCtx)
+        
+        f1 = curCtx.get('foo')
+        f2 = curCtx.get('sum')
+        f3 = curCtx.get('mult')
         print('#TT 1>> ', f1, f2, f3)
-        res = rootCtx.get('res').get()
+        res = curCtx.get('res').get()
         print('#TT 2>> ', res.vals())
         self.assertEqual([123, 210, 340], res.vals())
-        
 
+    # TODO: import pure module
+    def _test_import_module(self):
+        
+        # imported part
+        funMod = self.importFuncs()
+        
+        # importing part
+        code = '''
+        
+        import tfuncs
+        
+        res = [tfuncs.foo(), tfuncs.sum(10, 200), tfuncs.mult(20, 17)]
+        print('res:', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        curMod = lex2tree(clines)
+        
+        rCtx = rootContext()
+        curCtx = rCtx.moduleContext()
+        print('## Load module...')
+        rCtx.loadModule(funMod)
+        print('## Eval code ...')
+        curMod.do(curCtx)
+        
+        f1 = curCtx.get('foo')
+        f2 = curCtx.get('sum')
+        f3 = curCtx.get('mult')
+        print('#TT 1>> ', f1, f2, f3)
+        res = curCtx.get('res').get()
+        print('#TT 2>> ', res.vals())
+        self.assertEqual([123, 210, 340], res.vals())
 
 
 if __name__ == '__main__':

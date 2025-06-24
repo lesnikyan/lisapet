@@ -8,9 +8,11 @@ from nodes.expression import *
 class Function(FuncInst):
     ''' user-defined function object 
     args:
+        call:
         foo(a, b, c)
+        # def:
         func foo(arg1, arg2, arg3)
-        blok:
+            # inner blok:
             arg1 + arg2 + arg3
     '''
 
@@ -38,12 +40,7 @@ class Function(FuncInst):
         return self._name
 
     def addArg(self, arg:Var):
-        # if arg is None:
-        #     raise EvalErr('!23')
-        # if isinstance(arg, tuple):
-            # for xx in arg:
-            #     print('arg@@>', xx)
-            # raise EvalErr('!22')
+        print('FN, addArg: ', arg)
         self.argVars.append(arg)
         self.argTypes[arg.getName()] = arg.getType()
         self.argNum += 1
@@ -61,6 +58,7 @@ class Function(FuncInst):
             arg = args[i]
             aname = self.argVars[i].getName()
             self.checkArgType(aname, arg)
+            print('FN, self.argVars[i]: ', self.argVars[i])
             atype = self.argVars[i].getType()
             argVar = Var(aname, atype)
             argVar.set(arg)
@@ -82,7 +80,7 @@ class Function(FuncInst):
         inCtx = Context(self.defCtx) # inner context, empty new for each call
         # inCtx.addVar(Var(1000001, 'debVal', TypeInt))
         for arg in self.callArgs:
-            print('Fudo:', arg)
+            print('Fu.do:', arg)
             inCtx.addVar(arg)
         # inCtx.get('debVal')
         # inCtx.upper = ctx
@@ -165,13 +163,14 @@ class FuncDefExpr(DefinitionExpr, Block):
         self.res:Function
         self.blockLines:list[Expression] = []
         self.argVars:list[Var] = []
-        self.signExp:Expression = None # func signature : name (arg set) ???
+        # self.signExp:Expression = None # func signature : name (arg set) ???
 
     def addArg(self, arg:VarExpr):
         ''' arg Var(name, type)'''
-        print('addArg1 :', arg, type(arg))
+        # print('addArg1 :', arg, type(arg))
         if isinstance(arg, ServPairExpr):
             arg = arg.getTypedVar()
+        print('addArg2 :', arg, type(arg))
         self.argVars.append(arg)
 
     def add(self, exp:Expression):
@@ -193,7 +192,7 @@ class FuncDefExpr(DefinitionExpr, Block):
         for arg in self.argVars:
             if isinstance(arg, TypedVarExpr):
                 arg.do(ctx)
-            print('FuncDefExpr.do 2:', arg)
+            print('FuncDefExpr.do 2:', arg, arg.get())
             func.addArg(arg.get())
         func.block = Block()
         # build inner block of function

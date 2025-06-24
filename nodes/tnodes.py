@@ -25,10 +25,10 @@ class Module(Block, ModuleTree):
     def getName(self):
         return self.name
 
-    # def setContext(self, ctx:Context):
-    #     self.context = ctx
+    def setContext(self, ctx:Context):
+        self.context = ctx
 
-    def do(self, ctx:Context):
+    def do(self, ctx:Context=None):
         if (ctx):
             self.context = ctx
         super().do(self.context)
@@ -98,14 +98,16 @@ class ImportExpr(Expression):
     def do(self, ctx:ModuleContext):
         '''  '''
         # 1. find module by path
-        mdl:Module = ctx.findloaded(self.modName) # module eval-tree
+        rCtx = ctx.getRoot()
+        mdl:Module = rCtx.findloaded(self.modName) # module eval-tree
         print('import.do, mod:', mdl)
         # 2. add module or things to the module-context
         if mdl is None:
             raise EvalErr('Trying ro import module that hasn`t been loaded.')
-        mctx = ModuleContext()
+        # TODO: eval module during import
+        mctx = rCtx.moduleContext()
         mdl.do(mctx)
-        module = ModuleBox(self.modName, mctx)
+        module = ModuleBox(self.modName, mdl.context)
         aliases = {}
         if self.fullImport:
             module.importAll()

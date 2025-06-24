@@ -4,15 +4,15 @@ Eval parsed lexems
 '''
 
 from vars import *
-from context import Context
+from context import Context, RootContext
 from nodes.func_expr import setNativeFunc
 from nodes.builttins import *
 
 
-def rootContext(ctx:Context = None)->Context:
+def rootContext(ctx:Context = None)->RootContext:
     ''' Make root context with builtin functions. '''
-    if ctx is None:
-        ctx = Context(None)
+    # if ctx is None:
+    ctx = RootContext()
     setDefaultTypes(ctx)
     setNativeFunc(ctx, 'print', print, TypeNull)
     setNativeFunc(ctx, 'len', buit_len, TypeInt)
@@ -32,9 +32,9 @@ def rootContext(ctx:Context = None)->Context:
     return ctx
 
 
-def moduleContext()->ModuleContext:
-    mctx = ModuleContext()
-    return rootContext(mctx)
+def moduleContext(root:Context)->ModuleContext:
+    mctx = ModuleContext(root)
+    return mctx
 
 def setDefaultTypes(ctx:Context):
     types = builtinTypes()
