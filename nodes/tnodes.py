@@ -33,25 +33,6 @@ class Module(Block, ModuleTree):
             self.context = ctx
         super().do(self.context)
 
-    # def get(self, name=None):
-    #     # DEBUG output
-    #     if name is None:
-    #         return f'@module({self.name})'
-    #     # get thing from context
-    #     thing = self.context.get(name)
-    #     if thing:
-    #         return thing
-    #     return None
-
-    # def importIn(self, name, module):
-    #     ''' Add other modules here'''
-    #     self.imported[name] = module
-    #     # TODO: merge contexts by resolved names
-        
-    # def exportOut(self):
-    #     ''' Call from other module `importIn '''
-    #     return self.ctx
-
 
 class ImportExpr(Expression):
     

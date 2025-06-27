@@ -232,10 +232,6 @@ class ModuleContext(Context):
     ''' Module-level context '''
     
     def __init__(self, parent:'Context'=None):
-        # self.vars:dict = dict()
-        # self.types:dict[str, VType] = {}
-        # self.funcs:dict[str,FuncInst] = {}
-        # self.upper:Context = parent # upper level context
         super().__init__(parent)
         self.imported:dict[str, ModuleInst] = {} # imported modules contexts
         self.aliases:dict[str, str] = {} # imported aliases
@@ -308,6 +304,7 @@ class ModuleBox(ModuleInst):
     def get(self, name):
         if len(self.inames) > 0 and name not in self.inames:
             raise EvalErr(f'Trying use not imported name `{name}` from module `{self.name}`.')
+        # print('ModuleBox.get(%s)' % name)
         return self.mcontext.get(name)
 
     def getName(self):
@@ -315,4 +312,11 @@ class ModuleBox(ModuleInst):
 
     def getType(self):
         return TypeModule()
+    
+    def print(self):
+        print('ModuleBox(%s)' % self.name)
+        for vv in self.inames:
+            print(' ', vv)
 
+    def __str__(self):
+        return 'ModuleBox(%s)' % (self.name)

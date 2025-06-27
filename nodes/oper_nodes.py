@@ -136,6 +136,8 @@ class OpAssign(OperCommand):
             print(' (a = b) :2', val)
             if isinstance(val, ObjectMember):
                 val = val.get()
+            if isinstance(val, ModuleMember):
+                val = val.get()
             print(' (a = b) :3', val)
             if isinstance(val, Var):
                 val = val.get()
@@ -572,13 +574,16 @@ class ModuleMember:
         self.member = memb
     
     def get(self):
+        print('ModuleMember.get')
         return self.module.get(self.member)
     
     def getType(self):
-        return TypeModule()
+        return self.member.getType()
 
 
 # BinOper
+# TODO: refactor from custom solutions of each case to universal:
+# src . member  >> src.getInner(member) >> if member() >> src.getInner(member).call(args)
 class OperDot(BinOper):
     ''' inst.field '''
 
@@ -592,7 +597,7 @@ class OperDot(BinOper):
 
     def setArgs(self, inst:VarExpr, member:VarExpr):
         self.objExp = inst
-        if isinstance(member, FuncCallExpr):
+        if isinstance(inst, StructInstance) and isinstance(member, FuncCallExpr):
             member = MethodCallExpr(member)
         self.membExpr = member
         print('   >> OperDot.set', self.objExp, self.membExpr)
@@ -602,17 +607,24 @@ class OperDot(BinOper):
         self.objExp.do(ctx)
         objVar = self.objExp.get()
         print('OperDot.do00', objVar, '; type=', type(objVar))
-        
         if isinstance(objVar, ModuleBox):
             # process modules
+            print('OperDot.do ModuleBox:', objVar)
             mod = ModuleMember(objVar)
             mod.setMember(self.membExpr.name)
             self.val = mod
+            if isinstance(self.membExpr, FuncCallExpr):
+                self.membExpr.do(objVar)
+                self.val = self.membExpr.get()
+                print('OperDot.do mod method res =', self.val)
             return
             
         if isinstance(objVar, Var):
             objVar = objVar.get()
         inst:StructInstance = objVar
+        
+        if isinstance(inst, StructInstance) and isinstance(self.membExpr, FuncCallExpr):
+            self.membExpr = MethodCallExpr(self.membExpr)
         print('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
         # self.membExpr.do(inst)
         name = ''

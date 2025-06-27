@@ -119,7 +119,7 @@ class FuncCallExpr(Expression):
         # inne rcontext
         print('FuncCallExpr.do')
         args:list[Var] = []
-        print(f'Function `{self.name}`:')
+        print(f'Function `{self.name}`:', self.func)
         ctx.print()
         func = ctx.get(self.name)
         # unpack function from var

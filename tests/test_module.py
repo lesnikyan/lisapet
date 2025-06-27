@@ -262,8 +262,7 @@ class TestModule(TestCase):
         print('#TT 2>> ', res.vals())
         self.assertEqual([123, 210, 340], res.vals())
 
-    # TODO: import pure module
-    def _test_import_module(self):
+    def test_import_module(self):
         
         # imported part
         funMod = self.importFuncs()
@@ -273,7 +272,10 @@ class TestModule(TestCase):
         
         import tfuncs
         
-        res = [tfuncs.foo(), tfuncs.sum(10, 200), tfuncs.mult(20, 17)]
+        a = tfuncs.foo()
+        b = tfuncs.sum(10, 200)
+        c = tfuncs.mult(20, 17)
+        res = [a, b, c]
         print('res:', res)
         '''
         code = norm(code[1:])
@@ -283,17 +285,9 @@ class TestModule(TestCase):
         
         rCtx = rootContext()
         curCtx = rCtx.moduleContext()
-        print('## Load module...')
         rCtx.loadModule(funMod)
-        print('## Eval code ...')
         curMod.do(curCtx)
-        
-        f1 = curCtx.get('foo')
-        f2 = curCtx.get('sum')
-        f3 = curCtx.get('mult')
-        print('#TT 1>> ', f1, f2, f3)
         res = curCtx.get('res').get()
-        print('#TT 2>> ', res.vals())
         self.assertEqual([123, 210, 340], res.vals())
 
 
