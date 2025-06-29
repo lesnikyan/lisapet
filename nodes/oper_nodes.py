@@ -12,7 +12,7 @@ from nodes.tnodes import MString
 from nodes.structs import StructInstance
 from nodes.func_expr import FuncCallExpr
 from nodes.structs import MethodCallExpr
-from nodes.structs import StructConstrBegin
+from nodes.structs import StructConstr, StructConstrBegin
 
 # from formatter import  StrFormatter
 
@@ -609,14 +609,19 @@ class OperDot(BinOper):
         print('OperDot.do00', objVar, '; type=', type(objVar))
         if isinstance(objVar, ModuleBox):
             # process modules
-            print('OperDot.do ModuleBox:', objVar)
-            mod = ModuleMember(objVar)
-            mod.setMember(self.membExpr.name)
-            self.val = mod
+            print('OperDot.do ModuleBox:', objVar, '; memb:', self.membExpr)
+            # mod = ModuleMember(objVar)
+            # mod.setMember(self.membExpr.name)
+            # self.val = mod
             if isinstance(self.membExpr, FuncCallExpr):
                 self.membExpr.do(objVar)
                 self.val = self.membExpr.get()
                 print('OperDot.do mod method res =', self.val)
+            if isinstance(self.membExpr, StructConstr):
+                self.membExpr.do(objVar)
+                self.val = self.membExpr.get()
+                print('OperDot.do mod method res =', self.val)
+                
             return
             
         if isinstance(objVar, Var):

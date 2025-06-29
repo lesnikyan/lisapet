@@ -32,101 +32,6 @@ class TestDev(TestCase):
     # TODO: type of struct field: list, dict, bool, any
 
 
-    def test_fstr_opt_parser(self):
-        ''' {x:s}, {x:d}, {x:05d}, {x:+07.3f} {x:x} '''
-        data = [
-            # (src, exp, val)
-            # ('{}', '{}', 123),
-            ('{x}', '4058', 0xfda),
-            ('{x}', 'abc', 'abc'),
-            ('{x:s}', 'abc', 'abc'),
-            ('{x:10s}', '       abc', 'abc'),
-            ('{x:<10s}', 'abc       ', 'abc'),
-            ('{x:b}', '111111011010', 0b111111011010),
-            ('{x:o}', '7732', 0o7732),
-            ('{x:d}', '1234', 1234),
-            ('{x:6d}', '  1234', 1234),
-            ('{x:06d}', '001234', 1234),
-            ('{x:+06d}', '+01234', 1234),
-            ('{x:+6d}', ' +1234', 1234),
-            ('{x:-06d}', '001234', 1234),
-            ('{x:-06d}', '-01234', -1234),
-            ('{x:f}', '12.34567', 12.34567),
-            ('{x:.3f}', '12.345', 12.34567),
-            ('{x:+6.3f}', '+12.345', 12.34567),
-            ('{x:-6.3f}', '12.345', 12.34567),
-            ('{x:-6.3f}', '-12.345', -12.34567),
-            ('{x:7.3f}', ' 12.345', 12.34567),
-            ('{x:07.2f}', '0012.34', 12.34567),
-            ('{x:07.2f}', '-012.34', -12.34567),
-            ('{x:+7.3f}', '+12.345', 12.34567),
-            ('{x:>+8.3f}', ' -12.345', -12.34567),
-            ('{x:+07.3f}', '+12.345', 12.34567),
-            ('{x:+07.3f}', '-12.345', -12.34567),
-            ('{x:<08.3f}', '12.345  ', 12.34567),
-            ('{x:>08.3f}', '0012.345', 12.34567),
-            ('{x:^012.3f}', '   12.345   ', 12.34567),
-            
-            ('{x:x}', 'fda', 0xfda),
-            ('{x:6x}', '   fda', 0xfda),
-            ('{x:06x}', '000fda', 0xfda),
-            ('{x:+06x}', '+00fda', 0xfda),
-            ('{x:-06x}', '000fda', 0xfda),
-            # ('{x:<+06x}', '+fda  ', 0xfda), # BUG: 1 space more
-            ('{x:>+06x}', '+00fda', 0xfda),
-            ('{x:>+6x}', '  +fda', 0xfda),
-            # ('{x:^05x}', ' fda  ', 0xfda), # BUG: No zeros
-            ('{x:^06x}', ' fda  ', 0xfda),
-            # ('{x:^06x}', ' -fda ', -0xfda), # BUG: No zeros
-            ('{x:^02x}', '-fda', -0xfda),
-            # 
-            # :e - Need fix
-            # ('{x:e}', '5.12345e+03', 5.12345e+03), 
-            # ('{x:e}', '', 5.12345e-03),
-            # ('{x:16e}', '', 5.12345e+03),
-            # ('{x:016e}', '', 5.12345e-03),
-            
-            ('{x:b}', '10101', 0b10101),
-            ('{x:10b}', '     10101', 0b10101),
-            ('{x:+010b}', '+000010101', 0b10101),
-            ('{x:10o}', '   1234567', 0o1234567),
-            ('{x:010o}', '0001234567', 0o1234567),
-            ('{x:+010o}', '+001234567', 0o1234567),
-            ('{x:+010o}', '-001234567', -0o1234567),
-            # ('{x}', '', 0xfda),
-        ]
-        
-        fop = FmtOptParser()
-        fp = FormatParser()
-        fm = Formatter()
-        for tt in data:
-            src, exp, val = tt
-            parts = fp.parse(src)
-            slex:subLex = parts[1]
-            opt = fop.parseSuff(slex.options)
-            # print('tt2', opt)
-            res = fm.format(val, opt)
-            print('tt3', slex.options, '>>>', '`%s`' % res)
-            self.assertEqual(exp, res)
-        
-
-    def test_fstr_split(self):
-        ''' StrFormetter.parse '''
-        data = [
-            # 'ss {aa} dd',
-            # 'ss1 {aa1} bb2 {cc2} dd3 {ee3:0.2f} end',
-            # 'ss1 {aa1[1]} bb2 {cc2["key-2"]} dd3 {ee3.foo(1,2,3):0.2f} end',
-            # 'ss1 {"str value"} 222 {dd.ddd.dddd.ddd[123].foo(1,2,3).ddd["123"].dd.ddd.bar(ddd.baz(vazz(ddd)))} end',
-            '{aa_start_line} bb2 {cc2} dd3 {ee3:0.2f} zerolead-int: {a:0d} bin: {a:b} pair: {1}{2}',
-            '{} s1 {} s2 {{}} s3 {{aaa}} s4 {{{bbb}}} s5 {{{{ccc}}}} end',
-            # 'ss {} {{abc}} dd',
-        ]
-        # sf = StrFormatter()
-        fp = FormatParser()
-        for s in data:
-            print('t>', s)
-            parts = fp.parse(s)
-            print('>>', parts)
 
     def _test_barr(self):
         ''' '''
@@ -233,9 +138,10 @@ class TestDev(TestCase):
 
     def _test_list_gen_by_strings(self):
         ''' thoughts:
-            1) [..;..;..] should be a list-generato, not string
+            1) [..;..;..] should be a list-generator, not string
             2) [..; s <- "..."] in gen from string we want to get string
             3) ~[s, s <- "..."] solutution (1) `~` operator as a list-to-string convertor
+            3.1) looks like `join` func can be a good solution
         '''
         code = '''
         strline = 'abcdefg'

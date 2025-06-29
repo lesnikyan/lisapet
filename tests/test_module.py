@@ -67,10 +67,12 @@ class TestModule(TestCase):
         stMod = self.loadStructs()
         code = '''
         
-        import tstructs.*
-        # pr = Pair{a:10, b:200}
-        # res = [pr.foo(), ]
-        #pr.sum(), pr.mult()
+        import tstructs > Pair
+        pr = Pair{a:10, b:200}
+        res = [pr.foo() ]
+        b = pr.sum()
+        res <- b
+        res <- pr.mult()
         print('res:', res)
         '''
         code = norm(code[1:])
@@ -78,17 +80,66 @@ class TestModule(TestCase):
         clines:CLine = elemStream(tlines)
         curMod = lex2tree(clines)
         
-        # rCtx = rootContext()
-        # rootCtx = moduleContext(rCtx)
-        # rCtx.loadModule(stMod)
-        
         rCtx = rootContext()
-        curCtx = rCtx.moduleContext()
         print('## Load module...')
         rCtx.loadModule(stMod)
         print('## Eval code ...')
+        curCtx = rCtx.moduleContext()
         curMod.do(curCtx)
+        res = curCtx.get('res').get()
+        self.assertEqual([123, 210, 2000], res.vals())
 
+    def test_import_module_star_struct(self):
+        stMod = self.loadStructs()
+        code = '''
+        
+        import tstructs.*
+        pr = Pair{a:10, b:200}
+        res = [pr.foo() ]
+        b = pr.sum()
+        res <- b
+        res <- pr.mult()
+        print('res:', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        curMod = lex2tree(clines)
+        
+        rCtx = rootContext()
+        print('## Load module...')
+        rCtx.loadModule(stMod)
+        print('## Eval code ...')
+        curCtx = rCtx.moduleContext()
+        curMod.do(curCtx)
+        res = curCtx.get('res').get()
+        self.assertEqual([123, 210, 2000], res.vals())
+
+    def _test_import_module_pure_struct(self):
+        stMod = self.loadStructs()
+        code = '''
+        
+        import tstructs
+        pr = tstructs.Pair{a:10, b:200}
+        res = [pr.foo() ]
+        b = pr.sum()
+        res <- b
+        res <- pr.mult()
+        print('res:', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        curMod = lex2tree(clines)
+        
+        rCtx = rootContext()
+        print('## Load module...')
+        rCtx.loadModule(stMod)
+        print('## Eval code ...')
+        curCtx = rCtx.moduleContext()
+        curMod.do(curCtx)
+        res = curCtx.get('res').get()
+        self.assertEqual([123, 210, 2000], res.vals())
 
     def importFuncsAgrType(self):
         code = '''

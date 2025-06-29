@@ -276,6 +276,13 @@ class ModuleContext(Context):
         # Nothing was found
         return None
 
+    def getType(self, name):
+        tt = self.findIn(name)
+        print('GetType, in: ', tt)
+        if tt:
+            return tt
+        # raise EvalErr('ModCtx getType')
+        
 
 class ModuleBox(ModuleInst):
     ''' imported module as object-container in context
@@ -297,7 +304,7 @@ class ModuleBox(ModuleInst):
         self.inames.append(name)
     
     def hasImported(self, name):
-        print('hasImported1', name)
+        print('hasImported1', self.name, ':', name)
         print('hasImported2', self.inames)
         return name in self.inames
 
@@ -310,8 +317,12 @@ class ModuleBox(ModuleInst):
     def getName(self):
         return self.name
 
-    def getType(self):
+    def getvType(self):
         return TypeModule()
+
+    def getType(self, name):
+        print('ModuleBox', self.name)
+        return self.mcontext.getType(name)
     
     def print(self):
         print('ModuleBox(%s)' % self.name)
