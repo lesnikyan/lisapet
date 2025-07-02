@@ -387,9 +387,7 @@ class MethodCallExpr(FuncCallExpr):
         if not isinstance(self.inst, StructInstance):
             raise EvalErr('Incorrect instance of struct: %s ', self.inst)
         print('MethodCallExpr.do 1', self.name, self.inst.getType())
-        # self.func = ctx.get(self.name)
-        tname = self.inst.getType().name
-        stype = ctx.getType(tname).get()
+        stype = self.inst.getType()
         # print('MethodCallExpr.do2', stype, stype.debug()) #
         
         self.func = stype.getMethod(self.name)

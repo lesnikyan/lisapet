@@ -115,12 +115,13 @@ class TestModule(TestCase):
         res = curCtx.get('res').get()
         self.assertEqual([123, 210, 2000], res.vals())
 
-    def _test_import_module_pure_struct(self):
+    def test_import_module_pure_struct(self):
+        ''' Issue in struct method with struct type stored in context of imported module.'''
         stMod = self.loadStructs()
         code = '''
         
         import tstructs
-        pr = tstructs.Pair{a:10, b:200}
+        pr = tstructs.Pair{a:11, b:220}
         res = [pr.foo() ]
         b = pr.sum()
         res <- b
@@ -139,7 +140,7 @@ class TestModule(TestCase):
         curCtx = rCtx.moduleContext()
         curMod.do(curCtx)
         res = curCtx.get('res').get()
-        self.assertEqual([123, 210, 2000], res.vals())
+        self.assertEqual([123, 231, 2420], res.vals())
 
     def importFuncsAgrType(self):
         code = '''
