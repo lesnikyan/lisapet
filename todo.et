@@ -3,6 +3,9 @@
 
 # Necessary things: 
 
+0. CI
+    main.py - console script for run *.et files with console output.
+    build.py - builder of *.et files with resulting binary files (serialized executable object).
 1. # DONE String formatting. ~"{var}", "... %s ..." << (var)
 2. # DONE one-line block: expr; expr; expr
 3. # DONE import modules
@@ -14,7 +17,8 @@
 8. logging
 9. input-output: files, console, network, db,
 10 serialization: 1) data objects (collections, struct inst) 2) executive tree (prepared exec file)
-11. struct constructor without field names: A{1, 2.0, 'abc'}
+11. struct constructor without field names: A{1, 2.0, 'abc'} - order-driven struct constructor.
+12. Interfaces as a some list of method signatures.
 
 
 # Perspective things: 
@@ -199,7 +203,7 @@ foo . bar . buz : (12)
 foo bar buz $ 12
 foo * bar * buz(12)
 foo + bar + buz(12)
-foo ~ bar ~ buz : 12
+foo ~~ bar ~~ buz : 12
 
 # closures of passed or returned lambdas / local funcs
 #@
