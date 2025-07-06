@@ -1,0 +1,14 @@
+
+func sum(a, b)
+    a + b
+
+func odd2even3(a:int)
+    if a % 2 == 0
+        return a * 3
+    else
+        return a * 2
+
+# test
+print(sum(100, 20))
+print(odd2even3(7))
+print(odd2even3(20))

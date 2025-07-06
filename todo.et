@@ -4,7 +4,8 @@
 # Necessary things: 
 
 0. CI
-    main.py - console script for run *.et files with console output.
+    # DONE main.py - console script for run *.et files with console output.
+    main.py - add preload of importable modules
     build.py - builder of *.et files with resulting binary files (serialized executable object).
 1. # DONE String formatting. ~"{var}", "... %s ..." << (var)
 2. # DONE one-line block: expr; expr; expr

@@ -46,7 +46,20 @@ exension:
 14. functions with ducktype args based on interfaces
 15. (), are also functions (for what?)
 *
-Done:
+
+## Usage.
+```
+# run file
+python -m run tests/simple_test.et
+
+# run code line
+python -m run -c "a=1+2; print(a)"
+
+```
+
+## Syntax.
+
+Done parts:
 
 1. Vars, vals, lists, assignment, context of vars
 ```

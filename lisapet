@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# bash script for running lisapet code
+python -m run "$@"
