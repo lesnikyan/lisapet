@@ -100,7 +100,7 @@ class Var(Base):
             mutable = not kw['const']
         # debug exception
         if not isinstance(name, str):
-            print('name type:', type(name))
+            dprint('name type:', type(name))
             raise InterpretErr('OLD VAR USAGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %s ' % type(name))
         self.val:Val = None
         self.name:str = name # if name is none - here Val, not Var

@@ -52,13 +52,13 @@ class CaseStructDef(SubCase):
         if len(elems) > 2 and isLex(elems[2], Lt.oper, '('):
             # we have super-struct here
             brInd = bracketsPart(elems[2:])
-            print('Strc.split, brInd: ', brInd, elems[brInd+1].text)
+            dprint('Strc.split, brInd: ', brInd, elems[brInd+1].text)
             superPart = elems[3:brInd+1]
             prels('CaseStructDef.split supers:', superPart)
             _, spl = CaseCommas().split(superPart)
-            print('## spl:', [(n) for n in spl])
+            dprint('## spl:', [(n) for n in spl])
             superNames = [elemStr(n) for n in spl]
-            print('## superNames:', superNames)
+            dprint('## superNames:', superNames)
             subStart = brInd+2
             
         
@@ -77,7 +77,7 @@ class CaseStructDef(SubCase):
         return exp, subs
 
     def setSub(self, base:StructDefExpr, subs:list[Expression])->Expression:
-        print('', base, subs)
+        dprint('', base, subs)
         for exp in subs:
             base.add(exp)
         return base
@@ -89,7 +89,7 @@ class CaseStructBlockDef(SubCase):
         struct TypeName
             ...
         '''
-        # print('CaseDictBlock.match')
+        # dprint('CaseDictBlock.match')
         if len(elems) != 2:
             return False
         return isLex(elems[0], Lt.word, 'struct') and elems[1].type == Lt.word
@@ -100,7 +100,7 @@ class CaseStructBlockDef(SubCase):
         return exp, subs
 
     def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
-        print('CaseDictBlock.setSub empty: ', base, subs)
+        dprint('CaseDictBlock.setSub empty: ', base, subs)
         return base
 
 
@@ -135,7 +135,7 @@ class CaseStructConstr(SubCase):
         return StructConstr(typeName), subs
 
     def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
-        print('StructConstr.setSub empty: ', base, subs)
+        dprint('StructConstr.setSub empty: ', base, subs)
         for exp in subs:
             base.add(exp)
         return base
@@ -167,7 +167,7 @@ class CaseStructBlockConstr(SubCase):
         return StructConstrBegin(elems[0].text), []
 
     def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
-        print('StructConstr.setSub empty: ', base, subs)
+        dprint('StructConstr.setSub empty: ', base, subs)
         # for exp in subs:
         #     base.add(exp)
         # return base
@@ -192,7 +192,7 @@ class CaseStructBlockConstr(SubCase):
 #         return StructField(), [[elems[0]],[elems[2]]]
 
 #     def setSub(self, base:StructField, subs:Expression|list[Expression])->Expression:
-#         print('CaseStructField:', base, subs)
+#         dprint('CaseStructField:', base, subs)
 #         # raise EvalErr('')
 #         base.set(subs[0], subs[1])
 #         return base

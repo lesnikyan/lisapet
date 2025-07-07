@@ -246,7 +246,7 @@ class TestStruts(TestCase):
         ex.do(ctx)
         atype = ctx.getType('Atype')
         btype = ctx.getType('Btype')
-        print(atype, btype)
+        dprint(atype, btype)
 
     def test_left_assign_arg(self):
         code='''
@@ -271,7 +271,7 @@ class TestStruts(TestCase):
         for cline in clines:
             elems = cline.code
             ind = afterLeft(elems)
-            print(elemStr(elems), '>>', ind, '>>>', '  ', elems[ind].text)
+            dprint(elemStr(elems), '>>', ind, '>>>', '  ', elems[ind].text)
             self.assertEqual(elems[ind].text, '=')
 
     def test_deep_nesting_struct2(self):
@@ -301,7 +301,7 @@ class TestStruts(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         b0 = ctx.get('books').get().elems[0]
-        print('#tt b0:', b0.get('prod').get('price').get())
+        dprint('#tt b0:', b0.get('prod').get('price').get())
         self.assertEqual(11.0, b0.get('prod').get('price').get())
 
     def test_deep_nesting_struct(self):
@@ -338,7 +338,7 @@ class TestStruts(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         c = ctx.get('c').get()
-        print('#tt b0:', c.get('cbb').get())
+        dprint('#tt b0:', c.get('cbb').get())
         self.assertEqual('c-val2', c.get('cbb').get())
 
     def test_dot_oper(self):
@@ -419,7 +419,7 @@ class TestStruts(TestCase):
         inst.set('amount', Val(12, TypeInt()))
         print('## T >>> ', inst.get('amount'))
         # inst.set('amount', value('12', TypeString))
-        # print('## T >>> ', inst.get('amount'))
+        # dprint('## T >>> ', inst.get('amount'))
 
     def _test_type_nums(self):
         code = '''

@@ -6,7 +6,7 @@ CI - build code from file or line.
 from argparse import ArgumentParser
 from pathlib import Path
 
-from lang import CLine
+from lang import CLine, dprint
 from parser import splitLexems, elemStream
 from tree import lex2tree
 from nodes.expression import Expression
@@ -61,7 +61,7 @@ def main():
         args = getArgs()
         # TODO: build to binary. We need appropriate serialization format. 
     except Exception as ex:
-        print("Error happened in building process.", ex)
+        dprint("Error happened in building process.", ex)
 
 
 if __name__ == '__main__':

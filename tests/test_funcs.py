@@ -71,7 +71,7 @@ class TestFunc(TestCase):
         
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -80,8 +80,8 @@ class TestFunc(TestCase):
         ex.do(ctx)
         rr = ctx.get('rr')
         self.assertEqual([5, 5, 20, 10, 20, 25, 5, 10, 15, 20], rr.get().vals())
-        # print('>>', rr.get().vals())
-        # print('>>', [n.get() for n in rr.get().elems])
+        # dprint('>>', rr.get().vals())
+        # dprint('>>', [n.get() for n in rr.get().elems])
 
     def test_rerun_list_iter_in_funcs(self):
         ''' src-iter/func/src-iter '''
@@ -130,7 +130,7 @@ class TestFunc(TestCase):
         rr2 = []
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -141,8 +141,8 @@ class TestFunc(TestCase):
         rr2 = ctx.get('rr2')
         # self.assertEqual(0, rr.get().data)
         self.assertEqual({2: 417, 4: 741, 6: 1079, 3: 423, 5: 753, 7: 1087}, rr.get().vals())
-        # print('>>', rr.get())
-        print('>>', rr2.get())
+        # dprint('>>', rr.get())
+        dprint('>>', rr2.get())
 
     def test_func_arg_type(self):
         ''' Auto-define type of args on-the-fly if func definition doesn`t have type of arguments. '''
@@ -191,7 +191,7 @@ class TestFunc(TestCase):
         func testLambdas()
             
             func foo(f, a, b)
-                # print('>>==', f, a, b)
+                # dprint('>>==', f, a, b)
                 a + f(b)
             
             f1 = x -> x * 10
@@ -275,7 +275,7 @@ class TestFunc(TestCase):
         print('n1,2,3 = ', n1, n2, n3)
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -311,7 +311,7 @@ class TestFunc(TestCase):
         ex.do(ctx)
         exp = [5005, 10005, 15005, 20005, 25005]
         resVal = ctx.get('res').get()
-        print(resVal)
+        dprint(resVal)
         self.assertListEqual(exp, resVal.get())
 
 
@@ -340,7 +340,7 @@ class TestFunc(TestCase):
             ('func setName(name:string)', CaseFuncDef),
         ]
         for code, ctype in data:
-            print('Code:', code)
+            dprint('Code:', code)
             # code = norm(code[1:])
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
@@ -348,7 +348,7 @@ class TestFunc(TestCase):
             cases = getCases()
             for cs in cases:
                 if cs.match(elems):
-                    print('#tt found cae: ', cs, 'exp:', ctype)
+                    dprint('#tt found cae: ', cs, 'exp:', ctype)
                     self.assertIsInstance(cs, ctype)
                     break
 
@@ -372,7 +372,7 @@ class TestFunc(TestCase):
         ctx = rootContext()
         exp.do(ctx)
         res = ctx.get('res').getVal()
-        print('#t >>> r:', res)
+        dprint('#t >>> r:', res)
         self.assertEqual(res, 15)
 
     def test_call_func(self):
@@ -393,7 +393,7 @@ class TestFunc(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        # print('$$ run test ------------------')
+        # dprint('$$ run test ------------------')
         exp.do(ctx)
         r1 = ctx.get('r1').getVal()
         r2 = ctx.get('r2').getVal()
@@ -412,16 +412,16 @@ class TestFunc(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        print('$$ run test ------------------')
+        dprint('$$ run test ------------------')
         exp.do(ctx)
         fn:Function = ctx.get('foo')
-        print('#tt1>>> ', fn, type(fn))
+        dprint('#tt1>>> ', fn, type(fn))
         args = [value(2, TypeInt),value(3, TypeInt),value(4, TypeInt)]
         fn.setArgVals(args)
         ctxCall = Context(None)
         fn.do(ctxCall)
         res = fn.get()
-        print('#tt2>>> ', res)
+        dprint('#tt2>>> ', res)
 
 
 

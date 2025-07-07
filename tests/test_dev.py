@@ -41,7 +41,7 @@ class TestDev(TestCase):
         print('res = ', res)
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -91,7 +91,7 @@ class TestDev(TestCase):
         print('res = ', res)
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -127,7 +127,7 @@ class TestDev(TestCase):
         print('rrs = ', rrs)
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)

@@ -52,7 +52,7 @@ class ImportExpr(Expression):
     def __init__(self, path, elems:list[list[str]], src = ''):
         super().__init__(None, src)
         self.fullImport = False
-        # print('ImportExpr __init:', elems)
+        # dprint('ImportExpr __init:', elems)
         if (len(path) > 1 and path[-1] == '*' and len(elems) == 0):
             self.fullImport = True
             path = path[:-1]
@@ -66,11 +66,11 @@ class ImportExpr(Expression):
         '''
         elems: [ ['name'], ['name', 'alias'] ]
         '''
-        print('ImportExpr.parseElems')
+        dprint('ImportExpr.parseElems')
         if len(elems) == 0:
             return
         for elm in elems:
-            print('$elm:', elm)
+            dprint('$elm:', elm)
             match len(elm):
                 case 1: self.names[elm[0]] = elm[0]
                 case 2: self.names[elm[0]] = elm[1]
@@ -81,7 +81,7 @@ class ImportExpr(Expression):
         # 1. find module by path
         rCtx = ctx.getRoot()
         mdl:Module = rCtx.findloaded(self.modName) # module eval-tree
-        print('import.do, mod:', mdl)
+        dprint('import.do, mod:', mdl)
         # 2. add module or things to the module-context
         if mdl is None:
             raise EvalErr('Trying ro import module that hasn`t been loaded.')
@@ -94,7 +94,7 @@ class ImportExpr(Expression):
             module.importAll()
         elif len(self.names) > 0:
             for nm, alias in self.names.items():
-                # print('import nm >>>>', nm, alias)
+                # dprint('import nm >>>>', nm, alias)
                 if nm != alias:
                     aliases[alias] = nm
                 module.importThing(nm)

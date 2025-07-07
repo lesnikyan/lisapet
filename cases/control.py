@@ -77,7 +77,7 @@ class CaseMatchCase(SubCase):
             return False
 
         main = OperSplitter().mainOper(elems)
-        print('CaseMatchCase elems[main]', elems[main].text, main)
+        dprint('CaseMatchCase elems[main]', elems[main].text, main)
         return isLex(elems[main], Lt.oper, '!-')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
@@ -110,7 +110,7 @@ class CaseFor(BlockCase, SubCase):
             case 1: exp = LoopIterExpr()
             case 2|3: exp = LoopExpr()
             case _ :pass
-        print('# CaseFor.split-', len(elems),  exp, 'len-subs=', len(subs))
+        dprint('# CaseFor.split-', len(elems),  exp, 'len-subs=', len(subs))
         for ees in subs:
             prels('>>', ees)
         return exp, subs
@@ -118,17 +118,17 @@ class CaseFor(BlockCase, SubCase):
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
         ''' nothing in minimal impl''' 
         slen = len(subs)
-        print('# CaseFor.setSub-', slen, subs)
+        dprint('# CaseFor.setSub-', slen, subs)
         match slen:
             # iterator case
             case 1 if isinstance(base, LoopIterExpr):
                 base.setIter(subs[0])
-                print('(=1)', subs[0] )
+                dprint('(=1)', subs[0] )
             # pre, cond
             case 2 if isinstance(base, LoopExpr): base.setExpr(pre=subs[0], cond=subs[1])
             # init, cond, post
             case 3 if isinstance(base, LoopExpr): base.setExpr(init=subs[0], cond=subs[1], post=subs[2])
-        print('# CaseFor.setSub-', base)
+        dprint('# CaseFor.setSub-', base)
         return base
 
 class CaseIf(BlockCase, SubCase):

@@ -34,7 +34,7 @@ class IfExpr(ControlBlock):
         self.curBlock = self.mainBlock
 
     def setCond(self, expr:Expression, subExp:list[Expression]=[]):
-        print('#IfExpr setCond ', expr, subExp)
+        dprint('#IfExpr setCond ', expr, subExp)
         self.cond = expr
         self.preSubs = subExp
     
@@ -46,7 +46,7 @@ class IfExpr(ControlBlock):
         self.curBlock = self.elseBlock
 
     def do(self, ctx:Context):
-        print('# IfExpr.do1 ', self.cond, type(self.cond))
+        dprint('# IfExpr.do1 ', self.cond, type(self.cond))
         inCtx = Context(ctx)
         for sub in self.preSubs:
             sub.do(inCtx)
@@ -54,19 +54,19 @@ class IfExpr(ControlBlock):
         target:Block = self.mainBlock
         self.lastRes = None
         condRes = self.cond.get()
-        print('# IfExpr.do02 ', condRes, type(condRes))
-        print('## Cond-get', condRes, condRes.get())
+        dprint('# IfExpr.do02 ', condRes, type(condRes))
+        dprint('## Cond-get', condRes, condRes.get())
         if not condRes.get():
-            print('## IF_ELSE')
+            dprint('## IF_ELSE')
             if not self.elseBlock:
                 # if don't have else-block return from if-block without result
                 return
             # enter to else-block
             target = self.elseBlock
-        print('# IfExpr.do2 ', target)
+        dprint('# IfExpr.do2 ', target)
         target.do(inCtx)
         self.lastRes = target.get() # for case if we need result from if block or one-line-if
-        print('# IfExpr.do2 ', self.lastRes)
+        dprint('# IfExpr.do2 ', self.lastRes)
 
     def get(self):
         return self.lastRes
@@ -96,7 +96,7 @@ class CaseExpr(ControlBlock):
 
     def matches(self, val:Var):
         # simple equal value
-        print('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
+        dprint('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
         if self.expect.get().get() == val.get():
             return True
 
@@ -135,9 +135,9 @@ class MatchExpr(ControlBlock):
         nums:list | len(nums) > 0 -> nums[0]
         x:int -> x + 2
         # sub condition
-        u:User | u.name = 'Vasya' -> print(u.lastName)
+        u:User | u.name = 'Vasya' -> dprint(u.lastName)
         # constructor-patters
-        u:User('Vasya') -> print(u.lastName)
+        u:User('Vasya') -> dprint(u.lastName)
         _ -> expr
     '''
 
@@ -204,7 +204,7 @@ class LoopIterExpr(LoopBlock):
     def do(self, ctx:Context):
         subCtx = Context(ctx)
         if isinstance(self._origIter, LeftArrowExpr):
-            print('For iter')
+            dprint('For iter')
             # subCtx.print()
             self._origIter.init(subCtx)
             if isinstance(self._origIter.expr, IterAssignExpr):
@@ -212,7 +212,7 @@ class LoopIterExpr(LoopBlock):
                 self.iter = self._origIter.expr
         self.iter.start()
         while self.iter.cond():
-            print('# loop iter ----------------------------------')
+            dprint('# loop iter ----------------------------------')
             self.iter.do(subCtx)
             self.block.do(subCtx)
             blockRes = self.block.get()
@@ -242,7 +242,7 @@ class LoopExpr(LoopBlock):
         
     def setExpr(self, **kwargs):
         for name,exp in kwargs.items():
-            print('-- LoopExpr.setExpr', name, exp )
+            dprint('-- LoopExpr.setExpr', name, exp )
             match name:
                 case 'init': self.initExpr = exp
                 case 'cond': self.cond = exp
@@ -252,7 +252,7 @@ class LoopExpr(LoopBlock):
 
 
     def add(self, exp:Expression):
-        # print('LoopExpr.add', exp)
+        # dprint('LoopExpr.add', exp)
         self.block.add(exp)
 
     def checkCond(self, ctx:Context)->bool:
@@ -263,7 +263,7 @@ class LoopExpr(LoopBlock):
         if self.initExpr:
             self.initExpr.do(ctx)
         while self.checkCond(ctx):
-            print('# loop expr ----------------------------------')
+            dprint('# loop expr ----------------------------------')
             if self.preIter:
                 self.preIter.do(ctx)
             self.block.do(ctx)
@@ -296,7 +296,7 @@ class WhileExpr(LoopBlock):
         self.cond = cond
 
     def add(self, exp:Expression):
-        print('WhileExpr.add', exp)
+        dprint('WhileExpr.add', exp)
         self.block.add(exp)
 
     def do(self, ctx:Context):
@@ -307,7 +307,7 @@ class WhileExpr(LoopBlock):
             c +=1
             if c > 100:
                 break
-            print('# while iter ----------------------------------')
+            dprint('# while iter ----------------------------------')
             self.block.do(ctx)
             blockRes = self.block.get()
             if isinstance(blockRes, FuncRes):

@@ -27,7 +27,7 @@ class OperCommand(Expression):
         # self._block = False
 
     def get(self):
-        # print('# -> OperCommand.get() ', self.oper, self.res)
+        # dprint('# -> OperCommand.get() ', self.oper, self.res)
         return self.res
 
     # def isBlock(self)->bool:
@@ -43,7 +43,7 @@ class BinOper(OperCommand):
         self.right:Expression = right
 
     def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
-        # print('BinOper.setArgs', left, right)
+        # dprint('BinOper.setArgs', left, right)
         self.left = left
         self.right = right
 
@@ -59,20 +59,20 @@ class OpAssign(OperCommand):
         left - dest
         right - src
         '''
-        print('OpAssign__setArgs1', left, right)
+        dprint('OpAssign__setArgs1', left, right)
         self.left = left
         r0 = right
         
         if isinstance(r0, VarExpr):
             exvar = r0.get()
             name = exvar.name
-            # print('@@ exvar', name)
+            # dprint('@@ exvar', name)
             if InterpretContext.get().hasStruct(name):
-                # print('@@ struct Type here ')
+                # dprint('@@ struct Type here ')
                 r0 = StructConstrBegin(name)
         
         if isinstance(r0, MultilineVal):
-            # print('-- MultilineVal or Struct here')
+            # dprint('-- MultilineVal or Struct here')
             self.toBlock()
             right = r0
         self.right = right
@@ -99,15 +99,15 @@ class OpAssign(OperCommand):
         left = pleft
 
         # Do right (val expr)
-        print('OpAssign.do src', src)
+        dprint('OpAssign.do src', src)
         resSet:list[Var] = []
         if isinstance(src, SequenceExpr):
-            print('## op-assign, SequenceExpr src -> ', src, )
+            dprint('## op-assign, SequenceExpr src -> ', src, )
             resSet = src.getVals(ctx)
         else:
             src.do(ctx)
             tVal:Var = src.get() # val (anon var obj) from expression
-            print('## op-assign, src.get() -> ', tVal, ':', tVal.get(), tVal.getType())
+            dprint('## op-assign, src.get() -> ', tVal, ':', tVal.get(), tVal.getType())
             resSet.append(tVal)
         ctx.print()
         
@@ -117,7 +117,7 @@ class OpAssign(OperCommand):
             if isinstance(tval, Var):
                 tval = resSet[0].getVal()
             
-            print('resSet[0] to unpack:', resSet[0], tval)
+            dprint('resSet[0] to unpack:', resSet[0], tval)
             if not isinstance(tval, (ListVal, TupleVal)):
                 raise EvalErr('Count of left and right parts of assignment are different '
                                'left = %d, right = %d' % (len(left), len(resSet)))
@@ -128,55 +128,55 @@ class OpAssign(OperCommand):
             if isinstance(left[i], VarExpr_):
                 # skip _ var
                 continue
-            # print(' (a = b) :1')
+            # dprint(' (a = b) :1')
             # eval left expressopm
             left[i].do(ctx)
             val = resSet[i]
             valType = val.getType()
-            print(' (a = b) :2', val)
+            dprint(' (a = b) :2', val)
             if isinstance(val, ObjectMember):
                 val = val.get()
             if isinstance(val, ModuleMember):
                 val = val.get()
-            print(' (a = b) :3', val)
+            dprint(' (a = b) :3', val)
             if isinstance(val, Var):
                 val = val.get()
-            print(' (a = b) :4', val)
+            dprint(' (a = b) :4', val)
             
             if isinstance(left[i], CollectElem):
                 ''' '''
-                # print('(=) if dest CollectElem, val: ', val)
+                # dprint('(=) if dest CollectElem, val: ', val)
                 val.name = None
                 left[i].set(val)
                 return
             
             #get destination var
             dest = left[i].get()
-            print('Assign dest1 =', dest, '; val=', val)
+            dprint('Assign dest1 =', dest, '; val=', val)
             isNew = False
             self.res = val
             if isinstance(dest, VarUndefined):
                 # new var for assignment
                 isNew = True
                 newVar = Var(dest.name, valType)
-                print('Assign new var', newVar, 'val-type:', valType)
+                dprint('Assign new var', newVar, 'val-type:', valType)
                 ctx.addVar(newVar)
                 dest = newVar
             dest.set(val)
                 
-            # print('# op-assign set1, varX, valX:', left[i], src[i])
-            print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
-            # print('# op-assign set,',' val = ', type(resSet[i]))
-            print(' (a = b) dest =', dest, ' val = ', val, 'isNew:', isNew)
+            # dprint('# op-assign set1, varX, valX:', left[i], src[i])
+            dprint('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
+            # dprint('# op-assign set,',' val = ', type(resSet[i]))
+            dprint(' (a = b) dest =', dest, ' val = ', val, 'isNew:', isNew)
                 
             if isinstance(dest, ObjectMember):
                 # struct field as left operand
-                # print('!!!!!! struct.2', dest, dest.object, dest.member)
+                # dprint('!!!!!! struct.2', dest, dest.object, dest.member)
                 dest.set(val)
                 # raise EvalErr(' = ObjMem')
                 return
 
-            # print(' (a = b) dest2: ', dest)
+            # dprint(' (a = b) dest2: ', dest)
             # single var
             name = dest.name
             # dest = val
@@ -188,7 +188,7 @@ class OpAssign(OperCommand):
             self.res = val
             # ctx.update(dest.name, resSet[i])
             saved = ctx.get(name)
-            print(' (a = b) saved ', saved)
+            dprint(' (a = b) saved ', saved)
 
 
         # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
@@ -203,7 +203,7 @@ class OpBinAssign(OpAssign):
         self.moper = self.splitOper(oper)
 
     def splitOper(self, oper):
-        print('OpBinAssign biOper:', oper)
+        dprint('OpBinAssign biOper:', oper)
         return OpMath(oper[0])
 
     def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
@@ -232,20 +232,20 @@ class OpMath(BinOper):
         # eval expressions
         self.left.do(ctx)
         self.right.do(ctx)
-        print('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
+        dprint('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
-        print('#bin-oper2', a, b)
+        dprint('#bin-oper2', a, b)
         
         # overloaded operators:
         over, res = self.overs(a, b)
-        print('#bin-oper-over:', over, res)
+        dprint('#bin-oper-over:', over, res)
         if over:
             self.res = res
             return
         
-        # print(' ( %s )' % self.oper, a.getVal(), b.getVal())
-        print('>types (%s %s %s)' % (a.getType(), self.oper, b.getType()))
+        # dprint(' ( %s )' % self.oper, a.getVal(), b.getVal())
+        dprint('>types (%s %s %s)' % (a.getType(), self.oper, b.getType()))
         type = a.getType()
         if type != b.getType():
             # TODO fix different types
@@ -294,12 +294,12 @@ class OpMath(BinOper):
         # reuse python old format %
         args = tuple(n.getVal() for n in b.rawVals())
         tpl = a.getVal()
-        # print('tpl % args: ', tpl % args)
+        # dprint('tpl % args: ', tpl % args)
         return Val(tpl % args, TypeString)
 
     def overs(self, a, b):
         a, b = valFrom(a), valFrom(b)
-        print('#bin-overs-1', a, b)
+        dprint('#bin-overs-1', a, b)
         match self.oper:
             case '-' :
                 if isinstance(a, (ListVal, DictVal)) and isinstance(b, ListVal):
@@ -331,16 +331,16 @@ class OpBinBool(BinOper):
         self.right.do(ctx)
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
-        print(' ( %s )' % self.oper, a.getVal(), b.getVal())
-        print(' (types)', a.getType(), b.getType())
+        dprint(' ( %s )' % self.oper, a.getVal(), b.getVal())
+        dprint(' (types)', a.getType(), b.getType())
         # TODOO: type check needs further development
         # vtype = a.getType()
         # if not isinstance(vtype, TypeAny) and not isinstance(b.getType(), TypeAny) and vtype != b.getType():
         #     # naive impl: different types are not equal
-        #     print('break comarison because types not equal %s <> %s' % (a.getType(), b.getType()) )
+        #     dprint('break comarison because types not equal %s <> %s' % (a.getType(), b.getType()) )
         #     return False
         res = ff[self.oper](a.getVal(), b.getVal())
-        print('# == == OpCompare.do ', res)
+        dprint('# == == OpCompare.do ', res)
         self.res = Val(res, TypeBool)
     
     def op_and(self, a, b):
@@ -370,10 +370,10 @@ class OpCompare(BinOper):
         self.right.do(ctx)
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
-        print('( %s )' % self.oper,  self.left, self.right)
-        # print('#--OpCompare.do2',  a, b)
-        print(' ( %s )' % self.oper,  a.getVal(), b.getVal())
-        # print('#--OpCompare.do3',  a.getType(), b.getType())
+        dprint('( %s )' % self.oper,  self.left, self.right)
+        # dprint('#--OpCompare.do2',  a, b)
+        dprint(' ( %s )' % self.oper,  a.getVal(), b.getVal())
+        # dprint('#--OpCompare.do3',  a.getType(), b.getType())
         type = a.getType()
         if type != b.getType():
             # naive impl: different types are not equal
@@ -381,7 +381,7 @@ class OpCompare(BinOper):
             # TODO: fix type comparison
             pass
         res = ff[self.oper](a.getVal(), b.getVal())
-        # print('# == == OpCompare.do ', res)
+        # dprint('# == == OpCompare.do ', res)
         self.res = Val(res, TypeBool)
 
 
@@ -455,7 +455,7 @@ class BoolNot(UnarOper):
     def do(self, ctx:Context):
         self.inner.do(ctx)
         inVal = self.inner.get()
-        # print(' !x', self.inner, inVal)
+        # dprint(' !x', self.inner, inVal)
         res = not inVal.getVal()
         self.res = Val(res, inVal.getType())
 
@@ -532,7 +532,7 @@ class ObjectMember(Val):
         self.setArgs(obj, member)
 
     def setArgs(self, obj, member):
-        print('ObjectMember.setArgs (', obj, ' -> ', member, ')')
+        dprint('ObjectMember.setArgs (', obj, ' -> ', member, ')')
         self.object = obj
         self.member = member
 
@@ -541,12 +541,12 @@ class ObjectMember(Val):
 
     def get(self):
         ''' res = obj.member; foo(obj.member); obj.member() '''
-        print('self.member, get :: ',self.object, type(self.object), '::', self.member)
+        dprint('self.member, get :: ',self.object, type(self.object), '::', self.member)
         val = self.object.get(self.member)
         
-        print('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
+        dprint('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
         if isinstance(val, (StructInstance, Val)):
-            # print('membrr get struct')
+            # dprint('membrr get struct')
             return val
         return val.get()
     
@@ -556,7 +556,7 @@ class ObjectMember(Val):
     
     def set(self, val:Val):
         ''' obj.member = expr; obj.member[key] = expr (looks like a.b[c] is an subcase of a.b) '''
-        print('ObjectMember.set self.member, val :: ', self.member, val)
+        dprint('ObjectMember.set self.member, val :: ', self.member, val)
         self.object.set(self.member, val)
 
     def __str__(self):
@@ -574,7 +574,7 @@ class ModuleMember:
         self.member = memb
     
     def get(self):
-        print('ModuleMember.get')
+        dprint('ModuleMember.get')
         return self.module.get(self.member)
     
     def getType(self):
@@ -600,27 +600,27 @@ class OperDot(BinOper):
         if isinstance(inst, StructInstance) and isinstance(member, FuncCallExpr):
             member = MethodCallExpr(member)
         self.membExpr = member
-        print('   >> OperDot.set', self.objExp, self.membExpr)
+        dprint('   >> OperDot.set', self.objExp, self.membExpr)
 
     def do(self, ctx:NSContext):
-        print('OperDot.do0', self.objExp, '; type=', type(self.objExp), ' :: ', self.membExpr)
+        dprint('OperDot.do0', self.objExp, '; type=', type(self.objExp), ' :: ', self.membExpr)
         self.objExp.do(ctx)
         objVar = self.objExp.get()
-        print('OperDot.do00', objVar, '; type=', type(objVar))
+        dprint('OperDot.do00', objVar, '; type=', type(objVar))
         if isinstance(objVar, ModuleBox):
             # process modules
-            print('OperDot.do ModuleBox:', objVar, '; memb:', self.membExpr)
+            dprint('OperDot.do ModuleBox:', objVar, '; memb:', self.membExpr)
             # mod = ModuleMember(objVar)
             # mod.setMember(self.membExpr.name)
             # self.val = mod
             if isinstance(self.membExpr, FuncCallExpr):
                 self.membExpr.do(objVar)
                 self.val = self.membExpr.get()
-                print('OperDot.do mod method res =', self.val)
+                dprint('OperDot.do mod method res =', self.val)
             if isinstance(self.membExpr, StructConstr):
                 self.membExpr.do(objVar)
                 self.val = self.membExpr.get()
-                print('OperDot.do mod method res =', self.val)
+                dprint('OperDot.do mod method res =', self.val)
                 
             return
             
@@ -630,17 +630,17 @@ class OperDot(BinOper):
         
         if isinstance(inst, StructInstance) and isinstance(self.membExpr, FuncCallExpr):
             self.membExpr = MethodCallExpr(self.membExpr)
-        print('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
+        dprint('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
         # self.membExpr.do(inst)
         name = ''
         
         if isinstance(self.membExpr, MethodCallExpr):
-            print('OperDot.do3 method1 =', self.membExpr, type(self.membExpr), '; methodname:', self.membExpr.name)
+            dprint('OperDot.do3 method1 =', self.membExpr, type(self.membExpr), '; methodname:', self.membExpr.name)
             # TODO: refactor to: 1. return func-member; 2. call method as usage of `()` operator
             self.membExpr.setInstance(inst)
             self.membExpr.do(ctx)
             self.val = self.membExpr.get()
-            print('OperDot.do4 method res =', self.val)
+            dprint('OperDot.do4 method res =', self.val)
             return
         
         if isinstance(self.membExpr, VarExpr):
@@ -654,9 +654,9 @@ class OperDot(BinOper):
         if isinstance(inst, ObjectMember):
             inst = inst.get()
 
-        # print('OperDot.do2 <inst =', inst, 'name=', name ,'>')
+        # dprint('OperDot.do2 <inst =', inst, 'name=', name ,'>')
         self.val = ObjectMember(inst, name)
-        print('OperDot.do5 fin field =', self.val)
+        dprint('OperDot.do5 fin field =', self.val)
 
     def get(self):
         return self.val
@@ -749,14 +749,14 @@ class IsInExpr(BinOper):
         self.collExp = right
 
     def do(self, ctx:Context):
-        # print('IsInExpr ?>> (1)', )
+        # dprint('IsInExpr ?>> (1)', )
         self.valExpr.do(ctx)
         val = self.valExpr.get()
         val = valFrom(self.valExpr.get())
         self.collExp.do(ctx)
         coll = valFrom(self.collExp.get())
         res = False
-        # print('IsInExpr ?>>', coll)
+        # dprint('IsInExpr ?>>', coll)
         if isinstance(coll, (ListVal, DictVal, TupleVal, Maybe)):
             res = coll.has(val)
         if isinstance(coll.getType(), TypeString):

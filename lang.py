@@ -2,6 +2,12 @@
 Base types.
 '''
 
+# TODO: add config
+FullPrint = 0
+
+def dprint(*args):
+    if FullPrint:
+        print(*args)
 
 class ParseErr(ValueError):
     def __init__(self, *args):
@@ -19,7 +25,7 @@ class Mk:
 class lex:
     def __init__(self, val=None, mark=None, **kw):
         self.val = val if type(val) is str else None
-        # print('#4 ', type(val), '|', self.val)
+        # dprint('#4 ', type(val), '|', self.val)
         self.mark = mark if mark in [1,2,3, 4] else Mk.empty
         self.ltype = kw['type'] if 'type' in kw else 0
 
@@ -66,7 +72,7 @@ class TLine:
     def __init__(self, src:str, lexems:list[lex]):
         self.src = src
         self.lexems:list[lex] = lexems
-        # print('#a4:', [n.val for n in self.lexems])
+        # dprint('#a4:', [n.val for n in self.lexems])
 
 
 class CLine:

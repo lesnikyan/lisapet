@@ -109,24 +109,24 @@ class ListVal(Collection):
     
     def addVal(self, val:Val):
         # not sure, we need whole Var or just internal value?
-        print('ListVal.addVal:', val)
+        dprint('ListVal.addVal:', val)
         self.elems.append(val)
     
     def setVal(self, key:Val, val:Val):
         i = key.getVal()
-        # print('ListVar.setVal', i, val, 'Len=', len(self.elems), i < len(self.elems), self.elems)
+        # dprint('ListVar.setVal', i, val, 'Len=', len(self.elems), i < len(self.elems), self.elems)
         if i >= len(self.elems):
             raise EvalErr('List out of range by index %d ' % i)
         self.elems[i] = val
 
     def getVal(self, key:Val|int):
-        print('ListVal.getVal1, index:', key)
-        # print('ListVal.getVal1, elems:', self.elems)
+        dprint('ListVal.getVal1, index:', key)
+        # dprint('ListVal.getVal1, elems:', self.elems)
         i = key
         # if isinstance(key, Val):
         #     i = key.get()
         i = key.getVal()
-        print('@ i=', i)
+        dprint('@ i=', i)
         if i < len(self.elems):
             return self.elems[i]
         raise EvalErr('List out of range by index %d ' % i)
@@ -161,7 +161,7 @@ class ListVal(Collection):
         # if not nm:
             # nm = '#list-noname'
         def strv(var):
-            # print('@>>', var, var.getType(),  isinstance(var.getType(), TypeContainer), ' str:', str(var))
+            # dprint('@>>', var, var.getType(),  isinstance(var.getType(), TypeContainer), ' str:', str(var))
             if isinstance(var.getType(), TypeContainer):
                 return str(var)
             return str(var.get())
@@ -197,6 +197,9 @@ class TupleVal(Collection):
 
     def rawVals(self):
         return [n for n in self.elems]
+    
+    def vals(self):
+        return [(n.get()) for n in self.elems]
 
     def has(self, val:Val):
         v = val.getVal()

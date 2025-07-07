@@ -35,7 +35,7 @@ class CaseFuncDef(BlockCase, SubCase):
         subs = self.splitArgs(elems[3:-1])
         subs = [ees for ees in subs if len(ees) > 0]
         for ees in subs:
-            print('--------------- >>>>>>>>>>>>>>', elemStr(ees))
+            dprint('--------------- >>>>>>>>>>>>>>', elemStr(ees))
         return exp, subs
 
     def splitArgs(self, elems):
@@ -58,7 +58,7 @@ class CaseLambda(CaseFuncDef):
             return False
 
         main = OperSplitter().mainOper(elems)
-        print('CaseLambda elems[main]', elems[main].text, main)
+        dprint('CaseLambda elems[main]', elems[main].text, main)
         return isLex(elems[main], Lt.oper, '->')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
@@ -75,7 +75,7 @@ class CaseLambda(CaseFuncDef):
         return exp, [args, body]
 
     def setSub(self, base:FuncDefExpr, subs:Expression|list[Expression])->Expression:
-        print('CaseLambda. setSub', base,  ' \\ ', subs)
+        dprint('CaseLambda. setSub', base,  ' \\ ', subs)
         args, body = subs
         if isinstance(args, SequenceExpr):
             for arg in args.subs:
@@ -105,16 +105,16 @@ class CaseMathodDef(CaseFuncDef):
         subs = [instSub] + argSubs
         fname = elems[4].text
         exp = MethodDefExpr(fname)
-        print('CaseMathodDef split', exp)
+        dprint('CaseMathodDef split', exp)
         return exp, subs
 
     def setSub(self, base:MethodDefExpr, subs:Expression|list[Expression])->Expression:
         inst = subs[0]
         args = []
-        # print('CaseMathodDef seSub1', base, subs)
+        # dprint('CaseMathodDef seSub1', base, subs)
         if len(subs) > 1:
             args = subs[1:]
-        print('CaseMathodDef seSub2', base, inst, args)
+        dprint('CaseMathodDef seSub2', base, inst, args)
         base.setInst(inst)
         for exp in args:
             base.addArg(exp)
@@ -162,7 +162,7 @@ class CaseFunCall(SubCase):
     def setSub(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 
         ''' base - FuncCallExpr, subs - argVal expressions '''
         for exp in subs:
-            print('FN Call sub:', exp)
+            dprint('FN Call sub:', exp)
             base.addArgExpr(exp)
         return base
 

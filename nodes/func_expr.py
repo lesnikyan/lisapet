@@ -40,17 +40,17 @@ class Function(FuncInst):
         return self._name
 
     def addArg(self, arg:Var):
-        print('FN, addArg: ', arg)
+        dprint('FN, addArg: ', arg)
         self.argVars.append(arg)
         self.argTypes[arg.getName()] = arg.getType()
         self.argNum += 1
-        print('Fuuu, addArg', arg, self.argNum)
+        dprint('Fuuu, addArg', arg, self.argNum)
 
     # TODO: flow-number arguments
     def setArgVals(self, args:list[Val]):
         nn = len(args)
-        print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
-        print('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
+        dprint('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
+        dprint('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
         if self.argNum != len(args):
             raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
@@ -58,14 +58,14 @@ class Function(FuncInst):
             arg = args[i]
             aname = self.argVars[i].getName()
             self.checkArgType(aname, arg)
-            print('FN, self.argVars[i]: ', self.argVars[i])
+            dprint('FN, self.argVars[i]: ', self.argVars[i])
             atype = self.argVars[i].getType()
             argVar = Var(aname, atype)
             argVar.set(arg)
-            print('FN setArgVals-4: ', atype, aname)
+            dprint('FN setArgVals-4: ', atype, aname)
             if isinstance(atype, TypeAny):
                 argVar.setType(arg.getType())
-            print('set arg8  >> ', self.argVars[i], 'val:', arg)
+            dprint('set arg8  >> ', self.argVars[i], 'val:', arg)
             # arg.name = self.argVars[i].name
             self.callArgs.append(argVar)
             # self.argVars[i].set(arg.get())
@@ -80,7 +80,7 @@ class Function(FuncInst):
         inCtx = Context(self.defCtx) # inner context, empty new for each call
         # inCtx.addVar(Var(1000001, 'debVal', TypeInt))
         for arg in self.callArgs:
-            print('Fu.do:', arg)
+            dprint('Fu.do:', arg)
             inCtx.addVar(arg)
         # inCtx.get('debVal')
         # inCtx.upper = ctx
@@ -97,7 +97,7 @@ class Function(FuncInst):
         if self.__class__.__name__ == 'NFunc':
             return 'func %s(???)' % (self._name)
         args = []
-        # print('Func_str_. arg:', self.argVars)
+        # dprint('Func_str_. arg:', self.argVars)
         for arg in self.argVars:
             args.append('%s' % arg.name)
         return 'func %s(%s)' % (self._name, ', '.join(args))
@@ -117,27 +117,28 @@ class FuncCallExpr(Expression):
 
     def do(self, ctx: Context):
         # inne rcontext
-        print('FuncCallExpr.do')
+        dprint('FuncCallExpr.do')
         args:list[Var] = []
-        print(f'Function `{self.name}`:', self.func)
+        dprint(f'Function `{self.name}`:', self.func)
         ctx.print()
         func = ctx.get(self.name)
         # unpack function from var
-        print('#1# func-call do00: ', self.name, 'F:', func)
+        dprint('#1# func-call do00: ', self.name, 'F:', func)
         if isinstance(func, Var):
             func = func.get()
         self.func = func
         if isinstance(self.func, VarUndefined):
             raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
-        print('#1# func-call do1: ', self.name, 'F:', self.func, 'line:', self.src)
+        dprint('#1# func-call do1: ', self.name, 'F:', self.func, 'line:', self.src)
         for exp in self.argExpr:
-            # print('#1# func-call do2 exp=: ', exp)
+            # dprint('#1# func-call do2 exp=: ', exp)
             exp.do(ctx)
-            print('func-call do2:', exp, exp.get())
+            dprint('func-call do2:', exp, exp.get())
             arg = exp.get()
             if isinstance(arg, Var):
                 arg = arg.get()
             args.append(arg)
+        dprint('#fname', self.name)
         self.func.setArgVals(args)
         callCtx = Context(None)
         self.func.do(callCtx)
@@ -158,7 +159,7 @@ class FuncDefExpr(DefinitionExpr, Block):
     '''
 
     def __init__(self, name):
-        # print('FuncDefExpr.__inint 1:', name)
+        # dprint('FuncDefExpr.__inint 1:', name)
         self.name = name
         self.res:Function
         self.blockLines:list[Expression] = []
@@ -167,15 +168,15 @@ class FuncDefExpr(DefinitionExpr, Block):
 
     def addArg(self, arg:VarExpr):
         ''' arg Var(name, type)'''
-        # print('addArg1 :', arg, type(arg))
+        # dprint('addArg1 :', arg, type(arg))
         if isinstance(arg, ServPairExpr):
             arg = arg.getTypedVar()
-        print('addArg2 :', arg, type(arg))
+        dprint('addArg2 :', arg, type(arg))
         self.argVars.append(arg)
 
     def add(self, exp:Expression):
         ''' collect inner sequence of expressions'''
-        print('Func-Def-Exp. add ', exp)
+        dprint('Func-Def-Exp. add ', exp)
         self.blockLines.append(exp)
 
     def doFunc(self, ctx:Context):
@@ -187,12 +188,12 @@ class FuncDefExpr(DefinitionExpr, Block):
 
     def do(self, ctx:Context):
         ''''''
-        print('FuncDefExpr.do 1:', self.name, 'argExps:', self.argVars)
+        dprint('FuncDefExpr.do 1:', self.name, 'argExps:', self.argVars)
         func = self.doFunc(ctx)
         for arg in self.argVars:
             if isinstance(arg, TypedVarExpr):
                 arg.do(ctx)
-            print('FuncDefExpr.do 2:', arg, arg.get())
+            dprint('FuncDefExpr.do 2:', arg, arg.get())
             func.addArg(arg.get())
         func.block = Block()
         # build inner block of function
@@ -200,7 +201,7 @@ class FuncDefExpr(DefinitionExpr, Block):
             func.block.add(exp)
         func.setDefContext(ctx)
         self.res = func
-        print('FuncDefExpr.do 3:', func.getName())
+        dprint('FuncDefExpr.do 3:', func.getName())
         if not func.isLambda:
             self.regFunc(ctx, func)
     
@@ -241,7 +242,7 @@ class NFunc(Function):
     def setArgVals(self, args:list[Var]):
         self.argVars = []
         for arg in (args):
-            print('~NFsetA', arg)
+            dprint('~NFsetA', arg)
             if isinstance(arg, Var):
                 arg = arg.get()
             self.argVars.append(arg)
@@ -249,7 +250,7 @@ class NFunc(Function):
     def do(self, ctx: Context):
         args = []
         for arg in self.argVars:
-            print('#T arg = ', arg)
+            dprint('#T arg = ', arg)
             a = arg
             args.append(a)
         res = self.callFunc(*args)

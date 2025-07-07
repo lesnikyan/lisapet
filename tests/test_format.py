@@ -66,7 +66,7 @@ class TestFormat(TestCase):
         print('res = ', res)
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -74,7 +74,7 @@ class TestFormat(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         rvar = ctx.get('res').get()
-        print('tt>>', rvar)
+        dprint('tt>>', rvar)
         exp = [' Prefix1: 1234 12.345 abc!!@@ 15 233 ',
                ' Prefix2: 4455 55.68 00001167 Lulaby 20 22 ',
                ' Prefix3: 5500 3300 5244 [0000004399] '
@@ -176,9 +176,9 @@ class TestFormat(TestCase):
             parts = fp.parse(src)
             slex:subLex = parts[1]
             opt = fop.parseSuff(slex.options)
-            # print('tt2', opt)
+            # dprint('tt2', opt)
             res = fm.format(val, opt)
-            print('tt3', slex.options, '>>>', '`%s`' % res)
+            dprint('tt3', slex.options, '>>>', '`%s`' % res)
             self.assertEqual(exp, res)
 
     def test_fstr_split(self):
@@ -195,9 +195,9 @@ class TestFormat(TestCase):
         # sf = StrFormatter()
         fp = FormatParser()
         for s in data:
-            print('t>', s)
+            dprint('t>', s)
             parts = fp.parse(s)
-            print('>>', parts)
+            dprint('>>', parts)
 
     def test_str_formatting(self):
         ''' percent-pattern for string format '''
@@ -209,7 +209,7 @@ class TestFormat(TestCase):
         print('res = ', res)
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)

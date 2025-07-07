@@ -51,7 +51,7 @@ class CaseTuple(SubCase):
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        print('CaseTuple.setSub: ', base, subs)
+        dprint('CaseTuple.setSub: ', base, subs)
         for exp in subs:
             base.add(exp)
         return base
@@ -75,8 +75,8 @@ class CaseList(SubCase):
             return False
         subElems = elems[1:-1]
         opInd = spl.mainOper(subElems)
-        print('CaseList main oper ind: ', opInd)
-        print('CaseList main oper text: ', subElems[opInd].text)
+        dprint('CaseList main oper ind: ', opInd)
+        dprint('CaseList main oper text: ', subElems[opInd].text)
         # -1 : 1 varname
         # > 0 and elem = `,` : several elems
         # > 0 and elem not in [:;] one somplex expression
@@ -93,7 +93,7 @@ class CaseList(SubCase):
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        print('CaseList.setSub: ', base, subs)
+        dprint('CaseList.setSub: ', base, subs)
         for exp in subs:
             base.add(exp)
         return base
@@ -114,7 +114,7 @@ class CaseListBlock(SubCase):
         return ListConstr(), []
 
     def setSub(self, base:ListConstr, subs:Expression|list[Expression])->Expression:
-        print('ListConstr.setSub empty: ', base, subs)
+        dprint('ListConstr.setSub empty: ', base, subs)
 
 
 class CaseCollectElem(SubCase):
@@ -155,7 +155,7 @@ class CaseCollectElem(SubCase):
         # prels('CaseCollectElem match2:', elems[opInd+1 : -1])
         # filtering slice
         hasColon = CaseColon().match(elems[opInd+1 : -1])
-        # print('CaseCollectElem hasColon', hasColon)
+        # dprint('CaseCollectElem hasColon', hasColon)
         return not hasColon
 
     def matchOuter(self, elems:list[Elem]):
@@ -199,7 +199,7 @@ class CaseSlice(SubCase):
         subPart = elems[opInd+1 : -1]
         hasColon = cc.match(subPart)
         _, ccParts = cc.split(subPart)
-        print('CaseSlice match', hasColon, ccParts, len(ccParts))
+        dprint('CaseSlice match', hasColon, ccParts, len(ccParts))
         return hasColon and (len(ccParts) == 2 or isLex(subPart[-1], Lt.oper, ':'))
 
 
@@ -213,7 +213,7 @@ class CaseSlice(SubCase):
         return exp, [varexp]+ keys
 
     def setSub(self, base:CollectElemExpr, subs:Expression|list[Expression])->Expression:
-        print('CaseSlice setSub', base, subs)
+        dprint('CaseSlice setSub', base, subs)
         base.setVarExpr(subs[0])
         base.setKeysExpr(subs[1], subs[2])
         return base
@@ -230,11 +230,11 @@ class CaseDictLine(SubCase):
             return False
         
         if len(elems) == 2:
-            print('case-dict empty')
+            dprint('case-dict empty')
             return True
 
         ind = bracketsPart(elems)
-        # print('case-dict ind', ind)
+        # dprint('case-dict ind', ind)
         if ind != -1:
             return False
 
@@ -275,7 +275,7 @@ class CaseDictLine(SubCase):
         return exp, subs
 
     def setSub(self, base:DictExpr, subs:Expression|list[Expression])->Expression:
-        print('CaseDict.setSub: ', base, subs)
+        dprint('CaseDict.setSub: ', base, subs)
         for exp in subs:
             base.add(exp)
         return base
@@ -288,7 +288,7 @@ class CaseDictBlock(SubCase):
         dict
         from varName = dict
         '''
-        # print('CaseDictBlock.match')
+        # dprint('CaseDictBlock.match')
         if len(elems) != 1:
             return False
         return isLex(elems[0], Lt.word, 'dict')
@@ -297,7 +297,7 @@ class CaseDictBlock(SubCase):
         return DictConstr(), []
 
     def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
-        print('CaseDictBlock.setSub empty: ', base, subs)
+        dprint('CaseDictBlock.setSub empty: ', base, subs)
 
 
 

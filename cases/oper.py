@@ -49,7 +49,7 @@ class CaseAssign(SubCase):
         # slice
         prels('# OpAsgn split1: ', elems)
         opInd = afterLeft(elems)
-        print('Assign-split opInd:', opInd, elems[opInd].text)
+        dprint('Assign-split opInd:', opInd, elems[opInd].text)
         left = elems[:opInd]
         right = elems[opInd+1:]
         # TODO: Implement multi-assign case
@@ -57,7 +57,7 @@ class CaseAssign(SubCase):
 
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         # waiting: OpAssign, [right]
-        print('CaseAssign setSub:',base,  subs)
+        dprint('CaseAssign setSub:',base,  subs)
         lsub = len(subs)
         if lsub % 2 > 0:
             # can be changed after tuple case implementation
@@ -65,12 +65,12 @@ class CaseAssign(SubCase):
         hsize = int (lsub  / 2) # half of size
         left = subs[:hsize]
         right = subs[hsize:]
-        print('CaseAssign sesubs L/R:', left, right)
+        dprint('CaseAssign sesubs L/R:', left, right)
         tl = left
         left = []
         for tex in tl:
             if isinstance(tex, ServPairExpr):
-                print('pair tex =  ', tex.left, tex.right)
+                dprint('pair tex =  ', tex.left, tex.right)
                 left.append(tex.getTypedVar())
             else:
                 left.append(tex)
@@ -125,7 +125,7 @@ class CaseBinOper(SubCase):
         
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
-        # print('#a51:', [n.text for n in elems])
+        # dprint('#a51:', [n.text for n in elems])
         src = elemStr(elems)
         lowesPrior = len(self.priorGroups) - 1
         inBr = 0
@@ -136,18 +136,18 @@ class CaseBinOper(SubCase):
         prels('~~ CaseBinOper', elems)
         for prior in range(lowesPrior, -1, -1):
             skip = -1
-            # print('prior=', prior, self.priorGroups[prior] )
+            # dprint('prior=', prior, self.priorGroups[prior] )
             for i in range(maxInd, -1, -1):
                 el = elems[i]
                 etx = el.text
                 # counting brackets from tne end, closed is first
                 if etx in cbr:
                     inBrs.append(etx)
-                    # print(' >> ',etx)
+                    # dprint(' >> ',etx)
                     continue
                 if etx in obr:
                     last = inBrs.pop()
-                    # print(' << ', etx, last)
+                    # dprint(' << ', etx, last)
                     continue
                     # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
                 if len(inBrs) > 0:
@@ -167,7 +167,7 @@ class CaseBinOper(SubCase):
                     continue
                 if el.text in self.priorGroups[prior]:
                     # we found current split item
-                    print('oper-expr>', '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
+                    dprint('oper-expr>', '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
                     # assigMath = '+= -= *= /= %='
                     # if el.text in assigMath:
                     #     opcase = CaseBinAssign()
@@ -175,7 +175,7 @@ class CaseBinOper(SubCase):
                     exp = makeOperExp(el)
                     exp.src = src
                     return exp, [elems[0:i], elems[i+1:]]
-        # print('#a52:', [n.text for n in elems])
+        # dprint('#a52:', [n.text for n in elems])
         # return 1,[[]]
         raise InterpretErr('Matched case didnt find key Item in [%s]' % ','.join([n.text for n in elems]))
 
@@ -183,7 +183,7 @@ class CaseBinOper(SubCase):
         ''' base - top-level (very right oper with very small priority) 
             subs - left and right parts
         '''
-        print('oper-bin seSub', base, subs)
+        dprint('oper-bin seSub', base, subs)
         base.setArgs(subs[0], subs[1])
 
 
@@ -251,7 +251,7 @@ class CaseUnar(SubCase):
             if ee.text == '(':
                 if inBr == 0 and maxBr > 0:
                     # here we are opening brackets twice
-                    # print('# -- opening brackets twice', ee.text)
+                    # dprint('# -- opening brackets twice', ee.text)
                     return False
                 inBr +=1
                 maxBr += 1
@@ -262,7 +262,7 @@ class CaseUnar(SubCase):
             if inBr == 0 and ee.type == Lt.oper and ee.text not in unaryOpers:
                 # not in brackets but found operator after 1-st element
                 # except cases with several unary one-by-one: !~x, !-5, ~-(expr)
-                # print('# -- not in brackets operator', ee.text)
+                # dprint('# -- not in brackets operator', ee.text)
                 return False
         return True
         ## regexp method
@@ -280,7 +280,7 @@ class CaseUnar(SubCase):
             subs - left part
         '''
         sub = subs[0]
-        print('Unar.setSub', base, sub)
+        dprint('Unar.setSub', base, sub)
         if self.formatter and isinstance(base, BitNot) and isinstance(sub, (StringExpr, MString)):
             # FString detected
             base = self.formatter.formatString(sub.get().getVal())
@@ -349,7 +349,7 @@ class CaseBrackets(SubCase):
 #         if afterInd > len(elems):
 #             return False
 #         elem = elems[afterInd]
-#         print('CaseBinAssign,split', afterInd, elem.text)
+#         dprint('CaseBinAssign,split', afterInd, elem.text)
 #         if elem.type != Lt.oper or elem.text not in EXT_ASSIGN_OPERS:
 #             return False
 #         return True
@@ -359,7 +359,7 @@ class CaseBrackets(SubCase):
 #         opIndex = afterLeft(elems)
 #         biOper = elems[opIndex]
 #         prels('CaseBinAssign.split1', elems)
-#         print('biOper:', biOper.text)
+#         dprint('biOper:', biOper.text)
 #         mOper = biOper.text[0] # get math oper, e.g.: + from +=
 #         left = elems[:opIndex]
 #         right = elems[opIndex+1:]
@@ -409,7 +409,7 @@ class CaseListGen(SubCase):
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        print('ListGenExpr.setSub: ', base, subs)
+        dprint('ListGenExpr.setSub: ', base, subs)
         base.setArgs(*subs)
         return base
 
@@ -467,7 +467,7 @@ class CaseListComprehension(SubCase):
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        print('CaseListComprehension.setSub: ', base, subs)
+        dprint('CaseListComprehension.setSub: ', base, subs)
         base.setInner(subs)
         return base
 

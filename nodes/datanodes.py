@@ -39,17 +39,17 @@ class ListExpr(CollectionExpr):
 
     def do(self, ctx:Context):
         self.listObj = ListVal()
-        # print('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
+        # dprint('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
         for exp in self.valsExprList:
             exp.do(ctx)
             v = exp.get()
-            print('ListExpr.do1', exp, v)
+            dprint('ListExpr.do1', exp, v)
             val = var2val(v)
             self.listObj.addVal(val)
-        print('## ListExpr.do2 self.listObj:', self.listObj)
+        dprint('## ListExpr.do2 self.listObj:', self.listObj)
 
     def get(self):
-        # print('## ListExpr.get self.listObj:', self.listObj)
+        # dprint('## ListExpr.get self.listObj:', self.listObj)
         return self.listObj
 
 
@@ -70,23 +70,23 @@ class DictExpr(CollectionExpr):
 
     def add(self, exp:ServPairExpr):
         ''' add next elem of list'''
-        print('DictExpr_add', self,  exp)
+        dprint('DictExpr_add', self,  exp)
         self.exprList.append(exp)
 
     def do(self, ctx:Context):
         self.data = DictVal(None)
-        # print('## DictExpr.do1 self.data:', self.data)
+        # dprint('## DictExpr.do1 self.data:', self.data)
         for exp in self.exprList:
-            # print('dictExp. next:', exp)
+            # dprint('dictExp. next:', exp)
             exp.do(ctx)
             k, v = exp.get()
             key = var2val(k)
             val = var2val(v)
             self.data.setVal(key, val)
-        # print('## DictExpr.do2 self.data:', self.data)
+        # dprint('## DictExpr.do2 self.data:', self.data)
 
     def get(self):
-        # print('## DictExpr.get self.data:', self.data)
+        # dprint('## DictExpr.get self.data:', self.data)
         return self.data
 
 
@@ -112,14 +112,14 @@ class CollectElemExpr(Expression, CollectElem):
 
     def do(self, ctx:Context):
         self.target = None
-        print('## COLL[x1] self.varExpr', self.varExpr)
+        dprint('## COLL[x1] self.varExpr', self.varExpr)
         self.varExpr.do(ctx) # before []
         target = self.varExpr.get() # found collection
-        print('## COLL[x2] target1', self.target)
+        dprint('## COLL[x2] target1', self.target)
         if isinstance(target, Var):
             target = target.get()
         self.target = target
-        print('## COLL[x3] target2', self.target)
+        dprint('## COLL[x3] target2', self.target)
         self.keyExpr.do(ctx) #  [ into ]
 
     def set(self, val:Var):
@@ -158,7 +158,7 @@ class SliceExpr(Expression, CollectElem):
         self.target = None
         self.varExpr.do(ctx) # before []
         target = self.varExpr.get() # found collection
-        print('SliceExpr.do1', target)
+        dprint('SliceExpr.do1', target)
         if isinstance(target, Var):
             target = target.getVal()
         self.target = target
@@ -166,7 +166,7 @@ class SliceExpr(Expression, CollectElem):
         self.closeExpr.do(ctx)
         if isinstance(self.closeExpr, NothingExpr):
             self.closeExpr = ValExpr(Val(self.target.len(), TypeInt))
-        print('## self.target', self.target)
+        dprint('## self.target', self.target)
 
     def get(self)->Var:
         beg, end = self.beginExpr.get(), self.closeExpr.get()

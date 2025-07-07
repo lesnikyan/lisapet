@@ -7,7 +7,7 @@ import os
 import pdb
 
 
-from lang import CLine
+from lang import CLine, dprint
 from parser import splitLexems, elemStream
 from vars import *
 from context import Context
@@ -24,21 +24,16 @@ class TestEvalFile(TestCase):
         fpath = filepath('full_example.et')
         with open(fpath, 'r') as f:
             code = f.read()
-            # print(code)
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             exp = lex2tree(clines)
             ctx = rootContext()
-            # setNativeFunc(ctx, 'print', print, TypeNull)
-            # setNativeFunc(ctx, 'len', len, TypeInt)
             ctx.get('len')
             # return
-            print('$$ run test ------------------')
+            dprint('$$ run test ------------------')
             # # pdb.set_trace()
             exp.do(ctx)
             # r1 = ctx.get('r1').get()
-            # # r2 = ctx.get('r2').get()
-            # print('#t >>> r:', r1)
 
 
 if __name__ == '__main__':

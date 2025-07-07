@@ -53,7 +53,7 @@ def isGetValExpr(elems:list[Elem]):
         if ee.type == Lt.word or (ee.type == Lt.oper and ee.text in varOpers):
             # just valid var, or func call, or collectio[elem], or obj.field 
             continue
-        print('utils.geVar4: ', ee.text, '', inBr)
+        dprint('utils.geVar4: ', ee.text, '', inBr)
         # any other lexem means that whole expression not what we expect
         return False
     return True
@@ -63,11 +63,11 @@ def isBrPair(elems:list[Elem], opn, cls):
 
 
 def prels(pref, elems:list[Elem], *args):
-    print(pref, [n.text for n in elems], *args)
+    dprint(pref, [n.text for n in elems], *args)
 
 
 def elemStr(elems:list[Elem]):
-    # print('debug elemStr', elems)
+    # dprint('debug elemStr', elems)
     return ' '.join([ee.text for ee in elems])
 
 class OperSplitter:
@@ -85,7 +85,7 @@ class OperSplitter:
         or || for logical expressions. 
         '''
         
-        # print('#a51:', [n.text for n in elems])
+        # dprint('#a51:', [n.text for n in elems])
         src = elemStr(elems)
         lowesPrior = len(self.priorGroups) - 1
         obr='([{'
@@ -97,10 +97,10 @@ class OperSplitter:
             return -1 # empty input
         for prior in range(lowesPrior, -1, -1):
             curPos = lem
-            # print('prior=', prior, self.priorGroups[prior] )
+            # dprint('prior=', prior, self.priorGroups[prior] )
             for i in range(lem - 1, -1, -1):
                 curPos -= 1
-                # print('spl1:', i, elems[i].text, curPos, lem)
+                # dprint('spl1:', i, elems[i].text, curPos, lem)
                 if curPos < 0:
                     return curPos # Nothing was found
                 el = elems[i]
@@ -111,7 +111,7 @@ class OperSplitter:
                     continue
                 if etx in obr:
                     last = inBrs.pop()
-                    # print(' << ', etx, last)
+                    # dprint(' << ', etx, last)
                     if i == 0 and etx in self.priorGroups[prior]:
                         return 0
                     continue
@@ -123,15 +123,15 @@ class OperSplitter:
                     continue
                 if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
                     # unary case found, skip current pos
-                    # print(' >> == unary case found:', i, el.text)
+                    # dprint(' >> == unary case found:', i, el.text)
                     continue
                 if el.text in self.priorGroups[prior]:
                     # we found current split item
-                    print('oper-found> [%d ? %d]' % (i, curPos), '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
+                    dprint('oper-found> [%d ? %d]' % (i, curPos), '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
 
                     return curPos # The main Result
         if isLex(elems[0], Lt.oper, unaryOperators):
-            print('oper-found> unary [0 : %s]' % elems[0].text ) 
+            dprint('oper-found> unary [0 : %s]' % elems[0].text ) 
             return 0
         return -1 # debug output, won't happened in real case
 

@@ -44,7 +44,7 @@ class TestLists(TestCase):
         print('res = ', res)
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -52,7 +52,7 @@ class TestLists(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         rvar = ctx.get('res').get()
-        print('rvar.vals()', rvar.vals())
+        dprint('rvar.vals()', rvar.vals())
         exp = [2, [1, 3], 11, {'b': 22}]
         self.assertEqual(exp, rvar.vals())
 
@@ -70,7 +70,7 @@ class TestLists(TestCase):
         print('res = ', res)
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -97,7 +97,7 @@ class TestLists(TestCase):
         print('res = ', res)
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -118,7 +118,7 @@ class TestLists(TestCase):
         print('res = ', res)
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -148,7 +148,7 @@ class TestLists(TestCase):
         _ = r'''
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -181,7 +181,7 @@ class TestLists(TestCase):
         _ = r'''
         '''
         code = norm(code[1:])
-        # print('>>\n', code)
+        # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -218,7 +218,7 @@ class TestLists(TestCase):
         ex.do(ctx)
         nums = ctx.get('res').get()
         nvals = [n.vals() for n in nums.rawVals()]
-        print('#tt', nvals)
+        dprint('#tt', nvals)
         exp = [{3: 30, 1: 10}, {3: 30, 1: 2, 2: 100}, {3: 30, 2: 4, 1: 10}, {3: 30, 2: 100},
                {3: 8, 1: 10}, {7: 70, 4: 16, 2: 100}, {7: 70, 5: 32, 1: 10}, {7: 70, 5: 32, 2: 100}]
         self.assertEqual(exp, nvals)
@@ -498,7 +498,7 @@ class TestLists(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        print('$$ run test ------------------')
+        dprint('$$ run test ------------------')
         exp.do(ctx)
 
     def test_for_array(self):
@@ -527,7 +527,7 @@ class TestLists(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        print('$$ run test ------------------')
+        dprint('$$ run test ------------------')
         exp.do(ctx)
 
 
@@ -546,10 +546,10 @@ class TestLists(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        print('$$ run test ------------------')
+        dprint('$$ run test ------------------')
         exp.do(ctx)
         res = ctx.get('res')
-        print('# tt>> ', res)
+        dprint('# tt>> ', res)
 
     def test_array(self):
         data = [
@@ -568,10 +568,10 @@ class TestLists(TestCase):
             clines:CLine = elemStream(tlines)
             ex = lex2tree(clines)
             ctx = rootContext()
-            print('~~~~ test case: %s ~~~~' % code)
+            dprint('~~~~ test case: %s ~~~~' % code)
             ex.do(ctx)
             rr = [ctx.get('res').get() , ctx.get('r').get()]
-            print('Test res = ', rr)
+            dprint('Test res = ', rr)
 
     def test_array_expr(self):
         data = [
@@ -594,7 +594,7 @@ class TestLists(TestCase):
                 vv = Var(k, TypeInt)
                 vv.set(Val(v, TypeInt()))
                 ctx.addSet({k: vv})
-            print('~~~~ test case: %s ~~~~' % code)
+            dprint('~~~~ test case: %s ~~~~' % code)
             ex.do(ctx)
 
 

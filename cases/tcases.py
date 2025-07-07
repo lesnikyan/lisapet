@@ -34,15 +34,15 @@ def afterLeft(elems:list[Elem])->int:
     
     for i in range(len(elems)):
         ee = elems[i]
-        # print(ee.text)
+        # dprint(ee.text)
         if inBr:
             # if ee.text == ']':
-            # print('in BR. continue', ee.text, ee.text in ')]')
+            # dprint('in BR. continue', ee.text, ee.text in ')]')
             if ee.text in ')]':
                 # close brackets
                 inBr -= 1
                 continue
-        # print('inbr ', inBr)
+        # dprint('inbr ', inBr)
         # if ee.type == Lt.oper and  ee.text == '[':
         if ee.type == Lt.oper and  ee.text in '([':
             # enter into brackets
@@ -50,9 +50,9 @@ def afterLeft(elems:list[Elem])->int:
             continue
         if inBr:
             continue
-        # print('@@ after', i, elems[i].text)
+        # dprint('@@ after', i, elems[i].text)
         if i > 0 and ee.type != Lt.word and (ee.type == Lt.oper and ee.text not in '.,:'):
-            # print('break:<(', ee.text,')> >> ',  elemStr(elems[:i+1]))
+            # dprint('break:<(', ee.text,')> >> ',  elemStr(elems[:i+1]))
             res = i
             break
     return res
@@ -73,9 +73,9 @@ def afterNameBr(elems:list[Elem])->int:
         ee = elems[i]
         # if inBr:
         if ee.text in cbr :
-            # print('#close', ee.text)
+            # dprint('#close', ee.text)
             if obr.index(inBr[-1]) != cbr.index(ee.text):
-                # print('# ee:', ee.text, 'inbr:', inBr)
+                # dprint('# ee:', ee.text, 'inbr:', inBr)
                 raise ParseErr('Incorrect brackets combinations %s on position %d %s ' % ''.join([n.text for n in elems]))
             # close brackets
             inBr = inBr[:-1]
@@ -88,7 +88,7 @@ def afterNameBr(elems:list[Elem])->int:
         if ee.type == Lt.oper and  ee.text in obr:
             # enter into brackets
             inBr += ee.text
-            # print('#open:', inBr)
+            # dprint('#open:', inBr)
             continue
         
         if inBr:
@@ -116,12 +116,12 @@ def bracketsPart(elems:list[Elem])->int:
         return -1
     for i in range(len(elems)):
         ee = elems[i]
-        print(' >>> ', ee.text)
+        dprint(' >>> ', ee.text)
         # if inBr:
         if ee.text in cbr :
-            print('#close', ee.text)
+            dprint('#close', ee.text)
             if obr.index(inBr[-1]) != cbr.index(ee.text):
-                # print('# ee:', ee.text, 'inbr:', inBr)
+                # dprint('# ee:', ee.text, 'inbr:', inBr)
                 raise ParseErr('Incorrect brackets combinations %s on position %d %s ' % ''.join([n.text for n in elems]))
             # close brackets
             inBr = inBr[:-1]
@@ -134,7 +134,7 @@ def bracketsPart(elems:list[Elem])->int:
         if ee.type == Lt.oper and  ee.text in obr:
             # enter into brackets
             inBr += ee.text
-            print('#open:', inBr)
+            dprint('#open:', inBr)
             continue
         if inBr:
             continue
@@ -165,7 +165,7 @@ class CaseComment(ExpCase):
             return False
         s = ''.join([n.text for n in elems])
         if elems[0].type == Lt.comm:
-            # print('CaseComment.match', s)
+            # dprint('CaseComment.match', s)
             return True
         return False
 
@@ -198,7 +198,7 @@ class CaseVal(ExpCase):
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
         res = ValExpr(elem2val(elems[0]))
-        # print('## CaseVal')
+        # dprint('## CaseVal')
         return res
 
 
@@ -240,7 +240,7 @@ class CaseMString(ExpCase):
             if el.type == Lt.mttext:
                 res.append(el.text)
         res = MString(''.join(res))
-        # print('## MString')
+        # dprint('## MString')
         return res
 
 class CaseVar(ExpCase):
@@ -347,7 +347,7 @@ class CaseSeq(SubCase):
                 start = i + 1
                 res.append(sub)
                 continue
-        # print('Seq.split, start =', start, 'len-elems =', len(elems))
+        # dprint('Seq.split, start =', start, 'len-elems =', len(elems))
         if start < len(elems):
             res.append(elems[start:])
         # if isLex(res[0][0], Lt.oper, self.delim):
@@ -357,7 +357,7 @@ class CaseSeq(SubCase):
         return SequenceExpr(self.delim), res
 
     def setSub(self, base:SequenceExpr, subs:Expression|list[Expression])->Expression:
-        print('CaseSeq(%s) setSub: ' % self.delim, base, subs)
+        dprint('CaseSeq(%s) setSub: ' % self.delim, base, subs)
         for sub in subs:
             base.add(sub)
         return base
@@ -422,7 +422,7 @@ class CaseSemic(CaseSeq, SubCase):
         super().__init__(';')
 
     # def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-    #     print('CaseSemic setSub: ', base, subs)
+    #     dprint('CaseSemic setSub: ', base, subs)
     #     base
 
 
@@ -474,7 +474,7 @@ class CaseImport(ExpCase):
         ''' return base expression, Sub(elems) '''
         # module = elems[0].text
         path, names = self.splitElems(elems[1:])
-        print('path, names::', path, names )
+        dprint('path, names::', path, names )
         expr = ImportExpr(path, names)
         return expr
 

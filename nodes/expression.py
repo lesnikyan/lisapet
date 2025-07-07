@@ -10,7 +10,7 @@ class Expression:
     def __init__(self, val=None, src:str=''):
         self.val = val
         self.__block = False
-        # print('Expression init', self)
+        # dprint('Expression init', self)
         self.src:str = src
     
     def do(self, ctx:Context):
@@ -51,7 +51,7 @@ class ValExpr(Expression):
         pass
 
     def get(self)->Var:
-        # print('#tn2-valEx-get:', self.val, self.val.get())
+        # dprint('#tn2-valEx-get:', self.val, self.val.get())
         return self.val
 
     def __str__(self):
@@ -65,9 +65,9 @@ class VarExpr(Expression):
         self.name = var.name
     
     def do(self, ctx:Context):
-        # print('VarExpr.do ctx:', ctx, 'name=', self.name)
+        # dprint('VarExpr.do ctx:', ctx, 'name=', self.name)
         newVal = ctx.get(self.name)
-        # print('VarExpr.do:', newVal)
+        # dprint('VarExpr.do:', newVal)
         self.val = newVal
     
     # def set(self, val:Var):
@@ -77,7 +77,7 @@ class VarExpr(Expression):
         return self.val
 
     def __str__(self):
-        # print('VVV', self)
+        # dprint('VVV', self)
         return 'VarExpr(%s, %s)' % (self.name, self.val)
 
 class VarExpr_(VarExpr):
@@ -100,12 +100,12 @@ class VarExpr_(VarExpr):
 
 class DebugExpr(Expression):
     def __init__(self, txt):
-        print('**** DEBUG__init:', txt)
+        dprint('**** DEBUG__init:', txt)
         super().__init__()
         self.val = txt
     
     def do(self, ctx:Context):
-        print(" $$$ >>> >>> DEBUG: ", self.val)
+        dprint(" $$$ >>> >>> DEBUG: ", self.val)
 
 
 class ControlExpr(Expression):
@@ -136,11 +136,11 @@ class Block(Expression):
             return
         lastInd = 0
         # self.ctx.upper = ctx
-        print('!! Block.do')
+        dprint('!! Block.do')
         ctx.print()
         self.lastVal = None
         for i in range(elen):
-            print('!! Block.iter ', i, self.subs[i])
+            dprint('!! Block.iter ', i, self.subs[i])
             expr = self.subs[i]
             expr.do(ctx)
             if isinstance(expr, (DefinitionExpr)):
@@ -151,7 +151,7 @@ class Block(Expression):
             lineRes = expr.get()
             if isinstance(lineRes, FuncRes):
                 # return expr
-                print(' - return::', lineRes)
+                dprint(' - return::', lineRes)
                 self.lastVal = lineRes
                 return
         if self.storeRes:
@@ -280,7 +280,7 @@ class ServPairExpr(Expression):
         return TypedVarExpr(self.left, self.right)
 
     def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
-        print('ServPairExpr.setArgs', left, right)
+        dprint('ServPairExpr.setArgs', left, right)
         self.left = left
         self.right = right
 
@@ -309,7 +309,7 @@ class TypedVarExpr(VarExpr):
         tpv = self.right.get()
         name = self.left.get().name
         tpName = self.right.name
-        # print('TypedVarExpr.ctx print:')
+        # dprint('TypedVarExpr.ctx print:')
         # ctx.print()
         tpInst = ctx.getType(tpName)
         tpVal = TypeAny()
@@ -317,7 +317,7 @@ class TypedVarExpr(VarExpr):
             tpVal = Undefined()
         else:
             tpVal = tpInst.get()
-        print('TypedVarExpr.do1 ', name, 'tp:', tpv, '{%s: %s}' % (tpv.val, tpv.vtype), tpName)
+        dprint('TypedVarExpr.do1 ', name, 'tp:', tpv, '{%s: %s}' % (tpv.val, tpv.vtype), tpName)
         
         self.val = Var(name, tpVal, strict=True)
         ctx.addVar(self.val)
@@ -366,7 +366,7 @@ class SequenceExpr(Expression):
     def getVals(self, ctx:Context):
         res = []
         for sub in self.subs:
-            print('SEQ getTuple:', sub)
+            dprint('SEQ getTuple:', sub)
             sub.do(ctx)
             res.append(sub.get())
         return res

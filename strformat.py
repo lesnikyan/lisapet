@@ -1,6 +1,7 @@
 
 import re
 
+from lang import dprint
 from parser import ParseErr
 # from tree import line2expr
 from nodes.expression import ValExpr, Expression
@@ -110,7 +111,7 @@ class FmtOptParser:
                     szrx = re.compile('\\d+')
                     szres = szrx.search(fmo[oInd:])
                     szSt, szEn = szres.span()
-                    # print('sz.span', fmo[oInd+szSt: oInd+szEn])
+                    # dprint('sz.span', fmo[oInd+szSt: oInd+szEn])
                     msize = int(fmo[oInd+szSt: oInd+szEn])
                     oInd += szEn
             match fmr.type:
@@ -141,7 +142,7 @@ class Formatter:
     def format(self, val, opt:FmtOption):
         res = ''
         isNum = opt.type in 'fdboxe'
-        # print(opt.type)
+        # dprint(opt.type)
         match opt.type:
             case 'x': res = self.toHex(val)
             case 'd': res = self.toDec(val)
@@ -153,7 +154,7 @@ class Formatter:
         # shift
         # if opt.shift > 0:
         #     res = ' ' * opt.shift + res
-        # print('rowr', res)
+        # dprint('rowr', res)
         
         shiftR = 0
         numSign = ''
@@ -181,7 +182,7 @@ class Formatter:
         if opt.minSize > 0:
             rlen = len(res)
             if rlen < opt.minSize:
-                # print('--', rlen)
+                # dprint('--', rlen)
                 fillN = opt.minSize - rlen
                 pre, post = 0, 0
                 match opt.align:
@@ -202,7 +203,7 @@ class Formatter:
         # '   -12.100' '   +12.100'
         # '000-12.100' '000012.100'
         # '-00012.100' '+00012.100'
-        print('#1:', res, ' shift:', shiftR)
+        dprint('#1:', res, ' shift:', shiftR)
         if isNum and numSign:
             # maybe we need to move sign to the res[0]
             if opt.zeroLead:
@@ -285,7 +286,7 @@ class StrJoinExpr(Expression):
         self.parts:list[Expression] = []
         if parts:
             for pp in parts:
-                print('SJE.init:', pp)
+                dprint('SJE.init:', pp)
                 self.add(pp)
         self.res = None
 
@@ -297,7 +298,7 @@ class StrJoinExpr(Expression):
         for pp in self.parts:
             pp.do(ctx)
             tres = pp.get()
-            print('SJEx.do1:', pp, tres)
+            dprint('SJEx.do1:', pp, tres)
             s = tres.getVal()
             ss.append(s)
         rval = ''.join(ss)
@@ -325,7 +326,7 @@ class FormatParser:
         parts = [] # text parts
         # incs = [] # expr parts
         bparts = self.brx.split(src)
-        # print('SF:', bparts)
+        # dprint('SF:', bparts)
         inExp = False
         for bb in bparts:
             tbr = ''

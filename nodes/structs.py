@@ -34,7 +34,7 @@ class StructDef(TypeStruct):
         self.__typeMethods:dict[str,FuncInst] = {}
 
     def addParent(self, superType: TypeStruct):
-        print('StructDef. addParent1 :', superType)
+        dprint('StructDef. addParent1 :', superType)
         self.__parents[superType.getName()] = superType
         
     def getParents(self):
@@ -42,16 +42,16 @@ class StructDef(TypeStruct):
 
     def addMethod(self, func:FuncInst):
         name = func.getName()
-        print('struct.add Method:', name)
+        dprint('struct.add Method:', name)
         if name in self.__typeMethods:
             raise EvalErr('Method `%s` already defined in type `%s`.' % (name, self.name))
         self.__typeMethods[name] = func
 
     def getMethod(self, name):
-        print('getMeth', name)
+        dprint('getMeth', name)
         if not name in self.__typeMethods:
             for sname, stype in self.__parents.items():
-                print('StDef.getMethod ', sname, stype)
+                dprint('StDef.getMethod ', sname, stype)
                 try:
                     mt = stype.getMethod(name)
                     return mt
@@ -62,7 +62,7 @@ class StructDef(TypeStruct):
 
     def debug(self):
         mm = [(k, v) for k, v in self.__typeMethods.items()]
-        print(mm)
+        dprint(mm)
 
     def find(self, name):
         if name in self.methods:
@@ -76,8 +76,8 @@ class StructDef(TypeStruct):
     def add(self, f:Var):
         tp:VType = f.getType()
         # if tp.name not in self.types:
-        print('StructDef.add ## ', f.__class__, ' || ', tp)
-        print('StructDef.add ## ', f, tp)
+        dprint('StructDef.add ## ', f.__class__, ' || ', tp)
+        dprint('StructDef.add ## ', f, tp)
         self.fields.append(f.name)
         self.types[f.name] = tp
 
@@ -104,7 +104,7 @@ class StructInstance(Val, NSContext):
 
     def __init__(self, stype:StructDef):
         super().__init__(None, stype)
-        print('StructInstance.__init__', '>>', stype)
+        dprint('StructInstance.__init__', '>>', stype)
         self.vtype:StructDef = stype
         self.data:dict[str, Var] = {}
         self.supers:dict = {}
@@ -135,7 +135,7 @@ class StructInstance(Val, NSContext):
 
     def get(self, fname=None):
         if fname is None:
-            # print('StructInstance.DEBUG::: getting enmpty fieldname')
+            # dprint('StructInstance.DEBUG::: getting enmpty fieldname')
             return '@struct <debug!> / ' + str(self) # debug
         if fname in self.vtype.fields:
             return self.data[fname]
@@ -148,7 +148,7 @@ class StructInstance(Val, NSContext):
     
     def find(self, fname):
         ''' find sub-field by name'''
-        print('st.find', fname, ':', self.vtype.fields)
+        dprint('st.find', fname, ':', self.vtype.fields)
         return self.data[fname]
 
     def setVals(self, vals:list[Var]):
@@ -159,10 +159,10 @@ class StructInstance(Val, NSContext):
 
     def set(self, fname:str, val:Var):
         # check type
-        print('StructInstance.set:', fname, val)
-        # print('@3>> ', dir(self))
-        # print('StructInstance.set type:', self.vtype, )
-        print('StructInstance.set types:', self.vtype.name, '>', self.vtype.types)
+        dprint('StructInstance.set:', fname, val)
+        # dprint('@3>> ', dir(self))
+        # dprint('StructInstance.set type:', self.vtype, )
+        dprint('StructInstance.set types:', self.vtype.name, '>', self.vtype.types)
         if fname in self.vtype.fields:
             self.checkType(fname, val)
             self.data[fname] = val
@@ -178,29 +178,34 @@ class StructInstance(Val, NSContext):
         valType = val.getType()
         ftype = self.vtype.types[fname] # class inherited of VType or inst of StructInstance
         fclass = ftype.__class__
-        print('Type: name / mtypes', self.vtype.name, self.vtype.types)
-        # print('Type Check ???1:', valType, '<?>', ftype)
-        # print('Type Check ???2:', valType.__class__, '<?>', fclass,' if:', isinstance(valType, fclass))
-        # print('Type struct???3:', isinstance(valType, StructInstance))
+        dprint('Type: name / mtypes', self.vtype.name, self.vtype.types)
+        # dprint('Type Check ???1:', valType, '<?>', ftype)
+        # dprint('Type Check ???2:', valType.__class__, '<?>', fclass,' if:', isinstance(valType, fclass))
+        # dprint('Type struct???3:', isinstance(valType, StructInstance))
         if ftype == TypeAny:
             return # ok
         # if primitives or collections
-        # print('if prim and !types', not isinstance(valType, StructInstance) and not isinstance(valType, ftype))
+        # dprint('if prim and !types', not isinstance(valType, StructInstance) and not isinstance(valType, ftype))
         if not isinstance(ftype, StructDef):
-            print('!! Not struct!', fclass)
+            dprint('!! Not struct!', fclass)
             if not isinstance(valType, fclass):
                 # TODO: add compatibility check
                 raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
             return
         # if struct
-        print('@ check type ', valType.name, '!=', self.vtype.name , valType.name != self.vtype.name)
+        dprint('@ check type ', valType.name, '!=', self.vtype.name , valType.name != self.vtype.name)
         if valType.name != ftype.name:
             raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
         
-
-    def __str__(self):
+    def istr(self):
         fns = self.vtype.fields
         vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
+        return vals
+
+    def __str__(self):
+        # fns = self.vtype.fields
+        # vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
+        vals = self.istr()
         return 'struct instance %s(%s)' % (self.vtype.name, vals)
 
 # Expressions
@@ -219,7 +224,7 @@ class StructDefExpr(DefinitionExpr):
 
     def add(self, fexp:Expression):
         '''fexp - field expression: VarExpr | ServPairExpr '''
-        # print('@@StructDefExpr.add1', fexp)
+        # dprint('@@StructDefExpr.add1', fexp)
         self.fields.append(fexp)
 
     def do(self, ctx:Context):
@@ -231,13 +236,13 @@ class StructDefExpr(DefinitionExpr):
             ctx.print()
             if isinstance(field, tuple) and len(field) == 2:
                 fn, ft = field
-                # print('@2>>', field)
-                print('@20>>', fn, ft)
+                # dprint('@2>>', field)
+                dprint('@20>>', fn, ft)
                 fname = fn.name
                 ftype = ft.get()
-                print('@21>> type', self.typeName,',fname:', fname, ' >> ',  ftype, type(ftype))
+                dprint('@21>> type', self.typeName,',fname:', fname, ' >> ',  ftype, type(ftype))
                 if not isinstance(ftype, (VType)):
-                    print('fname:', type(ft))
+                    dprint('fname:', type(ft))
                     raise EvalErr(f'Trying to put {fname} with no type.')
 
             elif isinstance(field, Var):
@@ -273,7 +278,7 @@ class StructArgPair(Expression):
         self.res = None
         self.valExpr.do(ctx)
         val = self.valExpr.get()
-        print('StructArgPair.do1', self.name, val)
+        dprint('StructArgPair.do1', self.name, val)
         self.res = self.name, val
     
     def get(self):
@@ -297,7 +302,7 @@ class StructConstr(Expression):
     def do(self, ctx:Context):
         self.inst = None
         stype = ctx.getType(self.typeName)
-        print('StructConstr.do1 >> ', stype)
+        dprint('StructConstr.do1 >> ', stype)
         inst = StructInstance(stype.get())
         vals = []
         for fexp in self.fieldExp:
@@ -305,7 +310,7 @@ class StructConstr(Expression):
             # if val only
             # if pair name:val
             expRes = fexp.get()
-            print('StructConstr.do res:', expRes[0], expRes[1])
+            dprint('StructConstr.do res:', expRes[0], expRes[1])
             # fname, val = '', None
             if isinstance(expRes, Var):
                 val = expRes
@@ -316,7 +321,7 @@ class StructConstr(Expression):
                 fname, val = expRes
                 # fname = fn
                 # val = fv
-                print('Strc.do >> ', expRes, fname, val)
+                dprint('Strc.do >> ', expRes, fname, val)
                 inst.set(fname, val)
             else:
                 raise EvalErr('Struct def error: fiels expression returns incorrect result: %s ' % expRes)
@@ -350,10 +355,10 @@ class MethodDefExpr(FuncDefExpr):
         func = Function(self.name)
         self.instExpr.do(ctx)
         inst = self.instExpr.get()
-        print('MethodDefExpr.doFunc', inst, self.name)
+        dprint('MethodDefExpr.doFunc', inst, self.name)
         self.typeName = inst.getType().getName()
-        # print('MethodDefExpr instType:', self.typeName)
-        print('MethodDefExpr doFunc:', self.instExpr, self.instExpr.get())
+        # dprint('MethodDefExpr instType:', self.typeName)
+        dprint('MethodDefExpr doFunc:', self.instExpr, self.instExpr.get())
         func.addArg(self.instExpr.get())
         return func
 
@@ -379,29 +384,29 @@ class MethodCallExpr(FuncCallExpr):
     #     self.argExpr.append(exp)
 
     def setInstance(self, inst: StructInstance):
-        print('MethCall set inst', inst)
+        dprint('MethCall set inst', inst)
         # raise XDebug('MethodCallExpr')
         self.inst = inst
 
     def do(self, ctx: Context):
         if not isinstance(self.inst, StructInstance):
             raise EvalErr('Incorrect instance of struct: %s ', self.inst)
-        print('MethodCallExpr.do 1', self.name, self.inst.getType())
+        dprint('MethodCallExpr.do 1', self.name, self.inst.getType())
         stype = self.inst.getType()
-        # print('MethodCallExpr.do2', stype, stype.debug()) #
+        # dprint('MethodCallExpr.do2', stype, stype.debug()) #
         
         self.func = stype.getMethod(self.name)
         # instVar = self.inst[0].get(), self.inst[1].get()
-        print('instVar', self.inst, self.func.argVars)
+        dprint('instVar', self.inst, self.func.argVars)
         args:list[Var] = [self.inst]
-        print('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
+        dprint('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
         # argInd = 0
         # avs = self.func.argVars
-        # print('#1# meth-call do2 exp=: ', avs, self.argExpr)
+        # dprint('#1# meth-call do2 exp=: ', avs, self.argExpr)
         for exp in self.argExpr:
-            # print('#1# meth-call do20 exp=: ', exp)
+            # dprint('#1# meth-call do20 exp=: ', exp)
             exp.do(ctx)
-            print('meth-call do3:', exp, exp.get())
+            dprint('meth-call do3:', exp, exp.get())
             args.append(exp.get())
         self.func.setArgVals(args)
         # TODO: add usage of Definishion Context instead of None

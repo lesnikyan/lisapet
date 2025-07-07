@@ -9,11 +9,11 @@ Each execution block has own context which is passed from parent block.
 Current context can find var|func name up to root context (module).
 '''
 
+import lang
 from vars import *
 
 
 class Context(NSContext):
-    # _defaultContextVals = {}
     def __init__(self, parent:'Context'=None):
         self.vars:dict = dict()
         self.types:dict[str, VType] = {}
@@ -39,7 +39,7 @@ class Context(NSContext):
         
 
     def addType(self, tp:VType):
-        print('ctx.addType: ', tp, '::', type(tp))
+        dprint('ctx.addType: ', tp, '::', type(tp))
         if not isinstance(tp, (VType, TypeVal)):
             raise EvalErr(f'Trying to put non-type {tp.name} to ctx.types.')
         # if tp.name not in self.types:
@@ -50,17 +50,13 @@ class Context(NSContext):
             name = tp.get().getName()
         if name in self.types:
             raise EvalErr(f'Type {tp.name} already defined.')
-        print('>>>>>>> :tp:', tp)
+        dprint('>>>>>>> :tp:', tp)
         self.types[name] = tp
 
     def getType(self, name)->VType:
-        # if name in Context._defaultContextVals:
-        #     return Context._defaultContextVals[name]
-        # print('Context.getType-1:', name)
-        # self.print()
         src = self
         while True:
-            # print('ctx cur types:', src.types.keys())
+            # dprint('ctx cur types:', src.types.keys())
             if name in src.types:
                 return src.types[name]
             if src.upper == None:
@@ -68,27 +64,23 @@ class Context(NSContext):
             src = src.upper
 
     def addSet(self, vars:Var|dict[str,Var]):
-        # print('x.addSet ---------0', vars)
         if not isinstance(vars, dict):
             vars = {vars.name: vars}
-        # print('x.addSet ------ 1 pre',  {(k, v.name, '%s' %v.get()) for k, v in self.vars.items()})
-        # print('x.addSet ------ 2 add', {(k, v.name, '%s' % v.get()) for k, v in vars.items()})
-        # print('x.addSet ------ 3 add', vars)
         self.vars.update(vars)
         
     def update(self, name, val:Var):
-        # print('x.update ====> :', name, val.get(), val.getType().__class__.__name__)
+        # dprint('x.update ====> :', name, val.get(), val.getType().__class__.__name__)
         src = self
         while True:
-            # print('#Ctx-upd,name:', name)
-            # print('#Ctx-upd2', src.vars)
+            # dprint('#Ctx-upd,name:', name)
+            # dprint('#Ctx-upd2', src.vars)
             if name in src.vars:
-                # print('x.upd:found', name)
+                # dprint('x.upd:found', name)
                 val.name = name
                 src.vars[name] = val
                 # src.vars[name].set(val.get())
             if src.upper is None:
-                # print('-- src.upper == None --', name, val)
+                # dprint('-- src.upper == None --', name, val)
                 val.name = name
                 self.addVar(val)
                 break
@@ -96,31 +88,27 @@ class Context(NSContext):
 
     def addFunc(self, fn:FuncInst):
         name = fn.getName()
-        print('x.addFunc ===>  name:', name, ' var: ', fn)
+        dprint('x.addFunc ===>  name:', name, ' var: ', fn)
         self.funcs[name] = fn
-
-    # def getFunc(self, name):
-    #     fvar = self.find(name)
 
     def addTypeMethod(self, typeName, func:FuncInst):
         typeVal = self.getType(typeName)
         xtype:TypeStruct = typeVal.get()
-        print('**addTypeMethod', typeName, xtype, func)
+        dprint('**addTypeMethod', typeName, xtype, func)
         if not isinstance(xtype, TypeStruct):
             raise EvalErr('Strange  type fpund by name `%s`' % typeName, xtype)
         xtype.addMethod(func)
 
     def addVar(self, varName:Var|str, vtype:VType=None):
-        # print('x.addVar0 >> var:', varName, varName.name)
+        # dprint('x.addVar0 >> var:', varName, varName.name)
         var = varName
         name = varName
-        # print('x.addVar1 ====> :', varName, varName.__class__.__name__, vtype, vtype.__class__.__name__)
+        # dprint('x.addVar1 ====> :', varName, varName.__class__.__name__, vtype, vtype.__class__.__name__)
         if isinstance(varName, str):
-            # print('! Just name', varName)
             var = Var(varName, vtype)
         else:
             name = var.name
-        print('x.addVar2: ', name, var)
+        dprint('x.addVar2: ', name, var)
         self.vars[name] = var
         # self.addSet({name:var})
 
@@ -134,60 +122,36 @@ class Context(NSContext):
         if name in src.types:
             return src.types[name]
         if name in src.funcs:
-            print('CTX.find func ?', name, src.funcs[name].__class__.__name__)
+            dprint('CTX.find func ?', name, src.funcs[name].__class__.__name__)
             if src.funcs[name].__class__.__name__ != 'NFunc':
-                print('CTX.find func:`%s`' % name, '::', src.funcs[name])
-            # if name == 'xprint':
-            #     raise EvalErr('@@3')
+                dprint('CTX.find func:`%s`' % name, '::', src.funcs[name])
             return src.funcs[name]
-        # if src.upper is None:
-        #     # raise EvalErr('Can`t find var|type name `%s` in current context' % name)
-        #     var = VarUndefined(name)
-        #     # self.addVar(var)
-        #     return var
+
         return None
 
     def find(self, name):
-        # if name in Context._defaultContextVals:
-        #     return Context._defaultContextVals[name]
         src = self
-        print('#Ctx-get0,:', name)
+        dprint('#Ctx-get0,:', name)
         while src is not None:
-            # # print('#Ctx-get,name:', name)
-            # # print('#Ctx-get2 vars', src.vars)
-            # # print('#Ctx-get3 funcs', (name in src.funcs), src.funcs)
-            # # print('#Ctx-depth', src.depth())
-            # # print('#Ctx-get,name:', name)
-            # # print('#Ctx-get2', src.vars, "\n\t\t\t", src.funcs)
-            # if name in src.vars:
-            #     return src.vars[name]
-            # if name in src.types:
-            #     return src.types[name]
-            # if name in src.funcs:
-            #     print('CTX.find func ?', name, src.funcs[name].__class__.__name__)
-            #     if src.funcs[name].__class__.__name__ != 'NFunc':
-            #         print('CTX.find func:`%s`' % name, '::', src.funcs[name])
-            #     # if name == 'xprint':
-            #     #     raise EvalErr('@@3')
-            #     return src.funcs[name]
             res = src.findIn(name)
-            print('ctx.find res=', res)
+            dprint('ctx.find res=', res)
             if res:
                 return res
             if src.upper is None:
                 # raise EvalErr('Can`t find var|type name `%s` in current context' % name)
                 var = VarUndefined(name)
-                # self.addVar(var)
                 return var
             src = src.upper
 
     def print(self, ind=0):
+        if not lang.FullPrint:
+            return
         c:Context = self
         while c:
             ttt = ['vars', 'types', 'funcs']
             iii = 0
             for data in [c.vars, c.types, c.funcs]:
-                print('.' * ind, '  > ', ttt[iii])
+                dprint('.' * ind, '  > ', ttt[iii])
                 iii += 1
                 for k, v in data.items():
                     vstr = v.get()
@@ -195,7 +159,7 @@ class Context(NSContext):
                         vstr = v.vals()
                     elif isinstance(v, FuncInst):
                         vstr = 'Function(%s)' % v.getName()
-                    print(' ' * ind, 'x>', k, v.__class__.__name__, ':', vstr)
+                    dprint(' ' * ind, 'x>', k, v.__class__.__name__, ':', vstr)
             c = c.upper
             ind += 1
             
@@ -258,27 +222,27 @@ class ModuleContext(Context):
          -- imported module: 'module.name' # Not applicable
         alias: 'name' -> `module.name`
         '''
-        print('mctx.findIn:', name)
+        dprint('mctx.findIn:', name)
         if name in self.aliases:
             name = self.aliases[name]
         res = super().findIn(name)
         if res is not None:
             return res
         # find module
-        print('#-imported', [k for k in self.imported.keys()])
+        dprint('#-imported', [k for k in self.imported.keys()])
         if name in self.imported:
             return self.imported[name]
         # find in modules
         for k, mbox in self.imported.items():
             if mbox.hasImported(name):
-                print('has', name, ' in ', k)
+                dprint('has', name, ' in ', k)
                 return mbox.get(name)
         # Nothing was found
         return None
 
     def getType(self, name):
         tt = self.findIn(name)
-        print('GetType, in: ', tt)
+        dprint('GetType, in: ', tt)
         if tt:
             return tt
         # raise EvalErr('ModCtx getType')
@@ -304,14 +268,14 @@ class ModuleBox(ModuleInst):
         self.inames.append(name)
     
     def hasImported(self, name):
-        print('hasImported1', self.name, ':', name)
-        print('hasImported2', self.inames)
+        dprint('hasImported1', self.name, ':', name)
+        dprint('hasImported2', self.inames)
         return name in self.inames
 
     def get(self, name):
         if len(self.inames) > 0 and name not in self.inames:
             raise EvalErr(f'Trying use not imported name `{name}` from module `{self.name}`.')
-        # print('ModuleBox.get(%s)' % name)
+        # dprint('ModuleBox.get(%s)' % name)
         return self.mcontext.get(name)
 
     def getName(self):
@@ -321,13 +285,13 @@ class ModuleBox(ModuleInst):
         return TypeModule()
 
     def getType(self, name):
-        print('ModuleBox', self.name)
+        dprint('ModuleBox', self.name)
         return self.mcontext.getType(name)
     
     def print(self):
-        print('ModuleBox(%s)' % self.name)
+        dprint('ModuleBox(%s)' % self.name)
         for vv in self.inames:
-            print(' ', vv)
+            dprint(' ', vv)
 
     def __str__(self):
         return 'ModuleBox(%s)' % (self.name)
