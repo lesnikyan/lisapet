@@ -8,6 +8,11 @@ run.py filename.etb (execute previously built file)
 
 # TODO: think about interactive mode
 
+# TODO: add pass of CI args for ET code.
+
+# TODO: add iterative call of built code.
+
+
 import argparse
 from argparse import ArgumentParser
 
