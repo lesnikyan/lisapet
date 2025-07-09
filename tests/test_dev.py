@@ -26,11 +26,16 @@ from tests.utils import *
 import pdb
 
 
+def ivar(name, value):
+    vv = Var(name, TypeInt())
+    vv.set(Val(value, TypeInt()))
+    return vv
+
+
 class TestDev(TestCase):
 
 
     # TODO: type of struct field: list, dict, bool, any
-
 
 
     def _test_barr(self):
