@@ -1,7 +1,7 @@
 
 
 from pathlib import Path
-
+from vars import *
 
 def norm(code):
     ''' Normalize input code: 
@@ -13,6 +13,12 @@ def norm(code):
         else:
             break
     return '\n'.join([s[ind:] for s in code.splitlines()])
+
+
+def ivar(name, value):
+    vv = Var(name, TypeInt())
+    vv.set(Val(value, TypeInt()))
+    return vv
 
 
 def filepath(fname):

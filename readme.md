@@ -92,6 +92,16 @@ if a = foo(); x < bar(a)
     ...
 ```
 
+```
+# come sugar
+if cond
+    code
+else if cond
+    code
+else
+    code
+```
+
 4. Math operators 
 ```
 y = 5 + x * -3

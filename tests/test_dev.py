@@ -26,12 +26,6 @@ from tests.utils import *
 import pdb
 
 
-def ivar(name, value):
-    vv = Var(name, TypeInt())
-    vv.set(Val(value, TypeInt()))
-    return vv
-
-
 class TestDev(TestCase):
 
 
@@ -46,12 +40,12 @@ class TestDev(TestCase):
         print('res = ', res)
         '''
         code = norm(code[1:])
-        # dprint('>>\n', code)
-        # return
+
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
-        ctx = rootContext()
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
         ex.do(ctx)
         rvar = ctx.get('res')
         self.assertEqual(0, rvar.getVal())

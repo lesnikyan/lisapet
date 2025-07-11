@@ -21,6 +21,16 @@ from nodes.iternodes import *
 
 class ElseExpr(Block):
     ''' '''
+    def __init__(self):
+        super().__init__()
+        self.subIf:IfExpr = None
+
+    def hasIf(self):
+        return bool(self.subIf)
+    
+    def setIf(self, sub: 'IfExpr'):
+        self.subIf = sub
+        self.add(sub)
 
 class IfExpr(ControlBlock):
     
@@ -70,6 +80,28 @@ class IfExpr(ControlBlock):
 
     def get(self):
         return self.lastRes
+
+
+class ElsFold:
+    
+    def __init__(self, main:IfExpr):
+        self.top:IfExpr = main
+        self.cur:IfExpr = main
+    
+    def setNext(self, exp:ElseExpr):
+        # self.cur.toElse(exp)
+        # subIf = exp.subIf
+        # self.cur.add(subIf)
+        self.cur = exp.subIf
+
+    def add(self, exp:Expression):
+        self.cur.add(exp)
+    
+    def toElse(self, exp:ElseExpr):
+        self.cur.toElse(exp)
+
+    def getMain(self):
+        return self.top
 
 
 # MATCH-CASE

@@ -13,7 +13,7 @@
 3.1 import x > * `instead of ` import x.* (?) thinking
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
 5. error handling (with printing source code)
-6. else if
+6. # DONE else if
 7. # DONE if sub-expression: if x=foo(); x < 5 ...
 8. logging
 9. input-output: files, console, network, db,

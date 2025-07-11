@@ -2,6 +2,8 @@
 
 '''
 
+from lang import *
+
 class XDebug(ValueError):
     def __init__(self, *args):
         super().__init__(*args)

@@ -173,6 +173,8 @@ class CaseElse(BlockCase, SubCase):
     in base impl no else with sub condition:
     if cond
         code
+    else if cond
+        code
     else
         if cond
             code
@@ -190,9 +192,10 @@ class CaseElse(BlockCase, SubCase):
         exp = ElseExpr()
         return exp,[elems[1:]]
     
-    def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
+    def setSub(self, base:ElseExpr, subs:Expression|list[Expression])->Expression:
         ''' nothing in minimal impl''' 
         # base.setCond(subs[0])
+        if subs:
+            # sub `if` should be here
+            base.setIf(subs[0])
         return base
-
-
