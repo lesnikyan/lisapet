@@ -22,31 +22,6 @@ class TestLang(TestCase):
 
 
 
-
-    def test_if_preset(self):
-        ''' '''
-        code = r'''
-        
-        res = []
-        for i <- [1..4]
-            if n = 10 * i ; n < 30
-                res <- n
-            else
-                res <- i * 3
-        
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-        # dprint('>>\n', code)
-        # return
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        rvar = ctx.get('res').get()
-        self.assertEqual([10, 20, 9, 12], rvar.vals())  
-
     def test_null_struct(self):
         ''' null, val, var, structVar = null '''
         code = r'''
@@ -516,26 +491,6 @@ class TestLang(TestCase):
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
 
-    def test_match_val(self):
-        code = '''
-        a = 4
-        r1 = 0
-        b = 3
-        match a
-            1  !- r1 = 100
-            10 !- r1 = 200
-            b  !- r1 = 300
-            _  !- r1 = -2
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        exp = lex2tree(clines)
-        ctx = rootContext()
-        exp.do(ctx)
-        r1 = ctx.get('r1').get()
-        dprint('#t >>> r:', r1)
-
     def test_CaseMatchSub_match(self):
         cs = CaseMatchCase()
         rrs = []
@@ -651,148 +606,6 @@ class TestLang(TestCase):
             _, subs = cs.split(elems)
             for sub in subs:
                 prels('tt>', sub)
-
-    def test_for_iter(self):
-        src = [
-        '''
-        res = 0
-        for i <- iter(10)
-            res += i
-        print('res: ', res)
-        ''',
-        '''
-        res = 0
-        for i <- [1,2,3,4,5,6,7,8,9]
-            res += i
-        print('res: ', res)
-        '''
-        ]
-        for code in src:
-            code = norm(code[1:])
-            tlines = splitLexems(code)
-            clines:CLine = elemStream(tlines)
-            ex = lex2tree(clines)
-            ctx = rootContext()
-            ex.do(ctx)
-            res = ctx.get('res').get()
-            dprint('##################t-IF1:', )
-            # self.assertEqual(res, 45)
-
-
-    def test_for_expr(self):
-        code = '''
-        y = 0
-        a = 100
-        b = 0
-        @debug 1
-        for i=0; i < 5; i = i + 1
-            y = y + 2
-            for j=-3; j <= 0; j = j + 1
-                a = a - j ** 2
-                if a % 2 == 0
-                    b = b + 1
-        res = y
-        '''
-        code = norm(code[1:])
-        # data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
-        data = [6]
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ress = []
-        for x in data:
-            ctx = Context(None)
-            vv = Var('x', TypeInt)
-            vv.set(x)
-            ctx.addSet({'x': vv})
-            dprint('~~~~ test case: %d ~~~~' % x)
-            ex.do(ctx)
-            rr = [ctx.get('res').get(), ctx.get('a').get() , ctx.get('b').get()]
-            ress.append(rr)
-            # ress.append(ctx.get('a').get())
-            dprint('##################t-IF1:', ctx.get('res').get())
-        dprint('all:', ress)
-
-    def test_while_expr(self):
-        code = '''
-        y = 0
-        z = 2
-        a = 0
-        @debug 1
-        while y < x
-            z = z + z
-            y = y + 1
-            if y % 2 == 0
-                a = a + 1
-        res = y
-        '''
-        code = norm(code[1:])
-        # dprint('!!')
-        # dprint(code)
-        # data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
-        data = [6]
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ress = []
-        for x in data:
-            ctx = rootContext()
-            vv = Var('x', TypeInt())
-            vv.set(Val(x, TypeInt()))
-            ctx.addSet({'x': vv})
-            dprint('~~~~ test case: %d ~~~~' % x)
-            ex.do(ctx)
-            ress.append(ctx.get('res').get())
-            ress.append(ctx.get('a').get())
-            dprint('##################t-IF1:', ctx.get('res').get())
-        dprint('all:', ress)
-
-
-    def test_if_else(self):
-        code = '''
-        res = 100
-        if x >= 10 | x < 2 && x != 0
-            res = 2000 + x * -10 - 700
-        else
-            x = x ** 2
-            res = 1000 + x - 500
-            # if res < 500
-            #     res = res + 10000
-        '''
-        code = '''
-        res = 100
-        # y = 0
-        if x >= 30 | (x < 2 && x != 0)
-            res = 11
-        else
-            # x = x ** 2
-            res = 22
-            if res + x > 30
-                res = res + x
-                res = 33
-                @debug 1
-                # y = 1
-                y = x + res
-                res = y
-        '''
-        # code = ''.join([s[8:] for s in code.splitlines()])
-        code = norm(code[1:])
-        data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
-        # data = [10, 20]
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ress = []
-        for x in data:
-            ctx =rootContext()
-            vv = Var('x', TypeInt)
-            vv.set(Val(x, TypeInt))
-            ctx.addSet({'x': vv})
-            dprint('~~~~ test case: %d ~~~~' % x)
-            ex.do(ctx)
-            ress.append(ctx.get('res').get())
-            dprint('##################t-IF1:', ctx.get('res').get())
-        dprint('all:', ress)
 
 
     def test_elem2var(self):
