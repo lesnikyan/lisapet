@@ -234,6 +234,7 @@ class ListGenExpr(Expression):
         self.endExpr = b
 
     def do(self, ctx:Context):
+        # dprint('ListGenExpr.do1:', self.beginExpr, self.endExpr)
         self.beginExpr.do(ctx)
         self.endExpr.do(ctx)
         a = self.beginExpr.get()
@@ -242,6 +243,9 @@ class ListGenExpr(Expression):
         
     def get(self):
         return Val(self.iter, TypeIterator())
+    
+    # def vals(self, ctx:Context):
+        
 
 
 class Append(Expression):
@@ -388,7 +392,7 @@ class ListComprExpr(Expression):
         self.resExpr = None # result expression, first in parts
         self.declarations:list[list[OpAssign]] = [] # declaration expressions, pre-last part
         self.filter = [] # filter condition, last part
-        self.res:ListVal = ListVal() # result of comprehansion expression
+        self.res:ListVal = None # result of comprehansion expression
 
     def setInner(self, subs:Expression):
         ''' set of expression lists
@@ -476,6 +480,7 @@ class ListComprExpr(Expression):
 
     def do(self, ctx:Context):
         dprint('ListComprExpr.do0')
+        self.res = ListVal()
         if len(self.iterNodes) == 0:
             return
         self.iterLoop(0, ctx)

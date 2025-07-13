@@ -165,6 +165,11 @@ class CaseBinOper(SubCase):
                 if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
                     # unary case found, skip current pos
                     continue
+                
+                # dirty fix: unary case in expression beginning, like: x = -1 * y
+                if i == 0 and el.type == Lt.oper and el.text in ['-', '+', '!', '~']:
+                    continue
+                
                 if el.text in self.priorGroups[prior]:
                     # we found current split item
                     dprint('oper-expr>', '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))

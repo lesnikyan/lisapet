@@ -230,6 +230,8 @@ class OpMath(BinOper):
             '>>': self.rshift
         }
         # eval expressions
+        dprint('#oper-left:', self.left)
+        dprint('#oper-right:', self.right)
         self.left.do(ctx)
         self.right.do(ctx)
         dprint('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions

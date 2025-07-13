@@ -27,6 +27,63 @@ from tests.utils import *
 
 
 class TestControl(TestCase):
+    
+    
+
+    def test_for_if_for_case(self):
+        ''' '''
+        code = r'''
+        
+        res = 1
+        
+        func sumInter(a, b)
+            r = 0
+            for n <- [a..b]
+                r += n
+            r
+        
+        func sum(nn)
+            r = 0
+            # print([i; i <-nn])
+            for n <- nn
+                # print('n:', n)
+                r += n
+            r
+        
+        fres = []
+        
+        for n <- [-2..10]
+            nums = [n .. (-2 * n)]
+            res = sum(nums)
+            if n > 0 && n < 5
+                b = n ** 2
+                res = sumInter(n, b)
+            else if n % 5 == 0
+                res = 5 * n
+            else if n ?> [5, 6, 7]
+                res = 100 + n
+            else if n < 0
+                nums = [n .. (-2 * n)]
+                res = sum(nums)
+            else
+                res = 1000
+                for k <- [10 + n .. 20 + n]
+                    res += k
+            fres <- res
+            # print('~', n, res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('fres').get()
+        dprint('T>>', rvar.vals())
+        exp = [7, 2, 0, 1, 9, 42, 130, 25, 106, 107, 1253, 1264, 50]
+        self.assertEqual(exp, rvar.vals())
 
     def test_else_if_nested_if(self):
         ''' '''

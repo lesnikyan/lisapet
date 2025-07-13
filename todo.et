@@ -45,21 +45,6 @@
 foo = func (args...)
 
 
-#==
-# sub-expression in if block 
-if val = foo(); val > 10 ...
-# last sub is condition
-
-
-#== else if - `sugar` for `if` into `else` block 
-if cond2
-    expr1
-else if cond2
-    expr2
-else
-    expr3
-
-
 #== works as is by native pythons functionality
 # list | string - mult *, concat +
 
@@ -446,7 +431,19 @@ delete nums[2], x
 # string formatting by %tpl
 # string formatting by internal includes like {varName}, $varName, @varName, @{exp(res.sion)}
 
+#== DONE
+# sub-expression in if block 
+if val = foo(); val > 10 ...
+# last sub is condition
 
+#== DONE
+# else if - `sugar` for `if` into `else` block 
+if cond2
+    expr1
+else if cond2
+    expr2
+else
+    expr3
 
 
 @#

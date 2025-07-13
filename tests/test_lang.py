@@ -21,6 +21,21 @@ import pdb
 class TestLang(TestCase):
 
 
+    def test_parsing_lead_minus(self):
+        ''' x = -1 * n
+            '''
+        code = '''
+        n = 5
+        x = -1 * n
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('x')
+        self.assertEqual(-5, rvar.getVal())
 
     def test_null_struct(self):
         ''' null, val, var, structVar = null '''

@@ -51,9 +51,17 @@ exension:
 ```
 # run file
 python -m run tests/simple_test.et
+...
 
 # run code line
 python -m run -c "a=1+2; print(a)"
+...
+
+# more complex 1-line example:
+py -m run -c "f1 = (x, y) -> x + y; f2 = x -> x * x;  p = x -> print(x); [p(f1(f2(n), 10000)); n <- [1..10]; n % 2 > 0 && n > 3]"
+10025
+10049
+10081
 
 ```
 

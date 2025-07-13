@@ -23,6 +23,28 @@ class TestLists(TestCase):
 
 
 
+    def test_list_get_minus_lead_arg(self):
+        ''' [n .. (-10 * n)] '''
+        code = r'''
+        n = -2
+        # m = -1 * n
+        res = [x; x <-[n .. -1 * n]]
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        # dprint('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        dprint('rvar.vals()', rvar)
+        exp = [-2, -1, 0, 1, 2]
+        self.assertEqual(exp, rvar.vals())
+
     def test_barr_del_collection_elem_minus(self):
         ''' '''
         code = r'''
