@@ -254,7 +254,10 @@ class NFunc(Function):
             a = arg
             args.append(a)
         res = self.callFunc(*args)
-        self.res = Val(res, self.resType)
+        if not isinstance(res, Val):
+            # not Val, Not ListVal, etc.
+            res =  Val(res, self.resType)
+        self.res = res
 
     def get(self)->Var:
         return self.res

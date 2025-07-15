@@ -404,7 +404,7 @@ class TestStruts(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         rtype = ctx.getType('User')
-        print('# TT >>>', rtype)
+        dprint('# TT >>>', rtype)
 
     def test_struct_field_type(self):
         type1 = StructDef('Test1')
@@ -417,7 +417,7 @@ class TestStruts(TestCase):
             type1.add(ff)
         inst = StructInstance(type1)
         inst.set('amount', Val(12, TypeInt()))
-        print('## T >>> ', inst.get('amount'))
+        dprint('## T >>> ', inst.get('amount'))
         # inst.set('amount', value('12', TypeString))
         # dprint('## T >>> ', inst.get('amount'))
 

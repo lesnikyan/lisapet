@@ -220,6 +220,16 @@ class ListGenIterator(NIterator):
 
     def get(self):
         return Val(self.index, TypeInt)
+    
+    def allVals(self):
+        res = ListVal()
+        self.start()
+        # print('LGI1 (%d, %d)' % (self.first, self.last))
+        while(self.hasNext()):
+            res.addVal(self.get())
+            # print('LGI>>', res.vals())
+            self.step()
+        return res
 
 
 class ListGenExpr(Expression):

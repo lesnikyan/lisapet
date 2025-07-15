@@ -7,6 +7,8 @@
     # DONE run.py - console script for run *.et files with console output.
     run.py - add preload of importable modules
     build.py - builder of *.et files with resulting binary files (serialized executable object).
+    run -m --multirun -s --datasource "source" # add option for multi-running compiled ET and datasource
+        -j -json-source datasource froom json file
 1. # DONE String formatting. ~"{var}", "... %s ..." << (var)
 2. # DONE one-line block: expr; expr; expr
 3. # DONE import modules

@@ -19,6 +19,7 @@ def rootContext(ctx:Context = None)->RootContext:
     setNativeFunc(ctx, 'iter', loop_iter, TypeIterator)
     setNativeFunc(ctx, 'type', type, TypeType)
     setNativeFunc(ctx, 'toint', built_int, TypeInt)
+    setNativeFunc(ctx, 'tolist', built_list, TypeList)
     
     constants = {
     'true': (TypeBool, Val(True, TypeBool)),
