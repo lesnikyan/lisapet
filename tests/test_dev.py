@@ -32,6 +32,48 @@ class TestDev(TestCase):
     # TODO: type of struct field: list, dict, bool, any
 
 
+
+    def _test_match_for_if_same_line(self):
+        ''' TODO: match with for loop, `if` statement in the same case line '''
+        code = r'''
+        c = 5
+        res = 0
+        func foo2(ff)
+            ff(11)
+        rrs = [] # [0 ; x <- [0..11]]
+        ff = x -> x * 10
+        for i <- [1..7]
+            res = 1
+            for jj < [1..3]
+                match i
+                    1 !- res = 10
+                    2 !- match ii
+                        1 !- res = 121 + ii * 1000
+                        2 !- res = 122 + ii * 1000
+                        _ !- res = 123 + ii * 1000
+                    3 !- if ii > 1 && ii < 4
+                            print('c2', i, res)
+                            res *= 11 * i + ii * 1000
+                    4 !- for j <- [0..5]
+                        print('c5', j, res)
+                        res += i
+                    5 !- for j = 1; j < 6; j = j + 1
+                            print('c7', j, res)
+                            res *= j
+                    _ !- res = 1001
+                rrs <- res
+
+        print('rrs = ', rrs)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('rrs').get()
+        self.assertEqual([10, 22, 121, 48, 115, 37, 120], rvar.vals())
+
     def _test_barr(self):
         ''' '''
         code = r'''
@@ -99,40 +141,6 @@ class TestDev(TestCase):
         ex.do(ctx)
         rvar = ctx.get('res')
         self.assertEqual(0, rvar.getVal())
-
-    def _test_match_for_if_lambda(self):
-        ''' '''
-        code = r'''
-        c = 5
-        res = 0
-        func foo2(ff)
-            ff(11)
-        rrs = [0 ; x <- [0..11]]
-        f = x -> x * 10
-        for i <- [1..10]
-            match c
-                1 !- res = 10
-                2 !- if res > 0
-                    res *= 10
-                3 !- res = foo2(x -> x ** 2)
-                4 !- f = x -> x * 100
-                5 !- for i=0; i < 5; i += 1
-                    res += i
-                _ !- res = 1000
-            rrs[i] = res
-
-        # foo = (x, y) -> x ** 2
-        # nums = foo(5, 2)
-        print('rrs = ', rrs)
-        '''
-        code = norm(code[1:])
-        # dprint('>>\n', code)
-        # return
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
 
 
     def _test_list_gen_by_strings(self):
