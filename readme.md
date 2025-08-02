@@ -66,6 +66,10 @@ python -m run -c "a=1+2; print(a)"
 # python -m run -c "r = [1..5]; print('nums:', tolist(r))"
 nums: [1, 2, 3, 4, 5]
 
+# multirun
+# json as a data source
+py -m run -c "n += a + b; print(':', a, b, n)" -l -j "[{\"a\":1, \"b\":2}, {\"a\":3, \"b\":4}, {\"a\":5, \"b\":6}]" -r n
+
 ```
 
 ## Syntax.
@@ -297,11 +301,27 @@ nums = [
 ]
 ```
 
+```
+# list comprehension by converted string
+src = "ABCdef123"
+res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
+```
+
 14. Builtin functions:
 ```
 # include python function as an builtin function.
 setNativeFunc(ctx, 'print', print, TypeNull)
 ```
+Builtin funcs changed for execute internal functions: added 1-st arg - Context.
+```
+def built_foldl(ctx:Context, start, elems, fun:Function):
+    ...
+        ...
+        fun.do(ctx)
+    ...
+```
+Actual builtin funcs:
+print, len, iter, type, toint, tolist, folds
 
 15. Lambda functions and high-order functions.
 ```

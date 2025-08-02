@@ -4,22 +4,31 @@
 
 from lang import *
 
-class XDebug(ValueError):
+
+class LangError(Exception):
+    def __init__(self, msg, *args):
+        # super().__init__(*args)
+        self.msg = msg
+        self.args = args
+
+class XDebug(LangError):
     def __init__(self, *args):
         super().__init__(*args)
     
 
-class InterpretErr(ValueError):
+class InterpretErr(LangError):
+    def __init__(self, msg='', src:CLine=None, parent:Exception=None):
+        super().__init__(msg)
+        self.src:CLine = src
+        self.parent = parent
+
+
+class EvalErr(LangError):
     def __init__(self, *args):
         super().__init__(*args)
 
 
-class EvalErr(ValueError):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-
-class TypeErr(ValueError):
+class TypeErr(LangError):
     def __init__(self, *args):
         super().__init__(*args)
 

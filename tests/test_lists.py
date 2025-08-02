@@ -22,6 +22,42 @@ class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
 
+    def test_str2gen(self):
+        '''
+        list comprehension by converted string.
+        '''
+        code = r'''
+        src = "ABCdef123"
+        res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        dprint('rvar.vals()', rvar)
+        exp = ['A|A', 'B|B', 'C|C', 'd|d', 'e|e', 'f|f']
+        self.assertEqual(exp, rvar.vals())
+
+    def test_str2list(self):
+        '''
+        '''
+        code = r'''
+        src = "ABCdef123"
+        res = tolist(src)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        dprint('rvar.vals()', rvar)
+        exp = ['A','B','C','d','e','f','1','2','3']
+        self.assertEqual(exp, rvar.vals())
 
     def test_list_get_minus_lead_arg(self):
         ''' [n .. (-10 * n)] '''

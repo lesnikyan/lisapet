@@ -7,11 +7,11 @@ from vars import *
 from context import *
 
 class Expression:
-    def __init__(self, val=None, src:str=''):
+    def __init__(self, val=None, src=None):
         self.val = val
         self.__block = False
         # dprint('Expression init', self)
-        self.src:str = src
+        self.src:CLine = src
     
     def do(self, ctx:Context):
         pass

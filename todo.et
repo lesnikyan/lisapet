@@ -8,7 +8,7 @@
     run.py - add preload of importable modules
     build.py - builder of *.et files with resulting binary files (serialized executable object).
     run -m --multirun -s --datasource "source" # add option for multi-running compiled ET and datasource
-        -j -json-source datasource froom json file
+        -j -json-source datasource from json file
 1. # DONE String formatting. ~"{var}", "... %s ..." << (var)
 2. # DONE one-line block: expr; expr; expr
 3. # DONE import modules
@@ -18,12 +18,17 @@
 6. # DONE else if
 7. # DONE if sub-expression: if x=foo(); x < 5 ...
 8. logging
-9. input-output: files, console, network, db,
+9. input-output: 
+    files, 
+    console, 
+    network, 
+    db,
 10 serialization: 
     1) data objects (collections, struct inst) 
     2) executive tree (prepared exec file)
 11. struct constructor without field names: A{1, 2.0, 'abc'} - order-driven struct constructor.
 12. Interfaces as a some list of method signatures.
+13. other args in `func(a, b, other...) : foo(1, 2, 33, 44, 55, 66, 77) other = [33, 44, 55, 66, 77]
 
 
 # Perspective things: 

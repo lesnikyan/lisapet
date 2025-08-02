@@ -194,6 +194,27 @@ def typeCompat(dest:VType, src:VType):
         case 'list'|'dict'|'struct': return stype in [TypeNull]
         case _: return False
 
+
+
+def valType(val):
+    tps = {
+        bool: TypeBool(),
+        int: TypeInt(),
+        float: TypeFloat(),
+        str: TypeString(),
+        list: TypeList(),
+        dict: TypeDict(),
+        tuple: TypeTuple(),
+        object: TypeStruct(),
+        callable: TypeFunc(),
+        complex: TypeComplex()
+    }
+    tp = type(val)
+    if tp in tps:
+        return tps[tp]
+    return Undefined()
+
+
 def typeCast(val:Var, type:VType):
     ''' cast val ty type'''
     

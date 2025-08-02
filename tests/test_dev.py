@@ -33,9 +33,110 @@ class TestDev(TestCase):
 
 
 
+    def test_built_foldl(self):
+        ''' '''
+        code = r'''
+        res = 0
+        
+        func sum(nums)
+            plus = (x, y) -> x + y
+            foldl(0, nums, plus)
+        
+        # args = [1,2,3,4,5]
+        s1 = sum([1,2,3,4,5])
+        s2 = sum([1..10])
+        s3 = sum([x ** 2 ; x <- [2..9]])
+        
+        res = [s1, s2, s3]
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rval = ctx.get('res').get()
+        self.assertEqual([15, 55, 284], rval.vals())
+
+# error handling
+
+    def runErr(self, code):
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        # self.assertFalse(isinstance(ex, Expression))
+
+    def test_err_interpret(self):
+        ''' '''
+        data = [
+            '--123',
+            '""++123',
+            'func 123\n',
+            'if 1:\n',
+            '~~::',
+            '1....2',
+            '())',
+            # 'if \nelse \nif \nelse func()',
+        ]
+        for code in data:
+            # try:
+            # except LangError:
+            print('TEST.code: ', code)
+            with self.assertRaises(InterpretErr) as cont:
+                self.runErr(code)
+                print('>>TT err:', cont.exception)
+
+    def test_err_parse(self):
+        ''' '''
+        data = [
+            "'",
+            '"123',
+            '"\\"',
+            '"\\g"',
+            '"\\0"',
+            # 'x> >>>>',
+        ]
+        for code in data:
+            # try:
+            # except LangError:
+            print('TEST.code: ', code)
+            with self.assertRaises(ParseErr) as cont:
+                self.runErr(code)
+                print('>>TT err:', cont.exception)
+            
+
+    def _test_barr(self):
+        ''' '''
+        code = r'''
+        res = 0
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res')
+        self.assertEqual(0, rvar.getVal())
+
     def _test_match_for_if_same_line(self):
         ''' TODO: match with for loop, `if` statement in the same case line '''
         code = r'''
+        struct ThreeNum a:int, b:int, c:int
+        
+        func n:ThreeNum sum()
+            n.a + n.b + n.c
+        
+        func n:ThreeNum mult()
+            n.a * n.b * n.c
+        
         c = 5
         res = 0
         func foo2(ff)
@@ -46,7 +147,11 @@ class TestDev(TestCase):
             res = 1
             for jj < [1..3]
                 match i
-                    1 !- res = 10
+                    1 !- n3 = ThreeNum
+                        a:jj
+                        b:5
+                        c:7
+                        res = n3.sum() * 1000 + n3.mult()
                     2 !- match ii
                         1 !- res = 121 + ii * 1000
                         2 !- res = 122 + ii * 1000
@@ -73,24 +178,6 @@ class TestDev(TestCase):
         ex.do(ctx)
         rvar = ctx.get('rrs').get()
         self.assertEqual([10, 22, 121, 48, 115, 37, 120], rvar.vals())
-
-    def _test_barr(self):
-        ''' '''
-        code = r'''
-        res = 0
-        
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        rvar = ctx.get('res')
-        self.assertEqual(0, rvar.getVal())
 
     def __tt(self):
         '''

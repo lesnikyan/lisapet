@@ -421,22 +421,5 @@ class TestStruts(TestCase):
         # inst.set('amount', value('12', TypeString))
         # dprint('## T >>> ', inst.get('amount'))
 
-    def _test_type_nums(self):
-        code = '''
-        a: int = 5
-        b: float = 10
-        c = b / a
-        print(c, type(c))
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        res = ctx.get('res').get()
-        print('##################t-IF1:', )
-        self.assertEqual(res, 45)
-
 if __name__ == '__main__':
     main()

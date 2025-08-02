@@ -319,47 +319,46 @@ def splitLexems(text: str) -> list[TLine]:
     # TODO: 
     extArg = {}
     for s in lines:
-        if not s.strip():
-            continue # miss empty and spaces line
-        # res.append(lex(0, Mk.line))
-        # interpretator magic:
-        
-        if s.startswith('@intr@exit'):
-            dprint('Interpretation exit in splitLexems()')
-            exit(1);
-        nextLine, endType, r3 = splitLine(s, lastType, **extArg)
-        extArg = r3
-        dprint('splLex..', [(x.val, Lt.name(x.ltype), x.mark) for x in nextLine.lexems])
-        # res.extend(nextLine)
-        # dprint('--- split res --->', [(x.val, x.ltype) for x in nextLine.lexems])
-        if res and lastType in [Lt.mtcomm, Lt.mttext] and endType == lastType:
-            # join cure line to prev
-            lasTLine = res[-1]
-            lasTLine.lexems.extend(nextLine.lexems)
-            lasTLine.src += nextLine.src
-            res[-1] = lasTLine
-            continue
-        
-        if len(nextLine.lexems) == 0:
-            continue
-        res.append(nextLine)
-        lastType = Lt.none
-        # lastElemType = nextLine.lexems[-1].ltype
-        if endType in [Lt.mtcomm, Lt.mttext]:
-            lastType = endType
+        try:
+            if not s.strip():
+                continue # miss empty and spaces line
+            # res.append(lex(0, Mk.line))
+            # interpretator magic:
+            
+            if s.startswith('@intr@exit'):
+                dprint('Interpretation exit in splitLexems()')
+                exit(1);
+            nextLine, endType, r3 = splitLine(s, lastType, **extArg)
+            extArg = r3
+            dprint('splLex..', [(x.val, Lt.name(x.ltype), x.mark) for x in nextLine.lexems])
+            # res.extend(nextLine)
+            # dprint('--- split res --->', [(x.val, x.ltype) for x in nextLine.lexems])
+            if res and lastType in [Lt.mtcomm, Lt.mttext] and endType == lastType:
+                # join cure line to prev
+                lasTLine = res[-1]
+                lasTLine.lexems.extend(nextLine.lexems)
+                lasTLine.src += nextLine.src
+                res[-1] = lasTLine
+                continue
+            
+            if len(nextLine.lexems) == 0:
+                continue
+            res.append(nextLine)
+            lastType = Lt.none
+            # lastElemType = nextLine.lexems[-1].ltype
+            if endType in [Lt.mtcomm, Lt.mttext]:
+                lastType = endType
+        except ParseErr as exc:
+            exc.src = TLine(s, None)
+            raise exc
+        except Exception as exc:
+            pexc = ParseErr('Common exception has been happen', TLine(s, None), exc)
+            raise pexc
     # res.append(lex(0, Mk.line))
     return res
 
 
 def lex2Elem(xx:lex)->Elem:
-    # dprint(':::', xx)
-    # if isinstance(xx, (list, tuple)):
-    #     for subxx in xx:
-    #         dprint('lex2Elem..subxx:', subxx.val, ':', Lt.name(subxx.ltype))
-    #     raise ParseErr(';!!')
-    # else:
-    #     dprint('lex2Elem..subxx:', xx.val, ':', Lt.name(xx.ltype))
-    
     if xx.ltype in [Lt.word, Lt.num, Lt.text, Lt.mttext]:
         return Elem(xx.ltype, xx.val)
     if xx.ltype == Lt.oper:
@@ -407,6 +406,13 @@ def elemStream(lines:list[TLine])->list[CLine]:
     res:list[CLine] = []
     CLine.BaseIndent = 0
     for tl in lines:
-        cl = elemLine(tl)
-        res.append(cl)
+        try:
+            cl = elemLine(tl)
+            res.append(cl)
+        except ParseErr as exc:
+            exc.src = tl
+            raise exc
+        except Exception as exc:
+            pexc = ParseErr('Common exception has been happen', tl, exc)
+            raise pexc
     return res

@@ -236,7 +236,7 @@ class NFunc(Function):
     def __init__(self, name, rtype:VType=TypeAny()):
         super().__init__(name)
         self.callFunc:Callable = lambda *args : 1
-        self.res:Var = None
+        self.res:Val = None
         self.resType:VType = rtype
 
     def setArgVals(self, args:list[Var]):
@@ -253,13 +253,15 @@ class NFunc(Function):
             dprint('#T arg = ', arg)
             a = arg
             args.append(a)
-        res = self.callFunc(*args)
+        res = self.callFunc(ctx, *args)
+        # if isinstance(res, Var):
+        #     res = res.get()
         if not isinstance(res, Val):
             # not Val, Not ListVal, etc.
             res =  Val(res, self.resType)
         self.res = res
 
-    def get(self)->Var:
+    def get(self)->Val:
         return self.res
 
 def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):

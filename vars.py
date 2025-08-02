@@ -306,3 +306,6 @@ def var2val(var:Var|Val):
     if isinstance(val, (Val, Collection)):
         return val
     return Val(val, tp)
+
+def str2list(val):
+    return ListVal(elems=[Val(s, TypeString()) for s in list(val)])

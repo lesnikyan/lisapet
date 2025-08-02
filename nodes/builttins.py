@@ -5,9 +5,10 @@
 
 from nodes.iternodes import *
 from nodes.structs import StructInstance
+from nodes.func_expr import Function
 
 
-def loop_iter(*args):
+def loop_iter(_, *args):
     beg, over, step = Val(0, None), Val(0, None), Val(1, None)
     dprint('>>>>>>>>>>>>>>>>> loop_iter function')
     match len(args):
@@ -32,7 +33,7 @@ def getVal(arg):
 
 
 
-def buit_print(*args):
+def buit_print(_,*args):
     pargs = []
     # print('b-print1:', args)
     for n in args:
@@ -52,23 +53,53 @@ def buit_print(*args):
         pargs.append(v)
     print(*pargs)
 
-def built_len(arg):
+def built_len(_, arg):
     return arg.len()
 
 
-def built_int(x):
-    return int(x.getVal())
+def built_int(_, x):
+    return Val(int(x.getVal()), TypeInt())
 
-def built_list(src):
+def built_type(_, val):
+    # TODO: add more correct type identification
+    return Val(type(val.getVal()), TypeType())
+
+
+def built_list(_, src):
     ''' Convert list-generator, tuple, args, etc to list object.
         TODO: args needs variadic function syntax to be implemented.
     '''
-    # print('b-list1:', src)
+    print('b-list1:', src)
     val = getVal(src)
+    
+    print('b-list1:', val)
     res = None
     if isinstance(src, ListVal):
         res = src
     elif isinstance(val, ListGenIterator):
         res = val.allVals()
-    # print('b-list2:', res)
+    elif isinstance(val, str):
+        res = str2list(val)
+    print('b-list2:', res)
     return res
+
+
+def built_foldl(ctx:Context, start, elems, fun:Function):
+    r = start
+    elems = built_list(0, elems).rawVals()
+    for n in elems:
+        fun.setArgVals([r, n])
+        fun.do(ctx)
+        r = fun.get()
+    # rval = r.getVal()
+    # rtype = valType(rval)
+    return r
+
+# TODO:
+'''
+str_split # split string by substring
+list_join # join  list vals to string
+int2char # int val to char as a string, int array to string
+char_code # nuber code of char
+
+'''

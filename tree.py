@@ -177,8 +177,17 @@ def elems2expr(elems:list[Elem])->Expression:
 def line2expr(cline:CLine)-> Expression:
     ''' '''
     # types: assign, just value, definition, definition content (for struct), operator, func call, control (for, if, func, match, case), 
-    expr = elems2expr(cline.code)
-    return expr
+    try:
+        expr = elems2expr(cline.code)
+        expr.src = cline
+        return expr
+    except InterpretErr as ixc:
+        ixc.src = cline
+        raise ixc
+    except Exception as exc:
+        ixc = InterpretErr("Error in `line2expr`", cline, exc)
+        raise ixc
+
 
 def raw2done(parent:Expression, raw:RawCase)->Expression:
     ''' post-process for sub-level sub-expressions:
@@ -204,6 +213,7 @@ def lex2tree(src:list[CLine]) -> Block:
     ''' '''
     root = Module()
     curBlock = root
+    lineNum = 0
     parents:list[Block] = []
     curInd = 0 # indent
     elifDeps = []
@@ -215,6 +225,8 @@ def lex2tree(src:list[CLine]) -> Block:
     for cline in src:
         i += 1
         dprint('  -  -  - ')
+        lineNum += 1
+        cline.line = lineNum
         if unclosed is None:
             indent = cline.indent
         else:
@@ -249,7 +261,7 @@ def lex2tree(src:list[CLine]) -> Block:
             continue
         dprint('lex2tree-2 expr:', expr, '; parents:', [type(n) for n in parents], curBlock)
         # dprint(dir(expr))
-        elDep = 0 # diff nest depth - indent. for `if else` case depth > indent
+        # elDep = 0 # diff nest depth - indent. for `if else` case depth > indent
         goBack = False # if we move back from nected block
         goBack = indent < curInd #  and (isinstance(expr, ElseExpr) and not expr.hasIf())
         # TODO except else if, but if not last else in `if` tree

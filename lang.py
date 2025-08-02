@@ -10,8 +10,11 @@ def dprint(*args):
         print(*args)
 
 class ParseErr(ValueError):
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, msg, src=None, parent=None):
+        # super().__init__(*args)
+        self.msg = msg
+        self.src:TLine = src
+        self.parent:Exception = parent
 
 
 class Mk:
@@ -84,6 +87,7 @@ class CLine:
         self.src:TLine = src
         self.code:list[Elem] = code
         self.indent = indent
+        self.line = 0
 
 
 KEYWORDS = '''
