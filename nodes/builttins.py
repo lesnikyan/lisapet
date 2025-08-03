@@ -69,10 +69,10 @@ def built_list(_, src):
     ''' Convert list-generator, tuple, args, etc to list object.
         TODO: args needs variadic function syntax to be implemented.
     '''
-    print('b-list1:', src)
+    # print('b-list1:', src)
     val = getVal(src)
     
-    print('b-list1:', val)
+    # print('b-list1:', val)
     res = None
     if isinstance(src, ListVal):
         res = src

@@ -20,8 +20,36 @@ from eval import *
 
 
 class TestFunc(TestCase):
-    
 
+
+
+    def test_built_foldl(self):
+        ''' '''
+        code = r'''
+        res = 0
+        
+        func sum(nums)
+            plus = (x, y) -> x + y
+            foldl(0, nums, plus)
+        
+        # args = [1,2,3,4,5]
+        s1 = sum([1,2,3,4,5])
+        s2 = sum([1..10])
+        s3 = sum([x ** 2 ; x <- [2..9]])
+        
+        res = [s1, s2, s3]
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rval = ctx.get('res').get()
+        self.assertEqual([15, 55, 284], rval.vals())
 
     def test_nesting_blocks(self):
         ''' if/match/for/func/method/ '''
