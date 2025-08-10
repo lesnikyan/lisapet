@@ -66,9 +66,15 @@ python -m run -c "a=1+2; print(a)"
 # python -m run -c "r = [1..5]; print('nums:', tolist(r))"
 nums: [1, 2, 3, 4, 5]
 
-# multirun
+# multirun - build once and run multiple times by dataset
 # json as a data source
-py -m run -c "n += a + b; print(':', a, b, n)" -l -j "[{\"a\":1, \"b\":2}, {\"a\":3, \"b\":4}, {\"a\":5, \"b\":6}]" -r n
+py -m run -c "n = a + b; print(':', a, b, n)" -l -j "[{\"a\":1, \"b\":2}, {\"a\":3, \"b\":4}, {\"a\":5, \"b\":6}]" -r n
+data: [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}, {'a': 5, 'b': 6}]
+: 1 2 3
+: 3 4 7
+: 5 6 11
+run: Ok
+>> 11
 
 # print result
 
