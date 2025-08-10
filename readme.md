@@ -70,6 +70,11 @@ nums: [1, 2, 3, 4, 5]
 # json as a data source
 py -m run -c "n += a + b; print(':', a, b, n)" -l -j "[{\"a\":1, \"b\":2}, {\"a\":3, \"b\":4}, {\"a\":5, \"b\":6}]" -r n
 
+# print result
+
+py -m run -c "res = 100 + 23" -r res
+>> 123
+
 ```
 
 ## Syntax.

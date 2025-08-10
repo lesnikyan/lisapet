@@ -7,14 +7,17 @@
     # DONE run.py - console script for run *.et files with console output.
     run.py - add preload of importable modules
     build.py - builder of *.et files with resulting binary files (serialized executable object).
-    run -m --multirun -s --datasource "source" # add option for multi-running compiled ET and datasource
-        -j -json-source datasource from json file
+    # DONE run -m --multirun 
+        -s --datasource "source" # add option for multi-running compiled ET and datasource
+        -j -json-source "file" # datasource from from json file
+        -r varname # show result / value of specified variable
 1. # DONE String formatting. ~"{var}", "... %s ..." << (var)
 2. # DONE one-line block: expr; expr; expr
 3. # DONE import modules
 3.1 import x > * `instead of ` import x.* (?) thinking
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
 5. error handling (with printing source code)
+    # DONE: parser errors, interpreation errors
 6. # DONE else if
 7. # DONE if sub-expression: if x=foo(); x < 5 ...
 8. logging

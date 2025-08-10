@@ -28,7 +28,38 @@ class TestErr(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
+        return ex
         # self.assertFalse(isinstance(ex, Expression))
+
+    def doErr(self, code, ctx):
+        expr = self.runErr(code)
+        expr.do(ctx)
+
+    def tctx(self):
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        return rCtx, ctx
+
+    def test_err_exec(self):
+        ''' '''
+        data = [
+            'x = 2 +m',
+            # '""++123',
+            # 'func 123\n',
+            # 'if 1:\n',
+            # '~~::',
+            # '1....2',
+            # '())',
+            # 'if \nelse \nif \nelse func()',
+        ]
+        for code in data:
+            # try:
+            # except LangError:
+            print('TEST.code: ', code)
+            with self.assertRaises(InterpretErr) as cont:
+                rCtx, ctx =self.tctx()
+                self.doErr(code, ctx)
+                print('>>TT err:', cont.exception)
 
     def test_err_interpret(self):
         ''' '''
