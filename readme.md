@@ -27,7 +27,7 @@ Syntax draft:
 "string" 'string' `string` '''string'''
 var:type
 <!any> - start page tag, defines how to interpret text file, optional
-<!text-template> - internal templating with including code snippets
+<!text-template> - internal templating with including code snippets, not implemented
 *.et, *.etml - file extension
 ```
 *
@@ -85,14 +85,14 @@ Done parts:
 ```
 x = 1
 name = 'Ramzes II'
-names = ['Alya', 'Valys', 'Olya']
+names = ['Alya', 'Valya', 'Olya']
 lastName = names[2]
 ```
 
 2. numbers, strings
 ```
 hello = "hello somebody!"
-nums = ['0123', '0b1111', '0o777', '0xfba01', '0.15']
+nums = [0123, 0b1111, 0o777, 0xfba01, 0.15]
 ```
 
 3. Sub-block of expressions. 
@@ -178,7 +178,7 @@ for k, val <- {'a':1, 'b':2}
     ...
 ```
 
-7. Function definition, context of functions (func call - in dev)
+7. Function definition, context of functions
 ```
 # definition
 func foo(a, b, c)
@@ -192,8 +192,10 @@ res = foo(1,2,3)
 # arg type
 func bar(a:int, b:int)
     a + b
+```
 
 8. Dict. Linear and block constructor
+```
 # linear
 dd = {'a':1, 'b':2}
 
@@ -201,22 +203,29 @@ dd = {'a':1, 'b':2}
 ddd = dict
     'a': 'a a a a a a a a a a a a a a a a a'
     'b': 'b b b b b b b b b b b b b b b b b'
+
+# add
+dd['c'] = 3
+
+# read
+print(dd['a'], ddd['b'])
 ```
 
 9. arrow-append/set operator `<-`
 ```
-# list
+# list: append val
 nn = []
 nn <- 12
 
-# for dict: dictVar <- (key, val) the same as dictVar[key] = val
+# dict: set val by key 
+# dictVar <- (key, val) the same as dictVar[key] = val
 dd = {}
 dd <- ('a', 123)
 ```
 
 10. Struct
 ```
-# definition.  linear:
+# definition.  linear
 struct B bb: int
 struct A a:int, b:B, c:string
 
@@ -239,6 +248,7 @@ r2 = aa.b.b1
 # def
 struct A a1:int
 
+# variable after `func` - instance of struct
 func a:A plusA1(x:int)
     a.a1 += x
 
@@ -265,13 +275,20 @@ b1.f1(3, 4)
 b1.a1 += 10
 ```
 
-12. List generator
+12. List number generator
 ```
-# [startVal..endVal]
+# simple numeric sequence [startVal..endVal]
 nums = [1..10] # -->> [1,2,3,4,5,6,7,8,9,10]
 ```
 
 13. List comprehension / generator
+[1) result element expression ; 2) read element; 3) additional exprssion with assignment; 4) filtering condition]
+2-4 is a generator-block; generator can have sub-blocks like:
+
+```
+[aa + bb + c ; a <- arr1; aa = a * 2; a > 5; b <- arr2; bb = b * b; c <- arr3; c < 10 ]
+```
+
 ```
 # simple
 n1 = [x ** 2 ; x <- [1..10]]
@@ -326,7 +343,7 @@ def built_foldl(ctx:Context, start, elems, fun:Function):
     ...
 ```
 Actual builtin funcs:
-print, len, iter, type, toint, tolist, folds
+print, len, iter, type, toint, tolist, foldl
 
 15. Lambda functions and high-order functions.
 ```
@@ -348,18 +365,23 @@ n1 = foo(f1, 5)
 n2 = foo( x -> 2 ** x , 5)
 ```
 
-16. match-statement. TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
+16. match-statement.
+TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
 ```
 # !- is a case-operator: 
 # value|template !- expressions
+# _ !- expr # default case
+
 a = 4
 r1 = 0
 b = 3
-# just simple values now
+# just simple values  has been implemented
 match a
     1  !- r1 = 100
     10 !- r1 = 200
-    b  !- r1 = 300
+    b  !-
+        b = a * 1000
+        r1 = [a, b]
     _  !- r1 = -2
 ```
 
@@ -416,6 +438,10 @@ a, b, s = (123, 12.5, 'ABC')
 ```
 
 22. import
+Imports module (file), module in folder (over dots: dirname.dirname2.module ).
+Imports all things from module, or named things.
+Can use aliases for named things.
+
 ```
 # pure import, just module name
 import some_module
@@ -442,7 +468,6 @@ f2(321)
 *
 
 --------------------------------------------------------
-NN.Next: 
 
 Drafts and thoughts:
 
