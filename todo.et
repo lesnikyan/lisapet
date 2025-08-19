@@ -32,6 +32,12 @@
 11. struct constructor without field names: A{1, 2.0, 'abc'} - order-driven struct constructor.
 12. Interfaces as a some list of method signatures.
 13. other args in `func(a, b, other...) : foo(1, 2, 33, 44, 55, 66, 77) other = [33, 44, 55, 66, 77]
+14. match-case block start in the same line:
+    match n
+        1 !- if cond
+            expr1
+        2 !- for i <- nlist
+            foo(i)
 
 
 # Perspective things: 

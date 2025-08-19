@@ -1,50 +1,42 @@
 
 # LISAPET
- It is was started as a simple and small scripting language.
-(Not so small already [facepalm]).
-Interpreter builds executable object, actually - tree of actions.
-Than this tree can be executed.
-Executable tree uses context-object (map of values with nested contexts).
-```
-
-```
-
-*
-LISAPET:
-Line-interpretation scripting as a possibly executable tree.
-Linear interpretable script automation project of executable tree.
-Linear interpretable script automatic parser of executable tree.
-Linear interpretable syntax analyzer and parser of executable tree.
-Lexical interpreter of scripting and arithmetical parser of executable tree.
-Language interpreter for scrtipt automatic producer of executable tree.
+Linear Interpreter of Scripting And Processing Expression Tree
 ico: Fox pet on the bicycle
 
-*
+It was started as a simple and small scripting language.
+(Not so small already [facepalm]).
+Interpreter builds executable object, actually - tree of actions (expressions).
+Than this object can be executed with some data.
+Executable tree uses context-object (map/dict of data values with nested contexts).
 
-Syntax draft:
-```
-# comment
-"string" 'string' `string` '''string'''
-var:type
-<!any> - start page tag, defines how to interpret text file, optional
-<!text-template> - internal templating with including code snippets, not implemented
-*.et, *.etml - file extension
-```
 *
-Syntax.
+Status.
+Actually it is on-dev.
+Details see abobe, in `syntax` section.
+
+*
+Syntax - basic principles.
 1. no extra thingth, block is defined by line shifting like python or ruby
-2. operators are functions, exception: brackets () [] {}, maybe.
-3. struct as complex type. struct can have methods.
-4. functions have typed args, by default as Any type
-5. functions can be overloaded by types (maybe)
+2. basic collections: list, dict, tuple
+3. arithmetic expressions - like python syntax: (a + 1/2) * b - c ** 2 .
+4. if-else, match, for, while.
+5. functions: last expression is a returning result. Explicit `return` works too.
+6. struct as a complex type. struct can have methods. Inheritance.
+7. functions have typed args, by default as Any type.
+8. Import modules.
+9. Some syntax sugar: list slice, list generator, `<-`, `?>`, `?:` operators, multiple assignment.
 
-exension:
+*
+Possible exension (thoughts):
+01. functions can be overloaded by types (maybe)
+02. operators are functions, exception: brackets () [] {}, maybe.
 10. mapping and pattern matching
 11. functions doesn't needs braces like haskell (for what?)
 12. functional elements: lambdas, composition, carrying.
 13. interface as list of functions (thinking)
 14. functions with ducktype args based on interfaces
 15. (), are also functions (for what?)
+
 *
 
 ## Usage.
@@ -55,6 +47,9 @@ python -m run tests/simple_test.et
 
 # run code line
 python -m run -c "a=1+2; print(a)"
+
+# python -m run -c "r = [1..5]; print('nums:', tolist(r))"
+nums: [1, 2, 3, 4, 5]
 ...
 
 # more complex 1-line example:
@@ -63,29 +58,35 @@ python -m run -c "a=1+2; print(a)"
 10049
 10081
 
-# python -m run -c "r = [1..5]; print('nums:', tolist(r))"
-nums: [1, 2, 3, 4, 5]
+# print result
+py -m run -c "res = 100 + 23" -r res
+>> 123
 
 # multirun - build once and run multiple times by dataset
 # json as a data source
+# data: [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}, {'a': 5, 'b': 6}]
 py -m run -c "n = a + b; print(':', a, b, n)" -l -j "[{\"a\":1, \"b\":2}, {\"a\":3, \"b\":4}, {\"a\":5, \"b\":6}]" -r n
-data: [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}, {'a': 5, 'b': 6}]
 : 1 2 3
 : 3 4 7
 : 5 6 11
-run: Ok
 >> 11
-
-# print result
-
-py -m run -c "res = 100 + 23" -r res
->> 123
 
 ```
 
 ## Syntax.
 
 Done parts:
+
+0. Comments.
+```
+# one-line comment
+
+#@
+multiline comment
+#@
+
+#@ in-line comment @#
+```
 
 1. Vars, vals, lists, assignment, context of vars
 ```
@@ -95,10 +96,28 @@ names = ['Alya', 'Valya', 'Olya']
 lastName = names[2]
 ```
 
-2. numbers, strings
+2. Numbers, strings, bool. Types.
 ```
 hello = "hello somebody!"
-nums = [0123, 0b1111, 0o777, 0xfba01, 0.15]
+'unary-quotes'
+'''multiline
+string'''
+
+nums = [
+    0123, # int, leading 0 will be irnored 
+    0b1111, # int, binary
+    0o777, # int octa
+    0xfba01, # int hex
+    0.15]   # float
+
+#types
+name:string = "Vasya"
+age:int = 25
+weight:float = 70
+
+yes:bool = true
+no:bool = false
+
 ```
 
 3. Sub-block of expressions. 
@@ -113,13 +132,13 @@ else
 ```
 
 ```
-# if with sub-expressions: if sub-expr; condition ... 
+# if with sub-expressions: if sub-expr; condition ...
 if a = foo(); x < bar(a)
     ...
 ```
 
 ```
-# come sugar
+# some sugar: else-if
 if cond
     code
 else if cond
@@ -135,7 +154,7 @@ y = 5 + x * -3
 # unary operators
 x = -2
 
-# complex math expressions
+# more complex math expressions
 b=100 
 c=4
 d=3
@@ -165,7 +184,9 @@ res = y
 
 6. Iterator, arrow-assign operator `<-`
 ```
-# by function iter(start[, last+1, step])
+# by function iter
+# iter(last+1)
+# iter(start, last+1 [, step])
 arr = [1,2,3]
 r = 0
 for i <- iter(3)
@@ -175,7 +196,8 @@ for i <- iter(3)
 for n <- [1,2,3]
     r += n
 
-# by generator
+# by number-generator
+# Generator [start .. last]
 for x <- [1..10]
     r += x
 
@@ -248,13 +270,15 @@ aa.a += 2
 r1 = aa.c
 r2 = aa.b.b1
 ```
+Struct fields have default values.
+numeric = 0, string = "", bool = false.
 
 11. Struct method
 ```
 # def
 struct A a1:int
 
-# variable after `func` - instance of struct
+# variable after `func` is instance of struct
 func a:A plusA1(x:int)
     a.a1 += x
 
@@ -263,7 +287,7 @@ aa = A{} # default is 0
 aa.plusA1(5)
 ```
 
-11. Struct inheritance
+11. Struct inheritance. Multiple inheritance is allowed.
 ```
 # parent types
 struct Aaaa a1: int, a2: string
@@ -273,7 +297,7 @@ func a:Aaaa f1(x:int, y:int)
 
 struct Cccc c:int
 
-# child, multiple inheritance
+# child struct, multiple inheritance
 struct B(Aaaa, Cccc) b:int
 
 b1 = B{b:1, a1:12, a2:'aa-2'}
@@ -284,16 +308,31 @@ b1.a1 += 10
 12. List number generator
 ```
 # simple numeric sequence [startVal..endVal]
-nums = [1..10] # -->> [1,2,3,4,5,6,7,8,9,10]
+nums = [1..5] # -->> [1,2,3,4,5]
 ```
 
 13. List comprehension / generator
-[1) result element expression ; 2) read element; 3) additional exprssion with assignment; 4) filtering condition]
-2-4 is a generator-block; generator can have sub-blocks like:
-
+```
+[expr; expr ;...]
+```
+Generator has such segments:
+[
+    1) result element expression ; 
+    2) read element; 
+    3) additional exprssion with assignment; 
+    4) filtering condition (aka guard)]
+2-4 is a generator-block. 
+3-4 are optional
+Generator should contain at least 2 segments: 
+```
+[n; n <- values]
+```
+generator can have sub-blocks, ie 2-4 is a repeatable part, like:
 ```
 [aa + bb + c ; a <- arr1; aa = a * 2; a > 5; b <- arr2; bb = b * b; c <- arr3; c < 10 ]
 ```
+Next gen-block can use values from previous.
+Result-expr can see all values from all gen-blocks.
 
 ```
 # simple
@@ -317,12 +356,15 @@ nums = [ x ; sub <- src ; x <- sub]
 # generator: multi-expressions, multiline expression
 nums = [
     {x:a, y:b, z:c}; # element of result
+    # 1)
     x <- [3..7]; # 1-st iterator
     a = x * 10; # sub-expression
     x % 2 > 0; # condition of 1-st part
+    # 2)
     y <- [1..10]; # 2-nd iterator
     b = 2 ** y;
     y <= 5;
+    # 3)
     z <- [1..3]; # 3-rd iterator
     c = 10 ** z;
     a + b + c < 1000
@@ -381,7 +423,7 @@ TODO: types, struct (type, fields, constructor), collections (size, some vals), 
 a = 4
 r1 = 0
 b = 3
-# just simple values  has been implemented
+# just simple values  has been implemented now
 match a
     1  !- r1 = 100
     10 !- r1 = 200
@@ -435,7 +477,7 @@ res = [a, b, c]; res <- dd; res <- e
 
 21. string formatting
 ```
-# `<<` classic %s-formatting. Uses native python % operator inside with %-templates
+# `<<` classic %s-formatting. Uses native `%` operator inside with %-templates
 'hello int:%d, float:%f, str:%s ' << (123, 12.5, 'Lalang')
 
 # `~`operator for string. Works like f-string in python, with {val:patterns}
@@ -477,6 +519,10 @@ f2(321)
 
 Drafts and thoughts:
 
+*.et, *.etml - file extension
+etml - possible extension of html/xml template.
+
+```
 u = user{"vasya", 16, 1.5}
 
 rx = \[a-z-_]{2,5}\i
@@ -500,7 +546,7 @@ foo a,b => "(%d, %.2f)" % a, b
 print foo(1,2.222) // "(1, 2.22)"
 s = foo 2, 3.333
 print s
-
+```
 *
 
 #TODO:
