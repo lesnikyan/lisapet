@@ -1,6 +1,7 @@
 
 # LISAPET
-Linear Interpreter of Scripting And Processing Expression Tree
+Linear Interpreter of Scripting And Processing Expression Tree.
+
 ico: Fox pet on the bicycle
 
 It was started as a simple and small scripting language.
