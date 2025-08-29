@@ -25,6 +25,46 @@ import pdb
 class TestOper(TestCase):
 
 
+    def test_not_in_list(self):
+        ''' '''
+        code = r'''
+        res = 0
+        dt = [0, 5, 11] # data
+        tst = [0, 1, 2, 5, 10, 11, 100] # test vals
+        res = []
+        for v <- tst
+            r1 = v ?> dt # have
+            r2 = v !?> dt # don't have
+            res <- [v, r1, r2]
+        dd = {'a':'123', 'b':'345'}
+        tsd = ['a','bb','c']
+        for v <- tsd
+            r1 = v ?> dd # have
+            r2 = v !?> dd # don't have
+            res <- [v, r1, r2]
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exp = [
+            [0, True, False],
+            [1, False, True],
+            [2, False, True],
+            [5, True, False],
+            [10, False, True],
+            [11, True, False],
+            [100, False, True],
+            ['a', True, False],
+            ['bb', False, True],
+            ['c', False, True],
+        ]
+        self.assertEqual(exp, rvar.vals())
 
     def test_semicolon_diff_as_1_line_block(self):
         ''' expr1; expr2; expr3 

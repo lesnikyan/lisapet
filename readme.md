@@ -471,7 +471,8 @@ x = a < b ? 10 : 20
 x = val1 ?: va2
 ```
 
-19. val-in-collection `?>` operator. If colelction contains value.
+19. val-in-collection `?>` operator, val-not-in `!?>` operator.  
+If colelction contains value or not.
 ```
 # base usage 
 val ?> collection
@@ -482,6 +483,14 @@ if val ?> ('a', 'b', 'c') ...
 
 # key for dict
 if 'a' ?> {'a':1, 'b':2} ...
+```
+The same for `!?>`
+```
+val !?> collection
+
+if 5 !?> [1,2,3] ...
+if 'c' !?> {'a':1, 'b':2} ...
+
 ```
 
 20. one-line blocks (expr; expr; expr)

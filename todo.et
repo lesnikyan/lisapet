@@ -61,7 +61,7 @@
 16. 1-line if/for/while: #  !-  !~  !:  ::  \:  /:  |:  :|
     if x < 2 !: print(x)
     for n <- nums !- print(n)
-17. Not-in-list oper: !?> # if x !?> nums ... == if !(x ?> nums) ...
+17. DONE: Not-in-list oper: !?> # if x !?> nums ... == if !(x ?> nums) ...
 
 # Perspective things: 
 1. Maybe type 
