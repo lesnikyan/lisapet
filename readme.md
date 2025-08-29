@@ -4,19 +4,19 @@ Linear Interpreter of Scripting And Processing Expression Tree.
 
 ico: Fox pet on the bicycle
 
-It was started as a simple and small scripting language.
-(Not so small already [facepalm]).
-Interpreter builds executable object, actually - tree of actions (expressions).
-Than this object can be executed with some data.
-Executable tree uses context-object (map/dict of data values with nested contexts).
+It was started as a simple and small scripting language.  
+(Not so small already [facepalm]).  
+Interpreter builds executable object, actually - tree of actions (expressions).  
+Than this object can be executed with some data.  
+Executable tree uses context-object (map/dict of data values with nested contexts).  
 
 *
 Status.
-Actually it is on-dev.
+Actually it is on-dev. Most basic features and needed things is done.
 Details see abobe, in `syntax` section.
 
 *
-Syntax - basic principles.
+Basic principles.
 1. no extra thingth, block is defined by line shifting like python or ruby
 2. basic collections: list, dict, tuple
 3. arithmetic expressions - like python syntax: (a + 1/2) * b - c ** 2 .
@@ -306,17 +306,26 @@ b1.f1(3, 4)
 b1.a1 += 10
 ```
 
-12. List number generator
+12. List: slice, iteration generator.
 ```
-# simple numeric sequence [startVal..endVal]
+# Slice
+# syntax: [firstIndex : IdexAfterLast]
+nums = [1,2,3,4,5]
+sliced = nums[2:4]
+
+# Iteration generator is a simple sequence of integers.
+# syntax: [startVal .. endVal]
 nums = [1..5] # -->> [1,2,3,4,5]
+
+# Iter-gen + slice
+sliced = tolist(nums)[2:4] # TODO: implement slicing of iter-gen
 ```
 
-13. List comprehension / generator
+13. List comprehension / sequence generator
 ```
 [expr; expr ;...]
 ```
-Generator has such segments:
+Generator has such segments / expressions:
 [
     1) result element expression ; 
     2) read element; 
@@ -330,7 +339,11 @@ Generator should contain at least 2 segments:
 ```
 generator can have sub-blocks, ie 2-4 is a repeatable part, like:
 ```
-[aa + bb + c ; a <- arr1; aa = a * 2; a > 5; b <- arr2; bb = b * b; c <- arr3; c < 10 ]
+arr1, arr2, arr3 # source lists
+[aa + bb + c ; 
+    a <- arr1; aa = a * 2; a > 5; 
+    b <- arr2; bb = b * b; 
+    c <- arr3; c < 10 ]
 ```
 Next gen-block can use values from previous.
 Result-expr can see all values from all gen-blocks.
@@ -402,7 +415,9 @@ x -> x * 10
 # several args
 (x, y, z) -> (x + y) * z
 
-# high order func
+# high order func: func which can accept or return another (maybe lambda) function
+
+# high-order func (will use lambdas)
 func foo(ff, arg)
     ff(arg * 2)
 
@@ -410,7 +425,7 @@ func foo(ff, arg)
 f1 = x -> x * 3
 n1 = foo(f1, 5)
 
-# lambda arg as val
+# lambda arg as local val / arg
 n2 = foo( x -> 2 ** x , 5)
 ```
 
@@ -421,10 +436,10 @@ TODO: types, struct (type, fields, constructor), collections (size, some vals), 
 # value|template !- expressions
 # _ !- expr # default case
 
+# Now: just simple case with values has been implemented
 a = 4
 r1 = 0
 b = 3
-# just simple values  has been implemented now
 match a
     1  !- r1 = 100
     10 !- r1 = 200
@@ -456,7 +471,7 @@ x = a < b ? 10 : 20
 x = val1 ?: va2
 ```
 
-19. val-in-collection `?>` operator
+19. val-in-collection `?>` operator. If colelction contains value.
 ```
 # base usage 
 val ?> collection
@@ -487,9 +502,10 @@ a, b, s = (123, 12.5, 'ABC')
 ```
 
 22. import
-Imports module (file), module in folder (over dots: dirname.dirname2.module ).
-Imports all things from module, or named things.
-Can use aliases for named things.
+- Imports module (file), module in folder (over dots: dirname.dirname2.module ).
+- Imports all things from module, or named things.
+- Can use aliases for named things.
+- TODO: auto-import modules from files for CI `run`.
 
 ```
 # pure import, just module name

@@ -10,7 +10,7 @@
     # DONE run -m --multirun 
         -s --datasource "source" # add option for multi-running compiled ET and datasource
         -j -json-source "file" # datasource from from json file
-        -r varname # show result / value of specified variable
+    # DONE run.py -r varname # show result / value of specified variable
 1. # DONE String formatting. ~"{var}", "... %s ..." << (var)
 2. # DONE one-line block: expr; expr; expr
 3. # DONE import modules
@@ -18,9 +18,17 @@
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
 5. error handling (with printing source code)
     # DONE: parser errors, interpreation errors
+    eval error: 
+        incorrect type, 
+        name(var, type, func, strc.method etc) not found
+        argument error for (arg count, arg type): functions, constructors, operators, for-statement, sequence-gen,
+        key/index error for collections
+        type-casting error(for example: list to int, non-number string to float )
+        IO-error: read/write data
+
 6. # DONE else if
 7. # DONE if sub-expression: if x=foo(); x < 5 ...
-8. logging
+8. logging | with named args: #debug: log(d: (msg, arg1, arg2)) #info log(i: ("Found %d records", 15))
 9. input-output: 
     files, 
     console, 
@@ -30,15 +38,30 @@
     1) data objects (collections, struct inst) 
     2) executive tree (prepared exec file)
 11. struct constructor without field names: A{1, 2.0, 'abc'} - order-driven struct constructor.
+11.2 named args for function: func foo(name:string) # call: foo(name:'Abc')
 12. Interfaces as a some list of method signatures.
 13. other args in `func(a, b, other...) : foo(1, 2, 33, 44, 55, 66, 77) other = [33, 44, 55, 66, 77]
-14. match-case block start in the same line:
+14. # DEPRACATE match-case block start in the same line: # It looks as over-sugaring # 
     match n
         1 !- if cond
             expr1
         2 !- for i <- nlist
             foo(i)
+14.2 Looks like multi-if will be more useful:
+    if
+        a < 5
+            expr1
+        b == 7
+            expr2
+        a < b /: expr3 # same line block
+        _
+            expr4
 
+15. slice of iter-gen: [1..10][3:5]. include tolist into slice method, or add slicing method to iter-get (?)
+16. 1-line if/for/while: #  !-  !~  !:  ::  \:  /:  |:  :|
+    if x < 2 !: print(x)
+    for n <- nums !- print(n)
+17. Not-in-list oper: !?> # if x !?> nums ... == if !(x ?> nums) ...
 
 # Perspective things: 
 1. Maybe type 
