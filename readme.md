@@ -48,14 +48,15 @@ python -m run tests/simple_test.et
 ...
 
 # run code line
-python -m run -c "a=1+2; print(a)"
+python -m run -c "a = 2; b = a + 1"
 
-# python -m run -c "r = [1..5]; print('nums:', tolist(r))"
+# with print
+python -m run -c "r = [1..5]; print('nums:', tolist(r))"
 nums: [1, 2, 3, 4, 5]
 ...
 
 # more complex 1-line example:
-# python -m run -c "f1 = (x, y) -> x + y; f2 = x -> x * x;  p = x -> print(x); [p(f1(f2(n), 10000)); n <- [1..10]; n % 2 > 0 && n > 3]"
+python -m run -c "f1 = (x, y) -> x + y; f2 = x -> x * x;  p = x -> print(x); [p(f1(f2(n), 10000)); n <- [1..10]; n % 2 > 0 && n > 3]"
 10025
 10049
 10081
@@ -252,6 +253,16 @@ res = foo(1,2,3)
 func bar(a:int, b:int)
     a + b
 ```
+Function can use nearest context.
+```
+callIndex = 0
+
+func foo(x, y)
+    res = [x, y, callIndex]
+    callIndex += 1
+    res
+
+```
 
 8. Dict. Linear and block constructor
 ```
@@ -263,7 +274,7 @@ ddd = dict
     'a': 'a a a a a a a a a a a a a a a a a'
     'b': 'b b b b b b b b b b b b b b b b b'
 
-# add
+# set val by key
 dd['c'] = 3
 
 # read
@@ -276,9 +287,8 @@ print(dd['a'], ddd['b'])
 nn = []
 nn <- 12
 
-# dict: set val by key 
-# dictVar <- tuple # with pair of vals
-# dictVar <- (key, val) the same as dictVar[key] = val
+# dict: set val by key
+dictVar <- (key, val) # the same as dictVar[key] = val
 
 dd = {'b': 444}
 dd <- ('a', 123)
@@ -291,6 +301,7 @@ dd <- ('b', 555)
 ```
 # definition.  linear
 struct B bb: int
+
 struct A a:int, b:B, c:string
 
 # definition. block
@@ -302,6 +313,7 @@ struct A
 # constructor and usage
 b1 = B{bb:123}
 aa = A{a:1, b:b1, c:'abc'}
+
 aa.a += 2
 r1 = aa.c
 r2 = aa.b.b1
@@ -319,7 +331,7 @@ func a:A plusA1(x:int)
     a.a1 += x
 
 # call
-aa = A{} # default is 0
+aa = A{} # default val of A.a1 is 0
 aa.plusA1(5)
 ```
 
@@ -361,15 +373,15 @@ sliced = tolist(nums)[2:4] # TODO: implement native slicing of iter-gen
 
 12.2 List comprehension / sequence generator
 ```
-[expr; expr ;...]
+[elem; src-expr ;...]
 ```
 Generator has such segments / expressions:  
 ```
 [  
-    res-expr # 1) result element expression ;  
-    assign-expr # 2) read element and assign to local var;  
-    additional-assign # 3) additional expression with assignment;  
-    condition-expr # 4) filtering condition (aka guard)
+    elem-expr;       # 1) result element expression ;  
+    assign-expr;     # 2) read element and assign to local var;  
+    additional-expr; # 3) additional expression with assignment;  
+    condition-expr  # 4) filtering condition (aka guard)
 ]  
 # 2-4 is a generator-block.  
 # 3-4 are optional  
@@ -378,7 +390,17 @@ Generator should contain at least 2 segments:
 ```
 [n; n <- values]
 ```
-generator can have sub-blocks, ie 2-4 is a repeatable parts, like:
+Full syntax of 1 iterator:
+```
+src = [1..5]
+[   n + s;          # resulting element
+    s <- src;       # reading source and assignment to local var
+    n = s * 100;    # additional (intermidiate) expression
+    s % 2 == 0      # filtering condition
+]
+>> [101, 303, 505]
+```
+Generator can have sub-iterations, ie 2-4 is a repeatable part, like:
 ```
 arr1, arr2, arr3 # source lists
 [aa + bb + c ; 
@@ -404,16 +426,18 @@ n1 = [x ** 2 ; x <- [1..10]]
 # several iterators
 n2 = [[x, y] ; x <- [5..7]; y <- [1..3]]
 
-# sub-expression (make var `y`)
+# sub-expression (make local var `y`)
 n3 = [(x, y) ; x <- [1..10]; y = x ** 2; y < 50]
 
 # flatten sub-lists
 # make list of lists
 src = [[x, y] ; x <- [5..7]; y <- [1..3]]
 # src: [[5, 1], [5, 2], [5, 3], [6, 1], [6, 2], [6, 3], [7, 1], [7, 2], [7, 3]]
-# flatten
+
+# flatten source, make plane list
 nums = [ x ; sub <- src ; x <- sub]
 ```
+Too long expression can be formatted into multiple lines.
 ```
 # generator: multi-expressions, multiline expression
 nums = [
@@ -432,7 +456,7 @@ nums = [
     a + b + c < 1000
 ]
 ```
-
+Now strings are not a valid native source for comprehansions. But it can be resolve by `tolist()` function.
 ```
 # list comprehension by converted string
 src = "ABCdef123"
@@ -440,7 +464,7 @@ res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
 ```
 
 13. Multiline expressions: `if`, `for`, math expr.  
-Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control expressions.
+Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control statements.
 The main way to split long line to shorten parts is use brackets.
 For comprehantion expressions it works with its square brackets (see examples).
 For function call, `if`, `for` or math expressions we can use round brackets as usual.
@@ -477,9 +501,9 @@ setNativeFunc(context, 'lisapert_name', native_name, ResultType)
 # example:
 setNativeFunc(ctx, 'print', buit_print, TypeNull)
 ```
-Builtin funcs changed for execute internal functions: added 1-st arg - Context.
+Builtin funcs changed for call functions passed as argument (lambdas, atc): added 1-st arg - Context.
 ```
-# if builtin func receives function / lambda as an argument, 
+# if builtin func receives function / lambda, 
 # context is needed
 
 def built_foldl(ctx:Context, start, elems, fun:Function):
@@ -487,10 +511,16 @@ def built_foldl(ctx:Context, start, elems, fun:Function):
         ...
         fun.do(ctx)
     ...
-```
-Actual builtin funcs:  
-print, len, iter, type, toint, tolist, foldl, join
 
+# if context not needed just use `_`
+def built_somefunc(_, args)
+    ...
+```
+
+Actual builtin funcs:  
+`print`, `len`, `iter`, `type`, `toint`,  
+`tolist`, `foldl`, `join`  
+TODO: split, int2char, [int] to string, char_code
 
 15. Lambda functions and high-order functions.
 ```
@@ -515,24 +545,31 @@ n2 = foo( x -> 2 ** x , 5)
 ```
 
 16. match-statement.  
-TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
+`match` keyword  
+`!-` case-operator  
+Each case starts a new block.
+Case-block can be in the same line (not for control statements).  
+Now:  
+Just simple case with value-equal has been implemented  
+Control statements (`if`, `for`, `match`, `while` ) should be started in next line (with indent).
 ```
-# !- is a case-operator: 
 # value|template !- expressions
 # _ !- expr # default case
 
-# Now: just simple case with values has been implemented
-a = 4
-r1 = 0
-b = 3
+a, b, r1 = 4, 3, 0
+
 match a
-    1  !- r1 = 100
+    1  !- r1 = 100 # one-line case block
     10 !- r1 = 200
-    b  !-
-        b = a * 1000
+    b  !- b = a * 1000
         r1 = [a, b]
+    20 !-
+        if a > b
+            r1 = 5
     _  !- r1 = -2
 ```
+TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
+
 
 17. multi-assignment
 ```
@@ -546,7 +583,7 @@ a, b, c = (1, 2, 3)
 a, b, c = [1,2,3]
 ```
 
-18. ternary operator.
+18. Ternary operator `?:`. 
 ```
 # classic ternary oper
 x = a < b ? 10 : 20
@@ -556,8 +593,9 @@ x = a < b ? 10 : 20
 x = val1 ?: va2
 ```
 
-19. val-in-collection `?>` operator, val-not-in `!?>` operator.  
-If colelction contains value or not.
+19. val-in `?>` and val-not-in `!?>` operators.  
+
+If colelction contains value `?>`  
 ```
 # base usage 
 val ?> collection
@@ -569,7 +607,7 @@ if val ?> ('a', 'b', 'c') ...
 # key for dict
 if 'a' ?> {'a':1, 'b':2} ...
 ```
-The same for 'not-in' `!?>` operator.
+If collection doesn't have value `!?>`  
 ```
 val !?> collection
 
@@ -584,21 +622,38 @@ a = 10 + a; b += 20; c -= 30;
 res = [a, b, c]; res <- dd; res <- e
 ```
 
-21. string formatting
+21. String formatting  
+
+`%` - formatting.
 ```
 # `<<` classic %s-formatting. Uses native `%` operator inside with %-templates
 'hello int:%d, float:%f, str:%s ' << (123, 12.5, 'Lalang')
-
-# `~`operator for string. Works like f-string in python, with {val:patterns}
-a, b, s = (123, 12.5, 'ABC')
-~'hello int:{a:05d}, float:{b:.3f}, str: `{s2:<5s}` '
 ```
+Var-embedding syntax.  
+Uses with `~` operator before string.  
+Any expression returning stringify value is allowed: var, struct.field, list/dict element, function call. 
+```
+# `~`operator for string. Works like f-string in python, 
+# with {val:patterns}
 
-22. import
-- Imports module (file), module in folder (over dots: dirname.dirname2.module ).
+a, b, s = (123, 12.5, 'ABC')
+
+hello1 = ~'hello int:{a:05d}, float:{b:.3f}, str: `{s2:<5s}`.'
+
+func fHello(s)
+    'hello, ' + s
+
+print(~'Some prefix, {fHello(`Formatter`)} ')
+```
+More examples in `tests/test_format.py`.
+
+22. Import modules.  
+
+Cases:  
+- Imports module (file), submodule in folder (over dots: dirname.dirname2.module ).
 - Imports all things from module, or named things.
-- Can use aliases for named things.
-- TODO: auto-import modules from files for CI `run`.
+- Aliases usage for named things.
+- TODO: auto-import modules from file-tree for CI `run`.
 
 ```
 # pure import, just module name

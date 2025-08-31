@@ -109,7 +109,6 @@ def built_join(_, vals, sep=None) -> str:
 # TODO:
 '''
 str_split # split string by substring
-list_join # join  list vals to string
 int2char # int val to char as a string, int array to string
 char_code # nuber code of char
 
