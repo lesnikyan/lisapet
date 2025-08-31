@@ -58,10 +58,19 @@
             expr4
 
 15. slice of iter-gen: [1..10][3:5]. include tolist into slice method, or add slicing method to iter-get (?)
-16. 1-line if/for/while: #  !-  !~  !:  ::  \:  /:  |:  :|
+
+16. 1-line if/for/while: 
+    # operator variants: !-  !~  !:  ::  \:  /:  |:  :|
     if x < 2 !: print(x)
     for n <- nums !- print(n)
+    for x <- vals /: doit(x)
+
 17. DONE: Not-in-list oper: !?> # if x !?> nums ... == if !(x ?> nums) ...
+
+18. continue in for / while
+    looks like it should be an extra case in block execution, like return case.
+19. break in for / while
+
 
 # Perspective things: 
 1. Maybe type 
