@@ -91,15 +91,18 @@ multiline comment
 #@ in-line comment @#
 ```
 
-1. Vars, vals, lists, assignment, context of vars
+### 1. Vars, vals, lists, assignment, context of vars
 ```
 x = 1
 name = 'Ramzes II'
 names = ['Alya', 'Valya', 'Olya']
 lastName = names[2]
+
+# multiple assignment
+a, b, c = 10, 20, 30
 ```
 
-2. Numbers, strings, bool. Types.
+### 2. Numbers, strings, bool. Types.
 ```
 hello = "hello somebody!"
 'unary-quotes'
@@ -123,7 +126,7 @@ no:bool = false
 
 ```
 
-3. Sub-block of expressions. 
+### 3. Sub-block of expressions. 
 If statement, comparison operators, bool operators
 ```
 res = 100
@@ -150,7 +153,7 @@ else
     code
 ```
 
-4. Math operators 
+### 4. Math operators 
 ```
 y = 5 + x * -3
 
@@ -174,7 +177,7 @@ z = 1
 z *= (x + y)
 ```
 
-5. Collections: list (array), tuple, dict (map)
+### 5. Collections: list (array), tuple, dict (map)
 ```
 # List, inline constructor
 
@@ -193,16 +196,35 @@ names[3] = 'Vaxtang'
 
 # read value
 firstName = names[0]
+```
+Negative indexes are allowed.  
+It assesses to the element by position from the end of list.  
+`[-1]` is a last element of list.  
+```
+nums = [1,2,3,4,5]
+print(nums[-2])
+>> 4
+```
+Tuples: `(val, val, val)`.  
 
-# Tuple. Any values in brackets
-# Tuple is immutable.
+Tuple. Few values in the brackets over comma.  
+Tuple is immutable.
+```
 vals = (1, 100, 'More numbers')
 
+# read value by index
 print(vals[2])
+```
+Unpack values from list or tuple.
+```
+names = ['Anatol', 'Basilev', 'Cardamon']
+n1, n2, n3 = names
 
+vals = (1, 22, 33,3)
+a, b, c = vals
 ```
 
-6. `for` statement, 
+### 6. `for` statement, 
 - Range-iterator
 ```
 for i=0; i < 5; i = i + 1
@@ -237,23 +259,30 @@ for x <- [1..10]
 for k, val <- {'a':1, 'b':2}
     ...
 ```
+TODO: continue, break
 
-7. Function definition, context of functions
+### 7. Function definition, context of functions.
+
+Keyword `func`.  
+Last expression is a returning result.  
+Keyword `return` allowed to. 
 ```
 # definition
 func foo(a, b, c)
-    x = a + b
+    x = a - b
+    if x <= 0
+        return x # result
     y = b + c
-    x * y
+    x * y # result
 
-# usage
+# function call
 res = foo(1,2,3)
 
-# arg type
+# arg type (optional)
 func bar(a:int, b:int)
     a + b
 ```
-Function can use nearest context.
+Function can use nearest declaration context (actually all top-level things in module where func was declared).
 ```
 callIndex = 0
 
@@ -264,7 +293,7 @@ func foo(x, y)
 
 ```
 
-8. Dict. Linear and block constructor
+### 8. Dict. Linear and block constructor
 ```
 # linear constr
 dd = {'a':1, 'b':2}
@@ -281,7 +310,7 @@ dd['c'] = 3
 print(dd['a'], ddd['b'])
 ```
 
-9. arrow-append/set operator `<-`
+### 9. arrow-append/set operator `<-`
 ```
 # list: append val
 nn = []
@@ -297,7 +326,13 @@ dd <- ('b', 555)
 >> {'b': 555, 'a': 123}
 ```
 
-10. Struct
+### 10. Struct.  
+Struct is a basic complex datatype.  
+Struct can have inner fields aka inner variable with name and type.  
+Keyword for declaration struct as custom type is a `struct`.  
+Struct can be defined by inline syntax or block syntax.  
+Block-definition is more useful for big struct or fields type-name.  
+Struct constructor uses camel-brackets, instead of no-brackets syntax in definition.  
 ```
 # definition.  linear
 struct B bb: int
@@ -321,7 +356,10 @@ r2 = aa.b.b1
 Struct fields have default values.
 numeric = 0, string = "", bool = false.
 
-11. Struct method
+### 11.1 Struct method.  
+
+Struct can have methods.  
+Method can be declared after declaration of struct type.  
 ```
 # def
 struct A a1:int
@@ -335,7 +373,7 @@ aa = A{} # default val of A.a1 is 0
 aa.plusA1(5)
 ```
 
-11. Struct inheritance. Multiple inheritance is allowed.
+### 11.2 Struct inheritance. Multiple inheritance is allowed.
 ```
 # parent types
 struct Aaaa a1: int, a2: string
@@ -346,14 +384,18 @@ func a:Aaaa f1(x:int, y:int)
 struct Cccc c:int
 
 # child struct, multiple inheritance
+# parent types in brackets after child type
+
 struct B(Aaaa, Cccc) b:int
 
 b1 = B{b:1, a1:12, a2:'aa-2'}
+# call A-struct method from B-instance
 b1.f1(3, 4)
+# access to A-field from B-instance
 b1.a1 += 10
 ```
 
-12.1 List: slice, iteration generator, tolist.
+### 12.1 List features: slice, iteration generator, `tolist()`.
 ```
 # Slice
 # syntax: [firstIndex : IdexAfterLast]
@@ -371,7 +413,7 @@ nums = tolist([1..5])
 sliced = tolist(nums)[2:4] # TODO: implement native slicing of iter-gen
 ```
 
-12.2 List comprehension / sequence generator
+### 12.2 List comprehension / sequence generator
 ```
 [elem; src-expr ;...]
 ```
@@ -463,7 +505,7 @@ src = "ABCdef123"
 res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
 ```
 
-13. Multiline expressions: `if`, `for`, math expr.  
+### 13. Multiline expressions: `if`, `for`, math expr.  
 Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control statements.
 The main way to split long line to shorten parts is use brackets.
 For comprehantion expressions it works with its square brackets (see examples).
@@ -491,17 +533,17 @@ res = ( (a + b) * 15
     + e / 111)
 ```
 
-14. Builtin functions:
+### 14. Builtin functions:  
+Include python function as an builtin function.  
+It needs some preparation of data and returning results.  
 ```
-# include python function as an builtin function.
-# it needs some preparation of data and results
-
-setNativeFunc(context, 'lisapert_name', native_name, ResultType)
+# commot way to add function
+setNativeFunc(context, 'func_name', python_function, ResultType)
 
 # example:
 setNativeFunc(ctx, 'print', buit_print, TypeNull)
 ```
-Builtin funcs changed for call functions passed as argument (lambdas, atc): added 1-st arg - Context.
+Builtin funcs was changed for call functions passed as argument (lambdas, atc) inside python function: added 1-st arg - Context.
 ```
 # if builtin func receives function / lambda, 
 # context is needed
@@ -522,7 +564,7 @@ Actual builtin funcs:
 `tolist`, `foldl`, `join`  
 TODO: split, int2char, [int] to string, char_code
 
-15. Lambda functions and high-order functions.
+### 15. Lambda functions and high-order functions.
 ```
 # one-arg lambda
 x -> x * 10
@@ -544,7 +586,7 @@ n1 = foo(f1, 5)
 n2 = foo( x -> 2 ** x , 5)
 ```
 
-16. match-statement.  
+### 16. match-statement.  
 `match` keyword  
 `!-` case-operator  
 Each case starts a new block.
@@ -571,7 +613,7 @@ match a
 TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
 
 
-17. multi-assignment
+### 17. multi-assignment
 ```
 # simple vals
 a,b,c = 1,"2",3.5
@@ -593,7 +635,7 @@ x = a < b ? 10 : 20
 x = val1 ?: va2
 ```
 
-19. val-in `?>` and val-not-in `!?>` operators.  
+### 19. val-in `?>` and val-not-in `!?>` operators.  
 
 If colelction contains value `?>`  
 ```
@@ -615,14 +657,14 @@ if 5 !?> [1,2,3] ...
 if 'c' !?> {'a':1, 'b':2} ...
 ```
 
-20. one-line blocks (expr; expr; expr)
+### 20. one-line blocks (expr; expr; expr)
 ```
 a = 1; b = 2; c = 3
 a = 10 + a; b += 20; c -= 30;
 res = [a, b, c]; res <- dd; res <- e
 ```
 
-21. String formatting  
+### 21. String formatting  
 
 `%` - formatting.
 ```
@@ -647,7 +689,7 @@ print(~'Some prefix, {fHello(`Formatter`)} ')
 ```
 More examples in `tests/test_format.py`.
 
-22. Import modules.  
+### 22. Import modules.  
 
 Cases:  
 - Imports module (file), submodule in folder (over dots: dirname.dirname2.module ).
