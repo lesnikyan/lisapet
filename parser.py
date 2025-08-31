@@ -22,6 +22,13 @@ rxChar = re.compile(r'[a-zA-Z_\$@]')
 c_quot = "\'\"`"
 c_regex = '| / % '
 
+opers = [n for n in ('; , ... .. ** ++ -- += -= *= /= %=  && || == != <= >= << >> => ?> !?> -> <- !- := ?: /: !: :>'
+# ' """ \'\'\' ``` '
+' < > = + - * / | \\ { } [ ] . , : ? ~ ! % ^ & * ( )').split(' ') if n]
+
+# if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text != ')'
+unarOpers = '- + ! ~'
+
 ext_in = {
     Lt.num: ['j', 'x', 'b', 'o', 'a', 'b', 'c', 'd', 'e', 'f']
 }
@@ -82,13 +89,6 @@ def charType(prevs:int, s:str) -> int:
     
     return base
 
-
-opers = [n for n in ('; , ... .. ** ++ -- += -= *= /= %=  && || == != <= >= << >> => ?> -> <- !- := ?:'
-# ' """ \'\'\' ``` '
-' < > = + - * / | \\ { } [ ] . , : ? ~ ! % ^ & * ( )').split(' ') if n]
-
-# if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text != ')'
-unarOpers = '- + ! ~'
 
 def splitOper(oper:str)->list[str]:
     res = []

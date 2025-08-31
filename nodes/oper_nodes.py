@@ -248,13 +248,20 @@ class OpMath(BinOper):
         
         # dprint(' ( %s )' % self.oper, a.getVal(), b.getVal())
         dprint('>types (%s %s %s)' % (a.getType(), self.oper, b.getType()))
-        type = a.getType()
-        if type != b.getType():
+        vtype = a.getType()
+        if vtype != b.getType():
             # TODO fix different types
             pass
         # get numeric values and call math function 
         val = ff[self.oper](valFrom(a).getVal(), valFrom(b).getVal())
-        self.res = Val(val, type)
+        # rounding to int
+        if isinstance(val, (int, float)):
+            if val % 1 == 0:
+                # print(type(val))
+                val = int(val)
+                if isinstance(a.getType(), TypeInt):
+                    vtype = TypeInt()
+        self.res = Val(val, vtype)
         
     def plus(self, a, b):
         return a + b
@@ -740,15 +747,25 @@ class FalseOrExpr(BinOper):
 class IsInExpr(BinOper):
     ''' val ?> list|dict|tuple '''
     
-    def __init__(self):
-        super().__init__('?:')
+    def __init__(self, isNot=False):
+        oper = '?>'
+        if isNot:
+            oper = '!?>'
+        super().__init__(oper)
         self.valExpr:Expression = None # val we find in
         self.collExp:Expression = None # collection expr
         self.res:Val|Var= None
+        self.isNot = isNot
+        # print('IsIn:', oper, isNot)
 
     def setArgs(self, left:Expression, right:Expression):
         self.valExpr= left
         self.collExp = right
+
+    def check(self, val, coll):
+        if self.isNot:
+            return val not in coll
+        return val in coll
 
     def do(self, ctx:Context):
         # dprint('IsInExpr ?>> (1)', )
@@ -763,6 +780,8 @@ class IsInExpr(BinOper):
             res = coll.has(val)
         if isinstance(coll.getType(), TypeString):
             res = val.getVal() in coll.getVal()
+        if self.isNot:
+            res = not res
         self.res = Val(res, TypeBool())
 
     def get(self):

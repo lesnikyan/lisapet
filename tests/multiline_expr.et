@@ -1,0 +1,55 @@
+#@
+Here are examples of long expressions splitted in multiline set.
+@#
+
+# Function call
+
+func fooStr(a1, a2, a3)
+    vals = [a1,a2,a3]
+    join(vals, ';')
+
+# call
+r1 = fooStr('a1', 'b2', 'c3')
+
+rr1 = fooStr(
+    'Hello my long string',
+    'Second line of arguments',
+    """Multi
+    Multi line"""
+)
+
+# print(r1, rr1)
+
+# if
+a, b, c = 1, 22, 333
+r2 = 0
+if ( a < 10 && b > 5 &&
+    a + b == 23 && c + b == 355
+    && c - a == 332 && c < 1000 )
+    r2 = 100
+
+#print(r2)
+
+
+# for and comprehansion
+r3 = []
+for ( n <-
+    [y; x <- [1..5];
+        y = x * 100 - x])
+    r3 <- n
+
+#print(r3)
+
+# math expr
+a, b, c, d, e = 11, 22, 33, 44, 55
+# print(a, b, c, d, e )
+r4 = ( (a + b) / 11 - c / 3 
+    + (d / 2 - 2) / 5 -
+    (e - 6) / 7 - 2
+    + (d + 5) ** (1/2) - (c - 3) / 5
+    + (b - 19) ** 3 - 10)
+ 
+# print(r4)
+
+res = [r1, r2, r3, r4]
+print(res)

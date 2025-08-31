@@ -21,6 +21,7 @@ def rootContext(ctx:Context = None)->RootContext:
     setNativeFunc(ctx, 'toint', built_int, TypeInt)
     setNativeFunc(ctx, 'tolist', built_list, TypeList)
     setNativeFunc(ctx, 'foldl', built_foldl, TypeAny)
+    setNativeFunc(ctx, 'join', built_join, TypeAny)
     
     constants = {
     'true': (TypeBool, Val(True, TypeBool)),
