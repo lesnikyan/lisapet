@@ -248,13 +248,20 @@ class OpMath(BinOper):
         
         # dprint(' ( %s )' % self.oper, a.getVal(), b.getVal())
         dprint('>types (%s %s %s)' % (a.getType(), self.oper, b.getType()))
-        type = a.getType()
-        if type != b.getType():
+        vtype = a.getType()
+        if vtype != b.getType():
             # TODO fix different types
             pass
         # get numeric values and call math function 
         val = ff[self.oper](valFrom(a).getVal(), valFrom(b).getVal())
-        self.res = Val(val, type)
+        # rounding to int
+        if isinstance(val, (int, float)):
+            if val % 1 == 0:
+                # print(type(val))
+                val = int(val)
+                if isinstance(a.getType(), TypeInt):
+                    vtype = TypeInt()
+        self.res = Val(val, vtype)
         
     def plus(self, a, b):
         return a + b

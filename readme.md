@@ -1,6 +1,7 @@
 
 # LISAPET
-Linear Interpreter of Scripting And Processing Expression Tree.
+Linear Interpreter of Scripting And Processing Expression Tree.  
+(LP, this code, miniscript)
 
 ico: Fox pet on the bicycle
 
@@ -172,7 +173,36 @@ z = 1
 z *= (x + y)
 ```
 
-5. for statement, range-iterator
+5. Collections: list (array), tuple, dict (map)
+```
+# List, inline constructor
+
+nums = ['One', 'Two', 'Three']
+
+# List, block constructor (for long elements)
+
+names = list
+    'Anna'
+    'Barbi'
+    'Cindy'
+    'Muxtar'
+
+# change value
+names[3] = 'Vaxtang'
+
+# read value
+firstName = names[0]
+
+# Tuple. Any values in brackets
+# Tuple is immutable.
+vals = (1, 100, 'More numbers')
+
+print(vals[2])
+
+```
+
+6. `for` statement, 
+- Range-iterator
 ```
 for i=0; i < 5; i = i + 1
     y = y + 2
@@ -183,7 +213,7 @@ for i=0; i < 5; i = i + 1
 res = y
 ```
 
-6. Iterator, arrow-assign operator `<-`
+- Iterator, arrow-assign operator `<-`
 ```
 # by function iter
 # iter(last+1)
@@ -225,10 +255,10 @@ func bar(a:int, b:int)
 
 8. Dict. Linear and block constructor
 ```
-# linear
+# linear constr
 dd = {'a':1, 'b':2}
 
-# block
+# block constr
 ddd = dict
     'a': 'a a a a a a a a a a a a a a a a a'
     'b': 'b b b b b b b b b b b b b b b b b'
@@ -247,9 +277,14 @@ nn = []
 nn <- 12
 
 # dict: set val by key 
+# dictVar <- tuple # with pair of vals
 # dictVar <- (key, val) the same as dictVar[key] = val
-dd = {}
+
+dd = {'b': 444}
 dd <- ('a', 123)
+dd <- ('b', 555)
+
+>> {'b': 555, 'a': 123}
 ```
 
 10. Struct
@@ -306,7 +341,7 @@ b1.f1(3, 4)
 b1.a1 += 10
 ```
 
-12. List: slice, iteration generator.
+12.1 List: slice, iteration generator, tolist.
 ```
 # Slice
 # syntax: [firstIndex : IdexAfterLast]
@@ -317,27 +352,33 @@ sliced = nums[2:4]
 # syntax: [startVal .. endVal]
 nums = [1..5] # -->> [1,2,3,4,5]
 
+# tolist() - explicit cast to list of other sequences or generators (comprehantion, string)
+nums = tolist([1..5])
+
 # Iter-gen + slice
-sliced = tolist(nums)[2:4] # TODO: implement slicing of iter-gen
+sliced = tolist(nums)[2:4] # TODO: implement native slicing of iter-gen
 ```
 
-13. List comprehension / sequence generator
+12.2 List comprehension / sequence generator
 ```
 [expr; expr ;...]
 ```
-Generator has such segments / expressions:
-[
-    1) result element expression ; 
-    2) read element; 
-    3) additional exprssion with assignment; 
-    4) filtering condition (aka guard)]
-2-4 is a generator-block. 
-3-4 are optional
-Generator should contain at least 2 segments: 
+Generator has such segments / expressions:  
+```
+[  
+    res-expr # 1) result element expression ;  
+    assign-expr # 2) read element and assign to local var;  
+    additional-assign # 3) additional expression with assignment;  
+    condition-expr # 4) filtering condition (aka guard)
+]  
+# 2-4 is a generator-block.  
+# 3-4 are optional  
+```
+Generator should contain at least 2 segments:  
 ```
 [n; n <- values]
 ```
-generator can have sub-blocks, ie 2-4 is a repeatable part, like:
+generator can have sub-blocks, ie 2-4 is a repeatable parts, like:
 ```
 arr1, arr2, arr3 # source lists
 [aa + bb + c ; 
@@ -345,7 +386,12 @@ arr1, arr2, arr3 # source lists
     b <- arr2; bb = b * b; 
     c <- arr3; c < 10 ]
 ```
-Next gen-block can use values from previous.
+Next gen-blocks can use values from previous.
+```
+[x ; a <- [1..3] ; b <- [10,20]; c <-[400, 500]; 
+    x = a + b + c; x % 7 == 0]
+>> [511, 413]
+```
 Result-expr can see all values from all gen-blocks.
 
 ```
@@ -358,12 +404,14 @@ n1 = [x ** 2 ; x <- [1..10]]
 # several iterators
 n2 = [[x, y] ; x <- [5..7]; y <- [1..3]]
 
-# sub-expression
+# sub-expression (make var `y`)
 n3 = [(x, y) ; x <- [1..10]; y = x ** 2; y < 50]
 
 # flatten sub-lists
+# make list of lists
 src = [[x, y] ; x <- [5..7]; y <- [1..3]]
 # src: [[5, 1], [5, 2], [5, 3], [6, 1], [6, 2], [6, 3], [7, 1], [7, 2], [7, 3]]
+# flatten
 nums = [ x ; sub <- src ; x <- sub]
 ```
 ```
@@ -391,21 +439,58 @@ src = "ABCdef123"
 res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
 ```
 
+13. Multiline expressions: `if`, `for`, math expr.  
+Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control expressions.
+The main way to split long line to shorten parts is use brackets.
+For comprehantion expressions it works with its square brackets (see examples).
+For function call, `if`, `for` or math expressions we can use round brackets as usual.
+```
+# func
+val = foo(a,
+    'b b b b b b b b b', bar(c) )
+
+# if
+if ( cond1
+    && cond2
+    && cond3)
+    expr...
+
+# for loop
+for ( n <-
+    [y; x <- [1..5];
+        y = x * 100 - x])
+    result <- n
+
+# math
+res = ( (a + b) * 15
+    - c * d + a ** 5
+    + e / 111)
+```
+
 14. Builtin functions:
 ```
 # include python function as an builtin function.
-setNativeFunc(ctx, 'print', print, TypeNull)
+# it needs some preparation of data and results
+
+setNativeFunc(context, 'lisapert_name', native_name, ResultType)
+
+# example:
+setNativeFunc(ctx, 'print', buit_print, TypeNull)
 ```
 Builtin funcs changed for execute internal functions: added 1-st arg - Context.
 ```
+# if builtin func receives function / lambda as an argument, 
+# context is needed
+
 def built_foldl(ctx:Context, start, elems, fun:Function):
     ...
         ...
         fun.do(ctx)
     ...
 ```
-Actual builtin funcs:
-print, len, iter, type, toint, tolist, foldl
+Actual builtin funcs:  
+print, len, iter, type, toint, tolist, foldl, join
+
 
 15. Lambda functions and high-order functions.
 ```
@@ -429,7 +514,7 @@ n1 = foo(f1, 5)
 n2 = foo( x -> 2 ** x , 5)
 ```
 
-16. match-statement.
+16. match-statement.  
 TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
 ```
 # !- is a case-operator: 
@@ -461,9 +546,9 @@ a, b, c = (1, 2, 3)
 a, b, c = [1,2,3]
 ```
 
-18. ternar operator.
+18. ternary operator.
 ```
-# classic ternar oper
+# classic ternary oper
 x = a < b ? 10 : 20
 
 # shortened case. null-or:  val1 ?: va2
@@ -484,13 +569,12 @@ if val ?> ('a', 'b', 'c') ...
 # key for dict
 if 'a' ?> {'a':1, 'b':2} ...
 ```
-The same for `!?>`
+The same for 'not-in' `!?>` operator.
 ```
 val !?> collection
 
 if 5 !?> [1,2,3] ...
 if 'c' !?> {'a':1, 'b':2} ...
-
 ```
 
 20. one-line blocks (expr; expr; expr)
@@ -555,27 +639,15 @@ rx = \[a-z-_]{2,5}\i
 text = "Hello somebody here! 123"
 res = rx.find(text)
 
-tpl = "found $w"
-for w <- res
-    print(tpl % w)
 
 // one line
 for n <- 0..5 => print "next: %d" << n
 if res = rx.match(text); !res.empty() => print " result: %s" << res.first()
 
-// function
-// haskell-like. not sure 
-
-foo [int, float] string
-foo a,b => "(%d, %.2f)" % a, b
-
-print foo(1,2.222) // "(1, 2.22)"
-s = foo 2, 3.333
-print s
 ```
 *
 
 #TODO:
-Convert code to Go, Java, Rust
-https://github.com/gython/Gython
+Convert / rewrite code to Go, Java, Rust.  
+Looks like its not a simplest task ))
 

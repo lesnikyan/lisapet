@@ -80,7 +80,7 @@ def built_list(_, src):
         res = val.allVals()
     elif isinstance(val, str):
         res = str2list(val)
-    print('b-list2:', res)
+    # print('b-list2:', res)
     return res
 
 
@@ -94,6 +94,17 @@ def built_foldl(ctx:Context, start, elems, fun:Function):
     # rval = r.getVal()
     # rtype = valType(rval)
     return r
+
+
+def built_join(_, vals, sep=None) -> str:
+    elems = built_list(0, vals).vals()
+    if sep is None:
+        sep = ""
+    else:
+        sep = str(sep.getVal())
+    res = sep.join([n for n in elems])
+    return Val(res, TypeString)
+
 
 # TODO:
 '''
