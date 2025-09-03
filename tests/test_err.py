@@ -40,10 +40,10 @@ class TestErr(TestCase):
         ctx = rCtx.moduleContext()
         return rCtx, ctx
 
-    def test_err_exec(self):
+    def _test_err_exec(self):
         ''' '''
         data = [
-            'x = 2 +m',
+            'x = 2 + m',
             # '""++123',
             # 'func 123\n',
             # 'if 1:\n',

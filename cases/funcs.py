@@ -126,15 +126,22 @@ class CaseFunCall(SubCase):
     ''' foo(agrs)'''
 
     def match(self, elems:list[Elem]) -> bool:
-        ''' foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))
-            spec words  sould not be here (for, if, func, match, return..)
+        ''' simple cases:
+            foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))
+            spec words  should not be here (for, if, func, match, return..)
+            TODO: complex cases:
+            [seq-gen](), (lambda-or-func)(), cont[key]()
         '''
         if len(elems) < 3:
             return False
-        if elems[0].type != Lt.word:
+        if elems[0].type != Lt.word: # incorrect for (function)()
             return False
+        # if elems[0].type == Lt.word and elems[0].text in KEYWORDS:
+        #     return False
         if not isLex(elems[1], Lt.oper, '('):
             return False
+        # if not isLex(elems[-1], Lt.oper, ')'):
+        #     return False
         # TODO: use word(any-with-brackets) pattern
         endInd = afterNameBr(elems)
         if endInd != -1:
@@ -156,6 +163,8 @@ class CaseFunCall(SubCase):
         subs = [sub] # one expression inside by default
         if cs.match(sub):
             _, subs = cs.split(sub)
+            # TODO: if function not just defined name: (lambda)(), funcs[key]()
+            # func should be an expression which returns function object
         exp = FuncCallExpr(name, src)
         return exp, subs
 

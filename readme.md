@@ -198,8 +198,8 @@ names[3] = 'Vaxtang'
 firstName = names[0]
 ```
 Negative indexes are allowed.  
-It assesses to the element by position from the end of list.  
-`[-1]` is a last element of list.  
+It accesses to the element by position from the end of list.  
+`[-1]` is a last element.  
 ```
 nums = [1,2,3,4,5]
 print(nums[-2])
