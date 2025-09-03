@@ -529,6 +529,8 @@ class MultiOper(OperCommand):
         # self.res = self.root.get()
 
     def get(self):
+        # val = self.root.get()
+        # print('#mroo', self.root, val, val.vtype)
         return self.root.get()
 
 
