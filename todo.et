@@ -63,14 +63,16 @@
     # operator variants: !-  !~  !:  ::  \:  /:  |:  :|
     if x < 2 !: print(x)
     for n <- nums !- print(n)
-    for x <- vals /: doit(x)
+    for x <- vals /: doit(x); y = x + 2; print(x, y)
 
 17. DONE: Not-in-list oper: !?> # if x !?> nums ... == if !(x ?> nums) ...
 
 18. continue in for / while
-    looks like it should be an extra case in block execution, like return case.
 19. break in for / while
-
+    looks like it should be an extra case in block execution, like return case.
+20.
+    # TODO: if function not just defined name: (lambda)(), funcs[key](), foo()()
+    # func should be an expression which returns function object
 
 # Perspective things: 
 1. Maybe type 

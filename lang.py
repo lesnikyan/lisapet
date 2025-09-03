@@ -2,6 +2,8 @@
 Base types.
 '''
 
+import re
+
 # TODO: add config
 FullPrint = 0
 
@@ -90,11 +92,21 @@ class CLine:
         self.line = 0
 
 
-KEYWORDS = '''
+# KEYWORDS = '''
+# import
+# const
+# for if do while func
+# case match 
+# '''
+
+KEYWORDS = re.split(r'\s+',
+    '''
 import
 const
-for if do while func
-case match 
-'''
+for while break continue 
+func return
+if else case match
+struct list dict tuple
+''')
 
 TYPES = 'num int float bool str list dict struct any null callab'

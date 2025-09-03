@@ -146,7 +146,8 @@ class CaseBinOper(SubCase):
                     # dprint(' >> ',etx)
                     continue
                 if etx in obr:
-                    last = inBrs.pop()
+                    if len(inBrs):
+                        last = inBrs.pop()
                     # dprint(' << ', etx, last)
                     continue
                     # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
@@ -338,47 +339,6 @@ class CaseBrackets(SubCase):
         '''
         base.setInner(subs[0])
         return base
-
-
-# class _CaseBinAssign(CaseAssign):
-#     ''' += -= *= /= %=  
-#     var += val -> var = (var + val)
-    
-#     '''
-
-#     def match(self, elems:list[Elem]) -> bool:
-#         '''  '''
-#         if elems[0].type != Lt.word or elems[0].text in SPEC_WORDS:
-#             return False
-#         afterInd = afterLeft(elems)
-#         if afterInd == -1:
-#             return False
-#         if afterInd > len(elems):
-#             return False
-#         elem = elems[afterInd]
-#         dprint('CaseBinAssign,split', afterInd, elem.text)
-#         if elem.type != Lt.oper or elem.text not in EXT_ASSIGN_OPERS:
-#             return False
-#         return True
-
-#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-#         ''' Reusing OpAssign expression object'''
-#         opIndex = afterLeft(elems)
-#         biOper = elems[opIndex]
-#         prels('CaseBinAssign.split1', elems)
-#         dprint('biOper:', biOper.text)
-#         mOper = biOper.text[0] # get math oper, e.g.: + from +=
-#         left = elems[:opIndex]
-#         right = elems[opIndex+1:]
-#         oper = Elem(Lt.oper, mOper)
-#         asgn = Elem(Lt.oper, '=')
-#         # new Assign-like sequence: (x += 2) -> (x = x + 2)
-#         assignElems = left + [asgn] + left + [oper] + right
-#         return super().split(assignElems)
-     
-    
-#     def setSub(self, base:Expression, subs:list[Expression])->Expression:
-#         return super().setSub(base, subs)
 
 
 def checkTypes(elems:list[Elem], exp:list[int]):

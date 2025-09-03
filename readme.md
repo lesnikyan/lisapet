@@ -198,8 +198,8 @@ names[3] = 'Vaxtang'
 firstName = names[0]
 ```
 Negative indexes are allowed.  
-It assesses to the element by position from the end of list.  
-`[-1]` is a last element of list.  
+It accesses to the element by position from the end of list.  
+`[-1]` is a last element.  
 ```
 nums = [1,2,3,4,5]
 print(nums[-2])
@@ -409,8 +409,19 @@ nums = [1..5] # -->> [1,2,3,4,5]
 # tolist() - explicit cast to list of other sequences or generators (comprehantion, string)
 nums = tolist([1..5])
 
-# Iter-gen + slice
-sliced = tolist(nums)[2:4] # TODO: implement native slicing of iter-gen
+# Slice following by sequence expression:
+
+# list slice
+sliced = [1,2,3,4,5][2:4]
+
+# Iter-gen + slice with explicit convertion to list
+sliced = tolist(nums)[2:4]
+
+# iter-get slice
+sliced = [1..100][3:10]
+
+# Sequence-gen slice
+sliced = [x ; x <- src][2:5]
 ```
 
 ### 12.2 List comprehension / sequence generator

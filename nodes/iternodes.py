@@ -195,31 +195,55 @@ class SrcIterator(NIterator):
 
 
 class ListGenIterator(NIterator):
-    ''' [a..b] from a to b, step |1| '''
+    ''' [a..b] from a to b, step |1| 
+        TODO: step !?> (-1, 1)
+            [1..10 ; 2]
+    '''
 
     def __init__(self, a, b):
         ''' a - begin, 
             b - end '''
         c = 1
         if b < a:
-            c = -1
+            c *= -1
         self.first = a
         self.last = b # last val
         self.__step = c
-        self.index = a
+        self.val = a
         self.vtype = TypeIterator()
-    
+
     def start(self):
-        self.index = self.first
+        self.val = self.first
 
     def step(self):
-        self.index += self.__step
+        self.val += self.__step
 
     def hasNext(self):
-        return self.index <= self.last
+        return self.val <= self.last
 
     def get(self):
-        return Val(self.index, TypeInt)
+        return Val(self.val, TypeInt)
+    
+    def getSlice(self, start, end):
+        res = ListVal()
+        self.start()
+        xlen = int(abs(self.last - self.first) / abs(self.__step)) + 1
+        if start < 0:
+            start = xlen + start
+        if end < 0:
+            end = xlen + end
+        self.val += start * self.__step
+        # TODO: [1:-1]
+        maxCount = end
+        endVal = self.first + (self.__step * maxCount)
+        # print('LG-1: ', self.first, endVal, self.__step, 'base:', self.get())
+        while(self.val < endVal and self.hasNext()):
+            res.addVal(self.get())
+            # print('LGI>>', self.val, ':', res.vals())
+            self.step()
+            if (self.__step > 0 and self.val >= endVal) or (self.__step < 0 and self.val <= endVal):
+                break
+        return res
     
     def allVals(self):
         res = ListVal()

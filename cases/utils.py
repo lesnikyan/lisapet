@@ -106,12 +106,16 @@ class OperSplitter:
                 el = elems[i]
                 etx = el.text
                 # counting brackets from tne end, closed is first
+                # dprint('ue:', i, ':', etx, '>>', '`'.join(inBrs))
                 if etx in cbr:
                     inBrs.append(etx)
                     continue
                 if etx in obr:
-                    last = inBrs.pop()
+                    if len(inBrs):
+                        last = inBrs.pop()
                     # dprint(' << ', etx, last)
+                    # if len(inBrs) == 0 and etx in self.priorGroups[prior]:
+                    #     return i
                     if i == 0 and etx in self.priorGroups[prior]:
                         return 0
                     continue

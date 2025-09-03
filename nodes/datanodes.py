@@ -8,20 +8,10 @@ Tree,
 
 '''
 
-
 from lang import *
 from vars import *
 from nodes.expression import *
 from nodes.oper_nodes import ServPairExpr
-
-# class Node:
-#     def __init__(self):
-#         command = 0
-#         arg = 0
-        
-
-
-# Expression
 
 
 class ListExpr(CollectionExpr):
@@ -158,18 +148,22 @@ class SliceExpr(Expression, CollectElem):
         self.target = None
         self.varExpr.do(ctx) # before []
         target = self.varExpr.get() # found collection
-        dprint('SliceExpr.do1', target)
+        # dprint('SliceExpr.do1', target, '::', target.getType())
+        if isinstance(target.getType(), (TypeIterator)):
+            target = target.getVal()
         if isinstance(target, Var):
             target = target.getVal()
         self.target = target
+        # dprint('SliceExpr.do2', target, '::')
         self.beginExpr.do(ctx)
         self.closeExpr.do(ctx)
         if isinstance(self.closeExpr, NothingExpr):
             self.closeExpr = ValExpr(Val(self.target.len(), TypeInt))
-        dprint('## self.target', self.target)
+        # dprint('## self.target', self.target)
 
     def get(self)->Var:
         beg, end = self.beginExpr.get(), self.closeExpr.get()
+        # dprint('Slice:', beg.get(), end.get())
         res = self.target.getSlice(beg.get(), end.get())
         return res
 

@@ -25,6 +25,40 @@ import pdb
 class TestOper(TestCase):
 
 
+    def test_brackets_after_brackets(self):
+        ''' slice of generator: 
+                iter gen [a..n][a..b], 
+                sequence gen: [x ; x <- src][a..b]
+                foo()[a..b]
+            TODO: function in expr with brackets:
+            func obj in brakets: (function)(), (lambda)() 
+            func ojb in collection: funcs[key]()
+            func returns func: foo()()
+            
+            '''
+        code = r'''
+        res = 0
+        # r1 = (x -> x + 10)(2)
+        
+        # f2 = x -> x + 100
+        # ff = [f2]
+        # r2 = ff[0](3)
+        
+        r3 = [1..5][0:3]
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        # rCtx = rootContext()
+        # ctx = rCtx.moduleContext()
+        # ex.do(ctx)
+        # rvar = ctx.get('res')
+        # self.assertEqual(0, rvar.getVal())
+
     def test_not_in_list(self):
         ''' '''
         code = r'''
@@ -287,7 +321,7 @@ class TestOper(TestCase):
             elems = clines[0].code
             pos = spl.mainOper(elems)
             dprint('tt `%s`' % sline, ' >>> ', pos)
-            self.assertEqual(exp, pos)
+            self.assertEqual(exp, pos, 'in line: %s' % sline)
 
     def test_colon_vs_other(self):
         ''' make vars and assign vals from tuple  '''

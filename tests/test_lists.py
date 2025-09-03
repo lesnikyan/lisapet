@@ -22,6 +22,63 @@ class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
 
+
+    def test_slice_of_generator(self):
+        ''' # TODO: nn = [1..10]; nn5 = nn[1:5] '''
+        code = r'''
+        # r1, r2, r3, r = [], [], [], []
+        
+        # list
+        r1 = [1,2,3,4,5,6,7,8,9][2:5]
+        
+        # iter generator in var
+        nums = [10..15]
+        r2 = nums[2:5] # 10 11 [12 13 14] 15
+        
+        # iter gen
+        r3 = [1..100][55:58]
+        
+        # iter gen negative start val
+        r4 = [-2..30][11:14]
+        
+        # explicit convertion to list
+        r5 = tolist([1..10])[5:-2] # 6,7,8
+        
+        # iter gen negative indices
+        r6 = [1..10][-5:-3] # 6,7
+        
+        # sequence gen
+        r7 = [2 * x; x <-[1..100]; x % 7 == 0 ][2:5]
+        
+        # func returning generator / list
+        func foo(a, b, c)
+            [n + c; n <- [a..b]]
+        
+        r8 = foo(1, 10, 100)[2:5]
+        
+        res = [r1, r2, r3, r4, r5, r6, r7, r8]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exp = [[3,4,5],
+               [12,13,14],
+               [56, 57, 58],
+               [9, 10, 11],
+               [6, 7, 8],
+               [6, 7],
+               [42, 56, 70],
+               [103, 104, 105]]
+        self.assertEqual(exp, rvar.vals())
+
     def test_str2gen(self):
         '''
         list comprehension by converted string.
@@ -538,7 +595,7 @@ class TestLists(TestCase):
 
     def test_list_multiline(self):
         code = '''
-        # create dict var with values in sub-block
+        # block-constructor of list
         names = list
             'Anna'
             'Barbi'
