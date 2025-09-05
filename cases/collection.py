@@ -8,7 +8,6 @@ from vals import isDefConst, elem2val, isLex
 from cases.tcases import *
 
 from nodes.tnodes import *
-# from nodes.oper_nodes import *
 from nodes.datanodes import *
 
 
@@ -138,6 +137,9 @@ class CaseCollectElem(SubCase):
         elems[0]: varName, funcName + (expr), 
         more complex: obj.field, obj.method(expr)
         '''
+        if not isLex(elems[-1], Lt.oper, ']'):
+            # not [] brackets
+            return False
 
         if not isGetValExpr(elems):
             return False
@@ -146,9 +148,6 @@ class CaseCollectElem(SubCase):
 
         if opInd < 1:
             # means only brackets, no collection var before
-            return False
-        if not isLex(elems[-1], Lt.oper, ']'):
-            # not [] brackets
             return False
 
         # prels('CaseCollectElem match1:', elems, opInd)

@@ -32,7 +32,8 @@ def isGetValExpr(elems:list[Elem]):
     cbr = [s for s in ')]}']
     lem = len(elems)
     # not [...], (...), {,,,}, "qwerty", +- * % ! < > / && |
-    if lem < 1 or elems[0].type != Lt.word or isLex(elems[0], Lt.oper, obr):
+    # if lem < 1 or elems[0].type != Lt.word or isLex(elems[0], Lt.oper, obr):
+    if lem < 1 :
         return False
     varOpers = '([{}]).'
     for i in range(0, lem):
@@ -53,7 +54,7 @@ def isGetValExpr(elems:list[Elem]):
         if ee.type == Lt.word or (ee.type == Lt.oper and ee.text in varOpers):
             # just valid var, or func call, or collectio[elem], or obj.field 
             continue
-        dprint('utils.geVar4: ', ee.text, '', inBr)
+        # print('utils.geVar4: ', ee.text, ' __ ', inBr)
         # any other lexem means that whole expression not what we expect
         return False
     return True

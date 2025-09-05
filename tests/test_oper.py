@@ -38,10 +38,10 @@ class TestOper(TestCase):
             '''
         code = r'''
         res = 0
-        # r1 = (x -> x + 10)(2)
+        r1 = (x -> x + 10)(2)
         
-        # f2 = x -> x + 100
-        # ff = [f2]
+        f2 = x -> x + 100
+        ff = [f2]
         # r2 = ff[0](3)
         
         r3 = [1..5][0:3]

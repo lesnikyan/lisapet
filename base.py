@@ -96,7 +96,8 @@ class Val(Base):
 class Container(Val):
     ''' Contaiter Var list, dict, etc '''
 
-
+class Objective(Val):
+    ''' Any single object more complex than just.'''
 
 class Var(Base):
     '''
@@ -131,7 +132,7 @@ class Var(Base):
         return self.name
     
     def getVal(self):
-        if isinstance(self.val, Container):
+        if isinstance(self.val, (Container, Objective)):
             return self.val
         return self.val.getVal()
     

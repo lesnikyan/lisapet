@@ -109,7 +109,7 @@ class ListVal(Collection):
     
     def addVal(self, val:Val):
         # not sure, we need whole Var or just internal value?
-        dprint('ListVal.addVal:', val)
+        # print('ListVal.addVal:', val)
         self.elems.append(val)
     
     def setVal(self, key:Val, val:Val):
@@ -299,11 +299,14 @@ def valFrom(src:Var|Val):
 
 
 def var2val(var:Var|Val):
+    # print('var2val 1 :', var, type(var))
     if isinstance(var, (Val, Collection)):
         return var
+    # print('var2val 2 :', var, 'vv:', var.val)
     tp = var.getType()
     val = var.getVal()
-    if isinstance(val, (Val, Collection)):
+    # print('var2val 3 :', val, tp)
+    if isinstance(val, (Val, Collection, FuncInst)):
         return val
     return Val(val, tp)
 

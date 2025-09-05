@@ -33,8 +33,9 @@ class ListExpr(CollectionExpr):
         for exp in self.valsExprList:
             exp.do(ctx)
             v = exp.get()
-            dprint('ListExpr.do1', exp, v)
+            # print('\nListExpr.do1', exp, v, type(v))
             val = var2val(v)
+            # print('ListExpr.do2', val, type(val))
             self.listObj.addVal(val)
         dprint('## ListExpr.do2 self.listObj:', self.listObj)
 
