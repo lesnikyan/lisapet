@@ -12,9 +12,9 @@ Than this object can be executed with some data.
 Executable tree uses context-object (map/dict of data values with nested contexts).  
 
 *
-Status.
-Actually it is on-dev. Most basic features and needed things is done.
-Details see abobe, in `syntax` section.
+## Status.
+Actually it is on-dev. Most basic features and needed things is done.  
+Details see next, in `syntax` section.  
 
 *
 Basic principles.
