@@ -23,6 +23,147 @@ class TestFunc(TestCase):
 
 
 
+    def test_function_from_function(self):
+        ''' Callable expression is a lambda or function from result of function call. '''
+        code = r'''
+        res = 0
+        
+        x2 = x -> x * 2
+        
+        func x1(x)
+            x * 10
+        
+        # defined function
+        func foo()
+            x1
+        
+        # lambra from var
+        func foo2()
+            x2
+        
+        # new lambda
+        func foo3()
+            x -> x * 100 
+        
+        # lambda uses top-level argument
+        func foo4(n)
+            x -> x * n + 1000 
+        
+        # lambda uses passed lambda
+        func foo5(f)
+            x -> f(x) + 5000 
+        
+        res = []
+        
+        res <- foo()(3)
+        res <- foo2()(7)
+        res <- foo3()(22)
+        res <- foo4(5)(111)
+        res <- foo5(y -> y * 3)(33)
+
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rval = ctx.get('res').get()
+        self.assertEqual([30, 14, 2200, 1555, 5099], rval.vals())
+
+    def test_lambda_in_collection(self):
+        ''' Callable expression is a lambda in list or dict '''
+        code = r'''
+        res = 0
+        
+        # lambda in var
+        x2 = x -> x * 2
+        
+        # lambda in list
+        ffs = [x2, x -> 5000 + x]
+        
+        # lambda in dict
+        ffd = dict
+            'f' : ((a) -> a * 11)
+            's' : ((a, b) -> a * b)
+        
+        res = []
+        
+        res <- x2(7)
+        
+        res <- ffs[0](11)
+        res <- ffs[-1](31)
+
+        res <- 'next-dict'
+        res <- ffd['f'](9)
+        res <- ffd['s'](10, 17)
+        
+        # lambda in brackets
+        res <- (x -> [x, x * 2, x * 3])(5)
+
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        # ctx.print(forsed=1)
+        rval = ctx.get('res').get()
+        self.assertEqual([14, 22, 5031, 'next-dict', 99, 170, [5, 10, 15]], rval.vals())
+
+    def test_func_as_expr(self):
+        ''' '''
+        code = r'''
+        res = 0
+
+        func foo()
+            'foo-result'
+        
+        func bar(arg)
+            arg
+        
+        func inList(arg)
+            [arg]
+        
+        func sum(a, b)
+            a + b
+        
+        ffs = [foo, bar, inList, sum]
+        
+        ffd = {
+            'f' : foo,
+            's' : sum
+        }
+        
+        res = []
+        res <- ffs[0]()
+        res <- ffs[1]('bar-arg1')
+
+        res <- 'next-dict'
+        res <- ffd['f']()
+        res <- ffd['s'](10, 1000)
+
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        # ctx.print(forsed=1)
+        rval = ctx.get('res').get()
+        self.assertEqual(['foo-result', 'bar-arg1', 'next-dict', 'foo-result', 1010], rval.vals())
+
     def test_built_foldl(self):
         ''' '''
         code = r'''
@@ -167,10 +308,41 @@ class TestFunc(TestCase):
         ex.do(ctx)
         rr = ctx.get('rr')
         rr2 = ctx.get('rr2')
-        # self.assertEqual(0, rr.get().data)
         self.assertEqual({2: 417, 4: 741, 6: 1079, 3: 423, 5: 753, 7: 1087}, rr.get().vals())
-        # dprint('>>', rr.get())
         dprint('>>', rr2.get())
+
+    def test_func_in_loop_in_func(self):
+        ''' src-iter/func/src-iter '''
+        code = r'''
+        func foo(a:int, b:int)
+            a + b
+
+        a = 10
+        func test()
+            foo(5, 7)
+            # for b <- [2,4,6,3,5,7]
+            #     br = foo(a, b)
+        
+        test()
+        print('res = ', rr)
+        '''
+        _='''
+        
+        rr = []
+        rr2 = []
+        '''
+        code = norm(code[1:])
+        # dprint('>>\n', code)
+        # return
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        # rr = ctx.get('rr')
+        # rr2 = ctx.get('rr2')
+        # self.assertEqual({2: 417, 4: 741, 6: 1079, 3: 423, 5: 753, 7: 1087}, rr.get().vals())
+        # dprint('>>', rr2.get())
 
     def test_func_arg_type(self):
         ''' Auto-define type of args on-the-fly if func definition doesn`t have type of arguments. '''

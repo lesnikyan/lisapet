@@ -58,12 +58,18 @@ def afterLeft(elems:list[Elem])->int:
     return res
 
 
-def afterNameBr(elems:list[Elem])->int:
+def brAfterExpr(elems:list[Elem])->int:
     ''' find index of elem after var/func Name and possible brackets
     cases:
-        var ...
-        foo(arg, arg, arg) ...
-        arr[expr] ... 
+        foo()
+        foo(arg, arg, arg)
+        arr[expr]
+        ()()
+        nn[]()
+        foo()()
+        {expr}({args})
+        {expr} = [name]brackets 
+        {solidExpression}([args])
     '''
     res = 0
     inBr = ''
@@ -85,6 +91,7 @@ def afterNameBr(elems:list[Elem])->int:
                     return i + 1
                 return -1
             continue
+        
         if ee.type == Lt.oper and  ee.text in obr:
             # enter into brackets
             inBr += ee.text
@@ -347,7 +354,7 @@ class CaseSeq(SubCase):
                 start = i + 1
                 res.append(sub)
                 continue
-        # dprint('Seq.split, start =', start, 'len-elems =', len(elems))
+        # print('Seq.split, start =', start, 'len-elems =', len(elems))
         if start < len(elems):
             res.append(elems[start:])
         # if isLex(res[0][0], Lt.oper, self.delim):

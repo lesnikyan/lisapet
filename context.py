@@ -143,15 +143,15 @@ class Context(NSContext):
                 return var
             src = src.upper
 
-    def print(self, ind=0):
-        if not lang.FullPrint:
+    def print(self, ind=0, forsed=0):
+        if not lang.FullPrint and not forsed:
             return
         c:Context = self
         while c:
             ttt = ['vars', 'types', 'funcs']
             iii = 0
             for data in [c.vars, c.types, c.funcs]:
-                dprint('.' * ind, '  > ', ttt[iii])
+                print('.' * ind, '  > ', ttt[iii])
                 iii += 1
                 for k, v in data.items():
                     vstr = v.get()
@@ -159,7 +159,7 @@ class Context(NSContext):
                         vstr = v.vals()
                     elif isinstance(v, FuncInst):
                         vstr = 'Function(%s)' % v.getName()
-                    dprint(' ' * ind, 'x>', k, v.__class__.__name__, ':', vstr)
+                    print(' ' * ind, 'x>', k, v.__class__.__name__, ':', vstr)
             c = c.upper
             ind += 1
             

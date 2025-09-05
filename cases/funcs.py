@@ -123,55 +123,125 @@ class CaseMathodDef(CaseFuncDef):
 
 
 class CaseFunCall(SubCase):
-    ''' foo(agrs)'''
+    ''' foo(agrs)
+        {expr}(args)'''
+
+    # def match1(self, elems:list[Elem]) -> bool:
+    #     ''' simple cases:
+    #         foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))
+    #         spec words  should not be here (for, if, func, match, return..)
+    #         TODO: complex cases:
+    #         (lambda-or-func)(), cont[key](), (any-expr)()
+    #     '''
+    #     if len(elems) < 3:
+    #         return False
+    #     if not isLex(elems[-1], Lt.oper, ')'):
+    #         return False
+    #     if elems[0].type != Lt.word: # incorrect for (function)()
+    #         return False
+    #     if not isLex(elems[1], Lt.oper, '('):
+    #         return False
+    #     if elems[0].type == Lt.word and elems[0].text in KEYWORDS:
+    #         return False
+    #     # TODO: use word(any-with-brackets) pattern
+    #     endInd = afterNameBr(elems)
+    #     if endInd != -1:
+    #         return False
+    #     return True
 
     def match(self, elems:list[Elem]) -> bool:
         ''' simple cases:
             foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))
             spec words  should not be here (for, if, func, match, return..)
             TODO: complex cases:
-            [seq-gen](), (lambda-or-func)(), cont[key]()
+            foo()(), (lambda-or-func)(), cont[key]()
+            name()[]()[]() () # multiple brackets after name
+            (expr)[]()[]()[] # multiple brackets after brackets
+            [x -> expr][0](arg) # lambda in list
         '''
+        # print('CaseFunCall.matchNew ::: ', ''.join([n.text for n in elems]))
         if len(elems) < 3:
             return False
-        if elems[0].type != Lt.word: # incorrect for (function)()
+        if not isLex(elems[-1], Lt.oper, ')'):
             return False
-        # if elems[0].type == Lt.word and elems[0].text in KEYWORDS:
-        #     return False
-        if not isLex(elems[1], Lt.oper, '('):
+        if elems[0].type == Lt.word and elems[0].text in KEYWORDS:
             return False
-        # if not isLex(elems[-1], Lt.oper, ')'):
-        #     return False
         # TODO: use word(any-with-brackets) pattern
-        endInd = afterNameBr(elems)
-        if endInd != -1:
+        
+        # print('FuncCallMatch ---------1----------')
+        if not isGetValExpr(elems):
             return False
+        
+        # print('FuncCallMatch ---------2----------')
+        opInd = findLastBrackets(elems)
+
+        if opInd < 1:
+            # means only brackets, no collection var before
+            return False
+        if not isLex(elems[opInd], Lt.oper, '('):
+            return False
+        # print('FuncCallMatch ---------3----------')
+        
+        # endInd = afterNameBr(elems)
+        # if endInd != -1:
+        #     return False
         return True
         
         # if elems[1].type != Lt.oper or elems[-1].type != Lt.oper or elems[1].text != '(' or elems[-1].text != ')':
         #     return False
     
+    # def split1(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+    #     ''' '''
+    #     # 1. func name, in next phase: method call: inst.foo() ? separated case for objects with members: obj.field, obj.method()
+    #     # 2. arg-expressions
+    #     src = elemStr(elems)
+    #     name = elems[0].text
+    #     # argSrc = elems[2:-1]
+    #     sub = elems[2:-1]
+    #     cs = CaseCommas()
+    #     subs = [sub] # one expression inside by default
+    #     if cs.match(sub):
+    #         _, subs = cs.split(sub)
+    #         # TODO: if function not just defined name: (lambda)(), funcs[key]()
+    #         # func should be an expression which returns function object
+    #     exp = FuncCallExpr(name, src)
+    #     return exp, subs
+
+    # def setSub1(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 
+    #     ''' base - FuncCallExpr, subs - argVal expressions '''
+    #     for exp in subs:
+    #         dprint('FN Call sub:', exp)
+    #         base.addArgExpr(exp)
+    #     return base
+    
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
         # 1. func name, in next phase: method call: inst.foo() ? separated case for objects with members: obj.field, obj.method()
         # 2. arg-expressions
+
         src = elemStr(elems)
-        name = elems[0].text
-        # argSrc = elems[2:-1]
-        sub = elems[2:-1]
+        opInd = findLastBrackets(elems)
+        argEl = elems[opInd+1 : -1]
+        args = [argEl] # one expression inside by default
+        valExpr = elems[:opInd]
         cs = CaseCommas()
-        subs = [sub] # one expression inside by default
-        if cs.match(sub):
-            _, subs = cs.split(sub)
-            # TODO: if function not just defined name: (lambda)(), funcs[key]()
-            # func should be an expression which returns function object
-        exp = FuncCallExpr(name, src)
+        if cs.match(argEl):
+            _, args = cs.split(argEl)
+        exp = FuncCallExpr(elemStr(valExpr), src)
+        # print('FCall.split1', valExpr, args)
+        subs = [valExpr] + args
+        # print('FCall.split2', subs)
         return exp, subs
 
     def setSub(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 
         ''' base - FuncCallExpr, subs - argVal expressions '''
-        for exp in subs:
-            dprint('FN Call sub:', exp)
+        fexpr = subs[0]
+        args = [n for n in subs[1:] if not isinstance(n, NothingExpr)]
+        # print('FCall.setSub1', subs)
+        # print('FCall.setSub2',fexpr, args)
+        base.setFuncExpr(fexpr)
+        for exp in args:
+            # print('FCall add arg:', exp)
             base.addArgExpr(exp)
         return base
 

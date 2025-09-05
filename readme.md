@@ -21,23 +21,12 @@ Basic principles.
 1. no extra thingth, block is defined by line shifting like python or ruby
 2. basic collections: list, dict, tuple
 3. arithmetic expressions - like python syntax: (a + 1/2) * b - c ** 2 .
-4. if-else, match, for, while.
+4. control structs: `if-else`, `match`, `for`, `while`.
 5. functions: last expression is a returning result. Explicit `return` works too.
-6. struct as a complex type. struct can have methods. Inheritance.
+6. `struct` as a complex type. struct can have methods. Inheritance works too.
 7. functions have typed args, by default as Any type.
 8. Import modules.
 9. Some syntax sugar: list slice, list generator, `<-`, `?>`, `?:` operators, multiple assignment.
-
-*
-Possible exension (thoughts):
-01. functions can be overloaded by types (maybe)
-02. operators are functions, exception: brackets () [] {}, maybe.
-10. mapping and pattern matching
-11. functions doesn't needs braces like haskell (for what?)
-12. functional elements: lambdas, composition, carrying.
-13. interface as list of functions (thinking)
-14. functions with ducktype args based on interfaces
-15. (), are also functions (for what?)
 
 *
 
@@ -75,6 +64,7 @@ py -m run -c "n = a + b; print(':', a, b, n)" -l -j "[{\"a\":1, \"b\":2}, {\"a\"
 >> 11
 
 ```
+See code of run.py, build.py, eval.py for understanding how to use LISAPET as an imbedded engine, add custom python functions for using in LP code, etc.  
 
 ## Syntax.
 
@@ -92,6 +82,9 @@ multiline comment
 ```
 
 ### 1. Vars, vals, lists, assignment, context of vars
+Assigments of values of vars.  
+I common case w euse `=` operator for assignment value to new of already defined variable.  
+Default types of falues is: numeric types, string, list, dict, tuple.
 ```
 x = 1
 name = 'Ramzes II'
@@ -125,9 +118,12 @@ yes:bool = true
 no:bool = false
 
 ```
+Types such as a collections, structs, functions, etc will be explaned next sections.
 
-### 3. Sub-block of expressions. 
-If statement, comparison operators, bool operators
+### 3. Sub-block of expressions. If.
+Control structures have inner place with internal expressions, here we call it as an expression block.  
+Block separated by indent with one or more whitespaces. All indents should be equal.  
+If statement, comparison operators, bool operators.
 ```
 res = 100
 if x >= 10 | x < 2 && x != 0
@@ -153,12 +149,15 @@ else
     code
 ```
 
-### 4. Math operators 
+### 4. Math operators, unary operators
 ```
 y = 5 + x * -3
 
-# unary operators
+# unary operator minus
 x = -2
+
+# pow
+5 ** 2 # >> 25
 
 # more complex math expressions
 b=100 
@@ -166,6 +165,9 @@ c=4
 d=3
 res = 5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8
 ```
+Other unary operators.  
+`!` logical NOT
+`~` bitwise NOT
 
 ```
 # operators with assignment
@@ -173,8 +175,6 @@ x = 1
 x += 2
 x *=3
 x %= 2
-z = 1
-z *= (x + y)
 ```
 
 ### 5. Collections: list (array), tuple, dict (map)
@@ -224,7 +224,7 @@ vals = (1, 22, 33,3)
 a, b, c = vals
 ```
 
-### 6. `for` statement, 
+### 6. `for` statement, `<-` operator
 - Range-iterator
 ```
 for i=0; i < 5; i = i + 1
@@ -237,6 +237,8 @@ res = y
 ```
 
 - Iterator, arrow-assign operator `<-`
+`<-` operator have several options.  
+Here we explain arrow as an iterative assignment.  
 ```
 # by function iter
 # iter(last+1)
@@ -292,6 +294,7 @@ func foo(x, y)
     res
 
 ```
+See more about functions in sections: 14, 15, 23.
 
 ### 8. Dict. Linear and block constructor
 ```
@@ -575,7 +578,10 @@ Actual builtin funcs:
 `tolist`, `foldl`, `join`  
 TODO: split, int2char, [int] to string, char_code
 
-### 15. Lambda functions and high-order functions.
+### 15. Lambda functions and high-order functions. Right-arrow `->`.
+Right-arrow is an operator for define lambda-function.  
+Arrow separates arguments and body of function.  
+
 ```
 # one-arg lambda
 x -> x * 10
@@ -596,6 +602,7 @@ n1 = foo(f1, 5)
 # lambda arg as local val / arg
 n2 = foo( x -> 2 ** x , 5)
 ```
+See more about function-as-object in section 23.  
 
 ### 16. match-statement.  
 `match` keyword  
@@ -637,18 +644,20 @@ a, b, c = [1,2,3]
 ```
 
 18. Ternary operator `?:`. 
+classic ternary oper  
 ```
-# classic ternary oper
 x = a < b ? 10 : 20
 
-# shortened case. null-or:  val1 ?: va2
-# returns val1 if not null, zero num, empty string, list or tuple; otherwize returns val2
+```
+shortened case. null-or:  `val1 ?: va2 `  
+returns val1 if not null (zero num, empty string, list or tuple); otherwize returns val2  
+```
 x = val1 ?: va2
 ```
 
 ### 19. val-in `?>` and val-not-in `!?>` operators.  
 
-If colelction contains value `?>`  
+If colelction vals contains value a `a ?> vals`  
 ```
 # base usage 
 val ?> collection
@@ -669,6 +678,7 @@ if 'c' !?> {'a':1, 'b':2} ...
 ```
 
 ### 20. one-line blocks (expr; expr; expr)
+Shortened syntax for those who like long lines and hates tall columns :)  
 ```
 a = 1; b = 2; c = 3
 a = 10 + a; b += 20; c -= 30;
@@ -676,29 +686,35 @@ res = [a, b, c]; res <- dd; res <- e
 ```
 
 ### 21. String formatting  
-
-`%` - formatting.
+There are two syntax implementations.  
+- `%` - formatting.  
+`<<` classic %s-formatting. Uses native `%` operator inside with %-templates
 ```
-# `<<` classic %s-formatting. Uses native `%` operator inside with %-templates
 'hello int:%d, float:%f, str:%s ' << (123, 12.5, 'Lalang')
 ```
-Var-embedding syntax.  
-Uses with `~` operator before string.  
-Any expression returning stringify value is allowed: var, struct.field, list/dict element, function call. 
+
+- `~`-strings / var-embedding syntax.  
+Uses `~` operator before string and expressions into `{}` brackets (templates).  
+Templates can be simple var-name, or be more complex expression with template-modifier over `:`.  
+Any expression returning stringify value is allowed: var, struct.field, list/dict element, function call.  
+Be accurate with `"'``quotes``'"`.  
 ```
-# `~`operator for string. Works like f-string in python, 
-# with {val:patterns}
-
 a, b, s = (123, 12.5, 'ABC')
+name = 'Bob'
 
+# simple tpl
+hey = ~' Hello {name}!'
+
+# with {val:patterns}
 hello1 = ~'hello int:{a:05d}, float:{b:.3f}, str: `{s2:<5s}`.'
 
+# with function call
 func fHello(s)
     'hello, ' + s
 
-print(~'Some prefix, {fHello(`Formatter`)} ')
+~'Some prefix, {fHello(`Formatter`)} '
 ```
-More examples in `tests/test_format.py`.
+See more examples in `tests/test_format.py`.
 
 ### 22. Import modules.  
 
@@ -731,14 +747,92 @@ f1(123)
 f2(321)
 ```
 
-*
+### 23. Function as an object. 
+We can use a function not only as a predefined name, but also as a value, place it in collections, take it from an expression, and call it.  
+Typical cases:  
+- functions in list
+```
+func foo()
+    ...
+func bar(arg)
+    ...
+func inList(arg)
+    ...
+func sum(a, b)
+    ...
 
+funcs = [foo, bar, inList, sum]
+
+# call them
+ffs[0]()
+ffs[1]('arg-val')
+```
+- function in dict
+```
+ffd = dict
+    'f' : foo,
+    's' : sum
+
+ffd['f']()
+```
+- lambdas in collection
+```
+x2 = x -> x * 2
+ffs = [x2, x -> 5000 + x]
+
+ffs[0](11)
+ffs[-1](11)
+
+ffd = {'f' : ((a) -> a * 11)}
+
+ffd['f'](2)
+```
+- lambda in parentheses with immediate call
+```
+res = (x -> x + 10)(5)
+```
+- Also we can call function which has been returned from another function.
+```
+func foo3()
+    x -> x * 100
+
+res = foo()(3)
+```
+- Use passed argument in lambda.
+```
+func foo4(n)
+    x -> x * n + 1000 
+
+res = foo4(5)(111)
+```
+- Call passed lambda in returning lambda.
+```
+func foo5(f)
+    x -> f(x) + 5000 
+
+res = foo5(y -> y * 3)(33)
+```
+
+
+--------------------------------------------------------
+--------------------------------------------------------
 --------------------------------------------------------
 
 Drafts and thoughts:
 
 *.et, *.etml - file extension
 etml - possible extension of html/xml template.
+
+*
+
+Possible exension (thoughts):
+01. functions can be overloaded by types (maybe)
+02. operators are functions, exception: brackets () [] {}, maybe.
+10. mapping and pattern matching
+11. functions doesn't needs braces like haskell (for what?)
+12. functional elements: lambdas, composition, carrying.
+13. interface as list of functions (thinking)
+14. functions with ducktype args based on interfaces
 
 ```
 u = user{"vasya", 16, 1.5}
@@ -754,7 +848,6 @@ if res = rx.match(text); !res.empty() => print " result: %s" << res.first()
 
 ```
 *
-
 #TODO:
 Convert / rewrite code to Go, Java, Rust.  
 Looks like its not a simplest task ))
