@@ -32,6 +32,7 @@ class Function(FuncInst):
         self.block:Block = None
         self.defCtx:Context = None # for future: definition context (closure - ctx of module or upper block if function is local or lambda)
         self.res = None
+        # print('Fuu.init', self)
 
     def setDefContext(self, ctx:Context):
         self.defCtx = ctx
@@ -40,17 +41,19 @@ class Function(FuncInst):
         return self._name
 
     def addArg(self, arg:Var):
-        dprint('FN, addArg: ', arg)
+        # print('FN, addArg: ', arg)
         self.argVars.append(arg)
         self.argTypes[arg.getName()] = arg.getType()
         self.argNum += 1
-        dprint('Fuuu, addArg', arg, self.argNum)
+        # print('Fuuu, addArg; num=', self.argNum)
 
     # TODO: flow-number arguments
     def setArgVals(self, args:list[Val]):
         nn = len(args)
-        dprint('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
-        dprint('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
+        # print('Fuu.setA', self)
+        # print('Function.setArgVals1: self.argNum=', self.argNum)
+        # print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
+        # print('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
         if self.argNum != len(args):
             raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
@@ -92,6 +95,7 @@ class Function(FuncInst):
 
     def get(self)->Var:
         return self.res
+        # return Val(self, TypeFunc())
     
     def __str__(self):
         if self.__class__.__name__ == 'NFunc':
@@ -103,25 +107,74 @@ class Function(FuncInst):
         return 'func %s(%s)' % (self._name, ', '.join(args))
 
 
+# class FuncCallExpr1(Expression):
+#     ''' foo(agr1, 2, foo(3))  '''
+
+#     def __init__(self, name, src:str):
+#         super().__init__(name, src)
+#         self.name = name
+#         self.func:Function = None
+#         self.argExpr:list[Expression] = []
+
+#     def addArgExpr(self, exp:Expression):
+#         self.argExpr.append(exp)
+
+#     def do(self, ctx: Context):
+#         # inne rcontext
+#         dprint('FuncCallExpr.do')
+#         args:list[Var] = []
+#         dprint(f'Function `{self.name}`:', self.func)
+#         ctx.print()
+#         func = ctx.get(self.name)
+#         # unpack function from var
+#         dprint('#1# func-call do00: ', self.name, 'F:', func)
+#         if isinstance(func, Var):
+#             func = func.get()
+#         self.func = func
+#         if isinstance(self.func, VarUndefined):
+#             raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
+#         dprint('#1# func-call do1: ', self.name, 'F:', self.func, 'line:', self.src)
+#         for exp in self.argExpr:
+#             # dprint('#1# func-call do2 exp=: ', exp)
+#             exp.do(ctx)
+#             dprint('func-call do2:', exp, exp.get())
+#             arg = exp.get()
+#             if isinstance(arg, Var):
+#                 arg = arg.get()
+#             args.append(arg)
+#         dprint('#fname', self.name)
+#         self.func.setArgVals(args)
+#         callCtx = Context(None)
+#         self.func.do(callCtx)
+
+#     def get(self):
+#         return self.func.get()
+
+
 class FuncCallExpr(Expression):
     ''' foo(agr1, 2, foo(3))  '''
 
-    def __init__(self, name, src:str):
-        super().__init__(name, src)
-        self.name = name
+    def __init__(self, strName = 'func', src:str=''):
+        super().__init__(strName, src)
+        self.name = strName
+        self.funcExpr = None
         self.func:Function = None
         self.argExpr:list[Expression] = []
+
+    def setFuncExpr(self, fexp:Expression):
+        self.funcExpr = fexp
 
     def addArgExpr(self, exp:Expression):
         self.argExpr.append(exp)
 
     def do(self, ctx: Context):
         # inne rcontext
-        dprint('FuncCallExpr.do')
+        # print('FuncCallExpr.do')
         args:list[Var] = []
         dprint(f'Function `{self.name}`:', self.func)
         ctx.print()
-        func = ctx.get(self.name)
+        self.funcExpr.do(ctx)
+        func = self.funcExpr.get()
         # unpack function from var
         dprint('#1# func-call do00: ', self.name, 'F:', func)
         if isinstance(func, Var):
@@ -138,7 +191,7 @@ class FuncCallExpr(Expression):
             if isinstance(arg, Var):
                 arg = arg.get()
             args.append(arg)
-        dprint('#fname', self.name)
+        # print('FCall.do.args:', self.name, args)
         self.func.setArgVals(args)
         callCtx = Context(None)
         self.func.do(callCtx)

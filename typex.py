@@ -74,7 +74,7 @@ class TypeMString(TypeString):
     defVal = ''
 
 
-class FuncInst(Val):
+class FuncInst(Objective):
     '''function object is stored in context, callable, returns result '''
 
     def __init__(self):

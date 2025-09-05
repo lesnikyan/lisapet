@@ -133,8 +133,8 @@ def simpleExpr(expCase:ExpCase, elems)->Expression:
 
 def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     base, subs = expCase.split(elems)
-    dprint('#complex-case:', expCase, base, subs)
-    dprint('#complexExpr', base, [elemStr(s) for s in subs])
+    # print('#complex-case:', expCase.__class__.__name__, ' base:', base, subs)
+    # print('#complexExpr', expCase.__class__.__name__, base, [elemStr(s) for s in subs])
     # if isinstance(subs, list):
     #     for ee in subs:
             # prels('#cml-exp1:', ee)
@@ -145,7 +145,7 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
         return base
     subExp:list[Expression] = []
     for sub in subs:
-        # prels('#complexExpr1:', sub)
+        prels('#complexExpr1:', sub)
         texpr = elems2expr(sub)
         # if isinstance(texpr, NothingExpr):
         #     continue
@@ -162,16 +162,18 @@ def makeExpr(expCase:ExpCase, elems:list[Elem])->Expression:
     return simpleExpr(expCase, elems)
 
 def elems2expr(elems:list[Elem])->Expression:
-    dprint('#elems2expr:', [(n.text, Lt.name(n.type)) for n in elems])
+    # print('#elems2expr:', [(n.text, Lt.name(n.type)) for n in elems])
+    # print('#elems2expr/1::', ''.join([n.text for n in elems]))
     for expCase in getCases():
+        # print('#elems2expr/2:', type(expCase).__name__)
         if expCase.match(elems):
             # if expCase.sub():
             #     return complexExpr(expCase, elems)
-            dprint('Case found::', expCase.__class__.__name__, '', elemStr(elems))
+            # print('Case found::', expCase.__class__.__name__, '', elemStr(elems))
             expr = makeExpr(expCase, elems)
             dprint('#EL2EX . expr:', expr)
             return expr
-    dprint('DEBUG: No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
+    # print('DEBUG: No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
 
 

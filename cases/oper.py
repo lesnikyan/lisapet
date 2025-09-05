@@ -96,6 +96,7 @@ class CaseBinOper(SubCase):
         self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
 
     def match(self, elems:list[Elem]) -> bool:
+        # print('CaseBinOper.match')
         elen = len(elems)
         inBr = 0
         if elen < 3:
