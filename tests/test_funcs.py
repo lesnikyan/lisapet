@@ -22,6 +22,59 @@ from eval import *
 class TestFunc(TestCase):
 
 
+    def test_closure(self):
+        ''' 
+        Lambdas with closure
+        returned lambda uses: 
+            argument var passed to function
+            var from functions block
+            lambda passed to function as an argument
+            function defined inside of function
+        
+        Experimental:
+        If def of function f1 was last expression in another function f2 than f1 will be a result of f2. 
+        '''
+        code = r'''
+        res = 0
+        
+        modVar = 1
+        
+        func foo(x)
+            x + 100
+        
+        func getLamb(n, ff)
+            funVar = foo(n)
+            
+            func bar(x, y)
+                x + 10000 * y
+            
+            x -> ff(x) + bar(n, funVar)
+        
+        f1 = getLamb(3, a -> a * 5)
+        
+        f2 = getLamb(29, b -> b ** 2)
+        
+        # defined func as a returning value
+        func getFuu(n)
+            func foo2(x)
+                x * n
+        
+        f3 = getFuu(11)
+        
+        res = [f1(2), f2(5), f3(4)]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rval = ctx.get('res').get()
+        self.assertEqual([1030013, 1290054, 44], rval.vals())
 
     def test_function_from_function(self):
         ''' Callable expression is a lambda or function from result of function call. '''

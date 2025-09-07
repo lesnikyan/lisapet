@@ -124,7 +124,7 @@ class FuncCallExpr(Expression):
         # inne rcontext
         # print('FuncCallExpr.do')
         args:list[Var] = []
-        dprint(f'Function `{self.name}`:', self.func)
+        # print(f'Function `{self.name}`:', self.func)
         ctx.print()
         self.funcExpr.do(ctx)
         func = self.funcExpr.get()
@@ -135,7 +135,7 @@ class FuncCallExpr(Expression):
         self.func = func
         if isinstance(self.func, VarUndefined):
             raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
-        dprint('#1# func-call do1: ', self.name, 'F:', self.func, 'line:', self.src)
+        # print('#1# func-call do1: ', self.name, 'F:', self.func, 'line:', self.src)
         for exp in self.argExpr:
             # dprint('#1# func-call do2 exp=: ', exp)
             exp.do(ctx)
@@ -153,7 +153,7 @@ class FuncCallExpr(Expression):
         return self.func.get()
 
 
-class FuncDefExpr(DefinitionExpr, Block):
+class FuncDefExpr(ObjDefExpr, Block):
     ''' Expression of definition of function
         func foo(arg1, arg2)
             expr

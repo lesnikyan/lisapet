@@ -41,34 +41,6 @@ class TestDev(TestCase):
     print('r5', r5)
     '''
 
-    def test_barr_func_from_expr_call(self):
-        ''' 
-        Call function. 
-        Case where function is taken from any expr except just name:
-        funcs[index]()
-        (func_obj)()
-        (fname)()
-        (expr)()
-        (lambda)()
-        getFunc()()
-        strc.getFunc()()
-        '''
-        code = r'''
-        res = 0
-        
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        rvar = ctx.get('res')
-        self.assertEqual(0, rvar.getVal())
-
     def _test_barr(self):
         ''' '''
         code = r'''

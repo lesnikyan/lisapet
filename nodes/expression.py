@@ -136,15 +136,15 @@ class Block(Expression):
             return
         lastInd = 0
         # self.ctx.upper = ctx
-        dprint('!! Block.do')
+        # print('!! Block.do', self.storeRes)
         ctx.print()
         self.lastVal = None
         for i in range(elen):
             dprint('!! Block.iter ', i, self.subs[i])
             expr = self.subs[i]
-            # print('!! Block.iter ', i, expr)
+            # print('!! Block.iter ', i, expr ) # '{{ %s }}' % expr.src.src.src
             expr.do(ctx)
-            if isinstance(expr, (DefinitionExpr)):
+            if isinstance(expr, (DefinitionExpr)): # and not isinstance(expr, (ObjDefExpr))
                 # Skip actions with result
                 continue
             lastInd = i
@@ -234,15 +234,21 @@ class DeclarationExpr(Expression):
         ''' return '''
 
 class DefinitionExpr(Expression):
-    ''' base for struct, function, alias
-        func foo(arg1, arg2)
-            expr
-            expr
+    ''' base for struct, alias
 
         struct User
             name: string
             age: int
             address: Address
+    '''
+
+class ObjDefExpr(Expression):
+    ''' definition which can return value
+    function
+        func foo(arg1, arg2)
+            expr
+            expr
+    lambda
     '''
 
 
