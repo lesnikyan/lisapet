@@ -22,6 +22,52 @@ class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
 
+    def test_put_dict_in_dict(self):
+        '''
+        dictVar <- (key, val)
+        dictVar <- {key: val, key: val}
+        '''
+        code = r'''
+        res = {'a':11, 'd':44}
+        
+        res <- ('b', 22)
+        res <- {'c': 33}
+        res <- {'e': 55, 'd':41}
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual({'a':11, 'b':22, 'c': 33, 'd': 41, 'e': 55}, rvar.vals())
+
+    def test_put_tuple_in_list(self):
+        ''' lastVal <- (tuple, val) '''
+        code = r'''
+        res = []
+        
+        res <- 1
+        res <- (2,3)
+        res <- (4,5)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([1, (2, 3), (4, 5)], rvar.vals())
 
     def test_slice_of_generator(self):
         ''' # TODO: nn = [1..10]; nn5 = nn[1:5] '''
@@ -138,8 +184,10 @@ class TestLists(TestCase):
         exp = [-2, -1, 0, 1, 2]
         self.assertEqual(exp, rvar.vals())
 
-    def test_barr_del_collection_elem_minus(self):
-        ''' '''
+    def test_del_collection_elem_minus(self):
+        ''' minus operator for collections key
+            removes element by index and returns value of element
+        '''
         code = r'''
         
         res = []

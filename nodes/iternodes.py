@@ -298,21 +298,24 @@ class Append(Expression):
         self.src = src
 
     def do(self, ctx:Context):
-        # key, val for DictVal. src should be a tuple
+        # key, val for DictVal. src should be a tuple or dict
         dprint('Append do:', self.target, self.src)
-        key, val = None, None
-        if isinstance(self.src, TupleVal):
-            src = self.src.elems
-            k, v = src
-            key = var2val(k)
-        else:
-            v = self.src
-        val = var2val(v)
         
         if isinstance(self.target, ListVal):
+            v = self.src
+            val = var2val(v)
             self.target.addVal(val)
         elif isinstance(self.target, DictVal):
-            self.target.setVal(key, val)
+            if isinstance(self.src, TupleVal):
+                src = self.src.elems
+                k, v = src
+                key = var2val(k)
+                val = var2val(v)
+                self.target.setVal(key, val)
+            elif isinstance(self.src, DictVal):
+                for key, val in self.src.data.items():
+                    # print('dd:', key, val)
+                    self.target.data[key] = val
 
 
 class LeftArrowExpr(Expression):

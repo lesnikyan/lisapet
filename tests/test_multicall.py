@@ -26,10 +26,10 @@ from strformat import *
 from tests.utils import *
 
 
-def ivar(name, value):
-    vv = Var(name, TypeInt())
-    vv.set(Val(value, TypeInt()))
-    return vv
+# def ivar(name, value):
+#     vv = Var(name, TypeInt())
+#     vv.set(Val(value, TypeInt()))
+#     return vv
 
 
 class TestMulticall(TestCase):
