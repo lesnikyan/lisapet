@@ -76,6 +76,8 @@
     # if function not just defined name but result of expression: (lambda)(), funcs[key](), foo()()
     # func should be an expression which returns function object
 
+20. DONE Issue: listVar <- (tuple, item) works not correct
+
 
 # Perspective things: 
 1. Maybe type 

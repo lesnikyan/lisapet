@@ -34,12 +34,12 @@ class TestDev(TestCase):
         for i <- vals
             if cond(i)
                 return i
-
     con = x -> x > 4
     vals = [1..10]
     r5 = br(vals, con)
     print('r5', r5)
     '''
+
 
     def _test_barr(self):
         ''' '''
@@ -58,6 +58,8 @@ class TestDev(TestCase):
         ex.do(ctx)
         rvar = ctx.get('res')
         self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        self.assertEqual([], rvar.vals())
 
     def _test_match_for_if_same_line(self):
         ''' TODO: match with for loop, `if` statement in the same case line

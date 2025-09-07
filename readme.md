@@ -327,20 +327,53 @@ dd['c'] = 3
 print(dd['a'], ddd['b'])
 ```
 
-### 9. arrow-append/set operator `<-`
+### 9.1 arrow-append/set operator `<-`
+Left-arrow with list or dict in the right operand  puts value into collection.  
+(not in `for` statement or sequence generator)  
+For list it appends new value; `list <- val`  
+For dict it sets or updates value by key from passed tuple with `dict <- (val, key)`.  
 ```
-# list: append val
+# list:
 nn = []
 nn <- 12
 
-# dict: set val by key
-dictVar <- (key, val) # the same as dictVar[key] = val
+# dict:
+# 
 
 dd = {'b': 444}
 dd <- ('a', 123)
 dd <- ('b', 555)
 
 >> {'b': 555, 'a': 123}
+```
+```
+dict <- (key, val) 
+# the same as 
+dict[key] = val
+```
+For dicts we can set multiple pairs of key-value by the dict in the right operand: `dict <- dict`
+```
+res = {'a':11, 'b':22} # new dict
+
+res <- {'c': 44, 'b':33} # add / update vals
+
+>> {'a':11, 'b':33, 'c': 44}
+```
+
+### 9.2 Minus key `- [key]` (delete) operator
+Minus operator for collections.  
+Operator removes element by index | key and returns value of element.  
+For list:
+```
+a1 = [1,2,3]
+r1 = a1 - [1] # returns 2
+>> [1,3]
+```
+For dict:
+```
+d2 = {'a':11, 'b':22}
+r2 = d2 - ['a'] # returns 11
+>> {'b': 22}
 ```
 
 ### 10. Struct.  
