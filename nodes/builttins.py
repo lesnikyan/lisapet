@@ -38,6 +38,9 @@ def buit_print(_,*args):
     # print('b-print1:', args)
     for n in args:
         # print('b-print:::', n)
+        if isinstance(n, (Function)):
+            pargs.append(str(n))
+            continue
         v = getVal(n)
         # v = n
         # if isinstance(n, Var):
@@ -51,6 +54,7 @@ def buit_print(_,*args):
         if isinstance(v, StructInstance):
             v = v.istr()
         pargs.append(v)
+        # print('b-print2:::', v)
     print(*pargs)
 
 def built_len(_, arg):

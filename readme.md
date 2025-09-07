@@ -22,7 +22,7 @@ Basic principles.
 2. basic collections: list, dict, tuple
 3. arithmetic expressions - like python syntax: (a + 1/2) * b - c ** 2 .
 4. control structs: `if-else`, `match`, `for`, `while`.
-5. functions: last expression is a returning result. Explicit `return` works too.
+5. functions: function is an object, value of last expression is a returning result. Explicit `return` works too.
 6. `struct` as a complex type. struct can have methods. Inheritance works too.
 7. functions have typed args, by default as Any type.
 8. Import modules.
@@ -825,6 +825,34 @@ func foo5(f)
     x -> f(x) + 5000 
 
 res = foo5(y -> y * 3)(33)
+```
+`Closures`.  
+Lambdas can use things defined in the function where lambda was defined,  
+including another lambdas passed into parent function.
+```
+func getLamb(n, ff)
+    funVar = 100 + n
+    
+    func bar(x, y)
+        x + 10000 * y
+    
+    x -> ff(x) + bar(n, funVar)
+
+lamb = getLamb(3, a -> a * 5)
+
+res = lamb(2)
+>> 1030013
+```
+Experimental:  
+If def of function f1 was last expression in another function f2 than f1 will be a result of f2.  
+```
+func getFuu(n)
+    func mult(x)
+        x * n
+
+f3 = getFuu(11)
+res = f3(4)
+>> 44
 ```
 
 
