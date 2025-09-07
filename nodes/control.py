@@ -12,6 +12,7 @@ from lang import *
 from vars import *
 from nodes.expression import *
 from nodes.iternodes import *
+from nodes.keywords import *
 
 
 # Structural blocks
@@ -244,7 +245,7 @@ class LoopIterExpr(LoopBlock):
                 self.iter = self._origIter.expr
         self.iter.start()
         while self.iter.cond():
-            dprint('# loop iter ----------------------------------')
+            # print('# loop list iter ----------------------------------')
             self.iter.do(subCtx)
             self.block.do(subCtx)
             blockRes = self.block.get()
@@ -252,6 +253,17 @@ class LoopIterExpr(LoopBlock):
                 # return expr
                 self.lastVal = blockRes
                 return
+            if isinstance(blockRes, PopupBreak):
+                # break expr
+                # print(' - loop list stop ::', blockRes, type(blockRes))
+                self.lastVal = None
+                break
+            if isinstance(blockRes, PopupContinue):
+                ''' Nothing to do, just go to next iteration '''
+                # print(' - loop list cont ::', blockRes, type(blockRes))
+                # continue expr
+                # self.lastVal = blockRes
+                # return
             self.iter.step()
 
 
@@ -261,9 +273,7 @@ class LoopExpr(LoopBlock):
     for a -= 1; a > 0
     - init, cond, post:
     for i=0; i < 10; i += 1
-    - iterator
-    for n <- names
-    for n <- iter(10)
+    
     '''
     def __init__(self):
         super().__init__()
@@ -295,20 +305,32 @@ class LoopExpr(LoopBlock):
         if self.initExpr:
             self.initExpr.do(ctx)
         while self.checkCond(ctx):
-            dprint('# loop expr ----------------------------------')
+            # print('# for i expr ----------------------------------')
             if self.preIter:
                 self.preIter.do(ctx)
             self.block.do(ctx)
             blockRes = self.block.get()
+            # print(' - loop1 ::', blockRes, type(blockRes))
             if isinstance(blockRes, FuncRes):
                 # return expr
                 self.lastVal = blockRes
                 return
+            if isinstance(blockRes, PopupBreak):
+                # break expr
+                # print(' - i-loop num stop ::', blockRes, type(blockRes))
+                self.lastVal = None
+                return
+            if isinstance(blockRes, PopupContinue):
+                ''' Nothing to do, just go to next iteration '''
+                # print(' - loop num cont ::', blockRes, type(blockRes))
+                # continue expr
+                # self.lastVal = blockRes
+                # return
             if self.postIter:
                 self.postIter.do(ctx)
 
     def get(self):
-        return self.block.get()
+        return self.lastVal
 
 
 # LOOP-WHILE
@@ -334,17 +356,29 @@ class WhileExpr(LoopBlock):
     def do(self, ctx:Context):
         self.cond.do(ctx)
         c = 0
+        # print('# --------- while -----------------------')
         while self.cond.get().get():
             # TODO: remove debug counter
             c +=1
             if c > 100:
                 break
-            dprint('# while iter ----------------------------------')
+            # print('# while iter ----------------------------------')
             self.block.do(ctx)
             blockRes = self.block.get()
+            # print(' while :: ', blockRes, type(blockRes))
             if isinstance(blockRes, FuncRes):
                 # return expr
                 self.lastVal = blockRes
                 return
+            if isinstance(blockRes, PopupBreak):
+                # break expr
+                self.lastVal = None
+                # print(' - loop stop ::', blockRes, type(blockRes))
+                break
+            if isinstance(blockRes, PopupContinue):
+                # continue expr
+                # self.lastVal = blockRes
+                # return
+                ''' Nothing to do, just go to next iteration '''
             self.cond.do(ctx)
 

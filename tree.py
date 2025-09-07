@@ -2,11 +2,11 @@
 """
 """
 
-import re
+# import re
 
 from lang import *
 from vars import *
-from vals import isDefConst, elem2val, isLex
+# from vals import isDefConst, elem2val, isLex
 
 from cases.tcases import *
 from cases.control import *
@@ -19,6 +19,7 @@ from nodes.oper_nodes import *
 from nodes.control import *
 from cases.structs import *
 from cases.funcs import *
+from cases.operwords import *
 
 from parser import *
 from strformat import  *
@@ -112,6 +113,7 @@ expCaseList = [
     CaseUnclosedBrackets(),
     CaseImport(),
     CaseFuncDef(), CaseReturn(), CaseMathodDef(),
+    CaseBreak(), CaseContinue(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), 
     CaseLambda(), CaseMatchCase(),
     CaseStructBlockDef(), CaseStructDef(),

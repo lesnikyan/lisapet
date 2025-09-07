@@ -76,6 +76,17 @@ class FuncRes(Val):
     def __init__(self, val):
         super().__init__(val, TypeAny())
 
+class PopupBreak(Val):
+    ''' '''
+    def __init__(self):
+        super().__init__(None, TypeNoval())
+
+class PopupContinue(Val):
+    ''' '''
+    def __init__(self):
+        super().__init__(None, TypeNoval())
+
+
 # Collections
 
 

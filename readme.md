@@ -261,7 +261,21 @@ for x <- [1..10]
 for k, val <- {'a':1, 'b':2}
     ...
 ```
-TODO: continue, break
+Keywords `continue`, `break`
+
+```
+r = []
+for i <- [1..10]
+    if i < 5
+        # stop current iteration and go to next
+        continue
+    if i > 8
+        # exit from the loop immediately
+        break
+    r <- i
+
+>> [5,6,7,8]
+```
 
 ### 7. Function definition, context of functions.
 

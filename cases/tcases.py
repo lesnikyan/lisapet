@@ -415,8 +415,8 @@ def findLastBrackets(elems:list[Elem]):
     return -2 # just for debug needs
 
 
-def splitLastBrackets(elems:list[Elem]):
-    pass
+# def splitLastBrackets(elems:list[Elem]):
+#     pass
 
 
 class CaseSemic(CaseSeq, SubCase):

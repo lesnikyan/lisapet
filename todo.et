@@ -57,7 +57,7 @@
         _
             expr4
 
-15. slice of iter-gen: [1..10][3:5]. include tolist into slice method, or add slicing method to iter-get (?)
+15. #DONE slice of iter-gen: [1..10][3:5]. include tolist into slice method, or add slicing method to iter-get (?)
 
 16. 1-line if/for/while: 
     # operator variants: !-  !~  !:  ::  \:  /:  |:  :|
@@ -67,7 +67,7 @@
 
 17. DONE: Not-in-list oper: !?> # if x !?> nums ... == if !(x ?> nums) ...
 
-18 loop-breacking operators in `for`/ `while`
+18 # DONE loop-breacking operators in `for`/ `while`
     looks like it should be an extra case in block execution, like return case.
     - continue
     - break
