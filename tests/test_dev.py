@@ -1,26 +1,21 @@
 
 
+
 from unittest import TestCase, main
-from tests.utils import *
 
 from lang import Lt, Mk, CLine
 from parser import splitLine, splitLexems, charType, splitOper, elemStream
 from vars import *
 from vals import numLex
-
-from cases.utils import *
-
-from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
-from nodes.structs import *
-
 from context import Context
+from strformat import *
+from nodes.structs import *
 from tree import *
 from eval import rootContext, moduleContext
 
-from strformat import *
-
-
+from cases.utils import *
+from nodes.tnodes import Var
+from nodes import setNativeFunc, Function
 from tests.utils import *
 
 import pdb
@@ -30,9 +25,10 @@ class TestDev(TestCase):
 
 
     # TODO: type of struct field: list, dict, bool, any
+    
+    # TODO: add tuple into list by `<-`
 
     '''
-    # TODO: break, continu
     # pseudo-break
     func br(vals, cond)
         for i <- vals
@@ -44,8 +40,6 @@ class TestDev(TestCase):
     r5 = br(vals, con)
     print('r5', r5)
     '''
-
-
 
     def test_barr_func_from_expr_call(self):
         ''' 
@@ -59,24 +53,6 @@ class TestDev(TestCase):
         getFunc()()
         strc.getFunc()()
         '''
-        code = r'''
-        res = 0
-        
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        rvar = ctx.get('res')
-        self.assertEqual(0, rvar.getVal())
-
-    def test_break_continue(self):
-        ''' '''
         code = r'''
         res = 0
         
@@ -112,7 +88,8 @@ class TestDev(TestCase):
         self.assertEqual(0, rvar.getVal())
 
     def _test_match_for_if_same_line(self):
-        ''' TODO: match with for loop, `if` statement in the same case line '''
+        ''' TODO: match with for loop, `if` statement in the same case line
+        Note: not sure we need it'''
         code = r'''
         struct ThreeNum a:int, b:int, c:int
         

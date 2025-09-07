@@ -3,6 +3,7 @@ from collections.abc import  Callable
 
 from vars import *
 from nodes.expression import *
+from nodes.keywords import *
 
 
 class Function(FuncInst):
@@ -41,17 +42,13 @@ class Function(FuncInst):
         return self._name
 
     def addArg(self, arg:Var):
-        # print('FN, addArg: ', arg)
         self.argVars.append(arg)
         self.argTypes[arg.getName()] = arg.getType()
         self.argNum += 1
-        # print('Fuuu, addArg; num=', self.argNum)
 
     # TODO: flow-number arguments
     def setArgVals(self, args:list[Val]):
         nn = len(args)
-        # print('Fuu.setA', self)
-        # print('Function.setArgVals1: self.argNum=', self.argNum)
         # print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
         # print('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
         if self.argNum != len(args):
@@ -105,50 +102,6 @@ class Function(FuncInst):
         for arg in self.argVars:
             args.append('%s' % arg.name)
         return 'func %s(%s)' % (self._name, ', '.join(args))
-
-
-# class FuncCallExpr1(Expression):
-#     ''' foo(agr1, 2, foo(3))  '''
-
-#     def __init__(self, name, src:str):
-#         super().__init__(name, src)
-#         self.name = name
-#         self.func:Function = None
-#         self.argExpr:list[Expression] = []
-
-#     def addArgExpr(self, exp:Expression):
-#         self.argExpr.append(exp)
-
-#     def do(self, ctx: Context):
-#         # inne rcontext
-#         dprint('FuncCallExpr.do')
-#         args:list[Var] = []
-#         dprint(f'Function `{self.name}`:', self.func)
-#         ctx.print()
-#         func = ctx.get(self.name)
-#         # unpack function from var
-#         dprint('#1# func-call do00: ', self.name, 'F:', func)
-#         if isinstance(func, Var):
-#             func = func.get()
-#         self.func = func
-#         if isinstance(self.func, VarUndefined):
-#             raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
-#         dprint('#1# func-call do1: ', self.name, 'F:', self.func, 'line:', self.src)
-#         for exp in self.argExpr:
-#             # dprint('#1# func-call do2 exp=: ', exp)
-#             exp.do(ctx)
-#             dprint('func-call do2:', exp, exp.get())
-#             arg = exp.get()
-#             if isinstance(arg, Var):
-#                 arg = arg.get()
-#             args.append(arg)
-#         dprint('#fname', self.name)
-#         self.func.setArgVals(args)
-#         callCtx = Context(None)
-#         self.func.do(callCtx)
-
-#     def get(self):
-#         return self.func.get()
 
 
 class FuncCallExpr(Expression):
@@ -261,27 +214,6 @@ class FuncDefExpr(DefinitionExpr, Block):
     def get(self)->Function:
         return self.res
 
-
-
-class ReturnExpr(Expression):
-    ''' '''
-    def __init__(self):
-        super().__init__()
-        self.sub:Expression = None
-        # self.val = None
-        
-
-    def setSub(self, exp:Expression):
-        ''' sub expr '''
-        self.sub = exp
-
-    def do(self, ctx:Context):
-        ''' eval sub'''
-        self.sub.do(ctx)
-        self.val = FuncRes(self.sub.get())
-
-    def get(self) -> Var|list[Var]:
-        return self.val
 
 
 class NFunc(Function):

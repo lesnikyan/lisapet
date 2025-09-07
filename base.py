@@ -61,6 +61,10 @@ class VType(Base):
 class TypeAny(VType):
     name = 'Any'
 
+class TypeNoval(VType):
+    ''' No value, just technical object '''
+    name = 'Noval'
+
 
 class Val(Base):
     ''' 

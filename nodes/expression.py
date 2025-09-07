@@ -142,6 +142,7 @@ class Block(Expression):
         for i in range(elen):
             dprint('!! Block.iter ', i, self.subs[i])
             expr = self.subs[i]
+            # print('!! Block.iter ', i, expr)
             expr.do(ctx)
             if isinstance(expr, (DefinitionExpr)):
                 # Skip actions with result
@@ -152,6 +153,11 @@ class Block(Expression):
             if isinstance(lineRes, FuncRes):
                 # return expr
                 dprint(' - return::', lineRes)
+                self.lastVal = lineRes
+                return
+            if isinstance(lineRes, (PopupBreak, PopupContinue)):
+                # break, continue
+                # print(' - block stop ::', lineRes, type(lineRes))
                 self.lastVal = lineRes
                 return
         if self.storeRes:
