@@ -311,16 +311,16 @@ class TestControl(TestCase):
         dprint('#t >>> r:', r1)
 
     def test_if_else(self):
-        code = '''
-        res = 100
-        if x >= 10 | x < 2 && x != 0
-            res = 2000 + x * -10 - 700
-        else
-            x = x ** 2
-            res = 1000 + x - 500
-            # if res < 500
-            #     res = res + 10000
-        '''
+        # code = '''
+        # res = 100
+        # if x >= 10 | x < 2 && x != 0
+        #     res = 2000 + x * -10 - 700
+        # else
+        #     x = x ** 2
+        #     res = 1000 + x - 500
+        #     # if res < 500
+        #     #     res = res + 10000
+        # '''
         code = '''
         res = 100
         # y = 0
@@ -341,6 +341,7 @@ class TestControl(TestCase):
         code = norm(code[1:])
         data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
         # data = [10, 20]
+        # lang.FullPrint = 1
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
@@ -350,7 +351,7 @@ class TestControl(TestCase):
             vv = Var('x', TypeInt)
             vv.set(Val(x, TypeInt))
             ctx.addSet({'x': vv})
-            dprint('~~~~ test case: %d ~~~~' % x)
+            print('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             ress.append(ctx.get('res').get())
             dprint('##################t-IF1:', ctx.get('res').get())

@@ -45,7 +45,7 @@ class IfExpr(ControlBlock):
         self.curBlock = self.mainBlock
 
     def setCond(self, expr:Expression, subExp:list[Expression]=[]):
-        dprint('#IfExpr setCond ', expr, subExp)
+        # dprint('#IfExpr setCond ', expr, subExp)
         self.cond = expr
         self.preSubs = subExp
     
@@ -57,7 +57,8 @@ class IfExpr(ControlBlock):
         self.curBlock = self.elseBlock
 
     def do(self, ctx:Context):
-        dprint('# IfExpr.do1 ', self.cond, type(self.cond))
+        # print('# IfExpr.do1 ', self.cond, type(self.cond), ' | src:', self.cond.src)
+        # print(' | src:', self.cond.src)
         inCtx = Context(ctx)
         for sub in self.preSubs:
             sub.do(inCtx)
@@ -65,19 +66,19 @@ class IfExpr(ControlBlock):
         target:Block = self.mainBlock
         self.lastRes = None
         condRes = self.cond.get()
-        dprint('# IfExpr.do02 ', condRes, type(condRes))
-        dprint('## Cond-get', condRes, condRes.get())
+        # print('# IfExpr.do02 ', condRes, type(condRes))
+        # print('## Cond-get', condRes, condRes.get())
         if not condRes.get():
-            dprint('## IF_ELSE')
+            # dprint('## IF_ELSE')
             if not self.elseBlock:
                 # if don't have else-block return from if-block without result
                 return
             # enter to else-block
             target = self.elseBlock
-        dprint('# IfExpr.do2 ', target)
+        # dprint('# IfExpr.do2 ', target)
         target.do(inCtx)
         self.lastRes = target.get() # for case if we need result from if block or one-line-if
-        dprint('# IfExpr.do2 ', self.lastRes)
+        # dprint('# IfExpr.do2 ', self.lastRes)
 
     def get(self):
         return self.lastRes

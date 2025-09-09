@@ -64,9 +64,11 @@ def built_len(_, arg):
 def built_int(_, x):
     return Val(int(x.getVal()), TypeInt())
 
-def built_type(_, val):
+def built_type(_, val:Val|Var):
     # TODO: add more correct type identification
-    return Val(type(val.getVal()), TypeType())
+    # print('bltype:', val,  type(val), val.getType())
+    # return Val(type(val.getType()), TypeType())
+    return Val(val.getType(), TypeType())
 
 
 def built_list(_, src):

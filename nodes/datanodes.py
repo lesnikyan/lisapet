@@ -185,7 +185,8 @@ class TupleExpr(CollectionExpr):
         self.obj = TupleVal()
         for exp in self.valsExpr:
             exp.do(ctx)
-            self.obj.addVal(exp.get())
+            v = exp.get()
+            self.obj.addVal(var2val(v))
 
     def get(self):
         return self.obj

@@ -166,16 +166,25 @@ d=3
 res = 5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8
 ```
 Other unary operators.  
-`!` logical NOT
-`~` bitwise NOT
+`!` logical NOT  
+`~` bitwise NOT  
 
+Operators with assignment   
+`+=` `-=` `*=` `/=` `%=` 
 ```
-# operators with assignment
 x = 1
 x += 2
-x *=3
-x %= 2
 ```
+Bitwise:   
+`&` `|` `^` `<<` `>>` `~`
+Compare:  
+`==` `!=` `>` `<` `>=` `<` `<=`
+Logical:
+`&&` `||` `!` 
+Other:  
+`?>` `!?>` `?:` `<-` `->` `!-`
+
+
 
 ### 5. Collections: list (array), tuple, dict (map)
 ```
@@ -236,13 +245,12 @@ for i=0; i < 5; i = i + 1
 res = y
 ```
 
-- Iterator, arrow-assign operator `<-`
-`<-` operator have several options.  
-Here we explain arrow as an iterative assignment.  
+- Iterator, arrow-assign operator `<-`  
+Left-arrow `<-` operator has several options.  
+Here we use left-arrow as an iterative assignment in `for` statement.  
+It looks, like we pick the element from the sequence one-by-one.
 ```
 # by function iter
-# iter(last+1)
-# iter(start, last+1 [, step])
 arr = [1,2,3]
 r = 0
 for i <- iter(3)
@@ -261,7 +269,19 @@ for x <- [1..10]
 for k, val <- {'a':1, 'b':2}
     ...
 ```
-Keywords `continue`, `break`
+Function `iter()`  
+```
+# One arg iter(last+1)
+iter(3) # >> 0,1,2
+
+# more args iter(start, last+1 [, step])
+iter(1, 5) # >> 1,2,3,4
+
+iter(1,7,2) # >> 1,3,5
+
+```
+
+Keywords `continue`, `break`.  
 
 ```
 r = []

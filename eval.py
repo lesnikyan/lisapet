@@ -24,8 +24,8 @@ def rootContext(ctx:Context = None)->RootContext:
     setNativeFunc(ctx, 'join', built_join, TypeAny)
     
     constants = {
-    'true': (TypeBool, Val(True, TypeBool)),
-    'false': (TypeBool, Val(False, TypeBool)),
+    'true': (TypeBool, Val(True, TypeBool())),
+    'false': (TypeBool, Val(False, TypeBool())),
     }
     for name, cn in constants.items():
         vv = Var(name, cn[0], const=True)
