@@ -37,10 +37,22 @@
 10 serialization: 
     1) data objects (collections, struct inst) 
     2) executive tree (prepared exec file)
-11. struct constructor without field names: A{1, 2.0, 'abc'} - order-driven struct constructor.
-11.2 named args for function: func foo(name:string) # call: foo(name:'Abc')
-12. Interfaces as a some list of method signatures.
-13. other args in `func(a, b, other...) : foo(1, 2, 33, 44, 55, 66, 77) other = [33, 44, 55, 66, 77]
+11. Struct constructor
+    - constructor without field names: A{1, 2.0, 'abc'} - order-driven struct constructor.
+    - method-constructor for struct :: thinkable.
+        `TypeName.(a, b, c)` instead of positional-args constructor
+        `TypeName{a, b, c}`. Looks more flexible
+        note: it have to be implemented (instead of `T{...}`) but we can make default implementation by order of fields in definition
+12.1 named args for function: func foo(name:string) # call: foo(name:'Abc')
+12.2 other args in `func(a, b, other...) : foo(1, 2, 33, 44, 55, 66, 77) other = [33, 44, 55, 66, 77]
+12.3 default values of args func foo(x, y=3) :: needed
+12.xx other possible extensions of basic scheme of function:
+    - undeclared args passed by name (like kwargs in python):: thinkable
+    - function / method overload: totally not applicable to strategy of floating number of args like default-val and named-args / No.
+    - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but :: thinkable
+    - unused/unnamed var `_` for function args foo(_, x), multiple assignment `for key, _ <- dict`:: thinkable
+
+13. Interfaces as a some list of method signatures.
 14. # DEPRACATE match-case block start in the same line: # It looks as over-sugaring # 
     match n
         1 !- if cond
@@ -77,6 +89,21 @@
     # func should be an expression which returns function object
 
 20. DONE Issue: listVar <- (tuple, item) works not correct
+
+21. # Refuse ` var <- sequence` out of `for` statement.
+    looks like it will provoke not clear interpretation like redefinition of listVar in `listVar <- list`.
+
+21.1 reading itertor. read values from sequence in the loop iteration like 
+    val = iter(src) # src is collection or generator
+        it should init iterator and save instance in first call, then call next() method in each iteration
+        it should have reset() method
+        # sugar: val <= src // ?
+
+22. append meany values to list `res <- vals`, like dict has
+    looks like `list += [a, b, c]` looks ok
+
+
+
 
 
 # Perspective things: 
@@ -269,6 +296,21 @@ func foo(arg)
 
 @#
 
+## 
+#### thinking :
+ -- read from list to list in one expression
+for i <- src
+    res <-  i
+
+for i <- src :: res <-  i
+
+for res: <- src
+
+[_ ; x <- src; res <- x]
+the same
+
+res = [x; x <- src]
+# No sense.
 #@
 ########################### Done section ############################# 
 @#

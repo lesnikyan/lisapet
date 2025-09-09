@@ -27,7 +27,7 @@ class OperCommand(Expression):
         # self._block = False
 
     def get(self):
-        # dprint('# -> OperCommand.get() ', self.oper, self.res)
+        # print('# -> OperCommand.get() ', self.oper, self.res)
         return self.res
 
     # def isBlock(self)->bool:
@@ -350,7 +350,7 @@ class OpBinBool(BinOper):
         #     return False
         res = ff[self.oper](a.getVal(), b.getVal())
         dprint('# == == OpCompare.do ', res)
-        self.res = Val(res, TypeBool)
+        self.res = Val(res, TypeBool())
     
     def op_and(self, a, b):
         return a and b
@@ -391,7 +391,7 @@ class OpCompare(BinOper):
             pass
         res = ff[self.oper](a.getVal(), b.getVal())
         # dprint('# == == OpCompare.do ', res)
-        self.res = Val(res, TypeBool)
+        self.res = Val(res, TypeBool())
 
 
     def eq(self, a, b):
@@ -430,10 +430,15 @@ class OpBitwise(BinOper):
         self.right.do(ctx)
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
+        # print('OpBitwise ():', self.oper)
+        # print('self.left, self.right = ', self.left, self.right)
+        # print('a, b : ', a, b)
+        # print('types: : ', a.getType(), b.getType())
         type = a.getType()
-        if type != b.getType():
-            # TODO type??
-            return False
+        # if type != b.getType():
+        #     # TODO type??
+        #     self.res = Val(False, TypeBool())
+        #     return False
         res = ff[self.oper](a.getVal(), b.getVal())
         self.res = Val(res, a.getType())
 

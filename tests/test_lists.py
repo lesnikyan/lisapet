@@ -22,6 +22,36 @@ class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
 
+
+    def test_arrow_append_when_func_call_left(self):
+        ''' For left-arrow operator target is result of function call 
+        (returns collection).
+        '''
+        code = r'''
+        res = []
+        
+        func foo()
+            res
+        
+        func bar(x)
+            (x, x * 10)
+        
+        foo() <- bar(2)
+        foo() <- bar(3)
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([(2, 20), (3, 30)], rvar.vals())
+
     def test_put_dict_in_dict(self):
         '''
         dictVar <- (key, val)

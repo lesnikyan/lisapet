@@ -402,7 +402,7 @@ class EmptyFilter(Expression):
         pass
     
     def get(self) -> Var|list[Var]:
-        return Val(True, TypeBool)
+        return Val(True, TypeBool())
 
 
 class ListComprExpr(Expression):

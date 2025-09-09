@@ -3,6 +3,7 @@
 
 from unittest import TestCase, main
 
+import typex
 from lang import Lt, Mk, CLine
 from parser import splitLine, splitLexems, charType, splitOper, elemStream
 from vars import *
@@ -26,7 +27,6 @@ class TestDev(TestCase):
 
     # TODO: type of struct field: list, dict, bool, any
     
-    # TODO: add tuple into list by `<-`
 
     '''
     # pseudo-break
@@ -38,6 +38,13 @@ class TestDev(TestCase):
     vals = [1..10]
     r5 = br(vals, con)
     print('r5', r5)
+    '''
+
+    '''
+        # user defined types
+        struct ABC a: int, b: int
+        abc = ABC{a:1, b:2}
+        res <- type(abc)
     '''
 
 
