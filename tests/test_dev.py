@@ -68,6 +68,7 @@ class TestDev(TestCase):
         rvar = ctx.get('res').get()
         self.assertEqual([], rvar.vals())
 
+
     def _test_match_for_if_same_line(self):
         ''' TODO: match with for loop, `if` statement in the same case line
         Note: not sure we need it'''

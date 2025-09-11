@@ -24,7 +24,7 @@ class OperCommand(Expression):
         self.src = ''
         self.oper:str = oper
         self.res = None
-        # self._block = False
+        self.__block = False
 
     def get(self):
         # print('# -> OperCommand.get() ', self.oper, self.res)
@@ -107,7 +107,8 @@ class OpAssign(OperCommand):
         else:
             src.do(ctx)
             tVal:Var = src.get() # val (anon var obj) from expression
-            dprint('## op-assign, src.get() -> ', tVal, ':', tVal.get(), tVal.getType())
+            # dprint('## op-assign, src.get() -> ', tVal, ':', tVal.get(), tVal.getType())
+            # print('## op-assign, src -> ', src, ' ; ', tVal, ':',)
             resSet.append(tVal)
         ctx.print()
         
@@ -522,8 +523,8 @@ class UnarSign(UnarOper):
 class MultiOper(OperCommand):
     ''' All expressions with more than 1 operator: (2 + 5 * 7) '''
     def __init__(self, exp:Expression=None):
+        super().__init__('')
         self.root:Expression = exp
-        # self.res = None
         
     def setInner(self, exp:Expression):
         self.root = exp
@@ -535,7 +536,7 @@ class MultiOper(OperCommand):
 
     def get(self):
         # val = self.root.get()
-        # print('#mroo', self.root, val, val.vtype)
+        # print('#MultiOper', self.root, val, val.vtype)
         return self.root.get()
 
 

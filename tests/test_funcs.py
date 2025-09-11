@@ -22,6 +22,50 @@ from eval import *
 class TestFunc(TestCase):
 
 
+
+    def test_result_of_block_in_brackets(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        # last expr in line as result
+        func foo(x)
+            a = 100; b = x; r = a + b
+        
+        res <- foo(44)
+        
+        # result in parenthesis
+        func bar(x)
+            (200 + x)
+        
+        res <- bar(55)
+        
+        # semicolon-separated inline block in lambda
+        f1 = x -> (a = 1 + 2; b = x * 2; a * b + 300)
+        
+        res <- f1(5)
+        
+        # mulitiline lambda
+        f2 = x -> (
+            a = 1 + x; 
+            b = 2 * 500; # do nothing for result
+            x * a + 400)
+        
+        res <- f2(3)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([144, 255, 330, 412], rvar.vals())
+
     def test_closure(self):
         ''' 
         Lambdas with closure
@@ -203,7 +247,7 @@ class TestFunc(TestCase):
         res <- ffd['f']()
         res <- ffd['s'](10, 1000)
 
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 
@@ -232,7 +276,7 @@ class TestFunc(TestCase):
         s3 = sum([x ** 2 ; x <- [2..9]])
         
         res = [s1, s2, s3]
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 
@@ -287,7 +331,7 @@ class TestFunc(TestCase):
             r
         
         rr = test()
-        print('res = ', rr)
+        # print('res = ', rr)
         '''
         _='''
         
@@ -344,12 +388,7 @@ class TestFunc(TestCase):
                 rr2 <- i
         
         test()
-        print('res = ', rr)
-        '''
-        _='''
-        
-        rr = []
-        rr2 = []
+        # print('res = ', rr)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -370,32 +409,26 @@ class TestFunc(TestCase):
         func foo(a:int, b:int)
             a + b
 
+        
+        rr = []
         a = 10
         func test()
             foo(5, 7)
-            # for b <- [2,4,6,3,5,7]
-            #     br = foo(a, b)
+            for b <- [2,4,6,3,5,7]
+                br = foo(a, b)
+                rr <- br
         
         test()
-        print('res = ', rr)
-        '''
-        _='''
-        
-        rr = []
-        rr2 = []
+        # print('res = ', rr)
         '''
         code = norm(code[1:])
-        # dprint('>>\n', code)
-        # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        # rr = ctx.get('rr')
-        # rr2 = ctx.get('rr2')
-        # self.assertEqual({2: 417, 4: 741, 6: 1079, 3: 423, 5: 753, 7: 1087}, rr.get().vals())
-        # dprint('>>', rr2.get())
+        rr = ctx.get('rr')
+        self.assertEqual([12, 14, 16, 13, 15, 17], rr.get().vals())
 
     def test_func_arg_type(self):
         ''' Auto-define type of args on-the-fly if func definition doesn`t have type of arguments. '''

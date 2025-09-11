@@ -364,7 +364,7 @@ class CaseSeq(SubCase):
         return SequenceExpr(self.delim), res
 
     def setSub(self, base:SequenceExpr, subs:Expression|list[Expression])->Expression:
-        dprint('CaseSeq(%s) setSub: ' % self.delim, base, subs)
+        # print('CaseSeq(%s) setSub: ' % self.delim, base, subs)
         for sub in subs:
             base.add(sub)
         return base
@@ -428,9 +428,20 @@ class CaseSemic(CaseSeq, SubCase):
     def __init__(self):
         super().__init__(';')
 
-    # def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-    #     dprint('CaseSemic setSub: ', base, subs)
-    #     base
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        base, subs = super().split(elems)
+        src = elemStr(elems)
+        base = LineBlockExpr(src)
+        return base, subs
+        
+
+    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
+        # print('CaseSemic setSub: ', base, subs)
+        for s in subs:
+            if isinstance(s, NothingExpr):
+                continue
+            base.add(s)
 
 
 class CaseCommas(CaseSeq):
