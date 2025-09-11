@@ -124,6 +124,7 @@ class Block(Expression):
         if not isinstance(seqs, list):
             seqs = [seqs]
         self.subs.extend(seqs)
+        # print('Block.add:', type(self), '::', self.subs)
 
     def isEmpty(self):
         return len(self.subs)
@@ -140,9 +141,10 @@ class Block(Expression):
         ctx.print()
         self.lastVal = None
         for i in range(elen):
-            dprint('!! Block.iter ', i, self.subs[i])
+            # dprint('!! Block.iter ', i, self.subs[i])
             expr = self.subs[i]
-            # print('!! Block.iter ', i, expr ) # '{{ %s }}' % expr.src.src.src
+            # exsrc = expSrc(expr)
+            # print('!! Block.iter ', i, expr, expSrc(expr) ) # '{{ %s }}' % expr.src.src.src
             expr.do(ctx)
             if isinstance(expr, (DefinitionExpr)): # and not isinstance(expr, (ObjDefExpr))
                 # Skip actions with result
@@ -407,3 +409,13 @@ class SFormatter:
     def formatString(self, code:str):
         pass
 
+def expSrc(expr:Expression):
+    exsrc = '-=-'
+    if expr.src:
+        if isinstance(expr.src, str):
+            exsrc = expr.src
+        elif isinstance(expr.src, CLine):
+            exsrc = expr.src.src.src
+        else:
+            exsrc = str(expr.src)
+    return "`%s`" % exsrc

@@ -100,7 +100,8 @@
         # sugar: val <= src // ?
 
 22. append meany values to list `res <- vals`, like dict has
-    looks like `list += [a, b, c]` looks ok
+    solution `list += [a, b, c]` looks ok
+    check and fix cases: list + list, string + string
 
 
 
@@ -275,15 +276,6 @@ foo * bar * buz(12)
 foo + bar + buz(12)
 foo ~~ bar ~~ buz : 12
 
-# closures of passed or returned lambdas / local funcs
-#@
-phases of implementation
-1. just pure function: get args, return result, no usage of vars out of lambda
-2. use near local context (where lambda was defined)
-@#
-for i <- iter(20, 30)
-    bar(x -> sum(x) - 100, i)
-
 
 #== Think about tail-recursion.
 Tranform tail recursion to loop.
@@ -298,6 +290,7 @@ func foo(arg)
 
 ## 
 #### thinking :
+
  -- read from list to list in one expression
 for i <- src
     res <-  i
@@ -312,6 +305,8 @@ the same
 res = [x; x <- src]
 # No sense.
 #@
+
+
 ########################### Done section ############################# 
 @#
 
@@ -542,5 +537,15 @@ else if cond2
 else
     expr3
 
+
+#== DONE
+# closures of passed or returned lambdas / local funcs
+#@
+phases of implementation
+1. just pure function: get args, return result, no usage of vars out of lambda
+2. use near local context (where lambda was defined)
+@#
+for i <- iter(20, 30)
+    bar(x -> sum(x) - 100, i)
 
 @#

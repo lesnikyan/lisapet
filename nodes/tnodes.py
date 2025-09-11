@@ -11,6 +11,20 @@ from context import Context, ModuleContext
 # Expression
 
 
+class LineBlockExpr(Block):
+    ''' 
+    expr; expr; expr 
+    expr; expr; result
+    '''
+    
+    def __init__(self, src = ''):
+        super().__init__()
+        self.src = src
+        self.__block = False # code indent flag
+        self.storeRes = True
+
+    def getSubs(self):
+        return self.subs
 
 
 class Module(Block, ModuleTree):

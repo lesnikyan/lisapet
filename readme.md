@@ -70,7 +70,7 @@ See code of run.py, build.py, eval.py for understanding how to use LISAPET as an
 
 Done parts:
 
-0. Comments.
+### 0. Comments.
 ```
 # one-line comment
 
@@ -495,10 +495,30 @@ sliced = [x ; x <- src][2:5]
 ```
 
 ### 12.2 List comprehension / sequence generator
+Sequence generator (aka list comprehansion) is a shortened syntax (sugar) for making lists by another list or any sourec of sequence.  
+Basic syntax:  
 ```
 [elem; src-expr ;...]
 ```
+Expressions in the generator is divided by `;`.   
 Generator has such segments / expressions:  
+Second expression is a loop-iterator with arrow-assignment like `for` statement.  
+```
+for x <- src
+    ...
+# the same as
+[...; x <- src]
+```
+First expression is an element of result.  
+```
+res = []
+for x <- src
+    res <- x
+
+# the same as
+res = [x; x <- src]
+```
+Generator can have more expressions:
 ```
 [  
     elem-expr;       # 1) result element expression ;  
@@ -669,6 +689,20 @@ n1 = foo(f1, 5)
 # lambda arg as local val / arg
 n2 = foo( x -> 2 ** x , 5)
 ```
+We can put inline-block in brackets and use as a lambdas body.  
+```
+ff = x -> (a = 100; b = x * 10; a + (b * x))
+r = ff(3)
+>> 190
+```
+The same as a multiline expression.  
+```
+ff = x -> (
+    a = 100; # can use comments here
+    b = x * 10; 
+    a + (b * x))
+```
+
 See more about function-as-object in section 23.  
 
 ### 16. match-statement.  
@@ -711,7 +745,7 @@ a, b, c = [1,2,3]
 ```
 
 18. Ternary operator `?:`. 
-classic ternary oper  
+classic ternary oper `condition ? valIfTrue : elseVal`  
 ```
 x = a < b ? 10 : 20
 
@@ -722,9 +756,9 @@ returns val1 if not null (zero num, empty string, list or tuple); otherwize retu
 x = val1 ?: va2
 ```
 
-### 19. val-in `?>` and val-not-in `!?>` operators.  
+### 19. Bool operator val-in `?>` and val-not-in `!?>` operators.  
 
-If colelction vals contains value a `a ?> vals`  
+`a ?> vals` : If collection `vals` contains value `a`  
 ```
 # base usage 
 val ?> collection
@@ -737,10 +771,17 @@ if val ?> ('a', 'b', 'c') ...
 if 'a' ?> {'a':1, 'b':2} ...
 ```
 If collection doesn't have value `!?>`  
+`val !?> collection`
 ```
-val !?> collection
+!(val ?> nums)
 
-if 5 !?> [1,2,3] ...
+# the same as
+
+val !?> nums
+```
+Examples:
+```
+if 5 !?> [1,2,3] ... # True
 if 'c' !?> {'a':1, 'b':2} ...
 ```
 
@@ -754,17 +795,17 @@ res = [a, b, c]; res <- dd; res <- e
 
 ### 21. String formatting  
 There are two syntax implementations.  
-- `%` - formatting.  
-`<<` classic %s-formatting. Uses native `%` operator inside with %-templates
+1) `%` - formatting with binary operator `<<`.  
+It's classic `%s`-formatting. Uses native `%` operator inside with %-formatting syntax of native language (python here).
 ```
 'hello int:%d, float:%f, str:%s ' << (123, 12.5, 'Lalang')
 ```
 
-- `~`-strings / var-embedding syntax.  
-Uses `~` operator before string and expressions into `{}` brackets (templates).  
-Templates can be simple var-name, or be more complex expression with template-modifier over `:`.  
-Any expression returning stringify value is allowed: var, struct.field, list/dict element, function call.  
-Be accurate with `"'``quotes``'"`.  
+2) `~`strings / var-embedding syntax.  
+Uses `~` unary operator before string and stringify expressions into `{}` brackets (includes).  
+Includes can be simple var-name, or be more complex expression with template-modifier over `:`.  
+Any expression returning stringify value is allowed: `var`, `struct.field`, `list`/`dict` element, `function` call.  
+Be accurate with `"'``quotes``'"` inside includes.  
 ```
 a, b, s = (123, 12.5, 'ABC')
 name = 'Bob'
@@ -904,7 +945,7 @@ func getFuu(n)
         x * n
 
 f3 = getFuu(11)
-res = f3(4)
+res = f3(4) # here `mult` is called
 >> 44
 ```
 
@@ -925,7 +966,7 @@ Possible exension (thoughts):
 02. operators are functions, exception: brackets () [] {}, maybe.
 10. mapping and pattern matching
 11. functions doesn't needs braces like haskell (for what?)
-12. functional elements: lambdas, composition, carrying.
+12. functional elements: lambdas(done!), composition, carrying.
 13. interface as list of functions (thinking)
 14. functions with ducktype args based on interfaces
 

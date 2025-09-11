@@ -1,0 +1,9 @@
+
+# Issues.
+1. No result from one-line-block `expr; expt; expr`. Actually this case just uses CaseSeq pattern and SequenceExpr with `;` delimiter.
+SequenceExpr doesn't have result.
+Fix: Add specific expression for inline-block, resolve conflict with `if expr; condition` case.
+
+2. Expression in parenthesis doesn't return result. Actually it was just grouping operator. But it can be resulting expression. Example: `x -> (expr)`
+Fix: MultiOper expression object should return result.
+

@@ -332,12 +332,14 @@ class CaseBrackets(SubCase):
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
         base = MultiOper()
+        base.src = elemStr(elems)
         return base, [elems[1:-1]]
     
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         ''' base - Multi-oper
             subs - just internal part
         '''
+        # print('()case', base, subs)
         base.setInner(subs[0])
         return base
 
@@ -380,7 +382,6 @@ class CaseListGen(SubCase):
         dprint('ListGenExpr.setSub: ', base, subs)
         base.setArgs(*subs)
         return base
-
 
 
 class CaseListComprehension(SubCase):
@@ -438,4 +439,3 @@ class CaseListComprehension(SubCase):
         dprint('CaseListComprehension.setSub: ', base, subs)
         base.setInner(subs)
         return base
-

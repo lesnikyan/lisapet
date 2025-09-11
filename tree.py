@@ -117,7 +117,6 @@ expCaseList = [
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), 
     CaseLambda(), CaseMatchCase(),
     CaseStructBlockDef(), CaseStructDef(),
-    # CaseAssign(), CaseBinAssign(), CaseArrowR(), 
     CaseSemic(), CaseBinOper(), CaseCommas(),
     CaseTuple(),
     CaseDictBlock(), CaseListBlock(), CaseListGen(),
@@ -236,7 +235,7 @@ def lex2tree(src:list[CLine]) -> Block:
             indent = cline.indent
         else:
             indent = unclosed.indent
-        dprint('#code-src: `%s`' % cline.src.src, '$ind=',  indent, '; curInd=', curInd)
+        # print('#code-src: `%s`' % cline.src.src, '$ind=',  indent, '; curInd=', curInd)
         # prels('#cline-code1:', cline.code)
         # dprint('#cline-code2:', [(ee.text, Lt.name(ee.type)) for ee in cline.code])
         if len(cline.code) == 0:
@@ -264,7 +263,7 @@ def lex2tree(src:list[CLine]) -> Block:
         if isinstance(expr, CaseComment):
             # nothing for comment now
             continue
-        dprint('lex2tree-2 expr:', expr, '; parents:', [type(n) for n in parents], curBlock)
+        # print('lex2tree-2 expr:', expr, '; parents:', [type(n) for n in parents], curBlock)
         # dprint(dir(expr))
         # elDep = 0 # diff nest depth - indent. for `if else` case depth > indent
         goBack = False # if we move back from nected block

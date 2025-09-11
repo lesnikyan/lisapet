@@ -139,14 +139,17 @@ class CaseIf(BlockCase, SubCase):
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         exp = IfExpr()
+        exp.src = elemStr(elems)
         return exp, [elems[1:]]
-    
+
     def setSub(self, base:IfExpr, subs:list[Expression])->Expression:
+        # print('CaseIf.setSub', base, subs)
         cond = subs[0]
         subExp = []
-        if isinstance(cond, SequenceExpr):
+        if isinstance(cond, LineBlockExpr):
             # `if` with sub-expressions
-            subExp = [sx for sx in cond.getSubs()]
+            subExp = cond.getSubs() #  [sx for sx in cond.getSubs()]
+            # print('CaseIt subExp:', subExp)
             cond = subExp[-1]
             subExp = subExp[:-1]
         base.setCond(cond, subExp)
