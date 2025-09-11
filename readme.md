@@ -14,6 +14,7 @@ Executable tree uses context-object (map/dict of data values with nested context
 *
 Content:  
 - [Status](#status)
+- [Usage](#usage)
 - [Syntax](#syntax)
 1. [Basic things: vars, vals](#1-vars-vals-lists-assignment-context-of-vars)
 2. [Basic types](#2-numbers-strings-bool-types)
@@ -22,12 +23,15 @@ Content:
 5. [Collections `[1,2]`, `{'b':2}`, `(1, 2, 3)`](#5-collections-list-array-tuple-dict-map)
 6. [For-statement: `for i <- [1..5]`](#6-for-statement---operator)
 7. [Functions:`func foo()`](#7-function-definition-context-of-functions)
-8. [Dicts](#8-dict-linear-and-block-constructor)
+8. [Dict](#8-dict-linear-and-block-constructor)
 9. 
     1. [Collection: append `nums <- 15`](#91-arrow-appendset-operator--)
     2. [Collection: minus `- [key]`](#92-minus-key---key-delete-operator)
-10. [Struct: definition, constructor](#10-struct)
-11. [Struct: methods](#111-struct-method)
+10. Struct type: 
+    1. [Definition, constructor, fields](#10-struct)
+11. Struct details:
+    1. [Struct: methods](#111-struct-method)
+    2. [Struct: inheritance](#112-struct-inheritance-multiple-inheritance-is-allowed)
 12. List:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
     1. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
