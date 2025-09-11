@@ -12,6 +12,39 @@ Than this object can be executed with some data.
 Executable tree uses context-object (map/dict of data values with nested contexts).  
 
 *
+Content:  
+- [Status](#status)
+- [Syntax](#syntax)
+1. [Basic things: vars, vals](#1-vars-vals-lists-assignment-context-of-vars)
+2. [Basic types](#2-numbers-strings-bool-types)
+3. [Block. If-statement](#3-sub-block-of-expressions-if)
+4. [Math and other operators](#4-math-operators-unary-operators)
+5. [Collections `[1,2]`, `{'b':2}`, `(1, 2, 3)`](#5-collections-list-array-tuple-dict-map)
+6. [For-statement: `for i <- [1..5]`](#6-for-statement---operator)
+7. [Functions:`func foo()`](#7-function-definition-context-of-functions)
+8. [Dicts](#8-dict-linear-and-block-constructor)
+9. 
+    1. [Collection: append `nums <- 15`](#91-arrow-appendset-operator--)
+    2. [Collection: minus `- [key]`](#92-minus-key---key-delete-operator)
+10. [Struct: definition, constructor](#10-struct)
+11. [Struct: methods](#111-struct-method)
+12. List:
+    1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
+    1. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
+13. [Multiline esxpressions](#13-multiline-expressions-if-for-math-expr)
+14. [Builtin/native functions (print, iter,..)](#14-builtin-functions)
+15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
+16. [Match-statement](#16-match-statement)
+17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
+18. [Ternary `?:` operator](#18-ternary-operator-)
+19. [In `?>`, not in `!?>` operators](#19-bool-operator-val-in--and-val-not-in--operators)
+20. [Inline block `a=1; b=2`](#20-one-line-blocks-expr-expr-expr)
+21. [String formatting `<<`, `~" "` operators](#21-string-formatting)
+22. [Import modules](#22-import-modules)
+23. [Function as object](#23-function-as-an-object)
+24. [Closures](#24-closures)
+
+*
 ## Status.
 Actually it is on-dev. Most basic features and needed things is done.  
 Details see next, in `syntax` section.  
@@ -744,7 +777,7 @@ a, b, c = (1, 2, 3)
 a, b, c = [1,2,3]
 ```
 
-18. Ternary operator `?:`. 
+### 18. Ternary operator `?:`. 
 classic ternary oper `condition ? valIfTrue : elseVal`  
 ```
 x = a < b ? 10 : 20
@@ -920,7 +953,7 @@ func foo5(f)
 
 res = foo5(y -> y * 3)(33)
 ```
-`Closures`.  
+### 24. `Closures`.  
 Lambdas can use things defined in the function where lambda was defined,  
 including another lambdas passed into parent function.
 ```
