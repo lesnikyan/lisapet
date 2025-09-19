@@ -409,13 +409,17 @@ class SFormatter:
     def formatString(self, code:str):
         pass
 
-def expSrc(expr:Expression):
+def expSrc(expr:Expression|ParseErr|InterpretErr):
     exsrc = '-=-'
-    if expr.src:
+    if expr and expr.src:
         if isinstance(expr.src, str):
             exsrc = expr.src
+        if isinstance(expr.src, TLine):
+            exsrc = expr.src.src
         elif isinstance(expr.src, CLine):
             exsrc = expr.src.src.src
         else:
             exsrc = str(expr.src)
+    if expr is None:
+        exsrc = 'None_src'
     return "`%s`" % exsrc

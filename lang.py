@@ -4,6 +4,9 @@ Base types.
 
 import re
 
+
+CODE_EXT = 'et'
+
 # TODO: add config
 FullPrint = 0
 

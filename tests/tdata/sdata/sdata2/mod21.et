@@ -1,0 +1,5 @@
+
+struct St20 
+    name: string
+    num: int
+

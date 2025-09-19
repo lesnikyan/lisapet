@@ -1,0 +1,14 @@
+
+# Module ST1
+
+func f1(x)
+    [x, 2 * x, 3 * x]
+
+struct Point2
+    x: int
+    y: int
+
+func p: Point2 sum()
+    p.x + p.y
+
+# py -m run -i "tests.tdata.st1 > Point2, f1"  -c "pp = Point2{x:2, y:3}; a = pp.sum(); p = (f1(a))" -r p

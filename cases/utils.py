@@ -63,7 +63,10 @@ def isBrPair(elems:list[Elem], opn, cls):
     return isLex(elems[0], Lt.oper, opn) and isLex(elems[-1], Lt.oper, cls)
 
 
-def prels(pref, elems:list[Elem], *args):
+def prels(pref, elems:list[Elem], *args, **kwargs):
+    if 'show' in kwargs and kwargs['show']:
+        print(pref, [n.text for n in elems], *args)
+        return
     dprint(pref, [n.text for n in elems], *args)
 
 

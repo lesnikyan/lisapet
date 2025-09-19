@@ -66,7 +66,7 @@ class ImportExpr(Expression):
     def __init__(self, path, elems:list[list[str]], src = ''):
         super().__init__(None, src)
         self.fullImport = False
-        # dprint('ImportExpr __init:', elems)
+        # print('ImportExpr __init:', elems)
         if (len(path) > 1 and path[-1] == '*' and len(elems) == 0):
             self.fullImport = True
             path = path[:-1]
