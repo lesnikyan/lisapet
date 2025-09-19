@@ -1,0 +1,12 @@
+
+import tests.tdata.st1 # Point2{x, y}, f1(x) : []
+import tests.tdata.st2 > St2
+
+p1 = st1.Point2{x:5, y:7}
+
+psum = p1.sum()
+print('test-import1:', psum)
+
+st = St2{a: 10, b: 'st=B'}
+
+print('test-import2:', st.b, st.a + p1.y)

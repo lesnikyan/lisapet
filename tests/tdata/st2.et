@@ -1,0 +1,4 @@
+
+struct St2
+    a: int
+    b: string

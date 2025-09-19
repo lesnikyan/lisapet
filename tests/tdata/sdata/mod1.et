@@ -1,0 +1,5 @@
+
+struct St10
+    aa: int
+    bb: int
+

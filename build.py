@@ -10,6 +10,7 @@ from lang import CLine, dprint
 from parser import splitLexems, elemStream
 from tree import lex2tree
 from nodes.expression import Expression
+from loader import *
 # from nodes.tnodes import Module
 
 
@@ -26,24 +27,25 @@ def getArgs():
     return args
 
 
-def readFile(filename):
-    '''return file content'''
-    fpath = filepath(filename)
-    with open(fpath, 'r') as fr:
-        return fr.read()
+# def readFile(filename):
+#     '''return file content'''
+#     fpath = filepath(filename)
+#     with open(fpath, 'r') as fr:
+#         return fr.read()
+    
 
+# def buildTree(src):
+#     '''Parse and build executable tree.'''
+#     tlines = splitLexems(src)
+#     clines:list[CLine] = elemStream(tlines)
+    
+#     exp = lex2tree(clines)
+#     return exp
 
-def buildTree(src):
-    '''Parse and build executable tree.'''
-    tlines = splitLexems(src)
-    clines:CLine = elemStream(tlines)
-    exp = lex2tree(clines)
-    return exp
-
-def buildFile(filename):
-    '''Read file and build exec tree'''
-    src = readFile(filename)
-    return buildTree(src)
+# def buildFile(filename):
+#     '''Read file and build exec tree'''
+#     src = readFile(filename)
+#     return buildTree(src)
 
 
 def tree2bin(expr:Expression):

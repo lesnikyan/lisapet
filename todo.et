@@ -59,6 +59,15 @@
             expr1
         2 !- for i <- nlist
             foo(i)
+
+14.2 maybe refactor !- as a start-line operator? with explicit indent for any sub-expressions. Not sure.
+    match x
+        !- 1
+            expr
+        !- 2
+            expr
+
+
 14.2 Looks like multi-if will be more useful:
     if
         a < 5
@@ -103,6 +112,7 @@
     solution `list += [a, b, c]` looks ok
     check and fix cases: list + list, string + string
 
+23. Common lib location for importing (not sure we need it now).  
 
 
 

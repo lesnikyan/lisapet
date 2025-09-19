@@ -24,15 +24,15 @@ Content:
 6. [For-statement: `for i <- [1..5]`](#6-for-statement---operator)
 7. [Functions:`func foo()`](#7-function-definition-context-of-functions)
 8. [Dict](#8-dict-linear-and-block-constructor)
-9. 
-    1. [Collection: append `nums <- 15`](#91-arrow-appendset-operator--)
-    2. [Collection: minus `- [key]`](#92-minus-key---key-delete-operator)
-10. Struct type: 
+9. Collection features:
+    1. [append operator `nums <- 15`](#91-arrow-appendset-operator--)
+    2. [deletion operator `data - [key]`](#92-minus-key---key-delete-operator)
+10. Struct: 
     1. [Definition, constructor, fields](#10-struct)
-11. Struct details:
+11. Struct OOP:
     1. [Struct: methods](#111-struct-method)
     2. [Struct: inheritance](#112-struct-inheritance-multiple-inheritance-is-allowed)
-12. List:
+12. List features:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
     1. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
 13. [Multiline esxpressions](#13-multiline-expressions-if-for-math-expr)
@@ -68,44 +68,82 @@ Basic principles.
 *
 
 ## Usage.
+Note: `python run` command is one line, splitted in examples just for readability. 
 ```
 # run file
 python -m run tests/simple_test.et
 ...
 
 # run code line
+# -c --codeline
 python -m run -c "a = 2; b = a + 1"
 
-# with print
+# with print function
 python -m run -c "r = [1..5]; print('nums:', tolist(r))"
 nums: [1, 2, 3, 4, 5]
 ...
 
 # more complex 1-line example:
-python -m run -c "f1 = (x, y) -> x + y; f2 = x -> x * x;  p = x -> print(x); [p(f1(f2(n), 10000)); n <- [1..10]; n % 2 > 0 && n > 3]"
+python -m run 
+    -c "f1 = (x, y) -> x + y; f2 = x -> x * x;  p = x -> print(x); [p(f1(f2(n), 10000)); n <- [1..10]; n % 2 > 0 && n > 3]"
 10025
 10049
 10081
-
-# print result
+```
+Features of `run`.  
+```
+# show result
+# -r --result : name of resulting variable
 py -m run -c "res = 100 + 23" -r res
 >> 123
 
 # multirun - build once and run multiple times by dataset
 # json as a data source
+# -l --multirun
+# -s --datasource : LP-code produsing data
+# -f --json-file : file with data
+# -j --json-source : string with json
+
 # data: [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}, {'a': 5, 'b': 6}]
-py -m run -c "n = a + b; print(':', a, b, n)" -l -j "[{\"a\":1, \"b\":2}, {\"a\":3, \"b\":4}, {\"a\":5, \"b\":6}]" -r n
+py -m run 
+    -c "n = a + b; print(':', a, b, n)" 
+    -l -j "[{\"a\":1, \"b\":2}, {\"a\":3, \"b\":4}, {\"a\":5, \"b\":6}]" 
+    -r n
 : 1 2 3
 : 3 4 7
 : 5 6 11
 >> 11
 
 ```
-See code of run.py, build.py, eval.py for understanding how to use LISAPET as an imbedded engine, add custom python functions for using in LP code, etc.  
+Impoting and root path.
+```
+# -p --pathroot
+# -i --import
+py -m run -p "tests" 
+    -i "tdata.st1 > Point2, f1"  
+    -c "pp = Point2{x:2, y:3}; a = pp.sum(); p = (f1(a))" 
+    -r p
+```
+Show error.  
+For some debug needs we can ask print native Traceback of error.  
+```
+# -e --show-error
+
+py -m run -c "1/0" -e
+Error handling:  division by zero
+Traceback (most recent call last):
+...
+  File "...\nodes\oper_nodes.py", line 277, in div
+    return a / b
+           ~~^~~
+ZeroDivisionError: division by zero
+```
+
+See code of run.py, loader.py, eval.py for understanding how to use LISAPET as an imbedded engine, add custom python functions for using in LP code, etc.  
 
 ## Syntax.
-
-Done parts:
+The Syntax section has been updated as new features have been added to the code, so it looks a bit chaotic.  
+Done parts:  
 
 ### 0. Comments.
 ```
@@ -644,10 +682,11 @@ res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
 ```
 
 ### 13. Multiline expressions: `if`, `for`, math expr.  
-Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control statements.
+Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control statements.  
 The main way to split long line to shorten parts is use brackets.
-For comprehantion expressions it works with its square brackets (see examples).
-For function call, `if`, `for` or math expressions we can use round brackets as usual.
+For comprehantion expressions it works with its square brackets (see examples).  
+For function call, `if`, `for` or math expressions we can use round brackets as usual.  
+Indents in multiline case makes code more readable.
 ```
 # func
 val = foo(a,
@@ -681,7 +720,7 @@ setNativeFunc(context, 'func_name', python_function, ResultType)
 # example:
 setNativeFunc(ctx, 'print', buit_print, TypeNull)
 ```
-Builtin funcs was changed for call functions passed as argument (lambdas, atc) inside python function: added 1-st arg - Context.
+Upd: Builtin funcs was changed for call functions passed as argument (lambdas, atc) inside python function: added 1-st arg - Context.
 ```
 # if builtin func receives function / lambda, 
 # context is needed
@@ -781,7 +820,7 @@ a, b, c = (1, 2, 3)
 a, b, c = [1,2,3]
 ```
 
-### 18. Ternary operator `?:`. 
+### 18. Ternary operator `?:`
 classic ternary oper `condition ? valIfTrue : elseVal`  
 ```
 x = a < b ? 10 : 20
@@ -793,8 +832,8 @@ returns val1 if not null (zero num, empty string, list or tuple); otherwize retu
 x = val1 ?: va2
 ```
 
-### 19. Bool operator val-in `?>` and val-not-in `!?>` operators.  
-
+### 19. Val-in `?>` and val-not-in `!?>` operators.  
+Boolean operators for check value or key in collection.  
 `a ?> vals` : If collection `vals` contains value `a`  
 ```
 # base usage 
@@ -822,7 +861,7 @@ if 5 !?> [1,2,3] ... # True
 if 'c' !?> {'a':1, 'b':2} ...
 ```
 
-### 20. one-line blocks (expr; expr; expr)
+### 20. One-line block (expr; expr; expr)
 Shortened syntax for those who like long lines and hates tall columns :)  
 ```
 a = 1; b = 2; c = 3
@@ -862,38 +901,84 @@ func fHello(s)
 See more examples in `tests/test_format.py`.
 
 ### 22. Import modules.  
+We can use things from another module by using `import` command.  
+Module is a file. Module name is a filename withot extension.  
+So file `test.et` contains module `test`  
+File `lib/util.et` contains module `lib.util`  
+Cases of import:  
+- Import module (file), submodule in folder  
+(over dots: `dir.subdir.file` ).
+- Import all things from module, or named things.
+- Alias for named things.
 
-Cases:  
-- Imports module (file), submodule in folder (over dots: dirname.dirname2.module ).
-- Imports all things from module, or named things.
-- Aliases usage for named things.
-- TODO: auto-import modules from file-tree for CI `run`.
-
+Pure import, just module name
 ```
-# pure import, just module name
-import some_module
-some_module.foo()
-inst = some_module.MyType{a:1}
+import mymodule
+mymodule.foo()
+inst = mymodule.MyType{a:1}
 inst.bar()
+```
+Import all things from module.  
+```
+import mymodule.*
+mymodule.foo(123)
 
-# import all 
-import some_module.*
-some_module.foo(123)
-
-# import names
-import some_module > foo, bar, MyType
+# Note: Syntax can be changed to `module > *`.
+```
+  
+Import names from module.  
+`module > name, name2`
+```
+import mymodule > foo, bar, MyType
 foo(123)
 bar(321)
 mt = MyType{a:1, b:2}
-
-# import aliases
-import some_module > foo f1, bar f2
+```
+Import with aliases.  
+`module > name alias, ..`
+```
+import mymodule > foo f1, bar f2
 f1(123)
 f2(321)
 ```
+### 22.1 Module preload. 
+`import` command looks for modules in the execution root context. So we have to preload modues into context before run code with imports.  
+For `run.py` util we have 2 options how to preload modules.  
+1) Module can be imported by console arg `-i` or `--import`.  
+    Modules will be preloaded into root context and `import` lines will be added to the head of code.  
+```
+$ py -m run -i "module1; module2..." -c "code"
+```
+Example:  
+File to import: `./tests/tdata/st1.et`  
+```
+py -m run 
+    -i "tests.tdata.st1 > Point2, f1" 
+    -c "pp = Point2{x:2, y:3}; p = f1(pp.sum())" -r p
+>> [5, 10, 15]
+```
+
+2) Auto-import modules from file-tree for CI `run`.  
+For case with the the source file (if contains `import`), importing modules will be preloaded before execution of script automatically.  
+Root path is taken from current console position.  
+```
+$ py -m run tests/tmods.et
+test-import1: 12
+test-import2: st=B 17
+```
+Pathroot.  
+We can use custom root path for impoting.  
+Arg for pathroot: `-p` `--pathroot`. Useful for run script from any location.  
+```
+
+py -m run -p "tests" 
+    -i "tdata.st1 > Point2, f1"  
+    -c "pp = Point2{x:2, y:3}; a = pp.sum(); tt = (f1(a))" 
+    -r tt
+```
 
 ### 23. Function as an object. 
-We can use a function not only as a predefined name, but also as a value, place it in collections, take it from an expression, and call it.  
+We can use a function not only as a predefined name for call, but also as a value, place it in collections, take it from an expression, and use.  
 Typical cases:  
 - functions in list
 ```
@@ -957,7 +1042,7 @@ func foo5(f)
 
 res = foo5(y -> y * 3)(33)
 ```
-### 24. `Closures`.  
+### 24. Closures.  
 Lambdas can use things defined in the function where lambda was defined,  
 including another lambdas passed into parent function.
 ```

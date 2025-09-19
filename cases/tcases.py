@@ -2,6 +2,8 @@
 ExpCases here for exec tree
 '''
 
+import os
+
 from lang import *
 from vars import *
 from vals import isDefConst, elem2val, isLex
@@ -491,14 +493,16 @@ class CaseImport(ExpCase):
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
         # module = elems[0].text
+        # prels('>>', elems, show=1)
+        # lang.FullPrint = 0
         path, names = self.splitElems(elems[1:])
-        dprint('path, names::', path, names )
+        # print('path, names::', path, names )
         expr = ImportExpr(path, names)
         return expr
 
     def splitElems(self, elems:list[Elem])->tuple:
         path = []
-        prels('Import Case splitElems: ', elems)
+        # prels('ImportCase splitElems: ', elems)
         # imnames = []
         # inPath = True
         afterMore = False
@@ -533,7 +537,7 @@ class CaseImport(ExpCase):
         
         part = []
         remElems = elems[cnt:]
-        prels('Import Case splitElems2: ', remElems)
+        # prels('Import Case splitElems2: ', remElems)
         for ee in remElems:
             if isLex(ee, Lt.oper, ','):
                 # next name
@@ -547,3 +551,13 @@ class CaseImport(ExpCase):
             importList.append(part)
         return path, importList
 
+    def fileByPath(self, path:list[str]):
+        # print('fbp1:', path)
+        pathElems = path[:-1]
+        # dirPath = ''
+        fname = '%s.%s' % (path[-1], CODE_EXT)
+        pathElems.append(fname)
+        # if len(dirs) > 0:
+        #     dirPath = os.path.join(*dirs)
+        # print('fbp::', pathElems)
+        return os.path.join(*pathElems)

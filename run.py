@@ -15,14 +15,17 @@ run.py filename.etb (execute previously built file)
 
 import argparse
 from argparse import ArgumentParser
+import lang
 import json
+from pathlib import Path
 
 from lang import *
+import loader
 from base import Val, Var, InterpretErr, EvalErr, XDebug
 from typex import valType
 from vars import ListVal, DictVal, TupleVal
-from context import Context
-from nodes.expression import Expression
+from context import Context, RootContext
+from nodes.expression import Expression, expSrc
 from nodes.tnodes import Module
 from build import buildTree, readFile
 from eval import rootContext
@@ -33,6 +36,12 @@ def getArgs():
     arp.add_argument('src')
     arp.add_argument('-c', '--codeline', action="store_true",
                      help='Execute line of code.') # in line code
+    arp.add_argument('-i', '--imports',
+                     help='Import list over space.')
+    arp.add_argument('-p', '--pathroot',
+                     help='Import list over space.')
+    arp.add_argument('-e', '--show-error', action="store_true",
+                     help='Show native error traceback.')
     arp.add_argument('-l', '--multirun', action="store_true",
                      help='Execute multiple times by source. Needs one of data sources: code, file, json')
     arp.add_argument('-s', '--datasource',
@@ -56,11 +65,11 @@ def getSource(args):
     return src
 
 
-def getContext():
-    '''Prepare context.'''
-    croot = rootContext()
-    cur = croot.moduleContext()
-    return cur
+# def getContext():
+#     '''Prepare context.'''
+#     croot = rootContext()
+#     cur = croot.moduleContext()
+#     return cur
 
 
 def readDataSource(args):
@@ -142,6 +151,30 @@ def run(expr:Expression, ctx:Context):
     expr.do(ctx)
 
 
+def importHeads(line:str):
+    
+    # split imports
+    lines = line.split(';')
+    srcLines = ['import %s' % s.strip() for s in lines]
+    src = "\n".join(srcLines)
+    # print('::\n', src)
+    return src
+
+
+def importPreload(args, rctx:RootContext):
+    '''
+    Preload modules.
+    Import loaded modules to context.
+    -i "dir.mod1; dir.dir.mod2; dir.mod3 > fun1, type2 t2;"
+    '''
+    # get from args
+    modArg = args.imports
+    src = importHeads(modArg)
+    return src
+    # load modules
+    # buildTree(src, rctx)
+
+
 def main():
     ''' Run script using args from command line
         -r -result # read result var, name of result var (var should be defined in code)
@@ -150,8 +183,20 @@ def main():
     src = getSource(args)
     expr = None
     try:
-        expr = buildTree(src)
+        # test file root
+        basePath = Path(__file__).parent
+        if args.pathroot:
+            basePath = args.pathroot
+        loader.modRoot = basePath
         rCtx = rootContext()
+        head = ''
+        if args.imports:
+            importPreload(args, rCtx)
+            modArg = args.imports
+            head = importHeads(modArg) + '\n'
+        # lang.FullPrint = 1
+        src = '%s%s' % (head, src)
+        expr = buildTree(src, rCtx)
         # TODO: here: add importable modules into root ctx
         ctx = rCtx.moduleContext()
         if args.multirun:
@@ -167,20 +212,32 @@ def main():
     except ParseErr as exc:
         print('Error in parsing: ', exc.msg)
         print("in line:\n", exc.src.src)
+        if args.show_error:
+            raise exc
+        
     except InterpretErr as exc:
         print('Error interpretation: ', exc.msg)
-        print("in line:\n", exc.src.src.src)
+        exSrc = expSrc(exc.src)
+        print("in line:\n", exSrc)
         if exc.parent:
             print('Caused by error:', exc)
+            if args.show_error:
+                raise exc.parent
+        if args.show_error:
+            raise exc
                 
     except EvalErr as exc:
         print("Execute error:", exc.msg)
         if expr and isinstance(expr, Expression):
             lineExpr = expr
             print("in line:\n", lineExpr.src.src)
+        if args.show_error:
+            raise exc
             
     except Exception as exc:
         print('Error handling: ', exc)
+        if args.show_error:
+            raise exc
 
 
 if __name__ == '__main__':
