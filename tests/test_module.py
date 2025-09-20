@@ -6,20 +6,13 @@ from tests.utils import *
 from lang import Lt, Mk, CLine
 from parser import splitLine, splitLexems, charType, splitOper, elemStream
 from vars import *
-from vals import numLex
 
 from cases.utils import *
-
-from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
 from nodes.structs import *
-
-from context import Context
 from tree import *
 from eval import rootContext, moduleContext
-
 from strformat import *
-
+from loader import *
 
 from tests.utils import *
 
@@ -33,6 +26,39 @@ class TestModule(TestCase):
     # TODO: fix types in imported structs
     
 
+    def test_import_file_by_path(self):
+        ''' '''
+        caseImp = CaseImport()
+        
+        data = [
+            {'path': 'abc'.split('.'), 'exp': 'abc.et'},
+            {'path': 'aa.bb.cc'.split('.'), 'exp': 'aa%%bb%%cc.et'.replace('%%', os.sep)},
+            {'path': 'aa_bb.cc'.split('.'), 'exp': 'aa_bb%%cc.et'.replace('%%', os.sep)},
+            {'path': 'aa.bb.cc.dd.ee'.split('.'), 'exp': 'aa%%bb%%cc%%dd%%ee.et'.replace('%%', os.sep)},
+        ]
+        for pp in data:
+            path = caseImp.fileByPath(pp['path'])
+            # print('tt>', path)
+            self.assertEqual(pp['exp'], path)
+
+    def test_loader_preload(self):
+        ''' '''
+        data = [
+            {'path':'sdata%%mod1.et'.replace('%%', os.sep), 'name':'mod1'},
+            {'path':'sdata%%sdata2%%mod21.et'.replace('%%', os.sep), 'name':'mod21'},
+            # '',
+            # '',
+        ]
+        basePath = Path(__file__).with_name('tdata')
+        rCtx = rootContext()
+        for pp in data:
+            modPath = pp['path']
+            # fpath = ld.filePath(modPath)
+            modName = pp['name']
+            mod = modPreload(rCtx, modPath, root=basePath, name=modName)
+            print('tt>>loadMod:', rCtx.loaded[pp['name']].name)
+            self.assertIsInstance(mod, Module)
+            self.assertEqual(modName, mod.name)
 
     def loadCode(self, code, name=''):
         code = norm(code[1:])

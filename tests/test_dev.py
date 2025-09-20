@@ -21,8 +21,6 @@ from nodes.tnodes import Var
 from nodes import setNativeFunc, Function
 from tests.utils import *
 
-import loader as ld
-from loader import *
 
 import pdb
 
@@ -53,63 +51,6 @@ class TestDev(TestCase):
     '''
 
 
-    def test_loader_mod_path(self):
-        ''' '''
-        caseImp = CaseImport()
-        import os as pt
-        
-        
-        data = [
-            {'path': 'abc'.split('.'), 'exp': 'abc.et'},
-            {'path': 'aa.bb.cc'.split('.'), 'exp': 'aa%%bb%%cc.et'.replace('%%', os.sep)},
-            {'path': 'aa_bb.cc'.split('.'), 'exp': 'aa_bb%%cc.et'.replace('%%', os.sep)},
-            {'path': 'aa.bb.cc.dd.ee'.split('.'), 'exp': 'aa%%bb%%cc%%dd%%ee.et'.replace('%%', os.sep)},
-        ]
-        for pp in data:
-            path = caseImp.fileByPath(pp['path'])
-            # print('tt>', path)
-            self.assertEqual(pp['exp'], path)
-
-    def test_loader_preload(self):
-        ''' '''
-        data = [
-            {'path':'sdata%%mod1.et'.replace('%%', os.sep), 'name':'mod1'},
-            {'path':'sdata%%sdata2%%mod21.et'.replace('%%', os.sep), 'name':'mod21'},
-            # '',
-            # '',
-        ]
-        basePath = Path(__file__).with_name('tdata')
-        rCtx = rootContext()
-        for pp in data:
-            modPath = pp['path']
-            # fpath = ld.filePath(modPath)
-            modName = pp['name']
-            mod = modPreload(rCtx, modPath, root=basePath, name=modName)
-            print('tt>>loadMod:', rCtx.loaded[pp['name']].name)
-            self.assertIsInstance(mod, Module)
-            self.assertEqual(modName, mod.name)
-            
-
-    def _test_loader_struct_context(self):
-        ''' '''
-        code = r'''
-        res = 0
-        
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        rvar = ctx.get('res')
-        self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        self.assertEqual([], rvar.vals())
-        lang.FullPrint = 0
 
     def _test_barr(self):
         ''' '''
@@ -241,7 +182,7 @@ class TestDev(TestCase):
         ''' thoughts:
             1) [..;..;..] should be a list-generator, not string
             2) [..; s <- "..."] in gen from string we want to get string
-            3) ~[s, s <- "..."] solutution (1) `~` operator as a list-to-string convertor
+            3) ~[s, s <- "..."] solution (1) `~` operator as a list-to-string convertor
             3.1) looks like `join` func can be a good solution
         '''
         code = '''
