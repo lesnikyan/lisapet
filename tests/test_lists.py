@@ -23,6 +23,30 @@ class TestLists(TestCase):
 
 
 
+    def test_plus_operator_for_lists(self):
+        ''' '''
+        code = r'''
+        a = [1,2,3]
+        res = a + [4,5]
+        
+        b = [6]
+        res += b
+        
+        res += [7]
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([1,2,3,4,5,6,7], rvar.vals())
+
     def test_arrow_append_when_func_call_left(self):
         ''' For left-arrow operator target is result of function call 
         (returns collection).

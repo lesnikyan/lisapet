@@ -123,6 +123,11 @@ class ListVal(Collection):
         # print('ListVal.addVal:', val)
         self.elems.append(val)
     
+    def addMany(self, vals:'ListVal'):
+        # not sure, we need whole Var or just internal value?
+        # print('ListVal.addVal:', val)
+        self.elems.extend(vals.elems)
+    
     def setVal(self, key:Val, val:Val):
         i = key.getVal()
         # dprint('ListVar.setVal', i, val, 'Len=', len(self.elems), i < len(self.elems), self.elems)
@@ -147,6 +152,9 @@ class ListVal(Collection):
             raise EvalErr('indexes of List slice are out of range [%d : %d] with len = %d' % (beg, end, len(self.elems)))
         rdata = self.elems[beg: end]
         return ListVal(elems=rdata)
+
+    def copy(self):
+        return ListVal(elems=self.elems[:])
 
     def get(self):
         return  [n.get() for n in self.elems] # debug

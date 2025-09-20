@@ -295,6 +295,12 @@ class OpMath(BinOper):
         a.delete(key)
         return val
 
+    def listPlus(self, a:ListVal, b:ListVal):
+        # print('listPlus:', a, b)
+        res = a.copy()
+        res.addMany(b)
+        return res
+
     def strLshift(self, a, b):
         ''' "str pattern " << (vals) '''
         if not isinstance(b, TupleVal):
@@ -311,6 +317,9 @@ class OpMath(BinOper):
         a, b = valFrom(a), valFrom(b)
         dprint('#bin-overs-1', a, b)
         match self.oper:
+            case '+' :
+                if isinstance(a, (ListVal)) and isinstance(b, ListVal):
+                    return (True, self.listPlus(a, b))
             case '-' :
                 if isinstance(a, (ListVal, DictVal)) and isinstance(b, ListVal):
                     return (True, self.collMinus(a, b))

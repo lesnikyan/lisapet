@@ -27,6 +27,7 @@ Content:
 9. Collection features:
     1. [append operator `nums <- 15`](#91-arrow-appendset-operator--)
     2. [deletion operator `data - [key]`](#92-minus-key---key-delete-operator)
+    3. [plus for lists `[] + []`](#93-list-plus---)
 10. Struct: 
     1. [Definition, constructor, fields](#10-struct)
 11. Struct OOP:
@@ -469,6 +470,18 @@ For dict:
 d2 = {'a':11, 'b':22}
 r2 = d2 - ['a'] # returns 11
 >> {'b': 22}
+```
+
+### 9.3 List plus `[] += []`
+We can use plus and plus-assign operators for two lists.  
+```
+a = [3,4]
+b = [5,6]
+nums = [1,2] + a
+nums += b
+nums += [7,8,9]
+
+>> [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
 
 ### 10. Struct.  

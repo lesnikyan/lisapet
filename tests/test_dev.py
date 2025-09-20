@@ -52,6 +52,24 @@ class TestDev(TestCase):
 
 
 
+    def _test_code(self):
+        ''' '''
+        code = r'''
+        print('res = ', nums)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        # rvar = ctx.get('res')
+        # self.assertEqual(0, rvar.getVal())
+        # rvar = ctx.get('res').get()
+        # self.assertEqual([], rvar.vals())
+
 
     def _test_barr(self):
         ''' '''
