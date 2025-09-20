@@ -433,6 +433,9 @@ class CaseListComprehension(SubCase):
         if cs.match(sub):
             _, subs = cs.split(sub)
         exp = ListComprExpr()
+        subs = [s for s in subs if len(s)]
+        # prels('LC.elems = :', elems, show=1) 
+        # prels('ListComr subs=', subs, show=1)
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:

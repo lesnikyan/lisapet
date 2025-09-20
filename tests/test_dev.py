@@ -52,6 +52,7 @@ class TestDev(TestCase):
 
 
 
+
     def _test_barr(self):
         ''' '''
         code = r'''
@@ -214,20 +215,6 @@ class TestDev(TestCase):
         src = "Hello strings!"
         res = [ [a ; a <- src]
         # print('src = ', src)
-        print('nums = ', nums)
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-
-    def _test_list_gen_empty_end(self):
-        ''' list generator. [... expr;] empty last sub-case after semicolon'''
-        code = '''
-        nums = [[x ** 2] ; x <- [2..5] ;]
-        nums = [[x ** 2] ; x <- [2..5] ; ]
         print('nums = ', nums)
         '''
         code = norm(code[1:])
