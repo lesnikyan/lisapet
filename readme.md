@@ -35,7 +35,7 @@ Content:
 12. List features:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
     1. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
-13. [Multiline esxpressions](#13-multiline-expressions-if-for-math-expr)
+13. [Multiline expressions](#13-multiline-expressions-if-for-math-expr)
 14. [Builtin/native functions (print, iter,..)](#14-builtin-functions)
 15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
 16. [Match-statement](#16-match-statement)
