@@ -13,21 +13,21 @@ run.py filename.etb (execute previously built file)
 # TODO: add iterative call of built code.
 
 
-import argparse
+# import argparse
 from argparse import ArgumentParser
 import lang
 import json
 from pathlib import Path
 
-from lang import *
 import loader
+from lang import *
+from loader import buildTree, readFile
 from base import Val, Var, InterpretErr, EvalErr, XDebug
 from typex import valType
 from vars import ListVal, DictVal, TupleVal
 from context import Context, RootContext
 from nodes.expression import Expression, expSrc
 from nodes.tnodes import Module
-from build import buildTree, readFile
 from eval import rootContext
 
 

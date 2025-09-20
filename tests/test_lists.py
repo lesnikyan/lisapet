@@ -23,6 +23,30 @@ class TestLists(TestCase):
 
 
 
+    def test_plus_operator_for_lists(self):
+        ''' '''
+        code = r'''
+        a = [1,2,3]
+        res = a + [4,5]
+        
+        b = [6]
+        res += b
+        
+        res += [7]
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([1,2,3,4,5,6,7], rvar.vals())
+
     def test_arrow_append_when_func_call_left(self):
         ''' For left-arrow operator target is result of function call 
         (returns collection).
@@ -98,6 +122,24 @@ class TestLists(TestCase):
         ex.do(ctx)
         rvar = ctx.get('res').get()
         self.assertEqual([1, (2, 3), (4, 5)], rvar.vals())
+
+    def test_list_gen_empty_end(self):
+        ''' list generator. [... expr;] empty last sub-case after semicolon'''
+        code = '''
+        nums1 = [[x ** 2] ; x <- [2..5] ; x > 1; ]
+        nums2 = [[x ** 2 + 1] ; x <- [2..5] ;]
+        res = [nums1, nums2]
+        # print('nums = ', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        exp = [[[4], [9], [16], [25]], [[5], [10], [17], [26]]]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
 
     def test_slice_of_generator(self):
         ''' # TODO: nn = [1..10]; nn5 = nn[1:5] '''

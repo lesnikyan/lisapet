@@ -108,7 +108,8 @@
         it should have reset() method
         # sugar: val <= src // ?
 
-22. append meany values to list `res <- vals`, like dict has
+22. # DONE by `+=`
+     append many values to list `res <- vals`, like dict has
     solution `list += [a, b, c]` looks ok
     check and fix cases: list + list, string + string
 

@@ -62,12 +62,23 @@ def isGetValExpr(elems:list[Elem]):
 def isBrPair(elems:list[Elem], opn, cls):
     return isLex(elems[0], Lt.oper, opn) and isLex(elems[-1], Lt.oper, cls)
 
+def el_text(elems:list[Elem]):
+    return [n.text for n in elems]
 
 def prels(pref, elems:list[Elem], *args, **kwargs):
-    if 'show' in kwargs and kwargs['show']:
-        print(pref, [n.text for n in elems], *args)
+    if not (FullPrint or ('show' in kwargs and kwargs['show'])):
         return
-    dprint(pref, [n.text for n in elems], *args)
+    
+    # list[list[Elem]]
+    if isinstance(elems[0], (list, tuple)):
+        print(pref, end='')
+        for subel in elems:
+            print(el_text(subel), end=' $$ ', sep = ' ')
+        print('')
+        return
+
+    # list[Elem]
+    print(pref, el_text(elems), *args)
 
 
 def elemStr(elems:list[Elem]):
