@@ -74,7 +74,7 @@ Basic principles.
 *
 
 ## Usage.
-Note: `python run` command is one line, splitted in examples just for readability. 
+Note: `python run` command is one line, splitted in examples just for better readability. 
 ```
 # run file
 python -m run tests/simple_test.et
@@ -91,7 +91,8 @@ nums: [1, 2, 3, 4, 5]
 
 # more complex 1-line example:
 python -m run 
-    -c "f1 = (x, y) -> x + y; f2 = x -> x * x;  p = x -> print(x); [p(f1(f2(n), 10000)); n <- [1..10]; n % 2 > 0 && n > 3]"
+    -c "f1 = (x, y) -> x + y; f2 = x -> x * x;  p = x -> print(x); 
+        [p(f1(f2(n), 10000)); n <- [1..10]; n % 2 > 0 && n > 3]"
 10025
 10049
 10081
@@ -265,6 +266,32 @@ Logical:
 Other:  
 `?>` `!?>` `?:` `<-` `->` `!-`
 
+Table of priority order:
+```
+() [] {} 
+. 
+-x !x ~x 
+** 
+* / % 
++ - 
+<< >> 
+< <= > >= !> ?> !?>
+== != 
+&
+^
+|
+&&
+||
+?: 
+: 
+? 
+,
+<- 
+->
+= += -= *= /= %=  
+; 
+!-
+```
 
 
 ### 5. Collections: list (array), tuple, dict (map)

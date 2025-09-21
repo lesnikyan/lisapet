@@ -108,10 +108,14 @@
         it should have reset() method
         # sugar: val <= src // ?
 
-22. # DONE by `+=`
+22. # DONE by `+`
      append many values to list `res <- vals`, like dict has
     solution `list += [a, b, c]` looks ok
     check and fix cases: list + list, string + string
+
+22.1 overload += to avoid copying original list.
+
+22.2 check string
 
 23. Common lib location for importing (not sure we need it now).  
 
