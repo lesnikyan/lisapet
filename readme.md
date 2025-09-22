@@ -951,7 +951,7 @@ Module is a file. Module name is a filename withot extension.
 So file `test.et` contains module `test`  
 File `lib/util.et` contains module `lib.util`  
 Cases of import:  
-- Import module (file), submodule in folder  
+- Import module (file) or submodule in folder 
 (over dots: `dir.subdir.file` ).
 - Import all things from module, or named things.
 - Alias for named things.
@@ -963,15 +963,7 @@ mymodule.foo()
 inst = mymodule.MyType{a:1}
 inst.bar()
 ```
-Import all things from module.  
-```
-import mymodule.*
-mymodule.foo(123)
-
-# Note: Syntax can be changed to `module > *`.
-```
-  
-Import names from module.  
+Import names from module after `>` over comma.  
 `module > name, name2`
 ```
 import mymodule > foo, bar, MyType
@@ -979,8 +971,15 @@ foo(123)
 bar(321)
 mt = MyType{a:1, b:2}
 ```
+Import all things from module `> *`  
+```
+# function `foo` in mymodule
+
+import mymodule > *
+foo(123)
+```
 Import with aliases.  
-`module > name alias, ..`
+`module > orig_name alias, ..`
 ```
 import mymodule > foo f1, bar f2
 f1(123)
@@ -990,7 +989,7 @@ f2(321)
 `import` command looks for modules in the execution root context. So we have to preload modues into context before run code with imports.  
 For `run.py` util we have 2 options how to preload modules.  
 1) Module can be imported by console arg `-i` or `--import`.  
-    Modules will be preloaded into root context and `import` lines will be added to the head of code.  
+    Modules will be preloaded into root context and `import` lines will be added to the head of code. Actual for `run -c` mode.  
 ```
 $ py -m run -i "module1; module2..." -c "code"
 ```
@@ -1003,7 +1002,7 @@ py -m run
 >> [5, 10, 15]
 ```
 
-2) Auto-import modules from file-tree for CI `run`.  
+2) Auto-import modules from file-tree for CI `run file`.  
 For case with the the source file (if contains `import`), importing modules will be preloaded before execution of script automatically.  
 Root path is taken from current console position.  
 ```

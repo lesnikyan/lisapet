@@ -20,6 +20,7 @@ from nodes.control import *
 from cases.structs import *
 from cases.funcs import *
 from cases.operwords import *
+from cases.modules import *
 
 from parser import *
 from strformat import  *

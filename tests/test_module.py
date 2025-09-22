@@ -119,7 +119,7 @@ class TestModule(TestCase):
         stMod = self.loadStructs()
         code = '''
         
-        import tstructs.*
+        import tstructs > *
         pr = Pair{a:10, b:200}
         res = [pr.foo() ]
         b = pr.sum()
@@ -194,7 +194,7 @@ class TestModule(TestCase):
     
         code = '''
         
-        import tfuncs.*
+        import tfuncs > *
         a, b, c = 1,2,3
         st = fill('abc', 3)
         b = sum(10, 200)
@@ -315,7 +315,7 @@ class TestModule(TestCase):
         # importing part
         code = '''
         
-        import tfuncs.*
+        import tfuncs > *
         
         res = [foo(), sum(10, 200), mult(20, 17)]
         print('res:', res)

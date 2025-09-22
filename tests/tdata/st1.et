@@ -12,3 +12,4 @@ func p: Point2 sum()
     p.x + p.y
 
 # py -m run -i "tests.tdata.st1 > Point2, f1"  -c "pp = Point2{x:2, y:3}; a = pp.sum(); p = (f1(a))" -r p
+# py -m run -i "tests.tdata.st1 > *"  -c "pp = Point2{x:2, y:3}; a = pp.sum(); p = (f1(a))" -r p

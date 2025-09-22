@@ -67,9 +67,8 @@ class ImportExpr(Expression):
         super().__init__(None, src)
         self.fullImport = False
         # print('ImportExpr __init:', elems)
-        if (len(path) > 1 and path[-1] == '*' and len(elems) == 0):
+        if len(elems) > 0 and elems[0] == '*':
             self.fullImport = True
-            path = path[:-1]
         self.modName = path[-1] # final name of imported module
         self.modPath = path # if more than 1 name, path will be a list
         self.names = {}
