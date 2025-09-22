@@ -399,7 +399,7 @@ def findLastBrackets(elems:list[Elem]):
     if not isLex(elems[-1], Lt.oper, cbrs):
         # incorrect elems data
         return -1
-    
+
     for i in range(lem-1, -1, -1):
         ee = elems[i]
         if ee.type != Lt.oper:

@@ -64,6 +64,11 @@ class ImportExpr(Expression):
     '''
     
     def __init__(self, path, elems:list[list[str]], src = ''):
+        '''
+        path: str - module path `word(.word)*`
+        elems: [[str],] - list of names of things from module 1 or 2 sub-elems: 
+        1 - orig, 2 - orig, alais
+        '''
         super().__init__(None, src)
         self.fullImport = False
         # print('ImportExpr __init:', elems)
