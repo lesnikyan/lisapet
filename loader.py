@@ -12,7 +12,7 @@ from lang import CLine, dprint
 from parser import splitLexems, elemStream
 from tree import lex2tree
 from context import Context, ModuleContext, RootContext
-from cases.tcases import CaseImport
+from cases.modules import CaseImport
 from vals import isLex
 from nodes.expression import Expression
 from nodes.tnodes import Module

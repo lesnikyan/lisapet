@@ -81,10 +81,35 @@ class OpAssign(OperCommand):
         ''' where right is MultilineVal '''
         self.right.add(expr)
 
-    def do(self, ctx:Context):
-        ''' var = src'''
+    def doRight(self, ctx:Context, leftSize):
         src = self.right
-        
+        # Do right (val expr)
+        dprint('OpAssign.do src', src)
+        resSet:list[Var] = []
+        if isinstance(src, SequenceExpr):
+            dprint('## op-assign, SequenceExpr src -> ', src, )
+            resSet = src.getVals(ctx)
+        else:
+            src.do(ctx)
+            tVal:Var = src.get() # val (anon var obj) from expression
+            # dprint('## op-assign, src.get() -> ', tVal, ':', tVal.get(), tVal.getType())
+            resSet.append(tVal)
+        # ctx.print()
+        if leftSize > 1 and len(resSet) == 1:
+            # unpack colelction here
+            tval = resSet[0]
+            if isinstance(tval, Var):
+                tval = resSet[0].getVal()
+            
+            dprint('resSet[0] to unpack:', resSet[0], tval)
+            if not isinstance(tval, (ListVal, TupleVal)):
+                raise EvalErr('Count of left and right parts of assignment are different '
+                               'left = %d, right = %d' % (leftSize, len(resSet)))
+            resSet = tval.rawVals()
+
+        return resSet
+
+    def leftSet(self):
         # prepare left operand
         if isinstance(self.left, SequenceExpr):
             left = self.left.getSubs()
@@ -96,64 +121,53 @@ class OpAssign(OperCommand):
             if isinstance(lexp, ServPairExpr):
                 lexp = lexp.getTypedVar()
             pleft.append(lexp)
-        left = pleft
+        return pleft
+        
+    def readVal(self, val):
+        # valType = val.getType()
+        dprint(' (a = b) :2', val)
+        if isinstance(val, ObjectMember):
+            val = val.get()
+        if isinstance(val, ModuleMember):
+            val = val.get()
+        dprint(' (a = b) :3', val)
+        if isinstance(val, Var):
+            val = val.get()
+        dprint(' (a = b) :4', val)
+        return val
 
-        # Do right (val expr)
-        dprint('OpAssign.do src', src)
-        resSet:list[Var] = []
-        if isinstance(src, SequenceExpr):
-            dprint('## op-assign, SequenceExpr src -> ', src, )
-            resSet = src.getVals(ctx)
-        else:
-            src.do(ctx)
-            tVal:Var = src.get() # val (anon var obj) from expression
-            # dprint('## op-assign, src.get() -> ', tVal, ':', tVal.get(), tVal.getType())
-            # print('## op-assign, src -> ', src, ' ; ', tVal, ':',)
-            resSet.append(tVal)
-        ctx.print()
-        
-        if len(left) > 1 and len(resSet) == 1:
-            # unpack colelction here
-            tval = resSet[0]
-            if isinstance(tval, Var):
-                tval = resSet[0].getVal()
-            
-            dprint('resSet[0] to unpack:', resSet[0], tval)
-            if not isinstance(tval, (ListVal, TupleVal)):
-                raise EvalErr('Count of left and right parts of assignment are different '
-                               'left = %d, right = %d' % (len(left), len(resSet)))
-            resSet = tval.rawVals()
-        
+    def do(self, ctx:Context):
+        ''' var = src'''
+
+        # prepare left
+        left = self.leftSet()
         size = len(left)
+
+        # prepare right
+        resSet = self.doRight(ctx, size)
+
+        # assign loop
         for  i in range(size):
             if isinstance(left[i], VarExpr_):
                 # skip _ var
                 continue
-            # dprint(' (a = b) :1')
-            # eval left expressopm
             left[i].do(ctx)
             val = resSet[i]
-            valType = val.getType()
-            dprint(' (a = b) :2', val)
-            if isinstance(val, ObjectMember):
-                val = val.get()
-            if isinstance(val, ModuleMember):
-                val = val.get()
-            dprint(' (a = b) :3', val)
-            if isinstance(val, Var):
-                val = val.get()
-            dprint(' (a = b) :4', val)
             
+            val = self.readVal(val)
+            valType = val.getType()
             if isinstance(left[i], CollectElem):
                 ''' '''
-                # dprint('(=) if dest CollectElem, val: ', val)
+                # print('(=) if dest CollectElem, val: ', val)
                 val.name = None
                 left[i].set(val)
                 return
             
             #get destination var
             dest = left[i].get()
-            dprint('Assign dest1 =', dest, '; val=', val)
+            # print('oper:', self.oper)
+            # print('Assign dest1 =', dest, '; val=', val)
+
             isNew = False
             self.res = val
             if isinstance(dest, VarUndefined):
@@ -165,32 +179,20 @@ class OpAssign(OperCommand):
                 dest = newVar
             dest.set(val)
                 
-            # dprint('# op-assign set1, varX, valX:', left[i], src[i])
-            dprint('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
-            # dprint('# op-assign set,',' val = ', type(resSet[i]))
-            dprint(' (a = b) dest =', dest, ' val = ', val, 'isNew:', isNew)
+            # print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
+            # print(' (a = b) dest =', dest, ' val = ', val, 'isNew:', isNew)
                 
             if isinstance(dest, ObjectMember):
                 # struct field as left operand
-                # dprint('!!!!!! struct.2', dest, dest.object, dest.member)
                 dest.set(val)
-                # raise EvalErr(' = ObjMem')
                 return
 
-            # dprint(' (a = b) dest2: ', dest)
             # single var
             name = dest.name
-            # dest = val
-            # dest.name = name
-            # dest.set(val)
-            
-            # ctx.update(dest.name, val)
-            
-            self.res = val
-            # ctx.update(dest.name, resSet[i])
-            saved = ctx.get(name)
-            dprint(' (a = b) saved ', saved)
 
+            self.res = val
+            # saved = ctx.get(name)
+            # dprint(' (a = b) saved ', saved)
 
         # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
         # TODO: thik about one way of assignment: (something) = (something)
@@ -202,9 +204,10 @@ class OpBinAssign(OpAssign):
         super().__init__()
         self.oper = oper
         self.moper = self.splitOper(oper)
+        self.trivial = True
 
     def splitOper(self, oper):
-        dprint('OpBinAssign biOper:', oper)
+        # print('OpBinAssign biOper:', oper)
         return OpMath(oper[0])
 
     def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
@@ -235,7 +238,7 @@ class OpMath(BinOper):
         dprint('#oper-right:', self.right)
         self.left.do(ctx)
         self.right.do(ctx)
-        dprint('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
+        # print('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
         dprint('#bin-oper2', a, b)

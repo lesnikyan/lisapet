@@ -3,32 +3,53 @@
 
 # Necessary things: 
 
-0. CI
-    # DONE run.py - console script for run *.et files with console output.
-    run.py - add preload of importable modules
-    build.py - builder of *.et files with resulting binary files (serialized executable object).
-    # DONE run -m --multirun 
-        -s --datasource "source" # add option for multi-running compiled ET and datasource
-        -j -json-source "file" # datasource from from json file
-    # DONE run.py -r varname # show result / value of specified variable
-1. # DONE String formatting. ~"{var}", "... %s ..." << (var)
-2. # DONE one-line block: expr; expr; expr
-3. # DONE import modules
-3.1 import x > * `instead of ` import x.* (?) thinking
+1. string functions: 
+    element like list: name[0], "abc"[1]
+    split()
+    join()
+    replace()
+    rxreplace()
+    tostr([int]), tostr(bytes), 
+    tostr(anyval) # like print
+
+2.1 module `file`
+    read(filepath)
+    write(filepath, content)
+
+2.2 module `json`
+    to(data_obj): json_str
+    from(json_str): data_obj
+
+
+3.1 # DONE import x > * `instead of ` import x.* (?) thinking
+
+11. Struct constructor
+    - constructor without field names: A{1, 2.0, 'abc'} - order-driven struct constructor.
+    - method-constructor for struct :: thinkable.
+        `TypeName.(a, b, c)` Looks more flexible instead of positional-args constructor: 
+        `TypeName{a, b, c}`
+        solution: Type.(args)           ## calls method Type.make() 
+            default case: positional constructor.
+            custom case: user-defined method Type.make
+
+        note: it have to be implemented (instead of `T{...}`) but we can make default implementation by order of fields in definition
+
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
+
 5. error handling (with printing source code)
-    # DONE: parser errors, interpreation errors
+    # DONE: parser errors, interpretation errors
     eval error: 
         incorrect type, 
-        name(var, type, func, strc.method etc) not found
+        name(var, type, func, stt.method etc) not found
         argument error for (arg count, arg type): functions, constructors, operators, for-statement, sequence-gen,
+        zero div (x / 0)
         key/index error for collections
         type-casting error(for example: list to int, non-number string to float )
         IO-error: read/write data
 
-6. # DONE else if
-7. # DONE if sub-expression: if x=foo(); x < 5 ...
 8. logging | with named args: #debug: log(d: (msg, arg1, arg2)) #info log(i: ("Found %d records", 15))
+    module `logs`
+
 9. input-output: 
     files, 
     console, 
@@ -37,12 +58,8 @@
 10 serialization: 
     1) data objects (collections, struct inst) 
     2) executive tree (prepared exec file)
-11. Struct constructor
-    - constructor without field names: A{1, 2.0, 'abc'} - order-driven struct constructor.
-    - method-constructor for struct :: thinkable.
-        `TypeName.(a, b, c)` instead of positional-args constructor
-        `TypeName{a, b, c}`. Looks more flexible
-        note: it have to be implemented (instead of `T{...}`) but we can make default implementation by order of fields in definition
+
+12 Functions: 
 12.1 named args for function: func foo(name:string) # call: foo(name:'Abc')
 12.2 other args in `func(a, b, other...) : foo(1, 2, 33, 44, 55, 66, 77) other = [33, 44, 55, 66, 77]
 12.3 default values of args func foo(x, y=3) :: needed
@@ -53,20 +70,12 @@
     - unused/unnamed var `_` for function args foo(_, x), multiple assignment `for key, _ <- dict`:: thinkable
 
 13. Interfaces as a some list of method signatures.
-14. # DEPRACATE match-case block start in the same line: # It looks as over-sugaring # 
-    match n
-        1 !- if cond
-            expr1
-        2 !- for i <- nlist
-            foo(i)
-
 14.2 maybe refactor !- as a start-line operator? with explicit indent for any sub-expressions. Not sure.
     match x
         !- 1
             expr
         !- 2
             expr
-
 
 14.2 Looks like multi-if will be more useful:
     if
@@ -78,29 +87,11 @@
         _
             expr4
 
-15. #DONE slice of iter-gen: [1..10][3:5]. include tolist into slice method, or add slicing method to iter-get (?)
-
 16. 1-line if/for/while: 
     # operator variants: !-  !~  !:  ::  \:  /:  |:  :|
     if x < 2 !: print(x)
     for n <- nums !- print(n)
     for x <- vals /: doit(x); y = x + 2; print(x, y)
-
-17. DONE: Not-in-list oper: !?> # if x !?> nums ... == if !(x ?> nums) ...
-
-18 # DONE loop-breacking operators in `for`/ `while`
-    looks like it should be an extra case in block execution, like return case.
-    - continue
-    - break
-
-19. # DONE - function as object. 
-    # if function not just defined name but result of expression: (lambda)(), funcs[key](), foo()()
-    # func should be an expression which returns function object
-
-20. DONE Issue: listVar <- (tuple, item) works not correct
-
-21. # Refuse ` var <- sequence` out of `for` statement.
-    looks like it will provoke not clear interpretation like redefinition of listVar in `listVar <- list`.
 
 21.1 reading itertor. read values from sequence in the loop iteration like 
     val = iter(src) # src is collection or generator
@@ -108,10 +99,9 @@
         it should have reset() method
         # sugar: val <= src // ?
 
-22. # DONE by `+=`
-     append many values to list `res <- vals`, like dict has
-    solution `list += [a, b, c]` looks ok
-    check and fix cases: list + list, string + string
+22.1 overload += to avoid copying original list.
+    // Look too complex in current implementation where x += y is the x = (x + y)
+    // may be possible if refactor to call left.do() before right.do()
 
 23. Common lib location for importing (not sure we need it now).  
 
@@ -119,6 +109,7 @@
 
 
 # Perspective things: 
+0. build.py - builder of *.et files with resulting binary files (serialized executable object).
 1. Maybe type 
 2. default, unnecessary and named function args
 3. tail-recursion optimization
@@ -560,3 +551,48 @@ for i <- iter(20, 30)
     bar(x -> sum(x) - 100, i)
 
 @#
+
+
+0. CI
+    # DONE run.py - console script for run *.et files with console output.
+    run.py - add preload of importable modules
+    # DONE run -m --multirun 
+        -s --datasource "source" # add option for multi-running compiled ET and datasource
+        -j -json-source "file" # datasource from from json file
+    # DONE run.py -r varname # show result / value of specified variable
+1. # DONE String formatting. ~"{var}", "... %s ..." << (var)
+2. # DONE one-line block: expr; expr; expr
+3. # DONE import modules
+
+6. # DONE else if
+7. # DONE if sub-expression: if x=foo(); x < 5 ...
+14. # DEPRICATE match-case block start in the same line: # It looks as over-sugaring # 
+    match n
+        1 !- if cond
+            expr1
+        2 !- for i <- nlist
+            foo(i)
+
+15. # DONE slice of iter-gen: [1..10][3:5]. include tolist into slice method, or add slicing method to iter-get (?)
+17. # DONE: Not-in-list oper: !?> # if x !?> nums ... == if !(x ?> nums) ...
+
+18 # DONE loop-breacking operators in `for`/ `while`
+    looks like it should be an extra case in block execution, like return case.
+    - continue
+    - break
+
+19. # DONE - function as object. 
+    # if function not just defined name but result of expression: (lambda)(), funcs[key](), foo()()
+    # func should be an expression which returns function object
+
+20. # DONE Issue: listVar <- (tuple, item) works not correct
+
+21. # Refuse ` var <- sequence` out of `for` statement.
+    looks like it will provoke not clear interpretation like redefinition of listVar in `listVar <- list`.
+
+22. # DONE by `+`
+     append many values to list `res <- vals`, like dict has
+    solution `list += [a, b, c]` looks ok
+    check and fix cases: list + list, string + string
+
+22.2 # DONE check string
