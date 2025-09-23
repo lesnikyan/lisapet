@@ -526,7 +526,7 @@ Keyword for declaration struct as custom type is a `struct`.
 Struct can be defined by inline syntax or block syntax.  
 Block-definition is more useful for big struct or fields type-name.  
 Struct constructor uses camel-brackets, instead of no-brackets syntax in definition.  
-```python
+```golang
 # definition.  linear
 struct B bb: int
 
@@ -553,7 +553,7 @@ numeric = 0, string = "", bool = false.
 
 Struct can have methods.  
 Method can be declared after declaration of struct type.  
-```python
+```golang
 # def
 struct A a1:int
 
@@ -567,7 +567,7 @@ aa.plusA1(5)
 ```
 
 ### 11.2 Struct inheritance. Multiple inheritance is allowed.
-```python
+```golang
 # parent types
 struct Aaaa a1: int, a2: string
 
