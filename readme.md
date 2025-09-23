@@ -75,46 +75,49 @@ Basic principles.
 
 ## Usage.
 Note: `python run` command is one line, splitted in examples just for better readability. 
-```
-# run file
-python -m run tests/simple_test.et
+run file  
+```console
+$ python -m run tests/simple_test.et
 ...
+```
+```console
+## run code line
+## -c --codeline
+$ python -m run -c "a = 2; b = a + 1"
 
-# run code line
-# -c --codeline
-python -m run -c "a = 2; b = a + 1"
-
-# with print function
-python -m run -c "r = [1..5]; print('nums:', tolist(r))"
+## with print function
+$ python -m run -c "r = [1..5]; print('nums:', tolist(r))"
 nums: [1, 2, 3, 4, 5]
 ...
 
-# more complex 1-line example:
-python -m run 
-    -c "f1 = (x, y) -> x + y; f2 = x -> x * x;  p = x -> print(x); 
+## more complex 1-line example:
+$ python -m run \
+    -c "f1 = (x, y) -> x + y; f2 = x -> x * x;  p = x -> print(x); \
         [p(f1(f2(n), 10000)); n <- [1..10]; n % 2 > 0 && n > 3]"
 10025
 10049
 10081
 ```
 Features of `run`.  
-```
-# show result
-# -r --result : name of resulting variable
-py -m run -c "res = 100 + 23" -r res
+```console
+## show result
+## -r --result : name of resulting variable
+$ py -m run -c "res = 100 + 23" -r res
 >> 123
+```
 
-# multirun - build once and run multiple times by dataset
-# json as a data source
-# -l --multirun
-# -s --datasource : LP-code produsing data
-# -f --json-file : file with data
-# -j --json-source : string with json
+```console
+## multirun - build once and run multiple times by dataset
+## json as a data source
+## -l --multirun
+## -s --datasource : LP-code produsing data
+## -f --json-file : file with data
+## -j --json-source : string with json
 
-# data: [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}, {'a': 5, 'b': 6}]
-py -m run 
-    -c "n = a + b; print(':', a, b, n)" 
-    -l -j "[{\"a\":1, \"b\":2}, {\"a\":3, \"b\":4}, {\"a\":5, \"b\":6}]" 
+## data: [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}, {'a': 5, 'b': 6}]
+$ py -m run \
+    -c "n = a + b; print(':', a, b, n)" \
+    -l -j "[{\"a\":1, \"b\":2}, {\"a\":3, \"b\":4}, {\"a\":5, \ \"b\":6}]" \ 
     -r n
 : 1 2 3
 : 3 4 7
@@ -123,20 +126,20 @@ py -m run
 
 ```
 Impoting and root path.
-```
-# -p --pathroot
-# -i --import
-py -m run -p "tests" 
-    -i "tdata.st1 > Point2, f1"  
-    -c "pp = Point2{x:2, y:3}; a = pp.sum(); p = (f1(a))" 
+```console
+## -p --pathroot
+## -i --import
+$ py -m run -p "tests" \
+    -i "tdata.st1 > Point2, f1"  \
+    -c "pp = Point2{x:2, y:3}; a = pp.sum(); p = (f1(a))" \
     -r p
 ```
 Show error.  
 For some debug needs we can ask print native Traceback of error.  
-```
-# -e --show-error
+```console
+## -e --show-error
 
-py -m run -c "1/0" -e
+$ py -m run -c "1/0" -e
 Error handling:  division by zero
 Traceback (most recent call last):
 ...
@@ -167,7 +170,7 @@ multiline comment
 Assigments of values of vars.  
 I common case w euse `=` operator for assignment value to new of already defined variable.  
 Default types of falues is: numeric types, string, list, dict, tuple.
-```
+```python
 x = 1
 name = 'Ramzes II'
 names = ['Alya', 'Valya', 'Olya']
@@ -178,11 +181,11 @@ a, b, c = 10, 20, 30
 ```
 
 ### 2. Numbers, strings, bool. Types.
-```
+```python
 hello = "hello somebody!"
 'unary-quotes'
 '''multiline
-string'''
+string'''python
 
 nums = [
     0123, # int, leading 0 will be irnored 
@@ -206,7 +209,7 @@ Types such as a collections, structs, functions, etc will be explaned next secti
 Control structures have inner place with internal expressions, here we call it as an expression block.  
 Block separated by indent with one or more whitespaces. All indents should be equal.  
 If statement, comparison operators, bool operators.
-```
+```python
 res = 100
 if x >= 10 | x < 2 && x != 0
     res = 2000 + x * -10 - 700
@@ -215,13 +218,13 @@ else
     res = 1000 + x - 500
 ```
 
-```
+```python
 # if with sub-expressions: if sub-expr; condition ...
 if a = foo(); x < bar(a)
     ...
 ```
 
-```
+```python
 # some sugar: else-if
 if cond
     code
@@ -232,7 +235,7 @@ else
 ```
 
 ### 4. Math operators, unary operators
-```
+```python
 y = 5 + x * -3
 
 # unary operator minus
@@ -253,7 +256,7 @@ Other unary operators.
 
 Operators with assignment   
 `+=` `-=` `*=` `/=` `%=` 
-```
+```python
 x = 1
 x += 2
 ```
@@ -295,7 +298,7 @@ Table of priority order:
 
 
 ### 5. Collections: list (array), tuple, dict (map)
-```
+```python
 # List, inline constructor
 
 nums = ['One', 'Two', 'Three']
@@ -317,7 +320,7 @@ firstName = names[0]
 Negative indexes are allowed.  
 It accesses to the element by position from the end of list.  
 `[-1]` is a last element.  
-```
+```python
 nums = [1,2,3,4,5]
 print(nums[-2])
 >> 4
@@ -326,14 +329,14 @@ Tuples: `(val, val, val)`.
 
 Tuple. Few values in the brackets over comma.  
 Tuple is immutable.
-```
+```python
 vals = (1, 100, 'More numbers')
 
 # read value by index
 print(vals[2])
 ```
 Unpack values from list or tuple.
-```
+```python
 names = ['Anatol', 'Basilev', 'Cardamon']
 n1, n2, n3 = names
 
@@ -343,7 +346,7 @@ a, b, c = vals
 
 ### 6. `for` statement, `<-` operator
 - Range-iterator
-```
+```python
 for i=0; i < 5; i = i + 1
     y = y + 2
     for j=-3; j <= 0; j = j + 1
@@ -357,7 +360,7 @@ res = y
 Left-arrow `<-` operator has several options.  
 Here we use left-arrow as an iterative assignment in `for` statement.  
 It looks, like we pick the element from the sequence one-by-one.
-```
+```python
 # by function iter
 arr = [1,2,3]
 r = 0
@@ -378,7 +381,7 @@ for k, val <- {'a':1, 'b':2}
     ...
 ```
 Function `iter()`  
-```
+```python
 # One arg iter(last+1)
 iter(3) # >> 0,1,2
 
@@ -391,7 +394,7 @@ iter(1,7,2) # >> 1,3,5
 
 Keywords `continue`, `break`.  
 
-```
+```python
 r = []
 for i <- [1..10]
     if i < 5
@@ -410,7 +413,7 @@ for i <- [1..10]
 Keyword `func`.  
 Last expression is a returning result.  
 Keyword `return` allowed to. 
-```
+```python
 # definition
 func foo(a, b, c)
     x = a - b
@@ -427,7 +430,7 @@ func bar(a:int, b:int)
     a + b
 ```
 Function can use nearest declaration context (actually all top-level things in module where func was declared).
-```
+```python
 callIndex = 0
 
 func foo(x, y)
@@ -439,7 +442,7 @@ func foo(x, y)
 See more about functions in sections: 14, 15, 23.
 
 ### 8. Dict. Linear and block constructor
-```
+```python
 # linear constr
 dd = {'a':1, 'b':2}
 
@@ -460,7 +463,7 @@ Left-arrow with list or dict in the right operand  puts value into collection.
 (not in `for` statement or sequence generator)  
 For list it appends new value; `list <- val`  
 For dict it sets or updates value by key from passed tuple with `dict <- (val, key)`.  
-```
+```python
 # list:
 nn = []
 nn <- 12
@@ -474,13 +477,13 @@ dd <- ('b', 555)
 
 >> {'b': 555, 'a': 123}
 ```
-```
+```python
 dict <- (key, val) 
 # the same as 
 dict[key] = val
 ```
 For dicts we can set multiple pairs of key-value by the dict in the right operand: `dict <- dict`
-```
+```python
 res = {'a':11, 'b':22} # new dict
 
 res <- {'c': 44, 'b':33} # add / update vals
@@ -492,13 +495,13 @@ res <- {'c': 44, 'b':33} # add / update vals
 Minus operator for collections.  
 Operator removes element by index | key and returns value of element.  
 For list:
-```
+```python
 a1 = [1,2,3]
 r1 = a1 - [1] # returns 2
 >> [1,3]
 ```
 For dict:
-```
+```python
 d2 = {'a':11, 'b':22}
 r2 = d2 - ['a'] # returns 11
 >> {'b': 22}
@@ -506,7 +509,7 @@ r2 = d2 - ['a'] # returns 11
 
 ### 9.3 List plus `[] += []`
 We can use plus and plus-assign operators for two lists.  
-```
+```python
 a = [3,4]
 b = [5,6]
 nums = [1,2] + a
@@ -523,7 +526,7 @@ Keyword for declaration struct as custom type is a `struct`.
 Struct can be defined by inline syntax or block syntax.  
 Block-definition is more useful for big struct or fields type-name.  
 Struct constructor uses camel-brackets, instead of no-brackets syntax in definition.  
-```
+```python
 # definition.  linear
 struct B bb: int
 
@@ -550,7 +553,7 @@ numeric = 0, string = "", bool = false.
 
 Struct can have methods.  
 Method can be declared after declaration of struct type.  
-```
+```python
 # def
 struct A a1:int
 
@@ -564,7 +567,7 @@ aa.plusA1(5)
 ```
 
 ### 11.2 Struct inheritance. Multiple inheritance is allowed.
-```
+```python
 # parent types
 struct Aaaa a1: int, a2: string
 
@@ -586,7 +589,7 @@ b1.a1 += 10
 ```
 
 ### 12.1 List features: slice, iteration generator, `tolist()`.
-```
+```python
 # Slice
 # syntax: [firstIndex : IdexAfterLast]
 nums = [1,2,3,4,5]
@@ -617,20 +620,20 @@ sliced = [x ; x <- src][2:5]
 ### 12.2 List comprehension / sequence generator
 Sequence generator (aka list comprehansion) is a shortened syntax (sugar) for making lists by another list or any sourec of sequence.  
 Basic syntax:  
-```
+```python
 [elem; src-expr ;...]
 ```
 Expressions in the generator is divided by `;`.   
 Generator has such segments / expressions:  
 Second expression is a loop-iterator with arrow-assignment like `for` statement.  
-```
+```python
 for x <- src
     ...
 # the same as
 [...; x <- src]
 ```
 First expression is an element of result.  
-```
+```python
 res = []
 for x <- src
     res <- x
@@ -639,7 +642,7 @@ for x <- src
 res = [x; x <- src]
 ```
 Generator can have more expressions:
-```
+```python
 [  
     elem-expr;       # 1) result element expression ;  
     assign-expr;     # 2) read element and assign to local var;  
@@ -650,11 +653,11 @@ Generator can have more expressions:
 # 3-4 are optional  
 ```
 Generator should contain at least 2 segments:  
-```
+```python
 [n; n <- values]
 ```
 Full syntax of 1 iterator:
-```
+```python
 src = [1..5]
 [   n + s;          # resulting element
     s <- src;       # reading source and assignment to local var
@@ -664,7 +667,7 @@ src = [1..5]
 >> [101, 303, 505]
 ```
 Generator can have sub-iterations, ie 2-4 is a repeatable part, like:
-```
+```python
 arr1, arr2, arr3 # source lists
 [aa + bb + c ; 
     a <- arr1; aa = a * 2; a > 5; 
@@ -672,14 +675,14 @@ arr1, arr2, arr3 # source lists
     c <- arr3; c < 10 ]
 ```
 Next gen-blocks can use values from previous.
-```
+```python
 [x ; a <- [1..3] ; b <- [10,20]; c <-[400, 500]; 
     x = a + b + c; x % 7 == 0]
 >> [511, 413]
 ```
 Result-expr can see all values from all gen-blocks.
 
-```
+```python
 # simple
 n1 = [x ** 2 ; x <- [1..10]]
 
@@ -701,7 +704,7 @@ src = [[x, y] ; x <- [5..7]; y <- [1..3]]
 nums = [ x ; sub <- src ; x <- sub]
 ```
 Too long expression can be formatted into multiple lines.
-```
+```python
 # generator: multi-expressions, multiline expression
 nums = [
     {x:a, y:b, z:c}; # element of result
@@ -720,7 +723,7 @@ nums = [
 ]
 ```
 Now strings are not a valid native source for comprehansions. But it can be resolve by `tolist()` function.
-```
+```python
 # list comprehension by converted string
 src = "ABCdef123"
 res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
@@ -732,7 +735,7 @@ The main way to split long line to shorten parts is use brackets.
 For comprehantion expressions it works with its square brackets (see examples).  
 For function call, `if`, `for` or math expressions we can use round brackets as usual.  
 Indents in multiline case makes code more readable.
-```
+```python
 # func
 val = foo(a,
     'b b b b b b b b b', bar(c) )
@@ -758,7 +761,7 @@ res = ( (a + b) * 15
 ### 14. Builtin functions:  
 Include python function as an builtin function.  
 It needs some preparation of data and returning results.  
-```
+```python
 # commot way to add function
 setNativeFunc(context, 'func_name', python_function, ResultType)
 
@@ -766,7 +769,7 @@ setNativeFunc(context, 'func_name', python_function, ResultType)
 setNativeFunc(ctx, 'print', buit_print, TypeNull)
 ```
 Upd: Builtin funcs was changed for call functions passed as argument (lambdas, atc) inside python function: added 1-st arg - Context.
-```
+```python
 # if builtin func receives function / lambda, 
 # context is needed
 
@@ -790,14 +793,15 @@ TODO: split, int2char, [int] to string, char_code
 Right-arrow is an operator for define lambda-function.  
 Arrow separates arguments and body of function.  
 
-```
+```python
 # one-arg lambda
 x -> x * 10
 
 # several args
 (x, y, z) -> (x + y) * z
 
-# high order func: func which can accept or return another (maybe lambda) function
+# high order func: func which can accept or return another 
+# (maybe lambda) function
 
 # high-order func (will use lambdas)
 func foo(ff, arg)
@@ -811,13 +815,13 @@ n1 = foo(f1, 5)
 n2 = foo( x -> 2 ** x , 5)
 ```
 We can put inline-block in brackets and use as a lambdas body.  
-```
+```python
 ff = x -> (a = 100; b = x * 10; a + (b * x))
 r = ff(3)
 >> 190
 ```
 The same as a multiline expression.  
-```
+```python
 ff = x -> (
     a = 100; # can use comments here
     b = x * 10; 
@@ -834,7 +838,7 @@ Case-block can be in the same line (not for control statements).
 Now:  
 Just simple case with value-equal has been implemented  
 Control statements (`if`, `for`, `match`, `while` ) should be started in next line (with indent).
-```
+```python
 # value|template !- expressions
 # _ !- expr # default case
 
@@ -854,7 +858,7 @@ TODO: types, struct (type, fields, constructor), collections (size, some vals), 
 
 
 ### 17. multi-assignment
-```
+```python
 # simple vals
 a,b,c = 1,"2",3.5
 
@@ -867,20 +871,19 @@ a, b, c = [1,2,3]
 
 ### 18. Ternary operator `?:`
 classic ternary oper `condition ? valIfTrue : elseVal`  
-```
+```python
 x = a < b ? 10 : 20
-
 ```
 shortened case. null-or:  `val1 ?: va2 `  
 returns val1 if not null (zero num, empty string, list or tuple); otherwize returns val2  
-```
+```python
 x = val1 ?: va2
 ```
 
 ### 19. Val-in `?>` and val-not-in `!?>` operators.  
 Boolean operators for check value or key in collection.  
 `a ?> vals` : If collection `vals` contains value `a`  
-```
+```python
 # base usage 
 val ?> collection
 
@@ -893,7 +896,7 @@ if 'a' ?> {'a':1, 'b':2} ...
 ```
 If collection doesn't have value `!?>`  
 `val !?> collection`
-```
+```python
 !(val ?> nums)
 
 # the same as
@@ -901,14 +904,14 @@ If collection doesn't have value `!?>`
 val !?> nums
 ```
 Examples:
-```
+```python
 if 5 !?> [1,2,3] ... # True
 if 'c' !?> {'a':1, 'b':2} ...
 ```
 
 ### 20. One-line block (expr; expr; expr)
-Shortened syntax for those who like long lines and hates tall columns :)  
-```
+Shortened syntax for those who like long lines and hate tall columns :)  
+```python
 a = 1; b = 2; c = 3
 a = 10 + a; b += 20; c -= 30;
 res = [a, b, c]; res <- dd; res <- e
@@ -918,7 +921,7 @@ res = [a, b, c]; res <- dd; res <- e
 There are two syntax implementations.  
 1) `%` - formatting with binary operator `<<`.  
 It's classic `%s`-formatting. Uses native `%` operator inside with %-formatting syntax of native language (python here).
-```
+```python
 'hello int:%d, float:%f, str:%s ' << (123, 12.5, 'Lalang')
 ```
 
@@ -927,7 +930,7 @@ Uses `~` unary operator before string and stringify expressions into `{}` bracke
 Includes can be simple var-name, or be more complex expression with template-modifier over `:`.  
 Any expression returning stringify value is allowed: `var`, `struct.field`, `list`/`dict` element, `function` call.  
 Be accurate with `"'``quotes``'"` inside includes.  
-```
+```python
 a, b, s = (123, 12.5, 'ABC')
 name = 'Bob'
 
@@ -957,7 +960,7 @@ Cases of import:
 - Alias for named things.
 
 Pure import, just module name
-```
+```python
 import mymodule
 mymodule.foo()
 inst = mymodule.MyType{a:1}
@@ -965,14 +968,14 @@ inst.bar()
 ```
 Import names from module after `>` over comma.  
 `module > name, name2`
-```
+```python
 import mymodule > foo, bar, MyType
 foo(123)
 bar(321)
 mt = MyType{a:1, b:2}
 ```
 Import all things from module `> *`  
-```
+```python
 # function `foo` in mymodule
 
 import mymodule > *
@@ -980,7 +983,7 @@ foo(123)
 ```
 Import with aliases.  
 `module > orig_name alias, ..`
-```
+```python
 import mymodule > foo f1, bar f2
 f1(123)
 f2(321)
@@ -990,22 +993,22 @@ f2(321)
 For `run.py` util we have 2 options how to preload modules.  
 1) Module can be imported by console arg `-i` or `--import`.  
     Modules will be preloaded into root context and `import` lines will be added to the head of code. Actual for `run -c` mode.  
-```
+```console
 $ py -m run -i "module1; module2..." -c "code"
 ```
 Example:  
 File to import: `./tests/tdata/st1.et`  
-```
-py -m run 
-    -i "tests.tdata.st1 > Point2, f1" 
-    -c "pp = Point2{x:2, y:3}; p = f1(pp.sum())" -r p
+```console
+$ py -m run \
+    -i "tests.tdata.st1 > Point2, f1" \
+    -c "pp = Point2{x:2, y:3}; p = f1(pp.sum())" -r p \
 >> [5, 10, 15]
 ```
 
 2) Auto-import modules from file-tree for CI `run file`.  
 For case with the the source file (if contains `import`), importing modules will be preloaded before execution of script automatically.  
 Root path is taken from current console position.  
-```
+```console
 $ py -m run tests/tmods.et
 test-import1: 12
 test-import2: st=B 17
@@ -1013,11 +1016,10 @@ test-import2: st=B 17
 Pathroot.  
 We can use custom root path for impoting.  
 Arg for pathroot: `-p` `--pathroot`. Useful for run script from any location.  
-```
-
-py -m run -p "tests" 
-    -i "tdata.st1 > Point2, f1"  
-    -c "pp = Point2{x:2, y:3}; a = pp.sum(); tt = (f1(a))" 
+```console
+$ py -m run -p "tests" \
+    -i "tdata.st1 > Point2, f1"  \
+    -c "pp = Point2{x:2, y:3}; a = pp.sum(); tt = (f1(a))" \
     -r tt
 ```
 
@@ -1025,7 +1027,7 @@ py -m run -p "tests"
 We can use a function not only as a predefined name for call, but also as a value, place it in collections, take it from an expression, and use.  
 Typical cases:  
 - functions in list
-```
+```golang
 func foo()
     ...
 func bar(arg)
@@ -1042,7 +1044,7 @@ ffs[0]()
 ffs[1]('arg-val')
 ```
 - function in dict
-```
+```golang
 ffd = dict
     'f' : foo,
     's' : sum
@@ -1050,7 +1052,7 @@ ffd = dict
 ffd['f']()
 ```
 - lambdas in collection
-```
+```golang
 x2 = x -> x * 2
 ffs = [x2, x -> 5000 + x]
 
@@ -1062,25 +1064,25 @@ ffd = {'f' : ((a) -> a * 11)}
 ffd['f'](2)
 ```
 - lambda in parentheses with immediate call
-```
+```golang
 res = (x -> x + 10)(5)
 ```
 - Also we can call function which has been returned from another function.
-```
+```golang
 func foo3()
     x -> x * 100
 
 res = foo()(3)
 ```
 - Use passed argument in lambda.
-```
+```golang
 func foo4(n)
     x -> x * n + 1000 
 
 res = foo4(5)(111)
 ```
 - Call passed lambda in returning lambda.
-```
+```golang
 func foo5(f)
     x -> f(x) + 5000 
 
@@ -1089,7 +1091,7 @@ res = foo5(y -> y * 3)(33)
 ### 24. Closures.  
 Lambdas can use things defined in the function where lambda was defined,  
 including another lambdas passed into parent function.
-```
+```golang
 func getLamb(n, ff)
     funVar = 100 + n
     
@@ -1105,7 +1107,7 @@ res = lamb(2)
 ```
 Experimental:  
 If def of function f1 was last expression in another function f2 than f1 will be a result of f2.  
-```
+```golang
 func getFuu(n)
     func mult(x)
         x * n
