@@ -113,6 +113,7 @@ expCaseList = [
     CaseEmpty(), CaseComment(), CaseDebug(),
     CaseUnclosedBrackets(),
     CaseImport(),
+    CaseInlineSub(),
     CaseFuncDef(), CaseReturn(), CaseMathodDef(),
     CaseBreak(), CaseContinue(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), 
@@ -167,13 +168,16 @@ def elems2expr(elems:list[Elem])->Expression:
     # print('#elems2expr:', [(n.text, Lt.name(n.type)) for n in elems])
     # print('#elems2expr/1::', ''.join([n.text for n in elems]))
     for expCase in getCases():
-        # print('#elems2expr/2:', type(expCase).__name__)
+        # print('#elems2expr/2:', type(expCase).__name__, (elems))
         if expCase.match(elems):
             # if expCase.sub():
             #     return complexExpr(expCase, elems)
             # print('Case found::', expCase.__class__.__name__, '', elemStr(elems))
             expr = makeExpr(expCase, elems)
-            dprint('#EL2EX . expr:', expr)
+            if isinstance(expr, CtrlSubExpr):
+                # print('#elems2expr/3 ', expr)
+                expr = expr.toControl()
+            # dprint('#EL2EX . expr:', expr)
             return expr
     # print('DEBUG: No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
@@ -264,6 +268,13 @@ def lex2tree(src:list[CLine]) -> Block:
         if isinstance(expr, CaseComment):
             # nothing for comment now
             continue
+        
+        if isinstance(expr, CtrlSubExpr):
+            # print('#tree 011', expr)
+            expr = expr.toControl()
+        # print('#tree 012', expr)
+            
+        
         # print('lex2tree-2 expr:', expr, '; parents:', [type(n) for n in parents], curBlock)
         # dprint(dir(expr))
         # elDep = 0 # diff nest depth - indent. for `if else` case depth > indent

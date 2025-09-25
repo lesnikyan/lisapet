@@ -14,7 +14,7 @@ oper group replacement:
 '''
 
 operPrior = ('( ) [ ] { } , . , -x !x ~x , ** , * / % , + - ,'
-' << >> , < <= > >= !> ?> !?>, == != , &, ^ , | , && , ||, ?: , : , ? , `1`, <- , ->, = += -= *= /= %= , ; , !- !: /: ')
+' << >> , < <= > >= !> ?> !?>, == != , &, ^ , | , && , ||, ?: , : , ? , `1`, <- , ->, = += -= *= /= %= , ; , /: !: , !- ')
 
 unaryOperators = '- ! ~'.split(' ')
 
@@ -100,11 +100,12 @@ class OperSplitter:
         or || for logical expressions. 
         '''
         
-        # dprint('#a51:', [n.text for n in elems])
+        # print('OperSplitter #a51:', [n.text for n in elems])
         src = elemStr(elems)
         lowesPrior = len(self.priorGroups) - 1
         obr='([{'
         cbr = ')]}'
+        backAssoc = ['/:']
         inBrs = [] # brackets which was opened from behind
         # prels('~~ OperSplitter', elems)
         lem = len(elems)
@@ -112,14 +113,30 @@ class OperSplitter:
             return -1 # empty input
         for prior in range(lowesPrior, -1, -1):
             curPos = lem
-            # dprint('prior=', prior, self.priorGroups[prior] )
-            for i in range(lem - 1, -1, -1):
-                curPos -= 1
-                # dprint('spl1:', i, elems[i].text, curPos, lem)
-                if curPos < 0:
+            obr='([{'
+            cbr = ')]}'
+            dprint('prior=', prior, self.priorGroups[prior] )
+            step = -1
+            eliter = range(lem - 1, -1, -1)
+            if self.priorGroups[prior][0] in backAssoc:
+                # means that all opaers in group have the same direction of assoc
+                # print('OperSplitter. back-assoc', self.priorGroups[prior])
+                step = 1
+                curPos = -1
+                eliter = range(0, lem)
+                cbr='([{'
+                obr = ')]}'
+            
+            # for i in range(lem - 1, -1, -1):
+            for i in eliter:
+                curPos += step
+                if curPos < 0 : # or curPos >= lem
                     return curPos # Nothing was found
                 el = elems[i]
                 etx = el.text
+                # if self.priorGroups[prior][0] in backAssoc:
+                #     print('spl1:', i, el.text, Lt.name(el.type), (el.text in self.priorGroups[prior]), ' pos =', curPos, inBrs)
+                
                 # counting brackets from tne end, closed is first
                 # dprint('ue:', i, ':', etx, '>>', '`'.join(inBrs))
                 if etx in cbr:
@@ -137,7 +154,8 @@ class OperSplitter:
                     # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
                 if len(inBrs) > 0:
                     continue
-
+                # if self.priorGroups[prior][0] in backAssoc:
+                    # print('>>>>>>>> DEBUG 1')
                 if el.type != Lt.oper:
                     continue
                 if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':

@@ -260,14 +260,15 @@ Operators with assignment
 x = 1
 x += 2
 ```
-Bitwise:   
-`&` `|` `^` `<<` `>>` `~`
+Classic c-like operators.   
+Bitwise:  
+`&` `|` `^` `<<` `>>` `~`  
 Compare:  
-`==` `!=` `>` `<` `>=` `<` `<=`
-Logical:
-`&&` `||` `!` 
-Other:  
-`?>` `!?>` `?:` `<-` `->` `!-`
+`==` `!=` `>` `<` `>=` `<` `<=`  
+Logical:  
+`&&` `||` `!`  
+Others, have specific behaviour, will be explained further:  
+`?>` `!?>` `?:` `<-` `->` `!-` `/:`  
 
 Table of priority order:
 ```
@@ -293,6 +294,7 @@ Table of priority order:
 ->
 = += -= *= /= %=  
 ; 
+/:
 !-
 ```
 
@@ -465,12 +467,12 @@ For list it appends new value; `list <- val`
 For dict it sets or updates value by key from passed tuple with `dict <- (val, key)`.  
 ```python
 # list:
-nn = []
+nn = [5]
 nn <- 12
 
-# dict:
-# 
+>> [5, 12]
 
+# dict:
 dd = {'b': 444}
 dd <- ('a', 123)
 dd <- ('b', 555)
@@ -478,9 +480,9 @@ dd <- ('b', 555)
 >> {'b': 555, 'a': 123}
 ```
 ```python
-dict <- (key, val) 
+mydict <- (key, val) 
 # the same as 
-dict[key] = val
+mydict[key] = val
 ```
 For dicts we can set multiple pairs of key-value by the dict in the right operand: `dict <- dict`
 ```python
@@ -527,18 +529,18 @@ Struct can be defined by inline syntax or block syntax.
 Block-definition is more useful for big struct or fields type-name.  
 Struct constructor uses camel-brackets, instead of no-brackets syntax in definition.  
 ```golang
-# definition.  linear
+#// definition.  linear
 struct B bb: int
 
 struct A a:int, b:B, c:string
 
-# definition. block
+#// definition. block
 struct A
     a: int
     b: B
     c: string
 
-# constructor and usage
+#// constructor and usage
 b1 = B{bb:123}
 aa = A{a:1, b:b1, c:'abc'}
 
@@ -554,21 +556,21 @@ numeric = 0, string = "", bool = false.
 Struct can have methods.  
 Method can be declared after declaration of struct type.  
 ```golang
-# def
+#// def
 struct A a1:int
 
-# variable after `func` is instance of struct
+#// variable after `func` is instance of struct
 func a:A plusA1(x:int)
     a.a1 += x
 
-# call
+#// call
 aa = A{} # default val of A.a1 is 0
 aa.plusA1(5)
 ```
 
 ### 11.2 Struct inheritance. Multiple inheritance is allowed.
 ```golang
-# parent types
+#// parent types
 struct Aaaa a1: int, a2: string
 
 func a:Aaaa f1(x:int, y:int)
@@ -576,13 +578,13 @@ func a:Aaaa f1(x:int, y:int)
 
 struct Cccc c:int
 
-# child struct, multiple inheritance
-# parent types in brackets after child type
+#// child struct, multiple inheritance
+#// parent types in brackets after child type
 
 struct B(Aaaa, Cccc) b:int
 
 b1 = B{b:1, a1:12, a2:'aa-2'}
-# call A-struct method from B-instance
+#// call A-struct method from B-instance
 b1.f1(3, 4)
 # access to A-field from B-instance
 b1.a1 += 10
@@ -599,7 +601,8 @@ sliced = nums[2:4]
 # syntax: [startVal .. endVal]
 nums = [1..5] # -->> [1,2,3,4,5]
 
-# tolist() - explicit cast to list of other sequences or generators (comprehantion, string)
+# tolist() - explicit cast to list of other sequences 
+# or generators (comprehantion, string)
 nums = tolist([1..5])
 
 # Slice following by sequence expression:
@@ -729,6 +732,12 @@ src = "ABCdef123"
 res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
 ```
 
+Here just syntax joke :)  
+But it works, it returns list of lambdas which return generators.  
+```python
+[ x -> [x .. y] ; y <- [1 .. 10]]
+```
+
 ### 13. Multiline expressions: `if`, `for`, math expr.  
 Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control statements.  
 The main way to split long line to shorten parts is use brackets.
@@ -759,26 +768,35 @@ res = ( (a + b) * 15
 ```
 
 ### 14. Builtin functions:  
-Include python function as an builtin function.  
+Include native (python) function as an builtin function.  
 It needs some preparation of data and returning results.  
 ```python
-# commot way to add function
-setNativeFunc(context, 'func_name', python_function, ResultType)
+# common way to add function by imported `setNativeFunc`
 
-# example:
+setNativeFunc(context, 'func_name', python_function, ResultType)
+```
+Example:  
+```python
+from nodes.func_expr import setNativeFunc
+
 setNativeFunc(ctx, 'print', buit_print, TypeNull)
 ```
-Upd: Builtin funcs was changed for call functions passed as argument (lambdas, atc) inside python function: added 1-st arg - Context.
+Update for function objects, lambdas.  
+Builtin funcs was changed for call functions passed as an argument (lambdas, atc) inside python function: added 1-st arg - Context.
 ```python
 # if builtin func receives function / lambda, 
 # context is needed
 
 def built_foldl(ctx:Context, start, elems, fun:Function):
-    ...
-        ...
+    r = start
+    elems = built_list(0, elems).rawVals()
+    for n in elems:
+        fun.setArgVals([r, n])
         fun.do(ctx)
-    ...
-
+        r = fun.get()
+    return r
+```
+```python
 # if context not needed just use `_`
 def built_somefunc(_, args)
     ...
@@ -790,7 +808,7 @@ Actual builtin funcs:
 TODO: split, int2char, [int] to string, char_code
 
 ### 15. Lambda functions and high-order functions. Right-arrow `->`.
-Right-arrow is an operator for define lambda-function.  
+Right-arrow is an operator for definition lambda-function.  
 Arrow separates arguments and body of function.  
 
 ```python
@@ -811,7 +829,7 @@ func foo(ff, arg)
 f1 = x -> x * 3
 n1 = foo(f1, 5)
 
-# lambda arg as local val / arg
+# lambda as a local expression in argument
 n2 = foo( x -> 2 ** x , 5)
 ```
 We can put inline-block in brackets and use as a lambdas body.  
@@ -916,6 +934,39 @@ a = 1; b = 2; c = 3
 a = 10 + a; b += 20; c -= 30;
 res = [a, b, c]; res <- dd; res <- e
 ```
+`/:` operator.  
+One-line control expressions are possible.  
+`if`
+```python
+if x < 10 /: print(x)
+```
+`for`
+```python
+for i <- names /: print(name)
+```
+Complex examples.  
+```python
+# multiexpression over `;`
+res = []
+for i <- [1..5] /: x = i * 10; y = i + 100; res <- (x + y) 
+```
+Every next inline sub after `/:` is childe of previous block.  
+So here no way for several inline sub-blocks like if-else.  
+```python
+# `if` in `for`
+for i <- [1..10] /: if i % 2 != 0 /: print(i)
+
+# the same:
+for i <- [1..10]
+    if i % 2 != 0
+        print(i)
+
+```
+But you can use parenthesis.  
+```python
+for i <- [1..10] /: (if i % 2 != 0 /: print('odd', i)) ; (if i %2 == 0 /: print('even', i))
+```
+
 
 ### 21. String formatting  
 There are two syntax implementations.  
@@ -1032,12 +1083,9 @@ func foo()
     ...
 func bar(arg)
     ...
-func inList(arg)
-    ...
 func sum(a, b)
     ...
-
-funcs = [foo, bar, inList, sum]
+ffs = [foo, bar, sum]
 
 # call them
 ffs[0]()

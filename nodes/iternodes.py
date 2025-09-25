@@ -98,27 +98,43 @@ class IterAssignExpr(Expression):
     
     def do(self, ctx:Context):
         ''' put vals into LOCAL context '''
-        dprint('IterAssignExpr.do', self.itExp, self.key, self.val)
-        if self._first_iter:
-            dprint('IterAssignExpr.do1 >>>>')
-            self._first_iter = False
-            for vv in [self.key, self.val]:
-                dprint(' first iter >>', vv)
-                if not vv or isinstance(vv, Var_):
-                    continue
-                ctx.addVar(vv)
+        # print('IterAssignExpr.do', self.itExp, self.key, self.val)
+        
         val = self.itExp.get()
-        dprint('IterAssignExpr.do2', val)
+        # print('IterAssignExpr.do2 val=', val)
         key = Var_()
         if isinstance(val, tuple):
             key, val = val
         k, v = self.key, self.val
+        # print('IterAssignExpr.do1 >>>>', k, v)
+        if self._first_iter:
+            self._first_iter = False
+            for vv in [self.key, self.val]:
+                # print(' first iter1 >>', vv)
+                if not vv or isinstance(vv, Var_):
+                    continue
+                if isinstance(vv, VarUndefined):
+                    vv = Var(vv.name, val.getType())
+                # print(' first iter2 >>', vv)
+                ctx.addVar(vv)
+        # val = self.itExp.get()
+        # print('IterAssignExpr.do2 val=', val)
+        # key = Var_()
+        # if isinstance(val, tuple):
+        #     key, val = val
+        # k, v = self.key, self.val
         # TODO: right way set values to local vars key, val
-        dprint('IterAssignExpr.do3', key, val)
-        dprint('IterAssignExpr.do4', k, v)
+        # print('IterAssignExpr.do3', key, val)
+        # print('IterAssignExpr.do4', k, v)
         if key and not isinstance(key, Var_):
-            ctx.update(k.name, key)
-        ctx.update(v.name, val)
+            kvar = Var(k.name, key.getType())
+            kvar.set(key)
+            ctx.update(k.name, kvar) 
+        vvar = Var(v.name, val.getType())
+        vvar.set(val)
+        ctx.update(v.name, vvar)
+        # print('>>> ctx:')
+        # ctx.print(forsed=1)
 
 
 class IndexIterator(NIterator):
@@ -343,7 +359,8 @@ class LeftArrowExpr(Expression):
         ''' get left, right, decide what the case here: iter or append '''
         # left expression defines type of case
         self.leftExpr.do(ctx)
-        dprint('Arr <- init1 ltArg', self.leftExpr)
+        # print('..')
+        # print('Arr <- init1 ltArg', self.leftExpr)
         ltArg = Var_()
         if isinstance(self.leftExpr, SequenceExpr):
             if self.leftExpr.getDelim() == ',':
@@ -359,8 +376,8 @@ class LeftArrowExpr(Expression):
         self.rightExpr.do(ctx) # make iter object
         rtArg = self.rightExpr.get()
 
-        dprint('Arr <-2 init ltArg', ltArg)
-        dprint('Arr <-3 init rtArg:', rtArg)
+        # print('Arr <-2 init ltArg', ltArg)
+        # dprint('Arr <-3 init rtArg:', rtArg)
         if not isinstance(ltArg, list) and isinstance(ltArg.get(), (ListVal, DictVal)):
             # append case
             self.expr = Append(ltArg.get(), rtArg)
@@ -368,14 +385,14 @@ class LeftArrowExpr(Expression):
 
         if isinstance(rtArg, Var):
             rtArg = rtArg.get() # extract collection from var
-        dprint('Arr <- init4 rtArg:', rtArg)
+        # print('Arr <- init4 rtArg:', rtArg)
         itExp = None
         if isinstance(rtArg, (Collection)):
             itExp = SrcIterator(rtArg)
         elif isinstance(rtArg.get(), (NIterator)):
             itExp = rtArg.get()
         
-        dprint('Arr<- init5 itExp:', itExp)
+        # print('Arr<- init5 itExp:', itExp)
         if isinstance(itExp, NIterator):
             # iter case
             self.expr = IterAssignExpr()

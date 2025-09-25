@@ -80,7 +80,7 @@ class CaseAssign(SubCase):
 
 
 _operPrior = ('() [] . , -x !x ~x , ** , * / % , + - ,'
-' << >> , < <= > >= !> ?> !?>, == != , &, ^ , | , && , ||, ?: , : , ? , <- , = += -= *= /= %=  ')
+' << >> , < <= > >= !> ?> !?>, == != , &, ^ , | , && , ||, ?: , : , ? , <- , = += -= *= /= %= , ; ') # , /: !:, !- 
 
 
 class CaseBinOper(SubCase):
@@ -96,7 +96,7 @@ class CaseBinOper(SubCase):
         self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
 
     def match(self, elems:list[Elem]) -> bool:
-        # print('CaseBinOper.match')
+        # print('CaseBinOper.match', type(self).__name__)
         elen = len(elems)
         inBr = 0
         if elen < 3:
@@ -442,3 +442,42 @@ class CaseListComprehension(SubCase):
         dprint('CaseListComprehension.setSub: ', base, subs)
         base.setInner(subs)
         return base
+
+
+class CaseInlineSub(SubCase):
+    ''' 1-line sub-block
+        control /:  expr 
+        
+        if x < b /: print(a)
+        for n <- nums /: x = foo(n)
+        
+        # complex:
+        if a = foo(b); a < 10 /: res <- b
+        for i <- [1..100] /: if i % 2 != 0 /: x = foo(i); res <- x; print(x)
+        x -> (for i <- nums /: res <- i * 10)
+        '''
+    
+    def match(self, elems:list[Elem]) -> bool:
+        # print('Case /: >>')
+        if len(elems) < 3:
+            return False
+        
+        if not isLex(elems[0], Lt.word, ['for','if','while']):
+            return False
+
+        main = OperSplitter().mainOper(elems)
+        return isLex(elems[main], Lt.oper, '/:')
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        ''' '''
+        # dprint('CaseInlineSub split', elems)
+        idx = OperSplitter().mainOper(elems)
+        ctrl = elems[:idx]
+        sub = elems[idx+1:]
+        exp = CtrlSubExpr()
+        return exp, [ctrl, sub]
+    
+    def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
+        ''' '''
+        # dprint('CaseInlineSub seSub', base, subs)
+        base.setArgs(subs[0], subs[1])

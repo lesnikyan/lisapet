@@ -29,6 +29,41 @@ from tests.utils import *
 class TestControl(TestCase):
 
 
+
+    def test_inline_controls(self):
+        ''' for /: if /: '''
+        code = r'''
+        res = []
+        
+        # simple for
+        for i <- [11,22,33] /: res <- i
+        
+        # with subs in ()
+        for i <- [1..10] /: x = i * 5; (if i > 5 /:  res <- x); (if y = i * 3; y < 12 /:  res <- y * 100)
+        
+        # for /: if /:
+        r2 = []
+        for n <- res /:  if n % 2 > 0 /: n += 1 ; r2 <- n + 1000
+        
+        res += r2
+        
+        print('res = ', res, r2)
+        '''
+        code = norm(code[1:])
+
+        # lang.FullPrint = 1
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx:Context = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        # rvar = ctx.get('res')
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        exp = [11, 22, 33, 300, 600, 900, 30, 35, 40, 45, 50, 1012, 1034, 1036, 1046]
+        self.assertEqual(exp, rvar.vals())
+
     def test_match_for_if_lambda(self):
         ''' TODO: match with for loop, `if` statement in the same case line '''
         code = r'''
@@ -39,6 +74,7 @@ class TestControl(TestCase):
         rrs = [] # [0 ; x <- [0..11]]
         ff = x -> x * 10
         for i <- [0..8]
+            print('i:', i)
             res = 1
             t = i + 10
             match i
