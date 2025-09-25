@@ -46,8 +46,8 @@ Content:
 16. [Match-statement](#16-match-statement)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
-19. [In `?>`, not in `!?>` operators](#19-bool-operator-val-in--and-val-not-in--operators)
-20. [Inline block `a=1; b=2`](#20-one-line-blocks-expr-expr-expr)
+19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
+20. [Inline block `a=1; b=2`](#20-one-line-block---operators)
 21. [String formatting `<<`, `~" "` operators](#21-string-formatting)
 22. [Import modules](#22-import-modules)
 23. [Function as object](#23-function-as-an-object)
@@ -927,7 +927,7 @@ if 5 !?> [1,2,3] ... # True
 if 'c' !?> {'a':1, 'b':2} ...
 ```
 
-### 20. One-line block (expr; expr; expr)
+### 20. One-line block `;` `/:` operators
 Shortened syntax for those who like long lines and hate tall columns :)  
 ```python
 a = 1; b = 2; c = 3
