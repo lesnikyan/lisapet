@@ -125,7 +125,7 @@ class OpAssign(OperCommand):
         
     def readVal(self, val):
         # valType = val.getType()
-        dprint(' (a = b) :2', val)
+        # print(' (a = b) :2', val)
         if isinstance(val, ObjectMember):
             val = val.get()
         if isinstance(val, ModuleMember):
@@ -165,7 +165,7 @@ class OpAssign(OperCommand):
             
             #get destination var
             dest = left[i].get()
-            # print('oper:', self.oper)
+            # print('oper:', self.oper, 'dest:', left[i])
             # print('Assign dest1 =', dest, '; val=', val)
 
             isNew = False
@@ -806,4 +806,29 @@ class IsInExpr(BinOper):
 
     def get(self):
         return self.res
+
+
+class CtrlSubExpr(Expression):
+    ''' expr /: expr '''
+    def __init__(self):
+        super().__init__()
+        self.control:ControlBlock = None
+        self.sub = None
+
+    def setArgs(self, left:Expression, right:Expression):
+        # print('CtrlSubExpr setArgs: ', left, right)
+        self.control = left
+        self.sub = right
+
+    def add(self, expr:Expression):
+        # print('CtrlSubExpr add:',expr)
+        self.sub.add(expr)
+
+    def toControl(self):
+        # print(' __ CtrlSubExpr.toCon1 sub:', self.sub)
+        if isinstance(self.sub, CtrlSubExpr):
+            # print(' __ CtrlSubExpr.toCon')
+            self.sub = self.sub.toControl()
+        self.control.add(self.sub)
+        return self.control
 

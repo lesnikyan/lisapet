@@ -21,8 +21,6 @@
     from(json_str): data_obj
 
 
-3.1 # DONE import x > * `instead of ` import x.* (?) thinking
-
 11. Struct constructor
     - constructor without field names: A{1, 2.0, 'abc'} - order-driven struct constructor.
     - method-constructor for struct :: thinkable.
@@ -87,12 +85,6 @@
         _
             expr4
 
-16. 1-line if/for/while: 
-    # operator variants: !-  !~  !:  ::  \:  /:  |:  :|
-    if x < 2 !: print(x)
-    for n <- nums !- print(n)
-    for x <- vals /: doit(x); y = x + 2; print(x, y)
-
 21.1 reading itertor. read values from sequence in the loop iteration like 
     val = iter(src) # src is collection or generator
         it should init iterator and save instance in first call, then call next() method in each iteration
@@ -102,11 +94,30 @@
 22.1 overload += to avoid copying original list.
     // Look too complex in current implementation where x += y is the x = (x + y)
     // may be possible if refactor to call left.do() before right.do()
+    possible solution:
+    for a, b, c <- iters(list1, list2, list3)
 
 23. Common lib location for importing (not sure we need it now).  
 
+24. TODO: Should we implement full inline block syntax?   
+Like `for a <- b /: expr :/ ; next-block`  
+Thinking
 
+>>>
+3.1 # DONE import x > * `instead of ` import x.* (?) thinking
 
+16. # DONE 1-line if/for/while: 
+    for x <- vals /: doit(x); y = x + 2; print(x, y)
+    # operator variants: !-  !~  !:  ::  \:  /:  |:  :|
+16.1 inline shortening:
+#         (control : sub-expr)
+        
+#         # if
+#         (? x < 5 : print(x))
+        
+#         # for
+#         (@ i <- [] : print(i))
+#         (@ i=0; i < 5; i += 1 : print(i))
 
 # Perspective things: 
 0. build.py - builder of *.et files with resulting binary files (serialized executable object).

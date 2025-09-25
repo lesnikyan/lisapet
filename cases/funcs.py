@@ -58,6 +58,7 @@ class CaseLambda(CaseFuncDef):
             return False
 
         main = OperSplitter().mainOper(elems)
+        dprint('CaseLamb, main=', main, ' len_elems:', len(elems))
         dprint('CaseLambda elems[main]', elems[main].text, main)
         return isLex(elems[main], Lt.oper, '->')
 

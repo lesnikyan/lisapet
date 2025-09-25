@@ -144,6 +144,7 @@ class Context(NSContext):
             src = src.upper
 
     def print(self, ind=0, forsed=0):
+        # return
         if not lang.FullPrint and not forsed:
             return
         c:Context = self

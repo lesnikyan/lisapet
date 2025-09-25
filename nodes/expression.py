@@ -67,7 +67,7 @@ class VarExpr(Expression):
     def do(self, ctx:Context):
         # dprint('VarExpr.do ctx:', ctx, 'name=', self.name)
         newVal = ctx.get(self.name)
-        # dprint('VarExpr.do:', newVal)
+        # print('VarExpr.do:', newVal)
         self.val = newVal
     
     # def set(self, val:Var):
@@ -175,6 +175,7 @@ class Block(Expression):
 
 class ControlBlock(Block, ControlExpr):
     ''''''
+
 
 class LoopBlock(ControlBlock):
     ''' '''

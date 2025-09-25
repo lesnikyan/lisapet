@@ -130,8 +130,8 @@ class CaseExpr(ControlBlock):
 
     def matches(self, val:Var):
         # simple equal value
-        dprint('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
-        if self.expect.get().get() == val.get():
+        # print('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
+        if self.expect.get().getVal() == val.getVal():
             return True
 
         # type case
@@ -193,6 +193,7 @@ class MatchExpr(ControlBlock):
         self.match = exp
     
     def do(self, ctx:Context):
+        # print('Match.do1')
         self.match.do(ctx)
         mctx = Context(ctx)
         done = self.doCases(mctx)
@@ -200,9 +201,10 @@ class MatchExpr(ControlBlock):
             self.defaultCase.do(mctx)
 
     def doCases(self, mctx:Context):
+        mval = self.match.get()
+        # print('Math. mval', mval)
         for cs in self.cases:
             cs.doExp(mctx)
-            mval = self.match.get()
             if cs.matches(mval):
                 cs.do(mctx)
                 self.lastVal = cs.get()
@@ -230,9 +232,11 @@ class LoopIterExpr(LoopBlock):
     # def setIter(self, iter:IterAssignExpr):
     def setIter(self, iter:LeftArrowExpr):
         # raise EvalErr('LoopIterExpr setIter: ', iter)
+        dprint('LoopExpr.setIter', iter)
         self._origIter = iter
 
     def add(self, exp:Expression):
+        dprint('LoopExpr.add', exp)
         self.block.add(exp)
 
     def do(self, ctx:Context):
