@@ -6,7 +6,8 @@ Eval parsed lexems
 from vars import *
 from context import Context, RootContext
 from nodes.func_expr import setNativeFunc
-from nodes.builttins import *
+from nodes.builtins import *
+import libs.str as lstr
 
 
 def rootContext(ctx:Context = None)->RootContext:
@@ -21,7 +22,9 @@ def rootContext(ctx:Context = None)->RootContext:
     setNativeFunc(ctx, 'toint', built_int, TypeInt)
     setNativeFunc(ctx, 'tolist', built_list, TypeList)
     setNativeFunc(ctx, 'foldl', built_foldl, TypeAny)
-    setNativeFunc(ctx, 'join', built_join, TypeAny)
+    setNativeFunc(ctx, 'join', lstr.join, TypeString)
+    setNativeFunc(ctx, 'split', lstr.split, TypeList)
+    setNativeFunc(ctx, 'replace', lstr.replace, TypeList)
     
     constants = {
     'true': (TypeBool, Val(True, TypeBool())),

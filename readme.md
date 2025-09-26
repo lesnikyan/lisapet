@@ -803,9 +803,11 @@ def built_somefunc(_, args)
 ```
 
 Actual builtin funcs:  
-`print`, `len`, `iter`, `type`, `toint`,  
-`tolist`, `foldl`, `join`  
-TODO: split, int2char, [int] to string, char_code
+`print`, `iter`, `type`, `tolist`, `toint`  
+list: `len`, `foldl`,  
+strings: `join`, `split`, `replace`  
+
+TODO: int2char, [int] to string, char_code  
 
 ### 15. Lambda functions and high-order functions. Right-arrow `->`.
 Right-arrow is an operator for definition lambda-function.  

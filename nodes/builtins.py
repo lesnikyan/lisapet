@@ -102,16 +102,6 @@ def built_foldl(ctx:Context, start, elems, fun:Function):
     return r
 
 
-def built_join(_, vals, sep=None) -> str:
-    elems = built_list(0, vals).vals()
-    if sep is None:
-        sep = ""
-    else:
-        sep = str(sep.getVal())
-    res = sep.join([n for n in elems])
-    return Val(res, TypeString)
-
-
 # TODO:
 '''
 str_split # split string by substring
