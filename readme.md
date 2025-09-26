@@ -805,7 +805,7 @@ def built_somefunc(_, args)
 Actual builtin funcs:  
 `print`, `iter`, `type`, `tolist`, `toint`  
 list: `len`, `foldl`,  
-strings: `join`, `split`, `replace`  
+strings: `join(srcList, delim)`, `split(src, sep)`, `replace(src, old, new)`  
 
 TODO: int2char, [int] to string, char_code  
 
