@@ -86,6 +86,18 @@ class PopupContinue(Val):
     def __init__(self):
         super().__init__(None, TypeNoval())
 
+# Objects
+
+class ObjectElem(Val):
+
+    def set(self, val:Var):
+        pass
+
+    def get(self):
+        pass
+
+    def getVal(self):
+        pass
 
 # Collections
 
@@ -120,7 +132,7 @@ class ListVal(Collection):
     
     def addVal(self, val:Val):
         # not sure, we need whole Var or just internal value?
-        # print('ListVal.addVal:', val)
+        # print('List_Val.addVal:', val)
         self.elems.append(val)
     
     def addMany(self, vals:'ListVal'):
@@ -130,7 +142,7 @@ class ListVal(Collection):
     
     def setVal(self, key:Val, val:Val):
         i = key.getVal()
-        # dprint('ListVar.setVal', i, val, 'Len=', len(self.elems), i < len(self.elems), self.elems)
+        # print('List_Var.setVal', i, val, 'Len=', len(self.elems), i < len(self.elems), self.elems)
         if i >= len(self.elems):
             raise EvalErr('List out of range by index %d ' % i)
         self.elems[i] = val
@@ -164,6 +176,7 @@ class ListVal(Collection):
 
     def vals(self):
         return [(n.get()) for n in self.elems]
+        # return [(n.get() if not isinstance(n, Collection) else n.vals()) for n in self.elems]
 
     def rawVals(self):
         return [n for n in self.elems]
@@ -319,8 +332,11 @@ def valFrom(src:Var|Val):
 
 def var2val(var:Var|Val):
     # print('var2val 1 :', var, type(var))
+    if isinstance(var, (ObjectElem)):
+        var = var.get()
     if isinstance(var, (Val, Collection)):
         return var
+    # print('var2val 2 :', var)
     # print('var2val 2 :', var, 'vv:', var.val)
     tp = var.getType()
     val = var.getVal()

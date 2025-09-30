@@ -129,6 +129,11 @@ class TypeStruct(TypeContainer):
     name = 'struct'
     defVal = None
 
+    def setConstr(self, cons:FuncInst):
+        pass
+    def getConstr(self):
+        pass
+
     def addMethod(self, name, func:FuncInst):
         pass
     

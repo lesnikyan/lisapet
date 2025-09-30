@@ -32,6 +32,16 @@ class StructDef(TypeStruct):
         if fields:
             self.__fillData(fields)
         self.__typeMethods:dict[str,FuncInst] = {}
+        self.__constr = None
+
+    def initConstr(self):
+        self.__constr = StructDefConstrFunc(self)
+
+    def setConstr(self, cons:Function):
+        self.__constr = cons
+    
+    def getConstr(self):
+        return self.__constr
 
     def addParent(self, superType: TypeStruct):
         dprint('StructDef. addParent1 :', superType)
@@ -75,9 +85,7 @@ class StructDef(TypeStruct):
 
     def add(self, f:Var):
         tp:VType = f.getType()
-        # if tp.name not in self.types:
-        dprint('StructDef.add ## ', f.__class__, ' || ', tp)
-        dprint('StructDef.add ## ', f, tp)
+        # dprint('StructDef.add ## ', f, tp)
         self.fields.append(f.name)
         self.types[f.name] = tp
 
@@ -91,6 +99,31 @@ class StructDef(TypeStruct):
     #     return 'type struct %s{}' % self.name
 
 
+class StructDefConstrFunc(Function):
+    ''' TypeName(args) '''
+    
+    def __init__(self, stype:StructDef):
+        super().__init__(stype.getName()+'')
+        self.stype = stype
+        self.block = Block()
+        fields = stype.getFields()
+        for fname in fields:
+            self.addArg(Var(fname, stype.types[fname]))
+
+    def do(self, ctx: Context):
+        self.res = None
+        self.block.storeRes = True # save last expr value
+
+        inst = StructInstance(self.stype)
+        fields = self.stype.getFields()
+        vals = []
+        vals = [ var2val(a) for a in self.callArgs]
+        for i in range(len(fields)):
+            inst.set(fields[i], self.argVars[i])
+        if len(vals) > 0:
+            inst.setVals(vals)
+        inst.initDefVals()
+        self.res = inst
 
 class DefaultStruct(StructDef):
     ''' type of anonymous struct
@@ -106,7 +139,7 @@ class StructInstance(Val, NSContext):
         super().__init__(None, stype)
         dprint('StructInstance.__init__', '>>', stype)
         self.vtype:StructDef = stype
-        self.data:dict[str, Var] = {}
+        self.data:dict[str, Val] = {}
         self.supers:dict = {}
         self.initSuper()
 
@@ -138,6 +171,7 @@ class StructInstance(Val, NSContext):
             # dprint('StructInstance.DEBUG::: getting enmpty fieldname')
             return '@struct <debug!> / ' + str(self) # debug
         if fname in self.vtype.fields:
+            # print('\n  == Strc.get', self.data[fname], type(self.data[fname]))
             return self.data[fname]
         if self.supers:
             for _, sup in self.supers.items():
@@ -151,17 +185,15 @@ class StructInstance(Val, NSContext):
         dprint('st.find', fname, ':', self.vtype.fields)
         return self.data[fname]
 
-    def setVals(self, vals:list[Var]):
+    def setVals(self, vals:list[Val]):
         if len(vals) != len(self.vtype.fields):
             raise EvalErr(f'Incorrect number of values in constructor of struct {self.vtype.name}')
         for i in range(len(vals)):
             self.set(self.vtype.fields[i], vals[i])
 
-    def set(self, fname:str, val:Var):
+    def set(self, fname:str, val:Val):
         # check type
-        dprint('StructInstance.set:', fname, val)
-        # dprint('@3>> ', dir(self))
-        # dprint('StructInstance.set type:', self.vtype, )
+        # print('StructInstance.set:', fname, val)
         dprint('StructInstance.set types:', self.vtype.name, '>', self.vtype.types)
         if fname in self.vtype.fields:
             self.checkType(fname, val)
@@ -174,13 +206,13 @@ class StructInstance(Val, NSContext):
                 return sup.set(fname, val)
         raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
 
-    def checkType(self, fname, val:Var):
+    def checkType(self, fname, val:Val):
         valType = val.getType()
         ftype = self.vtype.types[fname] # class inherited of VType or inst of StructInstance
         fclass = ftype.__class__
-        dprint('Type: name / mtypes', self.vtype.name, self.vtype.types)
-        # dprint('Type Check ???1:', valType, '<?>', ftype)
-        # dprint('Type Check ???2:', valType.__class__, '<?>', fclass,' if:', isinstance(valType, fclass))
+        # print('Type: name / mtypes', self.vtype.name, self.vtype.types)
+        # print('Type Check ???1:', valType, val)
+        # print('Type Check ???2:', valType.__class__, '<?>', fclass,' if:', isinstance(valType, fclass))
         # dprint('Type struct???3:', isinstance(valType, StructInstance))
         if ftype == TypeAny:
             return # ok
@@ -190,6 +222,7 @@ class StructInstance(Val, NSContext):
             dprint('!! Not struct!', fclass)
             if not isinstance(valType, fclass):
                 # TODO: add compatibility check
+                # print('Str.checkType:', f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
                 raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
             return
         # if struct
@@ -233,7 +266,7 @@ class StructDefExpr(DefinitionExpr):
             fexp.do(ctx)
             field = fexp.get()
             fname, ftype = '', TypeAny
-            ctx.print()
+            # ctx.print()
             if isinstance(field, tuple) and len(field) == 2:
                 fn, ft = field
                 # dprint('@2>>', field)
@@ -256,6 +289,7 @@ class StructDefExpr(DefinitionExpr):
                 raise EvalErr('Supertype `%s` of type `%s` wasn`t found.' % (sname, self.typeName))
             strType.addParent(supType.get())
         # register new type
+        strType.initConstr()
         typeVal = TypeVal(strType)
         ctx.addType(typeVal)
 
@@ -278,7 +312,7 @@ class StructArgPair(Expression):
         self.res = None
         self.valExpr.do(ctx)
         val = self.valExpr.get()
-        dprint('StructArgPair.do1', self.name, val)
+        # print('StructArgPair.do1', self.name, val)
         self.res = self.name, val
     
     def get(self):
@@ -302,7 +336,7 @@ class StructConstr(Expression):
     def do(self, ctx:Context):
         self.inst = None
         stype = ctx.getType(self.typeName)
-        dprint('StructConstr.do1 >> ', stype)
+        # print('StructConstr.do1 >> ', stype)
         inst = StructInstance(stype.get())
         vals = []
         for fexp in self.fieldExp:
@@ -310,18 +344,19 @@ class StructConstr(Expression):
             # if val only
             # if pair name:val
             expRes = fexp.get()
-            dprint('StructConstr.do res:', expRes[0], expRes[1])
+            # print('StructConstr.do res:', expRes[0], expRes[1])
             # fname, val = '', None
-            if isinstance(expRes, Var):
-                val = expRes
-                vals.append(val)
-                continue
+            # if isinstance(expRes, Var):
+            #     val = expRes
+            #     vals.append(val)
+            #     continue
                 # fieldName by order
             if isinstance(expRes, tuple) and len(expRes) == 2:
                 fname, val = expRes
                 # fname = fn
                 # val = fv
-                dprint('Strc.do >> ', expRes, fname, val)
+                # print('Strc.do >> ', expRes, fname, val)
+                var2val(val)
                 inst.set(fname, val)
             else:
                 raise EvalErr('Struct def error: fiels expression returns incorrect result: %s ' % expRes)

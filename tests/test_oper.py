@@ -519,7 +519,7 @@ class TestOper(TestCase):
                 return vv
             
             ctx.addSet({k: tvar(k, v) for k, v in mc[1].items()})
-            ctx.print()
+            # ctx.print()
             ex.do(ctx)
             dprint('#t-CB1:', ex.get().get())
         

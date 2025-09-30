@@ -121,7 +121,7 @@ class TestLang(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        ctx.print()
+        # ctx.print()
         res = ctx.get('res')
         dprint('tt>', res.getVal())
         exp = 100
@@ -147,7 +147,7 @@ class TestLang(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        ctx.print()
+        # ctx.print()
         res = ctx.get('res')
         dprint('tt>', res.getVal())
         exp = 1000
@@ -174,7 +174,7 @@ class TestLang(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        ctx.print()
+        # ctx.print()
         res = ctx.get('res')
         dprint('tt>', res.getVal())
         exp = 100
@@ -197,7 +197,7 @@ class TestLang(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
-        ctx.print()
+        # ctx.print()
         res = ctx.get('res').get()
         dprint('tt>', res.vals())
         exp = {'a': 1, 'b': 2}
