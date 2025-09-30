@@ -133,7 +133,7 @@ class OpAssign(OperCommand):
         dprint(' (a = b) :3', val)
         if isinstance(val, Var):
             val = val.get()
-        dprint(' (a = b) :4', val)
+        # dprint(' (a = b) :4', val)
         return val
 
     def do(self, ctx:Context):
@@ -552,7 +552,7 @@ class MultiOper(OperCommand):
         return self.root.get()
 
 
-class ObjectMember(Val):
+class ObjectMember(ObjectElem):
     ''' '''
     def __init__(self, obj, member):
         super().__init__(None, TypeAccess)
@@ -573,7 +573,7 @@ class ObjectMember(Val):
         dprint('self.member, get :: ',self.object, type(self.object), '::', self.member)
         val = self.object.get(self.member)
         
-        dprint('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
+        # print('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
         if isinstance(val, (StructInstance, Val)):
             # dprint('membrr get struct')
             return val
@@ -632,7 +632,7 @@ class OperDot(BinOper):
         dprint('   >> OperDot.set', self.objExp, self.membExpr)
 
     def do(self, ctx:NSContext):
-        dprint('OperDot.do0', self.objExp, '; type=', type(self.objExp), ' :: ', self.membExpr)
+        # print('OperDot.do0', self.objExp, '; type=', type(self.objExp), ' :: ', self.membExpr)
         self.objExp.do(ctx)
         objVar = self.objExp.get()
         dprint('OperDot.do00', objVar, '; type=', type(objVar))
@@ -649,7 +649,7 @@ class OperDot(BinOper):
             if isinstance(self.membExpr, StructConstr):
                 self.membExpr.do(objVar)
                 self.val = self.membExpr.get()
-                dprint('OperDot.do mod method res =', self.val)
+                # print('OperDot.do mod method res =', self.val)
                 
             return
             
@@ -659,7 +659,7 @@ class OperDot(BinOper):
         
         if isinstance(inst, StructInstance) and isinstance(self.membExpr, FuncCallExpr):
             self.membExpr = MethodCallExpr(self.membExpr)
-        dprint('OperDot.do1 inst:', inst, 'memExp:', self.membExpr)
+        # print('OperDot.do-001 inst:', inst, 'memExp:', self.membExpr)
         # self.membExpr.do(inst)
         name = ''
         
@@ -685,7 +685,7 @@ class OperDot(BinOper):
 
         # dprint('OperDot.do2 <inst =', inst, 'name=', name ,'>')
         self.val = ObjectMember(inst, name)
-        dprint('OperDot.do5 fin field =', self.val)
+        # print('OperDot.do5 fin field =', self.val)
 
     def get(self):
         return self.val

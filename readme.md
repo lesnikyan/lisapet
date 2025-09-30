@@ -34,9 +34,10 @@ Content:
     3. [plus for lists `[] + []`](#93-list-plus---)
 10. Struct: 
     1. [Definition, constructor, fields](#10-struct)
-11. Struct OOP:
+11. Struct, OOP:
     1. [Struct: methods](#111-struct-method)
     2. [Struct: inheritance](#112-struct-inheritance-multiple-inheritance-is-allowed)
+    2. [Struct: Callable constructor](#113-constructor-function-typename)
 12. List features:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
     1. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
@@ -590,6 +591,42 @@ b1.f1(3, 4)
 b1.a1 += 10
 ```
 
+### 11.3 Constructor-function `TypeName()`.  
+We can use function-like constructor instead of direct set of name:values in the curvy brackets.  
+There are two cases of such way.  
+1. Magic default constructor. It takes passed arguments in the amount of fields that struct type has, and makes instance using passed args in the same order as struct was defined. We have nothing to do before usage, just define the struct type.  
+```golang
+
+struct User
+    name: string
+    age: int
+
+user = User('Olgerd', 25)
+print(user.name)
+
+>> Olgerd
+
+```
+2. User-defined constructor. It's a regular function with the same name as struct type has. It should return the instance of the struct.  
+Usage in code the same as a magic default.  
+```golang
+
+struct User
+    name: string
+    age: int
+
+func User(uname:string, age:float)
+    valName = ~"mr.{uname}"
+    User{name: valName, age: toint(age)}
+
+user = User('Olgerd', 18 + 3 / 2)
+print(user.name, user.age)
+
+>> mr.Olgerd 19
+
+```
+
+
 ### 12.1 List features: slice, iteration generator, `tolist()`.
 ```python
 # Slice
@@ -803,9 +840,11 @@ def built_somefunc(_, args)
 ```
 
 Actual builtin funcs:  
-`print`, `len`, `iter`, `type`, `toint`,  
-`tolist`, `foldl`, `join`  
-TODO: split, int2char, [int] to string, char_code
+`print`, `iter`, `type`, `tolist`, `toint`  
+list: `len`, `foldl`,  
+strings: `join(srcList, delim)`, `split(src, sep)`, `replace(src, old, new)`  
+
+TODO: int2char, [int] to string, char_code  
 
 ### 15. Lambda functions and high-order functions. Right-arrow `->`.
 Right-arrow is an operator for definition lambda-function.  

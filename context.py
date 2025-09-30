@@ -54,14 +54,18 @@ class Context(NSContext):
         self.types[name] = tp
 
     def getType(self, name)->VType:
-        src = self
-        while True:
-            # dprint('ctx cur types:', src.types.keys())
-            if name in src.types:
-                return src.types[name]
-            if src.upper == None:
-                raise EvalErr('Cant find var|type name `%s` in current context' % name)
-            src = src.upper
+        return self.find(name)
+        # src = self
+        # print(' -- getType:', name)
+        # # self.print(forsed=1)
+        # while True:
+        #     print('ctx cur types:', src.types.keys())
+        #     if name in src.types:
+        #         print('--- > type',src.types[name])
+        #         return src.types[name]
+        #     if src.upper == None:
+        #         raise EvalErr('Cant find var|type name `%s` in current context' % name)
+        #     src = src.upper
 
     def addSet(self, vars:Var|dict[str,Var]):
         if not isinstance(vars, dict):
@@ -131,11 +135,13 @@ class Context(NSContext):
 
     def find(self, name):
         src = self
-        dprint('#Ctx-get0,:', name)
+        # print('#Ctx.find,:', name)
         while src is not None:
+            # print('ctx cur types:', src.types.keys())
             res = src.findIn(name)
-            dprint('ctx.find res=', res)
+            # print('Ctx.find res=', res)
             if res:
+                # print('Ctx.find : Found!')
                 return res
             if src.upper is None:
                 # raise EvalErr('Can`t find var|type name `%s` in current context' % name)
@@ -227,6 +233,7 @@ class ModuleContext(Context):
         if name in self.aliases:
             name = self.aliases[name]
         res = super().findIn(name)
+        # print('findIn ## 1:', res)
         if res is not None:
             return res
         # find module
@@ -239,11 +246,12 @@ class ModuleContext(Context):
                 dprint('has', name, ' in ', k)
                 return mbox.get(name)
         # Nothing was found
+        # print('findIn ## 2:', res)
         return None
 
     def getType(self, name):
-        tt = self.findIn(name)
-        dprint('GetType, in: ', tt)
+        tt = self.find(name)
+        # print('Mctx.GetType : ', tt)
         if tt:
             return tt
         # raise EvalErr('ModCtx getType')

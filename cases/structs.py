@@ -143,7 +143,7 @@ class CaseStructConstr(SubCase):
 
 class CaseStructBlockConstr(SubCase):
     ''' 
-        inline struct creation
+        block struct creation
         Example:
             varName = TypeName
                 field: val

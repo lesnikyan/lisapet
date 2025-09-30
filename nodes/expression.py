@@ -138,7 +138,7 @@ class Block(Expression):
         lastInd = 0
         # self.ctx.upper = ctx
         # print('!! Block.do', self.storeRes)
-        ctx.print()
+        # ctx.print()
         self.lastVal = None
         for i in range(elen):
             # dprint('!! Block.iter ', i, self.subs[i])
@@ -319,7 +319,7 @@ class TypedVarExpr(VarExpr):
         self.right = right
         self.val = None
 
-    def do(self, ctx):
+    def do(self, ctx:Context):
         self.right.do(ctx)
         tpv = self.right.get()
         name = self.left.get().name
@@ -327,12 +327,13 @@ class TypedVarExpr(VarExpr):
         # dprint('TypedVarExpr.ctx print:')
         # ctx.print()
         tpInst = ctx.getType(tpName)
+        # print('TypedVarExpr.do/-1 ', ctx, '>', tpName, ':', tpInst)
         tpVal = TypeAny()
         if not tpInst:
             tpVal = Undefined()
         else:
             tpVal = tpInst.get()
-        dprint('TypedVarExpr.do1 ', name, 'tp:', tpv, '{%s: %s}' % (tpv.val, tpv.vtype), tpName)
+        # print('TypedVarExpr.do1 ', name, 'tp:', tpv, '{%s: %s}' % (tpv.val, tpv.vtype), tpName)
         
         self.val = Var(name, tpVal, strict=True)
         ctx.addVar(self.val)

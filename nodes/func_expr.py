@@ -58,14 +58,14 @@ class Function(FuncInst):
             arg = args[i]
             aname = self.argVars[i].getName()
             self.checkArgType(aname, arg)
-            dprint('FN, self.argVars[i]: ', self.argVars[i])
+            # print('FN (%s), self.argVars[i]: ' % self._name, self.argVars[i], ' /:/', arg)
             atype = self.argVars[i].getType()
             argVar = Var(aname, atype)
             argVar.set(arg)
             dprint('FN setArgVals-4: ', atype, aname)
             if isinstance(atype, TypeAny):
                 argVar.setType(arg.getType())
-            dprint('set arg8  >> ', self.argVars[i], 'val:', arg)
+            # print('set arg8  >> ', self.argVars[i], 'val:', arg)
             # arg.name = self.argVars[i].name
             self.callArgs.append(argVar)
             # self.argVars[i].set(arg.get())
@@ -122,24 +122,27 @@ class FuncCallExpr(Expression):
 
     def do(self, ctx: Context):
         # inne rcontext
-        # print('FuncCallExpr.do')
         args:list[Var] = []
         # print(f'Function `{self.name}`:', self.func)
-        ctx.print()
         self.funcExpr.do(ctx)
         func = self.funcExpr.get()
         # unpack function from var
-        dprint('#1# func-call do00: ', self.name, 'F:', func)
+        # print('#1# func-call do00: ', self.name, 'F:', func)
         if isinstance(func, Var):
             func = func.get()
+        if isinstance(func, TypeVal):
+            tVal = func.getVal()
+            if isinstance(tVal, TypeStruct):
+                func = tVal.getConstr()
+        # print('#1# func-call do01: ', self.name, 'F:', func)
         self.func = func
         if isinstance(self.func, VarUndefined):
             raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
-        # print('#1# func-call do1: ', self.name, 'F:', self.func, 'line:', self.src)
+        # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
         for exp in self.argExpr:
             # dprint('#1# func-call do2 exp=: ', exp)
             exp.do(ctx)
-            dprint('func-call do2:', exp, exp.get())
+            # print('func-call do2:', exp, exp.get())
             arg = exp.get()
             if isinstance(arg, Var):
                 arg = arg.get()
@@ -177,7 +180,8 @@ class FuncDefExpr(ObjDefExpr, Block):
         # dprint('addArg1 :', arg, type(arg))
         if isinstance(arg, ServPairExpr):
             arg = arg.getTypedVar()
-        dprint('addArg2 :', arg, type(arg))
+            # print('FDef.addArg11 :', arg, arg.right)
+        # print('FDef.addArg2 :', arg, type(arg))
         self.argVars.append(arg)
 
     def add(self, exp:Expression):
@@ -190,16 +194,24 @@ class FuncDefExpr(ObjDefExpr, Block):
         return func
 
     def regFunc(self, ctx:Context, func:FuncInst):
+        fname = func.getName()
+        # check if name is type
+        strtype:TypeStruct = ctx.getType(fname)
+        # print('regFunc1', fname, strtype)
+        if isinstance(strtype, TypeVal):
+            strtype = strtype.getVal()
+        if strtype is not None and isinstance(strtype, TypeStruct):
+            strtype.setConstr(func)
+            return
         ctx.addFunc(func)
 
     def do(self, ctx:Context):
         ''''''
-        dprint('FuncDefExpr.do 1:', self.name, 'argExps:', self.argVars)
         func = self.doFunc(ctx)
+        # print('FuncDefExpr.do 1:', self.name, 'argExps:', self.argVars)
         for arg in self.argVars:
             if isinstance(arg, TypedVarExpr):
                 arg.do(ctx)
-            dprint('FuncDefExpr.do 2:', arg, arg.get())
             func.addArg(arg.get())
         func.block = Block()
         # build inner block of function

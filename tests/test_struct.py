@@ -27,9 +27,115 @@ class C(A,B):
     pass
 
 
-class TestStruts(TestCase):
+class TestStructs(TestCase):
 
 
+
+    def test_struct_constr_as_func_default(self):
+        ''' '''
+        code = r'''
+        
+        res = []
+        
+        # simple type, no func-constr
+        struct A a:int
+        aaa = A{a:45}
+        res <- aaa.a
+        
+        # def Cube
+        struct Cube
+            size: float
+            material: string
+            weight: float
+        
+        # Cube method
+        func cb:Cube resize(k: float)
+            cb.size *= k
+            cb.weight *= k ** 3
+        
+        # inst1, default constr is used
+        c1 = Cube(10.0, 'wood', 0.4)
+        res <- [c1.size, c1.material, c1.weight]
+        
+        # inst2
+        c2 = Cube(1, 'steel', 1.)
+        c2.resize(1.2)
+        res <- [c2.size, c2.material, c2.weight]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        def flcut(v):
+            return int(v * 10 ** 6) / 10 ** 6
+        rvar = ctx.get('res').get()
+        vals = rvar.vals()
+        vals[2][2] = flcut(vals[2][2])
+        exp = [45, [10.0, 'wood', 0.4], [1.2, 'steel', 1.727999]]
+        self.assertEqual(exp, vals)
+
+    def test_struct_constr_as_user_func(self):
+        ''' '''
+        code = r'''
+        
+        res = []
+        
+        struct A a:int
+        aaa = A{a:45}
+        res <- aaa.a
+        
+        # def Cube
+        struct Cube
+            size: float
+            material: string
+            weight: float
+        
+        # Cube method
+        func cb:Cube resize(k: float)
+            cb.size *= k
+            cb.weight *= k ** 3
+        
+        # user-defined constructor of Cube type
+        func Cube(s:float, m:string, w:float)
+            matt = 'cube_materail_' + m
+            Cube{size:s, material:matt, weight:w}
+        
+        # inst1, user-defined constructor is used
+        c1 = Cube(10.0, 'wood', 0.4)
+        c1.size = 12.
+        
+        res <- [c1.size, c1.material, c1.weight]
+        
+        # inst2
+        c2 = Cube(1, 'steel', 1.)
+        c2.resize(1.2)
+        res <- [c2.size, c2.material, c2.weight]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+
+        def flcut(v):
+            return int(v * 10 ** 6) / 10 ** 6
+
+        rvar = ctx.get('res').get()
+        vals = rvar.vals()
+        vals[2][2] = flcut(vals[2][2])
+        exp = [45, [12.0, 'cube_materail_wood', 0.4], [1.2, 'cube_materail_steel', 1.727999]]
+        self.assertEqual(exp, vals)
 
     def test_struct_inheritance(self):
         ''' '''
@@ -52,7 +158,7 @@ class TestStruts(TestCase):
         
         res = b2.a1
         res2 = b1.a2
-        print('res = ', res, res2)
+        # print('res = ', res, res2)
         '''
         _='''
         
@@ -390,12 +496,10 @@ class TestStruts(TestCase):
     def test_struct_inline(self):
         code='''
         struct User name, age, sex, phone
-        user = User{name:'Catod', age:25, sex:male, phone:'123-45-67'}
+        user = User{name:'Catod', age:25, sex:'male', phone:'123-45-67'}
+        res = [user.name, user.age, user.sex, user.phone]
         print('phone:', user.phone)
-        '''
-        tt = '''
-        user = User{name:'Catod', sex:male}
-        user = User{'Catod', 25, male, '123-45-67'}
+
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -404,7 +508,13 @@ class TestStruts(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         rtype = ctx.getType('User')
-        dprint('# TT >>>', rtype)
+        print('# TT >>>', rtype)
+        self.assertEqual('User', rtype.get().name)
+        
+        rvar = ctx.get('res').get()
+        exp = ['Catod', 25, 'male', '123-45-67']
+        self.assertEqual(exp, rvar.vals())
+
 
     def test_struct_field_type(self):
         type1 = StructDef('Test1')

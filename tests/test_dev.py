@@ -29,19 +29,6 @@ class TestDev(TestCase):
 
 
     # TODO: type of struct field: list, dict, bool, any
-    
-
-    '''
-    # pseudo-break
-    func br(vals, cond)
-        for i <- vals
-            if cond(i)
-                return i
-    con = x -> x > 4
-    vals = [1..10]
-    r5 = br(vals, con)
-    print('r5', r5)
-    '''
 
     '''
         # user defined types
