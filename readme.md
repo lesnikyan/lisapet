@@ -33,14 +33,14 @@ Content:
     2. [deletion operator `data - [key]`](#92-minus-key---key-delete-operator)
     3. [plus for lists `[] + []`](#93-list-plus---)
 10. Struct: 
-    1. [Definition, constructor, fields](#10-struct)
+    1. [Definition, constructor, fields](#101-struct)
+    2. [Callable constructor](#102-constructor-function-typename)
 11. Struct, OOP:
-    1. [Struct: methods](#111-struct-method)
-    2. [Struct: inheritance](#112-struct-inheritance-multiple-inheritance-is-allowed)
-    2. [Struct: Callable constructor](#113-constructor-function-typename)
+    1. [Methods](#111-struct-method)
+    2. [Inheritance](#112-struct-inheritance-multiple-inheritance-is-allowed)
 12. List features:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
-    1. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
+    2. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
 13. [Multiline expressions](#13-multiline-expressions-if-for-math-expr)
 14. [Builtin/native functions (print, iter,..)](#14-builtin-functions)
 15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
@@ -522,7 +522,7 @@ nums += [7,8,9]
 >> [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
 
-### 10. Struct.  
+### 10.1 Struct.  
 Struct is a basic complex datatype.  
 Struct can have inner fields aka inner variable with name and type.  
 Keyword for declaration struct as custom type is a `struct`.  
@@ -551,6 +551,42 @@ r2 = aa.b.b1
 ```
 Struct fields have default values.
 numeric = 0, string = "", bool = false.
+
+
+### 10.2 Constructor-function `TypeName()`.  
+We can use function-like constructor instead of direct set of name:values in the curvy brackets.  
+There are two cases of such way.  
+1. Magic default constructor. It takes passed arguments in the amount of fields that struct type has, and makes instance using passed args in the same order as struct was defined. We have nothing to do before usage, just define the struct type.  
+```golang
+
+struct User
+    name: string
+    age: int
+
+user = User('Olgerd', 25)
+print(user.name)
+
+>> Olgerd
+
+```
+2. User-defined constructor. It's a regular function with the same name as struct type has. It should return the instance of the struct.  
+Usage in code the same as a magic default.  
+```golang
+
+struct User
+    name: string
+    age: int
+
+func User(uname:string, age:float)
+    valName = ~"mr.{uname}"
+    User{name: valName, age: toint(age)}
+
+user = User('Olgerd', 18 + 3 / 2)
+print(user.name, user.age)
+
+>> mr.Olgerd 19
+
+```
 
 ### 11.1 Struct method.  
 
@@ -589,41 +625,6 @@ b1 = B{b:1, a1:12, a2:'aa-2'}
 b1.f1(3, 4)
 # access to A-field from B-instance
 b1.a1 += 10
-```
-
-### 11.3 Constructor-function `TypeName()`.  
-We can use function-like constructor instead of direct set of name:values in the curvy brackets.  
-There are two cases of such way.  
-1. Magic default constructor. It takes passed arguments in the amount of fields that struct type has, and makes instance using passed args in the same order as struct was defined. We have nothing to do before usage, just define the struct type.  
-```golang
-
-struct User
-    name: string
-    age: int
-
-user = User('Olgerd', 25)
-print(user.name)
-
->> Olgerd
-
-```
-2. User-defined constructor. It's a regular function with the same name as struct type has. It should return the instance of the struct.  
-Usage in code the same as a magic default.  
-```golang
-
-struct User
-    name: string
-    age: int
-
-func User(uname:string, age:float)
-    valName = ~"mr.{uname}"
-    User{name: valName, age: toint(age)}
-
-user = User('Olgerd', 18 + 3 / 2)
-print(user.name, user.age)
-
->> mr.Olgerd 19
-
 ```
 
 
