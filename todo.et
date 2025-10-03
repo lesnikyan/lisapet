@@ -60,6 +60,8 @@
     - unused/unnamed var `_` for function args foo(_, x), multiple assignment `for key, _ <- dict`:: thinkable
 
 13. Interfaces as a some list of method signatures.
+
+
 14.2 maybe refactor !- as a start-line operator? with explicit indent for any sub-expressions. Not sure.
     match x
         !- 1
@@ -76,6 +78,65 @@
         a < b /: expr3 # same line block
         _
             expr4
+
+14.3 refactor usage of MatchPtrCase
+
+14.4 match cases
+    ## pattern quantifiers: 
+        `*` - any things (nothing or more), 
+        `_` - some one, 
+        `?` - maybe one (nothing or one)
+    ## quantifier works only in value-role, it can be part of math or logic expression
+    [?, *], [5, *], {_:'abc'} - is ok
+    [5 + *] - incorrect
+
+    # // list patterns
+    [] !-  empty list
+    [x] !-  list with 1 element, x - var with value
+    [x,y,z] !-  n-elements
+    [x, y, *] !- elems in the begin of list with more
+    [*,12,*] !- list has value
+    [* ,12, x,*] !- list has value, `x` - next elem ([*,x,12,*] - prev) ??
+    [*, x] !- last elem
+
+    # // tuple patterns, the same patterns as list
+    () !- empty tuple
+    (a, b, ?) tuple with 2 required elements and 3-rd - possible
+    (_ , _) tuple with 2 elements, no vars assigned
+    (?) tuple, one elem or none
+    (*) tuple with any number of elems
+    (_ , *) one or more
+
+    # // dict patterns
+    {} !- empty dict
+    {*} !- any dict
+    {k: _} !- dict with 1 key-val pair `k` var with value of key
+    {'key': v} !- dict has only 1 key=='key', v - var with value by key 
+    {'key': v, *} !- dict has key 'key', and possibly has another key:vals
+    {'k1':x, 'k2':y} !- several keys in dict 
+    {'k1':x, 'k2':y, *} !- several keys with more
+    {k: 'red'} != dict has value 'red', k - var with key value
+
+    # // struct types
+    struct A a1:int, a2, a3
+    struct B(A) b2:string
+    # cases:
+    A{} !- instance of A with default values
+    A{*} !- instance of A with any field values
+    A{a1:10} !- instance of A with a1 == 10, and default others
+    A{a1:10, *} !- instance of A with a1 == 10, and any others
+    B{} !- instance of B, or parent A if previous cases didn't matched by A-type
+    B{a1=11} !- match by B-type with inherited a1 field (A-type matches too)
+    B{b2} !- match by B-type (match that has `b2` field) (or his children, not A)
+    B{b2='abc'} !- match by B-type (or children) by fields value
+
+    # // mixed
+    [A{}, A{*}, B{b1,*}] !- list with structs
+    {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
+
+    # // perspective: regexp match:
+    rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
+
 
 21.1 reading itertor. read values from sequence in the loop iteration like 
     val = iter(src) # src is collection or generator
