@@ -80,7 +80,9 @@ class TLine:
     def __init__(self, src:str, lexems:list[lex]):
         self.src = src
         self.lexems:list[lex] = lexems
-        # dprint('#a4:', [n.val for n in self.lexems])
+        # print ('TLine:', src, ' ::', lexems)
+        # print('#a51:', [(x.val, Lt.name(x.ltype), x.mark) for x in lexems])
+        # print('#a52:', [n.val for n in self.lexems])
 
 
 class CLine:

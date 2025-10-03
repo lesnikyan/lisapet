@@ -12,6 +12,7 @@ from cases.tcases import *
 from cases.control import *
 from cases.oper import *
 from cases.collection import *
+from cases.mt_cases import *
 
 from nodes import *
 from nodes.tnodes import *
@@ -126,6 +127,10 @@ expCaseList = [
     CaseFunCall(), CaseStructConstr(), CaseLambda(),
     CaseVar_(), CaseVal(), CaseString(), CaseMString(), CaseVar(), CaseBrackets(), CaseUnar(StrFormatter())]
 
+patternMatchCases = [
+    MTVal(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MT_Other()
+]
+
 def getCases()->list[ExpCase]:
     return expCaseList
 
@@ -133,6 +138,18 @@ def getCases()->list[ExpCase]:
 def simpleExpr(expCase:ExpCase, elems)->Expression:
     dprint('#simple-case:', expCase)
     return expCase.expr(elems)
+
+
+def makePMatchExpr(elems:list[Elem])->MatchingPattern:
+    cases: list[ExpCase] = patternMatchCases
+    for mtCase in cases:
+        # print('mtC>', mtCase)
+        if mtCase.match(elems):
+            pattr = mtCase.expr(elems)
+            return pattr
+    # print('DEBUG: No current MTCase for `%s` ' % '_'.join([n.text for n in elems]))
+    raise InterpretErr('No current MTCase for `%s` ' % '_'.join([n.text for n in elems]))
+
 
 def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     base, subs = expCase.split(elems)
@@ -144,11 +161,20 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     if not expCase.sub():
         return base
     
+    if isinstance(expCase, CaseMatchCase):
+        # pattern !- block
+        pattern =  makePMatchExpr(subs[0])
+        block = elems2expr(subs[1])
+        expCase.setSub(base, [pattern, block])
+        # print('complexExpr..CaseMatchCase', base)
+        return base
+        
+    
     if not subs or not subs[0]:
         return base
     subExp:list[Expression] = []
     for sub in subs:
-        prels('#complexExpr1:', sub)
+        # prels('#complexExpr1:', sub)
         texpr = elems2expr(sub)
         # if isinstance(texpr, NothingExpr):
         #     continue
@@ -166,7 +192,7 @@ def makeExpr(expCase:ExpCase, elems:list[Elem])->Expression:
 
 def elems2expr(elems:list[Elem])->Expression:
     # print('#elems2expr:', [(n.text, Lt.name(n.type)) for n in elems])
-    # print('#elems2expr/1::', ''.join([n.text for n in elems]))
+    # print('#elems2expr/1::', ' '.join(["'%s'"%n.text for n in elems]))
     for expCase in getCases():
         # print('#elems2expr/2:', type(expCase).__name__, (elems))
         if expCase.match(elems):
@@ -177,7 +203,7 @@ def elems2expr(elems:list[Elem])->Expression:
             if isinstance(expr, CtrlSubExpr):
                 # print('#elems2expr/3 ', expr)
                 expr = expr.toControl()
-            # dprint('#EL2EX . expr:', expr)
+            # print('#EL2EX . expr:', expr)
             return expr
     # print('DEBUG: No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
@@ -187,7 +213,9 @@ def line2expr(cline:CLine)-> Expression:
     ''' '''
     # types: assign, just value, definition, definition content (for struct), operator, func call, control (for, if, func, match, case), 
     try:
+        # print('>> line2expr 1:', ''.join([n.text for n in cline.code]))
         expr = elems2expr(cline.code)
+        # print('>> line2expr 2:', expr)
         expr.src = cline
         return expr
     except InterpretErr as ixc:
@@ -207,7 +235,7 @@ def raw2done(parent:Expression, raw:RawCase)->Expression:
     '''
     # match-case
     dprint('>> raw2done', parent, raw)
-    if isinstance(parent, MatchExpr) and isinstance(raw, ArrOper):
+    if isinstance(parent, MatchExpr) and isinstance(raw, MatchPtrCase):
         # `case` sub-expr in `match`
         res = CaseExpr()
         res.setExp(raw.left)

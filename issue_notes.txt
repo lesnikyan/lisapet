@@ -7,3 +7,4 @@ Fix: Add specific expression for inline-block, resolve conflict with `if expr; c
 2. Expression in parenthesis doesn't return result. Actually it was just grouping operator. But it can be resulting expression. Example: `x -> (expr)`
 Fix: MultiOper expression object should return result.
 
+3. Empty string '' can't parse and interpret correctly.

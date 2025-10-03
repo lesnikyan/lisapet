@@ -10,30 +10,6 @@ from nodes.control import *
 from cases.tcases import *
 from cases.oper import CaseBrackets
 
-class CaseMatch(SubCase):
-    ''' very specaial case. 
-         1. step: match(expr): case 1; case 2: case 3;
-         2. case type.
-         3. case pattern.
-    '''
-
-    def match(self, elems:list[Elem]) -> bool:
-        ''' match expr '''
-        if len(elems) < 2:
-            return False
-        if isLex(elems[0], Lt.word, 'match'):
-            return True
-        return False
-
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        return MatchExpr(), [elems[1:]]
-
-
-    def setSub(self, base:MatchExpr, subs:list[Expression])->Expression:
-        base.setMatch(subs[0])
-        return base
-
-
 
 def findOper(elems:list[Elem], oper:str):
     ''' find first oper between words and brackets'''
@@ -62,13 +38,71 @@ def findOper(elems:list[Elem], oper:str):
 
 
 
+class CaseMatch(SubCase):
+    ''' very specaial case. 
+        1. step: match(expr): case 1; case 2: case 3;
+        2. case type.
+        3. case pattern.
+         
+        Empty `match` means we wait for bool conditions in cases
+        # in dev
+        match
+            a < 10 !- ...
+            a == b !- ...
+    '''
+
+    def match(self, elems:list[Elem]) -> bool:
+        ''' match expr '''
+        if len(elems) < 1:
+            return False
+        if isLex(elems[0], Lt.word, 'match'):
+            return True
+        return False
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        return MatchExpr(), [elems[1:]]
+
+
+    def setSub(self, base:MatchExpr, subs:list[Expression])->Expression:
+        base.setMatch(subs[0])
+        return base
+
+
 class CaseMatchCase(SubCase):
-    ''' pair left !- right (lower priority than `=` )
+    ''' pair left !- right (lower priority than `=` and any other )
         case of match:
             match expr
                 case1 !- expr
                 case2 !- expr
         '''
+
+    def match(self, elems:list[Elem]) -> bool:
+        '''
+        expr !- expr '''
+        if len(elems) < 2:
+            return False
+
+        main = OperSplitter().mainOper(elems)
+        dprint('CaseMatchCase elems[main]', elems[main].text, main)
+        return isLex(elems[main], Lt.oper, '!-')
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        arrInd = OperSplitter().mainOper(elems)
+        exp = MatchPtrCase()
+        subs = [elems[:arrInd], elems[arrInd+1:]]
+        return exp, subs
+
+    def setSub(self, base:MatchPtrCase, subs:list[Expression])->Expression:
+        base.left = subs[0]
+        if len(subs) > 1 and isinstance(subs[1], Expression):
+            base.right = subs[1]
+
+
+class CaseMatchPattern(SubCase):
+    '''
+    left of `!-` operator.
+    [*], {_:_}, (_,?), ...
+    '''
 
     def match(self, elems:list[Elem]) -> bool:
         '''

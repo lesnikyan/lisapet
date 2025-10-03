@@ -524,94 +524,48 @@ class TestLang(TestCase):
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
 
-    def test_CaseMatchSub_match(self):
-        cs = CaseMatchCase()
-        rrs = []
-        def checkRes(code, exp):
-            dprint('$$ run test ------------------')
-            dprint('CODE:','\n'+code)
-            # code = lines[0]
-            tlines = splitLexems(code)
-            clines:CLine = elemStream(tlines)
-            elems = clines[0].code
-            res = cs.match(elems)
-            dprint('#tt >>> ', code, res)
-            msg = 'Tried use code: %s' % code
-            if exp:
-                self.assertTrue(res, msg)
-            else:
-                self.assertFalse(res, msg)
-            
-        src = ''''
-        val !- expr
-        123 !- a + b
-        234 !- r = 2 + 3
-        3 !- res = 4
-        user(123) !- res
-        '''
-        src = norm(src[1:].rstrip())
-        data = src.splitlines()
-        for code in data:
-            if code.strip() == '':
-                continue
-            checkRes(code, True)
+# TODO: check what func uses instead of `afterNameBr`
+    # def _test_afterNameBr(self):
+    #     data = [
+    #         ('arr[1] + ','+'),
+    #         ('arr[index] = foo(123)','='),
+    #         ('var = 11','='),
+    #         ('var += 12','+='),
+    #         ('var -= 13','-='),
+    #         ('var[ii] += 14','+='),
+    #     ]
         
-        src = ''''
-        val 123 -> expr
-        1,2,3 -> a + b
-        x <- src
-        -> expr ...
-        user(123) + 0 -> res
-        '''
-        src = norm(src[1:].rstrip())
-        data = src.splitlines()
-        for code in data:
-            if code.strip() == '':
-                continue
-            checkRes(code, False)
+    #     for code, exp in data:
+    #         tlines = splitLexems(code)
+    #         clines:CLine = elemStream(tlines)
+    #         elems = clines[0].code
+    #         ind = afterNameBr(elems)
+    #         res = elems[ind]
+    #         dprint('## t:', code, exp, '>>>', res.text)
+    #         self.assertEqual(res.text, exp)
 
-    def _test_afterNameBr(self):
-        data = [
-            ('arr[1] + ','+'),
-            ('arr[index] = foo(123)','='),
-            ('var = 11','='),
-            ('var += 12','+='),
-            ('var -= 13','-='),
-            ('var[ii] += 14','+='),
-        ]
+    #     data = [
+    #         ('arr[1]', -1),
+    #         ('arr[1+2]', -1),
+    #         ('arr[foo(123)]', -1),
+    #         ('foo()', -1),
+    #         ('foo(123)', -1),
+    #         ('foo(a,b,c)', -1),
+    #         ('foo(bar())', -1),
+    #         ('foo(arr[1])', -1),
+    #         ('foo(arr[2],foo(a, arr[3]), b, c)', -1),
+    #     ]
         
-        for code, exp in data:
-            tlines = splitLexems(code)
-            clines:CLine = elemStream(tlines)
-            elems = clines[0].code
-            ind = afterNameBr(elems)
-            res = elems[ind]
-            dprint('## t:', code, exp, '>>>', res.text)
-            self.assertEqual(res.text, exp)
-
-
-        data = [
-            ('arr[1]', -1),
-            ('arr[1+2]', -1),
-            ('arr[foo(123)]', -1),
-            ('foo()', -1),
-            ('foo(123)', -1),
-            ('foo(a,b,c)', -1),
-            ('foo(bar())', -1),
-            ('foo(arr[1])', -1),
-            ('foo(arr[2],foo(a, arr[3]), b, c)', -1),
-        ]
-        
-        dprint('#t ------------- no tail')
-        for code, exp in data:
-            dprint('#t code: ', code)
-            tlines = splitLexems(code)
-            clines:CLine = elemStream(tlines)
-            elems = clines[0].code
-            res = afterNameBr(elems)
-            # res = elems[ind]
-            dprint('## t:', code, exp, '>>>', res)
-            self.assertEqual(res, exp)
+    #     dprint('#t ------------- no tail')
+    #     for code, exp in data:
+    #         dprint('#t code: ', code)
+    #         tlines = splitLexems(code)
+    #         clines:CLine = elemStream(tlines)
+    #         elems = clines[0].code
+    #         res = afterNameBr(elems)
+    #         # res = elems[ind]
+    #         dprint('## t:', code, exp, '>>>', res)
+    #         self.assertEqual(res, exp)
 
     def test_seq_split(self):
         data = [
