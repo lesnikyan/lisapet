@@ -196,17 +196,19 @@ class MatchExpr(ControlBlock):
     def do(self, ctx:Context):
         # print('Match.do1')
         self.match.do(ctx)
-        mctx = Context(ctx)
-        done = self.doCases(mctx)
+        done = self.doCases(ctx)
         # if not done:
         #     self.defaultCase.do(mctx)
 
-    def doCases(self, mctx:Context):
+    def doCases(self, ctx:Context):
         mval = self.match.get()
         mval = var2val(mval)
         # print('Match. mval', self.match, mval)
         for cs in self.cases:
+            mctx = Context(ctx)
             cs.doExp(mctx)
+            avar = mctx.get('a')
+            # print('a:', avar)
             if cs.match(mval):
                 cs.do(mctx)
                 self.lastVal = cs.get()

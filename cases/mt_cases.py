@@ -33,11 +33,6 @@ Case detection.
 class MTCase(ExpCase):
     ''' case of match pattern '''
 
-
-class MTVar(CaseVar):
-    ''' '''    
-    
-
 ValCases = [CaseVal(), CaseString()]
 
 class MTVal(MTCase, CaseVal):
@@ -63,6 +58,16 @@ class MTString(MTCase, CaseString):
         subEx = super().expr(elems)
         expr = MCValue(subEx, elems[0].text)
         return expr
+
+
+class MTVar(MTCase,CaseVar):
+    ''' '''    
+    
+    def expr(self, elems:list[Elem])-> Expression:
+        ''' Value from context by var name'''
+        vexpr = VarExpr(Var(elems[0].text, TypeAny()))
+        ptt = MCSubVar(vexpr)
+        return ptt
 
 
 class MT_Other(MTCase, CaseVar_):
@@ -175,6 +180,7 @@ class MTList(CommaSeparatedSequence):
 
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         subPtts = self.split(elems)
+        # print('MTList.e subPtts:', subPtts)
         exp = MCList()
         self.setSubs(exp, subPtts)
         return exp
@@ -216,7 +222,7 @@ class MTFail(MTCase):
 
 
 pMListInnerCases:list[MTCase] = [
-    MTVal(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MTE_(), MTEStar(), MTEQMark(),
+    MTVal(), MTVar(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MTE_(), MTEStar(), MTEQMark(),
 ]
 
 

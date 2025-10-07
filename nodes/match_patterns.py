@@ -58,7 +58,8 @@ class MCValue(MatchingPattern):
         if self.exp.get().getVal() == val.get():
             return True
         return False
-    
+
+
 class MC_Other(MatchingPattern):
     ''' _ !- ... '''
 
@@ -72,6 +73,8 @@ class MC_Other(MatchingPattern):
 class MCElem(MatchingPattern):
     ''' element of complex pattern '''
 
+
+
 class MCSubVar(MCElem):
     ''' local subvar in pattern like: [a,b,c] '''
 
@@ -81,9 +84,12 @@ class MCSubVar(MCElem):
         self.var:Var = None
 
     def do(self, ctx:Context):
-        # print('elem subvar.do')
-        self.exp.do(ctx)
-        self.var = self.exp.get()
+        # print('elem subvar.do1', self.exp)
+        # self.exp.do(ctx)
+        var = self.exp.get()
+        ctx.addVar(var)
+        self.var = var
+        # print('elem subvar.do2', ctx.get('a'))
         
     def match(self, val:Val):
         self.var.set(val)
@@ -142,8 +148,8 @@ class MCList(MCSerialVals):
         super().__init__(src)
 
     def do(self, ctx:Context):
-        # print('MCVal.exp', self.exp)
         for exp in self.elems:
+            # print('MCList elem', exp)
             exp.do(ctx)
         
     def match(self, val:ListVal):
@@ -156,7 +162,7 @@ class MCList(MCSerialVals):
 
 
 class MCTuple(MCSerialVals):
-    ''' [], [123], [a,b], [_], [?], [*] '''
+    ''' (), (_), (123), (a,b) '''
     
     def __init__(self,  src=None):
         super().__init__(src)
@@ -219,30 +225,7 @@ class CaseExpr(ControlBlock):
         self.expect.do(ctx)
 
     def match(self, val:Val):
-        # simple equal value
-        # print('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
-        # print('~~~ ', self.expect)
-        # if self.expect.get().getVal() == val.getVal():
-        #     return True
-        
         return self.expect.match(val)
-
-        # # type case
-        # et = self.expect.get()
-        # if isinstance(et, VType) and et == val.getType():
-        #     return True
-
-        # TODO: 
-        
-        # list case
-        
-        # tuple case
-        
-        # dict case
-        
-        # struct-constructor case
-        
-        # return False
 
     def add(self, exp:Expression):
         self.block.add(exp)
