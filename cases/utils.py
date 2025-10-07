@@ -110,8 +110,11 @@ class OperSplitter:
         obr='([{'
         cbr = ')]}'
         backAssoc = ['/:']
-        inBrs = [] # brackets which was opened from behind
-        # prels('~~ OperSplitter', elems)
+        # inBrs = [] # brackets which was opened from behind
+        # print('~- OperSplitter', len(elems))
+        # prels('~~ OperSplitter', elems, show=1)
+        if len(elems) < 2:
+            return -1
         lem = len(elems)
         if lem == 0:
             return -1 # empty input
@@ -119,7 +122,7 @@ class OperSplitter:
             curPos = lem
             obr='([{'
             cbr = ')]}'
-            # if len(self.priorGroups) < 5:
+            # if len(self.priorGroups) < 500:
             #     print('prior=', prior, self.priorGroups[prior] )
             step = -1
             eliter = range(lem - 1, -1, -1)
@@ -131,7 +134,7 @@ class OperSplitter:
                 eliter = range(0, lem)
                 cbr='([{'
                 obr = ')]}'
-            
+            inBrs = [] # brackets which was opened from behind
             # for i in range(lem - 1, -1, -1):
             for i in eliter:
                 curPos += step
@@ -144,18 +147,22 @@ class OperSplitter:
                 
                 # counting brackets from tne end, closed is first
                 # dprint('ue:', i, ':', etx, '>>', '`'.join(inBrs))
-                if etx in cbr:
+                if etx and etx in cbr:
                     inBrs.append(etx)
+                    # print('inbr append: ', '>>', inBrs)
                     continue
-                if etx in obr:
+                if etx and etx in obr:
                     if len(inBrs):
                         last = inBrs.pop()
+                        # print('inbr pop: ',last, '>>', inBrs)
                     # dprint(' << ', etx, last)
                     # if len(inBrs) == 0 and etx in self.priorGroups[prior]:
                     #     return i
                     if i == 0 and etx in self.priorGroups[prior]:
+                        # print('end of prior / open', obr)
                         return 0
                     continue
+                # print('@#', etx, 'br:', inBrs)
                     # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
                 if len(inBrs) > 0:
                     continue
@@ -171,11 +178,11 @@ class OperSplitter:
                     continue
                 if el.text in self.priorGroups[prior]:
                     # we found current split item
-                    dprint('oper-found> [%d ? %d]' % (i, curPos), '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
+                    # print('oper-found> [%d ? %d]' % (i, curPos), '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
 
                     return curPos # The main Result
         if isLex(elems[0], Lt.oper, unaryOperators):
-            dprint('oper-found> unary [0 : %s]' % elems[0].text ) 
+            # dprint('oper-found> unary [0 : %s]' % elems[0].text ) 
             return 0
         return -1 # debug output, won't happened in real case
 

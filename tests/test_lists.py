@@ -23,6 +23,23 @@ class TestLists(TestCase):
 
 
 
+
+    def test_single_list_in_list(self):
+        ''' test list as a single elem in list '''
+        code = r'''
+        nn = [[1]]
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('nn').get()
+        self.assertEqual([[1]], rvar.vals())
+
     def test_plus_operator_for_lists(self):
         ''' '''
         code = r'''

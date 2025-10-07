@@ -72,8 +72,7 @@ class TestDev(TestCase):
     def _test_code(self):
         ''' '''
         code = r'''
-
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 

@@ -215,7 +215,7 @@ class CaseVal(ExpCase):
 class CaseString(CaseVal):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
-        # print('StrCase:', elems)
+        # print('StrCase:', elems, ' strlen=', len(elems))
         if len(elems) != 1:
             return False
         if elems[0].type in [Lt.text, Lt.mttext]:

@@ -201,17 +201,19 @@ def elems2expr(elems:list[Elem])->Expression:
     # print('#elems2expr/1::', ' '.join(["'%s'"%n.text for n in elems]))
     for expCase in getCases():
         # print('#elems2expr/2:', type(expCase).__name__, (elems))
+        # print('#elems2expr/2:', type(expCase).__name__)
         if expCase.match(elems):
             # if expCase.sub():
             #     return complexExpr(expCase, elems)
             # print('Case found::', expCase.__class__.__name__, '', elemStr(elems))
+            # print('Case found::', expCase.__class__.__name__)
             expr = makeExpr(expCase, elems)
             if isinstance(expr, CtrlSubExpr):
                 # print('#elems2expr/3 ', expr)
                 expr = expr.toControl()
             # print('#EL2EX . expr:', expr)
             return expr
-    # print('DEBUG: No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
+    # print('DEBUG: No current ExprCase for `%s` ' % ''.join([n.text for n in elems]))
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
 
 

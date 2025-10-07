@@ -78,7 +78,50 @@ class TestMatch(TestCase):
         rvar = ctx.get('res').get()
         self.assertEqual(exp, rvar.vals())
 
+    def test_match_tuple_vars(self):
+        ''' '''
+        code = r'''
+        
+        nn = [(,), 
+            (1,), (1,2), (1,7),
+            (11,3,22), (1,2,3),
+            # (7), (7,2),(111,222),(1,3,7),(111,222,333),
+            1
+        ]
+        res = []
+        
+        for n <- nn
+            # print('nn:', n)
+            match n
+                () !- res <- [n, 11]
+                (a) !- res <-   [n, (a,), 12]
+                (_) !- res <- [n, 19] # shouldn't be used because prev
+                (a,2) !- res <- [n, (a,), 13]
+                (a,b) !- res <- [n, (a,b), 14]
+                (a,_,1) !- res <- [n, (a,), 23]
+                (a,_,3) !- res <- [n, (a,), 23]
+                (a,b,22) !- res <- [n, (a,b), 23]
+                (a,b,c) !- res <- [n, (a,b,c), 26]
+                _ !- res <- [n, 2999]
+            # print('nres:', res)
+        # 
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
 
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        exp = [[tuple(), 11], [(1,), (1,), 12],
+               [(1, 2), (1,), 13], [(1, 7), (1, 7), 14], 
+               [(11, 3, 22), (11, 3), 23], [(1, 2, 3), (1,), 23], 
+               [1, 2999]
+        ]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
 
     def test_match_list_vars(self):
         ''' '''
@@ -86,8 +129,8 @@ class TestMatch(TestCase):
         
         nn = [[], 
             [1], [1,2], [1,7],
-            [11,3,22], [1,2,3],
-            # [7], [7,2],[111,222],[1,3,7],[111,222,333],
+            [7], [7,2],[111,222],
+            [11,3,22], [1,2,3], [1,3,7], [111,222,333],
             1
         ]
         res = []
@@ -117,9 +160,9 @@ class TestMatch(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         ex.do(ctx)
-        exp = [[[], 11], [[1], (1,), 12],
-               [[1, 2], (1,), 13], [[1, 7], (1, 7), 14],
-               [[11, 3, 22], (11, 3), 23], [[1, 2, 3], (1,), 23],
+        exp = [[[], 11], [[1], (1,), 12], 
+               [[1, 2], (1,), 13], [[1, 7], (1, 7), 14], [[7], (7,), 12], [[7, 2], (7,), 13], [[111, 222], (111, 222), 14], 
+               [[11, 3, 22], (11, 3), 23], [[1, 2, 3], (1,), 23], [[1, 3, 7], (1, 3, 7), 26], [[111, 222, 333], (111, 222, 333), 26],
                [1, 2999]
         ]
         rvar = ctx.get('res').get()
@@ -167,6 +210,55 @@ class TestMatch(TestCase):
                [(7, 20), 204], [(111, 222), 204], [(1, 3, 7), 205], [(111, 222, 333), 206], 
                 [1, 20999]
         ]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
+    def test_match_list_strvals(self):
+        ''' '''
+        code = r'''
+        
+        nn = [
+            [], [1], 
+            ['1'], ['2'], [`a`],["bb"], [`ccc`],
+            ['',""], ['a','bb'], ['aa','cc'], ['a','_'], ['a','_abc'], 
+            ['','',''],
+            'a', 1
+        ]
+        # nn = [['', '', '']]
+        res = []
+        
+        for n <- nn
+            # print('nn:', n)
+            match n
+                [] !- res <- [n, 11]
+                ['1'] !- res <-   [n, 12]
+                ['a'] !- res <- [n, 13]
+                ['bb'] !- res <- [n, 14]
+                ['','',''] !- res <- [n, 15]
+                ['a','bb'] !- res <- [n, 16]
+                ['aa','cc'] !- res <- [n, 17]
+                ['aaa','_'] !- res <- [n, 18]
+                ['a',_] !- res <- [n, 19]
+                [a,b] !- res <- [n, (a,b), 20]
+                [_] !- res <- [n, 21]
+                _ !- res <- [n, 2999]
+            # print('nres:', res)
+        # 
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        exp = [[[], 11], [[1], 21], 
+            [['1'], 12], [['2'], 21], [['a'], 13], [['bb'], 14], [['ccc'], 21],
+            [['', ''], ('', ''), 20], [['a', 'bb'], 16], [['aa', 'cc'], 17], 
+            [['a', '_'], 19], [['a', '_abc'], 19], 
+            [['', '', ''], 15], ['a', 2999], [1, 2999]]
         rvar = ctx.get('res').get()
         self.assertEqual(exp, rvar.vals())
 
