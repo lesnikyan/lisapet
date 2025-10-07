@@ -47,7 +47,9 @@ Content:
 13. [Multiline expressions](#13-multiline-expressions-if-for-math-expr)
 14. [Builtin/native functions (print, iter,..)](#14-builtin-functions)
 15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
-16. [Match-statement](#16-match-statement)
+16. Match-statement
+    1. [Match, cases](#16-match-statement)
+    2. [List and tuple patterns](#162-matching-list-and-tuple)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
 19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
@@ -970,6 +972,53 @@ match a
     _  !- r1 = -2
 ```
 TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
+
+### 16.2 Matching list and tuple.
+List or tuple can be matched by special collection-patterns. They look similar to regular collections, but have some special features.  
+```python
+[12, b, _] !- ...
+```
+In collection patterns we can use several types of sub-expressions. They can be combined.  
+
+1.  Value in collection. Pattern matches if each element from pattern equals the element of such position in value we check.  
+```python
+match n
+    # list
+    [1,2,3] !- expr
+    
+    # tuple
+    (3,4,5) !- expr
+```
+2. Variable in collection `[a,b]`, `(a,b,c)`.  
+    Var in pattern will be assigned with the value according to position if pattern will be matched.  
+    Assigned var can be used in the sub block of current match-case.  
+```python
+match n
+    [a] !- print(a) # array with 1 element 
+        # in case block var `a` will contain value of n[0]
+        res = a * 100
+    [a,b,c] !- # any array with 3 elements
+        #vars a,b,c with values of list elements
+        res = a + b + c 
+```
+3. Wildcard `_` (means - any value).  
+    Wildcard don't assign anything, unlike of var-pattern.  
+```python
+match n
+    [_] !- # any array with 1 element
+    [1,_] !- # any arrays with 2 elemnts, and n[0] == 1
+    [_,_] !- # any array with 2 elements
+    (1,_) !- the same for tuple
+```
+Combined example:
+```python
+match n
+    (1, _) !- print('tuple with 1')
+    (a, b, _) !- sum = a + b
+    [a, 22, b, _] !- res = [a, b, a + b]
+```
+
+#TODO: dict pattern is planned `{k:v}`
 
 
 ### 17. multi-assignment

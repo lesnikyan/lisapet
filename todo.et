@@ -90,6 +90,15 @@
     [?, *], [5, *], {_:'abc'} - is ok
     [5 + *] - incorrect
 
+    - # DONE list
+    - # DONE tuple
+    - dict
+    - # DONE sub-val
+    - # DONE sub-var
+    - # DONE sub-wildcard
+    - sub-?
+    - sub-*
+
     # // list patterns
     [] !-  empty list
     [x] !-  list with 1 element, x - local var which will associated with value by position
