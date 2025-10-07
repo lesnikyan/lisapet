@@ -10,7 +10,7 @@ from vals import isDefConst, elem2val, isLex
 
 '''
 oper group replacement:
-`1` to ,
+`1` >=> ,
 '''
 
 operPrior = ('( ) [ ] { } , . , -x !x ~x , ** , * / % , + - ,'
@@ -86,10 +86,14 @@ def elemStr(elems:list[Elem]):
     return ' '.join([ee.text for ee in elems])
 
 class OperSplitter:
-    def __init__(self):
-        priorGroups = [raw.replace('`1`', ',') for raw in operPrior.split(',')]
+    def __init__(self, priors=None):
+        priorSrc = operPrior
+        if priors:
+            priorSrc = priors
+        # print('utils.OperSplitter:', priorSrc)
+        priorGroups = [raw.replace('`1`', ',') for raw in priorSrc.split(',')]
         self.priorGroups = [[ n for n in g.split(' ') if n.strip()] for g in priorGroups]
-        self.opers = [oper for nn in self.priorGroups[:-1] for oper in nn]
+        self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
 
 
     def mainOper(self, elems:list[Elem])-> int:
@@ -115,11 +119,12 @@ class OperSplitter:
             curPos = lem
             obr='([{'
             cbr = ')]}'
-            dprint('prior=', prior, self.priorGroups[prior] )
+            # if len(self.priorGroups) < 5:
+            #     print('prior=', prior, self.priorGroups[prior] )
             step = -1
             eliter = range(lem - 1, -1, -1)
             if self.priorGroups[prior][0] in backAssoc:
-                # means that all opaers in group have the same direction of assoc
+                # means that all opers in group have the same direction of assoc
                 # print('OperSplitter. back-assoc', self.priorGroups[prior])
                 step = 1
                 curPos = -1
@@ -157,6 +162,8 @@ class OperSplitter:
                 # if self.priorGroups[prior][0] in backAssoc:
                     # print('>>>>>>>> DEBUG 1')
                 if el.type != Lt.oper:
+                    continue
+                if el.text not in self.opers:
                     continue
                 if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
                     # unary case found, skip current pos

@@ -203,7 +203,8 @@ class MatchExpr(ControlBlock):
 
     def doCases(self, mctx:Context):
         mval = self.match.get()
-        # print('Match. mval', mval)
+        mval = var2val(mval)
+        # print('Match. mval', self.match, mval)
         for cs in self.cases:
             cs.doExp(mctx)
             if cs.match(mval):

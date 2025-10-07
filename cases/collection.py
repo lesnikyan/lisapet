@@ -52,6 +52,9 @@ class CaseTuple(SubCase):
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
         dprint('CaseTuple.setSub: ', base, subs)
         for exp in subs:
+            if isinstance(exp, NothingExpr):
+                # empty position after comma
+                continue
             base.add(exp)
         return base
 
@@ -94,6 +97,9 @@ class CaseList(SubCase):
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
         dprint('CaseList.setSub: ', base, subs)
         for exp in subs:
+            if isinstance(exp, NothingExpr):
+                # empty position after comma
+                continue
             base.add(exp)
         return base
 

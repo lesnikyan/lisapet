@@ -27,7 +27,145 @@ from tests.utils import *
 
 class TestMatch(TestCase):
     ''' cases of `match` statement '''
-    
+
+
+    def _test_match_list_maybe(self):
+        ''' '''
+        code = r'''
+        
+        nn = [[], [1], [1,7], [1,2], 
+            [7], [7,2],[111,222],[1,3,7],[111,222,333],
+            # [2],[2,3], [11,3,22],[3,4,5],[3,4],
+            # [4,5,6,7,8],
+            # [1..10], 
+            1
+        ]
+        res = []
+        
+        for n <- nn
+            match n
+
+                _ !- res <- [n, 3999]
+        # 
+        print('res = ', res)
+        '''
+        _='''
+        
+                # [?] !- res <- [n, 2088]
+                # [*] !- res <- [n, 2088]
+                # [3,_,?] !- res <- [n, 222]
+                # [2,?] !- res <- [n, 222]
+                # [?,3] !- res <- [n, 222]
+                # [?,3,?] !- res <- [n, 222]
+                # [4,*] !- res <- [n, 222]
+                # [4,5,*] !- res <- [n, 222]
+                # [_,5,*] !- res <- [n, 222]
+                # [*,6,*] !- res <- [n, 222]
+                # [*,8] !- res <- [n, 222]
+                # [_,_,_,*] !- res <- [n, 222]
+                # [*] !- res <- [n, 222]
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        exp = [
+        ]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
+    def test_match_tuple_vals_and_underscore(self):
+        ''' '''
+        code = r'''
+        # nn=[2]
+        nn = [(,), (1,), (1,7), (1,2), 
+            (7,), (7,20), (111,222), (1,3,7), (111,222,333),
+            1
+        ]
+        res = []
+        
+        # print('nn:', nn)
+        for n <- nn
+            # print('nn:', n)
+            match n
+                # 1 !- 1
+                () !- res <- [n, 101]
+                (1) !- res <-   [n, 102]
+                (1,7) !- res <- [n, 103]
+                (_) !- res <- [n, 201]
+                (1,_) !- res <- [n, 202]
+                (_,2) !- res <- [n, 203]
+                (_,_) !- res <- [n, 204]
+                (1,_,7) !- res <- [n, 205]
+                (_,_,_) !- res <- [n, 206]
+                _ !- res <- [n, 20999]
+
+            # print('nres:', res)
+
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        exp = [[tuple(),101], [(1,), 102], [(1, 7), 103], [(1, 2), 202], [(7,), 201], 
+               [(7, 20), 204], [(111, 222), 204], [(1, 3, 7), 205], [(111, 222, 333), 206], 
+                [1, 20999]
+        ]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
+    def test_match_list_vals_and_underscore(self):
+        ''' '''
+        code = r'''
+        
+        nn = [[], [1], [1,7], [1,2], 
+            [7], [7,2],[111,222],[1,3,7],[111,222,333],
+            1
+        ]
+        res = []
+        
+        for n <- nn
+            # print('nn:', n)
+            match n
+                # 1 !- 1
+                [] !- res <- [n, 11]
+                [1] !- res <-   [n, 12]
+                [1,7] !- res <- [n, 13]
+                [_] !- res <- [n, 21]
+                [1,_] !- res <- [n, 22]
+                [_,2] !- res <- [n, 23]
+                [_,_] !- res <- [n, 24]
+                [1,_,7] !- res <- [n, 25]
+                [_,_,_] !- res <- [n, 26]
+                _ !- res <- [n, 2999]
+            # print('nres:', res)
+        # 
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        exp = [[[], 11], [[1], 12], [[1, 7], 13], 
+               [[1, 2], 22], [[7], 21], [[7, 2], 23], [[111, 222], 24], 
+               [[1, 3, 7], 25], [[111, 222, 333], 26],
+                [1, 2999]
+        ]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
 
     def test_match_strings(self):
         ''' '''
@@ -76,7 +214,7 @@ class TestMatch(TestCase):
                 2 !- res <- [n,222]
                 _ !- res <- [n,999]
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 
@@ -123,14 +261,14 @@ class TestMatch(TestCase):
         rrs = [] # [0 ; x <- [0..11]]
         ff = x -> x * 10
         for i <- [0..8]
-            print('i:', i)
+            # print('i:', i)
             res = 1
             t = i + 10
             match i
                 1 !- res = 10
                 2 !- 
                     if res > 0 && res < 4
-                        print('c2', i, res)
+                        # print('c2', i, res)
                         res *= 11 * i
                 3 !- res = foo2(x -> x ** 2)
                 4 !- f = x -> x * 12
@@ -138,20 +276,20 @@ class TestMatch(TestCase):
                 5 !- res = foo2(ff) + i
                 6 !- 
                     for j <- [0..5]
-                        print('c5', j, res)
+                        # print('c5', j, res)
                         res += i
                 7 !- 
                     for j = 1; j < 6; j = j + 1
-                        print('c7', j, res)
+                        # print('c7', j, res)
                         res *= j
                 8 !- 
                     if c= t + 100; c > 110 && t > 4
-                        print('c2', i, res)
+                        # print('c2', i, res)
                         res = c
                 _ !- res = 1001
             rrs <- res
 
-        print('rrs = ', rrs)
+        # print('rrs = ', rrs)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)

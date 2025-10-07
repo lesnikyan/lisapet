@@ -84,7 +84,7 @@ class OpAssign(OperCommand):
     def doRight(self, ctx:Context, leftSize):
         src = self.right
         # Do right (val expr)
-        dprint('OpAssign.do src', src)
+        # print('OpAssign.do src', src)
         resSet:list[Var] = []
         if isinstance(src, SequenceExpr):
             dprint('## op-assign, SequenceExpr src -> ', src, )

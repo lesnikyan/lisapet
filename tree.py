@@ -131,6 +131,7 @@ patternMatchCases = [
     MTVal(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MT_Other()
 ]
 
+
 def getCases()->list[ExpCase]:
     return expCaseList
 
@@ -140,11 +141,16 @@ def simpleExpr(expCase:ExpCase, elems)->Expression:
     return expCase.expr(elems)
 
 
-def makePMatchExpr(elems:list[Elem])->MatchingPattern:
+def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
+    # print('#makePMatchExpr:', [(n.text, Lt.name(n.type)) for n in elems])
+    # print('#makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
     cases: list[ExpCase] = patternMatchCases
+    if isinstance(parent, (MTList)):
+        cases = pMListInnerCases
     for mtCase in cases:
         # print('mtC>', mtCase)
         if mtCase.match(elems):
+            # print('mt.found>', mtCase.__class__.__name__, '', elemStr(elems))
             pattr = mtCase.expr(elems)
             return pattr
     # print('DEBUG: No current MTCase for `%s` ' % '_'.join([n.text for n in elems]))

@@ -208,7 +208,7 @@ class CaseVal(ExpCase):
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
         res = ValExpr(elem2val(elems[0]))
-        # dprint('## CaseVal')
+        # print('## CaseVal', res.get().vtype)
         return res
 
 

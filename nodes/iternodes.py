@@ -118,7 +118,7 @@ class IterAssignExpr(Expression):
                 # print(' first iter2 >>', vv)
                 ctx.addVar(vv)
         # val = self.itExp.get()
-        # print('IterAssignExpr.do2 val=', val)
+        # print('IterAssignExpr.do2 val=', val, val.getType())
         # key = Var_()
         # if isinstance(val, tuple):
         #     key, val = val
@@ -238,7 +238,7 @@ class ListGenIterator(NIterator):
         return self.val <= self.last
 
     def get(self):
-        return Val(self.val, TypeInt)
+        return Val(self.val, TypeInt())
     
     def getSlice(self, start, end):
         res = ListVal()

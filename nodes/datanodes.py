@@ -25,6 +25,7 @@ class ListExpr(CollectionExpr):
 
     def add(self, exp:Expression):
         ''' add next elem of list'''
+        # print('ListExpr.add', exp)
         self.valsExprList.append(exp)
 
     def do(self, ctx:Context):

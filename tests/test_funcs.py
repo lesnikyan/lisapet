@@ -296,6 +296,7 @@ class TestFunc(TestCase):
         
         func f1(m, k)
             r = 1
+            # print(m,k)
             match k - m
                 1 !- r += m
                 2 !- r = 2 * (k + m)

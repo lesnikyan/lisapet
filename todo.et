@@ -83,21 +83,22 @@
 
 14.4 match cases
     ## pattern quantifiers: 
-        `*` - any things (nothing or more), 
         `_` - some one, 
         `?` - maybe one (nothing or one)
-    ## quantifier works only in value-role, it can be part of math or logic expression
+        `*` - any things (nothing or more), for this implementation - applicable to the last position in sequene only
+    ## quantifier works only in value-role, it can't be part of math or logic expression
     [?, *], [5, *], {_:'abc'} - is ok
     [5 + *] - incorrect
 
     # // list patterns
     [] !-  empty list
-    [x] !-  list with 1 element, x - var with value
+    [x] !-  list with 1 element, x - local var which will associated with value by position
     [x,y,z] !-  n-elements
-    [x, y, *] !- elems in the begin of list with more
-    [*,12,*] !- list has value
-    [* ,12, x,*] !- list has value, `x` - next elem ([*,x,12,*] - prev) ??
-    [*, x] !- last elem
+    [x, y, *] !- n-elems in the begin of list with more
+
+    X [*,12,*] !- list has value
+    X [* ,12, x,*] !- list has value, `x` - next elem ([*,x,12,*] - prev) ??
+    X [*, x] !- last elem
 
     # // tuple patterns, the same patterns as list
     () !- empty tuple
@@ -156,6 +157,7 @@
 Like `for a <- b /: expr :/ ; next-block`  
 if cond /: expr :/ else /: expr :/
 Thinking
+
 16.1 inline shortening:
 (control /: sub-expr)
 # if
@@ -164,7 +166,25 @@ Thinking
 (@ i <- [] /: print(i))
 (@ i=0; i < 5; i += 1 /: print(i))
 
+25. enum
+default values: 1,2,3...
+# inline
+enum Color  Red, Green, Blue
+# block
+enum Color
+    Red = 0xf00
+    Green = 0x0f0
+    Blue = 0x00f
+
+# usage
+match color
+    Color.Red !- ...
+
+
+
 >>>
+
+
 3.1 # DONE import x > * `instead of ` import x.* (?) thinking
 
 16. # DONE 1-line if/for/while: 
