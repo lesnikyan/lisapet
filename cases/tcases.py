@@ -196,8 +196,9 @@ class CaseEmpty(ExpCase):
 class CaseVal(ExpCase):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
-        if len(elems) > 1:
+        if len(elems) != 1:
             return False
+        # prels('CaseVal.match:', elems, show=1)
         if elems[0].type in [Lt.num]:
             return True
         if isLex(elems[0], Lt.word, 'null'):
@@ -207,14 +208,15 @@ class CaseVal(ExpCase):
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
         res = ValExpr(elem2val(elems[0]))
-        # dprint('## CaseVal')
+        # print('## CaseVal', res.get().vtype)
         return res
 
 
 class CaseString(CaseVal):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
-        if len(elems) > 1:
+        # print('StrCase:', elems, ' strlen=', len(elems))
+        if len(elems) != 1:
             return False
         if elems[0].type in [Lt.text, Lt.mttext]:
             return True
@@ -272,11 +274,12 @@ class CaseVar_(ExpCase):
         value won't assigned
     '''
     def match(self, elems:list[Elem]) -> bool:
-        if len(elems) > 1:
-            return False
-        if elems[0].type == Lt.word and elems[0].text == '_':
-            return True
-        return False
+        # if len(elems) > 1:
+        #     return False
+        # if elems[0].type == Lt.word and elems[0].text == '_':
+        return len(elems) > 1 and isLex(elems[0], Lt.word, '_')
+        #     return True
+        # return False
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value from context by var name'''
@@ -469,6 +472,11 @@ class RawCase:
 
 
 class ArrOper(RawCase):
+    def __init__(self, left=None, right=None):
+        self.left:Expression = left
+        self.right:Expression = right
+
+class MatchPtrCase(RawCase):
     def __init__(self, left=None, right=None):
         self.left:Expression = left
         self.right:Expression = right

@@ -134,12 +134,14 @@ class CaseBinOper(SubCase):
         obr='([{'
         cbr = ')]}'
         inBrs = [] # brackets which was opened from behind
-        prels('~~ CaseBinOper', elems)
+        # prels('~~ CaseBinOper', elems)
         for prior in range(lowesPrior, -1, -1):
             skip = -1
-            # dprint('prior=', prior, self.priorGroups[prior] )
+            # print('prior=', prior, self.priorGroups[prior] )
             for i in range(maxInd, -1, -1):
                 el = elems[i]
+                if el.type != Lt.oper:
+                    continue
                 etx = el.text
                 # counting brackets from tne end, closed is first
                 if etx in cbr:
@@ -161,8 +163,6 @@ class CaseBinOper(SubCase):
                 #     inBr -= 1
                 # if inBr > 0:
                 #     continue
-                if el.type != Lt.oper:
-                    continue
                 # TODO: fix unary cases, like: 5 * -3,  7 ** -2, x == ! true, (-12)
                 if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
                     # unary case found, skip current pos

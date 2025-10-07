@@ -10,7 +10,7 @@ from vals import isDefConst, elem2val, isLex
 
 '''
 oper group replacement:
-`1` to ,
+`1` >=> ,
 '''
 
 operPrior = ('( ) [ ] { } , . , -x !x ~x , ** , * / % , + - ,'
@@ -86,10 +86,14 @@ def elemStr(elems:list[Elem]):
     return ' '.join([ee.text for ee in elems])
 
 class OperSplitter:
-    def __init__(self):
-        priorGroups = [raw.replace('`1`', ',') for raw in operPrior.split(',')]
+    def __init__(self, priors=None):
+        priorSrc = operPrior
+        if priors:
+            priorSrc = priors
+        # print('utils.OperSplitter:', priorSrc)
+        priorGroups = [raw.replace('`1`', ',') for raw in priorSrc.split(',')]
         self.priorGroups = [[ n for n in g.split(' ') if n.strip()] for g in priorGroups]
-        self.opers = [oper for nn in self.priorGroups[:-1] for oper in nn]
+        self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
 
 
     def mainOper(self, elems:list[Elem])-> int:
@@ -106,8 +110,11 @@ class OperSplitter:
         obr='([{'
         cbr = ')]}'
         backAssoc = ['/:']
-        inBrs = [] # brackets which was opened from behind
-        # prels('~~ OperSplitter', elems)
+        # inBrs = [] # brackets which was opened from behind
+        # print('~- OperSplitter', len(elems))
+        # prels('~~ OperSplitter', elems, show=1)
+        if len(elems) < 2:
+            return -1
         lem = len(elems)
         if lem == 0:
             return -1 # empty input
@@ -115,18 +122,19 @@ class OperSplitter:
             curPos = lem
             obr='([{'
             cbr = ')]}'
-            dprint('prior=', prior, self.priorGroups[prior] )
+            # if len(self.priorGroups) < 500:
+            #     print('prior=', prior, self.priorGroups[prior] )
             step = -1
             eliter = range(lem - 1, -1, -1)
             if self.priorGroups[prior][0] in backAssoc:
-                # means that all opaers in group have the same direction of assoc
+                # means that all opers in group have the same direction of assoc
                 # print('OperSplitter. back-assoc', self.priorGroups[prior])
                 step = 1
                 curPos = -1
                 eliter = range(0, lem)
                 cbr='([{'
                 obr = ')]}'
-            
+            inBrs = [] # brackets which was opened from behind
             # for i in range(lem - 1, -1, -1):
             for i in eliter:
                 curPos += step
@@ -139,18 +147,22 @@ class OperSplitter:
                 
                 # counting brackets from tne end, closed is first
                 # dprint('ue:', i, ':', etx, '>>', '`'.join(inBrs))
-                if etx in cbr:
+                if etx and etx in cbr:
                     inBrs.append(etx)
+                    # print('inbr append: ', '>>', inBrs)
                     continue
-                if etx in obr:
+                if etx and etx in obr:
                     if len(inBrs):
                         last = inBrs.pop()
+                        # print('inbr pop: ',last, '>>', inBrs)
                     # dprint(' << ', etx, last)
                     # if len(inBrs) == 0 and etx in self.priorGroups[prior]:
                     #     return i
                     if i == 0 and etx in self.priorGroups[prior]:
+                        # print('end of prior / open', obr)
                         return 0
                     continue
+                # print('@#', etx, 'br:', inBrs)
                     # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
                 if len(inBrs) > 0:
                     continue
@@ -158,17 +170,19 @@ class OperSplitter:
                     # print('>>>>>>>> DEBUG 1')
                 if el.type != Lt.oper:
                     continue
+                if el.text not in self.opers:
+                    continue
                 if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
                     # unary case found, skip current pos
                     # dprint(' >> == unary case found:', i, el.text)
                     continue
                 if el.text in self.priorGroups[prior]:
                     # we found current split item
-                    dprint('oper-found> [%d ? %d]' % (i, curPos), '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
+                    # print('oper-found> [%d ? %d]' % (i, curPos), '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
 
                     return curPos # The main Result
         if isLex(elems[0], Lt.oper, unaryOperators):
-            dprint('oper-found> unary [0 : %s]' % elems[0].text ) 
+            # dprint('oper-found> unary [0 : %s]' % elems[0].text ) 
             return 0
         return -1 # debug output, won't happened in real case
 

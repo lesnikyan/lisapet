@@ -35,6 +35,7 @@ class CaseTuple(SubCase):
 
     def match(self, elems:list[Elem]) -> bool:
         # trivial check
+        # TODO: change to usage of OperSplitter
         if not (isLex(elems[0], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')')):
             return False
         cs = CaseCommas()
@@ -52,6 +53,9 @@ class CaseTuple(SubCase):
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
         dprint('CaseTuple.setSub: ', base, subs)
         for exp in subs:
+            if isinstance(exp, NothingExpr):
+                # empty position after comma
+                continue
             base.add(exp)
         return base
 
@@ -61,6 +65,7 @@ class CaseList(SubCase):
     def match(self, elems:list[Elem]) -> bool:
         # trivial check
         # TODO: add check for complex cases like [] + []
+        # print('CaseList match ', )
         lem = len(elems)
         if lem < 2:
             return False
@@ -70,17 +75,18 @@ class CaseList(SubCase):
             return True
         spl = OperSplitter()
         opInd = spl.mainOper(elems)
-        if opInd != 0:
-            return False
-        subElems = elems[1:-1]
-        opInd = spl.mainOper(subElems)
-        dprint('CaseList main oper ind: ', opInd)
-        dprint('CaseList main oper text: ', subElems[opInd].text)
-        # -1 : 1 varname
-        # > 0 and elem = `,` : several elems
-        # > 0 and elem not in [:;] one somplex expression
-        return opInd == -1 or (opInd > 0 and subElems[opInd].text not in ';:')
-        # return False
+        return opInd == 0
+        # if opInd != 0:
+        #     return False
+        # subElems = elems[1:-1]
+        # opInd = spl.mainOper(subElems)
+        # print('CaseList main oper ind: ', opInd)
+        # print('CaseList main oper text: ', subElems[opInd].text)
+        # # -1 : 1 varname
+        # # > 0 and elem = `,` : several elems
+        # # > 0 and elem not in [:;] one somplex expression
+        # return opInd == 0 or (opInd > 0 and subElems[opInd].text not in ';:')
+        # # return False
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         exp = ListExpr()
@@ -94,6 +100,9 @@ class CaseList(SubCase):
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
         dprint('CaseList.setSub: ', base, subs)
         for exp in subs:
+            if isinstance(exp, NothingExpr):
+                # empty position after comma
+                continue
             base.add(exp)
         return base
 

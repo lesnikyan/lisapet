@@ -39,10 +39,40 @@ class TestDev(TestCase):
 
 
 
+    def text_test1(self):
+        src = [1,2,3, 4, 5]
+        ptt = '_,2,_,*'.split(',')
+        si, pi = 0, 0
+        import re
+        numrx = re.compile(r'\d+')
+        ls = len(src)
+        res = None
+        while si < ls:
+            el = src[si]
+            qn = ptt[pi]
+            
+            if qn == '*':
+                res = True
+                break
+            
+            if qn == '_':
+                # if :
+                    pi += 1
+            
+            if numrx.match(qn):
+                pvv = int(qn)
+                if pvv == el:
+                    pi += 1
+                else:
+                    res = False
+                    break
+            
+            si += 1
+
     def _test_code(self):
         ''' '''
         code = r'''
-        print('res = ', nums)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 

@@ -122,7 +122,8 @@ def normilizeLexems(src:list[lex])->list[lex]:
     # split opers
     for x in src:
         i += 1
-        if not x.val:
+        if not x.val and x.ltype != Lt.text:
+            # print('#norm1:', x)
             continue
 
         if x.ltype == Lt.oper:
@@ -134,6 +135,7 @@ def normilizeLexems(src:list[lex])->list[lex]:
             continue
         prep.append(x)
     src = prep
+    # print('#norm2:', [(x.val, Lt.name(x.ltype), x.mark) for x in src])
     prep = []
     
     # post-opers part
@@ -159,7 +161,9 @@ def normilizeLexems(src:list[lex])->list[lex]:
                 prep[-1].val += x.val
                 continue
         prep.append(x)
-    return [s for s in prep if len(s.val) > 0]
+    
+    # print('#norm3:', [(x.val, Lt.name(x.ltype), x.mark) for x in src])
+    return [s for s in prep if len(s.val) > 0 or s.ltype == Lt.text]
 
 
 def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
@@ -182,10 +186,11 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
     # inRaw = False # for feature `raw string`
     dprint(' --- splitLine:', 'prevType=', Lt.name(prevType), '::', src)
     # dprint(' --- splitLine:', '::', src)
-    def nextRes(cur, curType, nval):
+    def nextRes(cur, cType, nval=''):
         wd = ''.join(cur)
-        # dprint('#3 >> p-cur, `%s`' % wd, ' curt = ', Lt.name(curType), '; next=', nval)
-        res.append(lex(wd, Mk.lex, type=curType))
+        # print('#3 >> p-cur, |%s|' % wd, ' curt = ', Lt.name(cType), '; next=', nval)
+        if cType not in [Lt.quot, Lt.none]:
+            res.append(lex(wd, Mk.lex, type=cType))
         cur = [nval]
         return [nval]
     
@@ -196,7 +201,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
     slen = len(src)
     for s in src:
         i += 1
-        # dprint('#6 ', cur, " s='%s'"%s, curType, '|', 'esc:', escMod)
+        # print('\n#6 ', cur, " s='%s'"%s, 'prev-type:', Lt.name(curType), '|', 'esc:', escMod)
         
         if escMod:
             if s not in c_esc_map:
@@ -211,7 +216,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
             nextRes(donePart, curType, '')
             cur, curType = nextPart, nextType
             continue
-        # dprint('#stype:', Lt.name(sType), '>>', s)
+        # print('#cur-type:', Lt.name(sType), '>>', '<%s>' %s)
         
         # close multi-comment
         if curType == Lt.mtcomm:
@@ -225,7 +230,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
         
         # TODO: use `` and ``` ``` quotes as raw string (no any escapes, instead of \`)
         if curType in [Lt.text, Lt.mttext]:
-            
+            # print('if text-type:', Lt.name(curType))
             if escMod:
                 # in the string and after esc slash
                 dprint('## in esc' ,  'multi:', openMultStr , '; cur:', cur, 's:', s)
@@ -244,7 +249,8 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 continue
 
             if curType == Lt.text and openQuote == s:
-                cur = nextRes(cur, curType, s)
+                # print('text / quote', openQuote ,'::', s, '>>', cur)
+                cur = nextRes(cur, curType, '')
                 curType = Lt.quot
                 cur = nextRes(cur, curType, '')
                 curType = Lt.none
@@ -252,7 +258,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 continue
             
             if i > 1 and curType == Lt.mttext and sType == Lt.quot:
-                # dprint('MTEXT Quot', src[i-2: i+1], ' open:', openMultStr)
+                # print('MTEXT Quot', src[i-2: i+1], ' open:', openMultStr)
                 if src[i-2: i+1] == openMultStr:
                     cur = nextRes(cur[:-2], curType, src[i-2: i+1])
                     curType = Lt.quot
@@ -263,6 +269,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 
             # TODO: esc \n \t
             cur.append(s)
+            # print('# 11 append:', cur)
             continue
         
         if curType == Lt.comm and i < slen:
@@ -273,12 +280,14 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 continue
 
         # ordinar case
+        # print('sType == curType', sType, curType)
         if sType == curType:
             cur.append(s)
             continue
 
         # ' asd ' , '' , '''  
         if sType == Lt.quot:
+            # print('type-quote/', s)
             if openQuote is None:
                 # start string
                 if i > 1 and src[i-2: i+1] in c_mlines:
@@ -300,12 +309,14 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
         cur = nextRes(cur, curType, s)
         curType = sType
     if cur:
+        # print('##>last elem')
         nextRes(cur, curType, None)
     
     if curType == Lt.text and openMultStr is None:
         raise ParseErr('Unclosed string in the and of line `%s`'% s)
-    # dprint('#a3:', src)
+    # print('#a3:', [(x.val, Lt.name(x.ltype), x.mark) for x in res])
     lexems = normilizeLexems(res)
+    # print('#a4:', [(x.val, Lt.name(x.ltype), x.mark) for x in lexems])
     res3 = {}
     if openMultStr is not None:
         res3['open_m_str'] = openMultStr
@@ -330,7 +341,7 @@ def splitLexems(text: str) -> list[TLine]:
                 exit(1);
             nextLine, endType, r3 = splitLine(s, lastType, **extArg)
             extArg = r3
-            dprint('splLex..', [(x.val, Lt.name(x.ltype), x.mark) for x in nextLine.lexems])
+            # print('splLex..', [(x.val, Lt.name(x.ltype), x.mark) for x in nextLine.lexems])
             # res.extend(nextLine)
             # dprint('--- split res --->', [(x.val, x.ltype) for x in nextLine.lexems])
             if res and lastType in [Lt.mtcomm, Lt.mttext] and endType == lastType:
@@ -349,10 +360,10 @@ def splitLexems(text: str) -> list[TLine]:
             if endType in [Lt.mtcomm, Lt.mttext]:
                 lastType = endType
         except ParseErr as exc:
-            exc.src = TLine(s, None)
+            exc.src = TLine(s, [])
             raise exc
         except Exception as exc:
-            pexc = ParseErr('Common exception has been happen', TLine(s, None), exc)
+            pexc = ParseErr('Common exception has been happen', TLine(s, []), exc)
             raise pexc
     # res.append(lex(0, Mk.line))
     return res
@@ -373,7 +384,7 @@ def elemLine(src:TLine)->CLine:
     ind = 0
     if len(src.lexems) == 0:
         return CLine() # or None
-    # dprint('@@lexms:', ','.join([lx.val for lx in src.lexems]))
+    # print('@@lexms:', ','.join([lx.val for lx in src.lexems]))
     # dprint('#@', '`%s`' % src.lexems[0].val, Lt.name(src.lexems[0].ltype))
     if src.lexems[0].ltype == Lt.space:
         # dprint('@@@@@@@@')

@@ -55,11 +55,11 @@ class TestErr(TestCase):
         for code in data:
             # try:
             # except LangError:
-            print('TEST.code: ', code)
+            # print('TEST.code: ', code)
             with self.assertRaises(InterpretErr) as cont:
                 rCtx, ctx =self.tctx()
                 self.doErr(code, ctx)
-                print('>>TT err:', cont.exception)
+                # print('>>TT err:', cont.exception)
 
     def test_err_interpret(self):
         ''' '''
@@ -76,10 +76,10 @@ class TestErr(TestCase):
         for code in data:
             # try:
             # except LangError:
-            print('TEST.code: ', code)
+            # print('TEST.code: ', code)
             with self.assertRaises(InterpretErr) as cont:
                 self.runErr(code)
-                print('>>TT err:', cont.exception)
+                # print('>>TT err:', cont.exception)
 
     def test_err_parse(self):
         ''' '''
@@ -94,10 +94,10 @@ class TestErr(TestCase):
         for code in data:
             # try:
             # except LangError:
-            print('TEST.code: ', code)
+            # print('TEST.code: ', code)
             with self.assertRaises(ParseErr) as cont:
                 self.runErr(code)
-                print('>>TT err:', cont.exception)
+                # print('>>TT err:', cont.exception)
 
 
 if __name__ == '__main__':

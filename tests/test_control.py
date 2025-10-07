@@ -64,54 +64,6 @@ class TestControl(TestCase):
         exp = [11, 22, 33, 300, 600, 900, 30, 35, 40, 45, 50, 1012, 1034, 1036, 1046]
         self.assertEqual(exp, rvar.vals())
 
-    def test_match_for_if_lambda(self):
-        ''' TODO: match with for loop, `if` statement in the same case line '''
-        code = r'''
-        c = 5
-        res = 0
-        func foo2(ff)
-            ff(11)
-        rrs = [] # [0 ; x <- [0..11]]
-        ff = x -> x * 10
-        for i <- [0..8]
-            print('i:', i)
-            res = 1
-            t = i + 10
-            match i
-                1 !- res = 10
-                2 !- 
-                    if res > 0 && res < 4
-                        print('c2', i, res)
-                        res *= 11 * i
-                3 !- res = foo2(x -> x ** 2)
-                4 !- f = x -> x * 12
-                    res = f(i)
-                5 !- res = foo2(ff) + i
-                6 !- 
-                    for j <- [0..5]
-                        print('c5', j, res)
-                        res += i
-                7 !- 
-                    for j = 1; j < 6; j = j + 1
-                        print('c7', j, res)
-                        res *= j
-                8 !- 
-                    if c= t + 100; c > 110 && t > 4
-                        print('c2', i, res)
-                        res = c
-                _ !- res = 1001
-            rrs <- res
-
-        print('rrs = ', rrs)
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        rvar = ctx.get('rrs').get()
-        self.assertEqual([1001, 10, 22, 121, 48, 115, 37, 120, 118], rvar.vals())
 
     def test_for_if_for_case(self):
         ''' '''
@@ -325,26 +277,6 @@ class TestControl(TestCase):
         ex.do(ctx)
         rvar = ctx.get('res').get()
         self.assertEqual([10, 20, 9, 12], rvar.vals())  
-
-    def test_match_val(self):
-        code = '''
-        a = 4
-        r1 = 0
-        b = 3
-        match a
-            1  !- r1 = 100
-            10 !- r1 = 200
-            b  !- r1 = 300
-            _  !- r1 = -2
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        exp = lex2tree(clines)
-        ctx = rootContext()
-        exp.do(ctx)
-        r1 = ctx.get('r1').get()
-        dprint('#t >>> r:', r1)
 
     def test_if_else(self):
         # code = '''

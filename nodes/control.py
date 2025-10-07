@@ -13,6 +13,7 @@ from vars import *
 from nodes.expression import *
 from nodes.iternodes import *
 from nodes.keywords import *
+from nodes.match_patterns import *
 
 
 # Structural blocks
@@ -106,54 +107,54 @@ class ElsFold:
         return self.top
 
 
-# MATCH-CASE
+# # MATCH-CASE
 
-class CaseExpr(ControlBlock):
-    ''' case in `match` block
-    '''
+# class CaseExpr(ControlBlock):
+#     ''' case in `match` block
+#     '''
     
-    # TODO: do we need result from `match` blok?
+#     # TODO: do we need result from `match` blok?
 
-    def __init__(self):
-        # super().__init__()
-        self.block = Block()
-        self.expect:Expression = None
+#     def __init__(self):
+#         # super().__init__()
+#         self.block = Block()
+#         self.expect:Expression = None
 
-    def add(self, exp:Expression):
-        self.block.add(exp)
+#     def add(self, exp:Expression):
+#         self.block.add(exp)
 
-    def setExp(self, exp:Exception):
-        self.expect = exp
+#     def setExp(self, exp:Exception):
+#         self.expect = exp
 
-    def doExp(self, ctx:Context):
-        self.expect.do(ctx)
+#     def doExp(self, ctx:Context):
+#         self.expect.do(ctx)
 
-    def matches(self, val:Var):
-        # simple equal value
-        # print('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
-        if self.expect.get().getVal() == val.getVal():
-            return True
+#     def matches(self, val:Var):
+#         # simple equal value
+#         # print('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
+#         if self.expect.get().getVal() == val.getVal():
+#             return True
 
-        # type case
-        et = self.expect.get()
-        if isinstance(et, VType) and et == val.getType():
-            return True
+#         # type case
+#         et = self.expect.get()
+#         if isinstance(et, VType) and et == val.getType():
+#             return True
 
-        # TODO: 
+#         # TODO: 
         
-        # list case
+#         # list case
         
-        # tuple case
+#         # tuple case
         
-        # dict case
+#         # dict case
         
-        # struct-constructor case
+#         # struct-constructor case
         
-        return False
+#         return False
     
-    def do(self, ctx:Context):
-        self.block.do(ctx)
-        self.lastVal = self.block.get()
+#     def do(self, ctx:Context):
+#         self.block.do(ctx)
+#         self.lastVal = self.block.get()
 
 
 class MatchExpr(ControlBlock):
@@ -161,32 +162,32 @@ class MatchExpr(ControlBlock):
     1. for unpack multiresults.
     2. for pattern matching like switch/case 
     match expr
-        123 -> expr
-        234 ->
+        123 !- expr
+        234 !-
             expr1
             expr2
         # type
-        nums:list | len(nums) > 0 -> nums[0]
-        x:int -> x + 2
+        nums:list | len(nums) > 0 !- nums[0]
+        x:int !- x + 2
         # sub condition
-        u:User | u.name = 'Vasya' -> dprint(u.lastName)
+        u:User | u.name = 'Vasya' !- dprint(u.lastName)
         # constructor-patters
-        u:User('Vasya') -> dprint(u.lastName)
-        _ -> expr
+        u:User{name:'Vasya'} !- dprint(u.lastName)
+        _ !- expr
     '''
 
     def __init__(self):
         super().__init__()
         self.match:Expression = None
         self.cases:list[CaseExpr] = []
-        self.defaultCase:CaseExpr = None
+        # self.defaultCase:CaseExpr = None
 
     def add(self, xcase:CaseExpr):
         if not isinstance(xcase, CaseExpr):
             raise InterpretErr('Trying add not-case sub-expression (%s) to `match` block' % xcase.__class__.__name__)
-        if isinstance(xcase.expect, VarExpr_):
-            self.defaultCase = xcase
-            return
+        # if isinstance(xcase.expect, VarExpr_):
+        #     self.defaultCase = xcase
+        #     return
         self.cases.append(xcase)
 
     def setMatch(self, exp:Expression):
@@ -195,17 +196,20 @@ class MatchExpr(ControlBlock):
     def do(self, ctx:Context):
         # print('Match.do1')
         self.match.do(ctx)
-        mctx = Context(ctx)
-        done = self.doCases(mctx)
-        if not done:
-            self.defaultCase.do(mctx)
+        done = self.doCases(ctx)
+        # if not done:
+        #     self.defaultCase.do(mctx)
 
-    def doCases(self, mctx:Context):
+    def doCases(self, ctx:Context):
         mval = self.match.get()
-        # print('Math. mval', mval)
+        mval = var2val(mval)
+        # print('Match. mval', self.match, mval)
         for cs in self.cases:
+            mctx = Context(ctx)
             cs.doExp(mctx)
-            if cs.matches(mval):
+            avar = mctx.get('a')
+            # print('a:', avar)
+            if cs.match(mval):
                 cs.do(mctx)
                 self.lastVal = cs.get()
                 return True

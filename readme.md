@@ -20,35 +20,40 @@ Content:
 - [Status](#status)
 - [Usage](#usage)
 - [Syntax](#syntax)
-1. [Basic things: vars, vals](#1-vars-vals-lists-assignment-context-of-vars)
-2. [Basic types](#2-numbers-strings-bool-types)
-3. [Block. If-statement](#3-sub-block-of-expressions-if)
-4. [Math and other operators](#4-math-operators-unary-operators)
-5. [Collections `[1,2]`, `{'b':2}`, `(1, 2, 3)`](#5-collections-list-array-tuple-dict-map)
+1. Basic things.
+    1. [Basic things: vars, vals](#11-vars-vals-lists-assignment-context-of-vars)
+    2. [Context](#12-execution-context)
+    3. [Basic types](#13-numbers-strings-bool-types)
+2. [Code blocks and formatting.](#2-sub-blocks-code-formatting)
+3. [`if`-statement](#3-if-statement-else)
+4. [Operators. Math, bool, unary, others.](#4-operators-math-unary-others)
+5. [Collections `[,]`, `{:}`, `(,)`](#5-collections-list-array-tuple-dict-map)
 6. [For-statement: `for i <- [1..5]`](#6-for-statement---operator)
 7. [Functions:`func foo()`](#7-function-definition-context-of-functions)
-8. [Dict](#8-dict-linear-and-block-constructor)
+8. [Dict `{'key':val}`](#8-dict-linear-and-block-constructor)
 9. Collection features:
     1. [append operator `nums <- 15`](#91-arrow-appendset-operator--)
     2. [deletion operator `data - [key]`](#92-minus-key---key-delete-operator)
     3. [plus for lists `[] + []`](#93-list-plus---)
 10. Struct: 
-    1. [Definition, constructor, fields](#10-struct)
+    1. [Definition, constructor `A{f:val}`, fields, `.` operator](#101-struct)
+    2. [Callable constructor `A(val)`](#102-constructor-function-typename)
 11. Struct, OOP:
-    1. [Struct: methods](#111-struct-method)
-    2. [Struct: inheritance](#112-struct-inheritance-multiple-inheritance-is-allowed)
-    2. [Struct: Callable constructor](#113-constructor-function-typename)
+    1. [Methods `x.foo()`](#111-struct-method)
+    2. [Inheritance `A(B)`](#112-struct-inheritance-multiple-inheritance-is-allowed)
 12. List features:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
-    1. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
+    2. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
 13. [Multiline expressions](#13-multiline-expressions-if-for-math-expr)
 14. [Builtin/native functions (print, iter,..)](#14-builtin-functions)
 15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
-16. [Match-statement](#16-match-statement)
+16. Match-statement
+    1. [Match, cases](#16-match-statement)
+    2. [List and tuple patterns](#162-matching-list-and-tuple)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
 19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
-20. [Inline block `a=1; b=2`](#20-one-line-block---operators)
+20. [Inline block `.. ; ..`  Inline controls `for /:`](#20-one-line-block---operators)
 21. [String formatting `<<`, `~" "` operators](#21-string-formatting)
 22. [Import modules](#22-import-modules)
 23. [Function as object](#23-function-as-an-object)
@@ -157,31 +162,46 @@ The Syntax section has been updated as new features have been added to the code,
 Done parts:  
 
 ### 0. Comments.
+Operators of comment lines:  
+`#` inline, up to end of line.  
+`#@`(open)  
+multiline (sub-line)  
+all text between open and close operators.   
+`@#`(close)  
 ```
 # one-line comment
 
 #@
 multiline comment
-#@
+@#
 
-#@ in-line comment @#
+x = #@ in-line comment @# 2 + 5
 ```
 
-### 1. Vars, vals, lists, assignment, context of vars
+### 1.1 Vars, vals, lists, assignment, context of vars
 Assigments of values of vars.  
-I common case w euse `=` operator for assignment value to new of already defined variable.  
-Default types of falues is: numeric types, string, list, dict, tuple.
+I common case we use `=` operator for assignment value to the new or already defined variable.  
+Default types of values is:  
+numeric types (`int`, `float`),  
+bool (with values: `true`, `false`).  
+Sequence and collection types: `string`, `list`, `dict`, `tuple`.  
+Complex types such as `struct` and `function`.  
 ```python
-x = 1
-name = 'Ramzes II'
-names = ['Alya', 'Valya', 'Olya']
+x = 1 # assignment
+x = 2 # reassignment
+iAmSuperman = false
+name1 = 'Ramzes II'
+names = [ name1, 'Alya', 'Valya', 'Olya']
 lastName = names[2]
 
 # multiple assignment
 a, b, c = 10, 20, 30
 ```
-
-### 2. Numbers, strings, bool. Types.
+### 1.2 Execution context.  
+In mechanics of language, each block of code is executed in specific context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
+So we can use all local things and any things defined in all levels above.  
+More about visibility of things see in sections of functions, closures, structs, importing.  
+### 1.3 Numbers, strings, bool. Types.
 ```python
 hello = "hello somebody!"
 'unary-quotes'
@@ -206,36 +226,75 @@ no:bool = false
 ```
 Types such as a collections, structs, functions, etc will be explaned next sections.
 
-### 3. Sub-block of expressions. If.
-Control structures have inner place with internal expressions, here we call it as an expression block.  
-Block separated by indent with one or more whitespaces. All indents should be equal.  
-If statement, comparison operators, bool operators.
-```python
-res = 100
-if x >= 10 | x < 2 && x != 0
-    res = 2000 + x * -10 - 700
-else
-    x = x ** 2
-    res = 1000 + x - 500
-```
+### 2. Sub-blocks, code-formatting.
+Control structures, data-structures, functions, etc. have inner place with internal line / expressions, here we call it as an expression block or sub-block.  
+Cild or sub block separated by indent with one or more whitespaces relaated to parent.  
+All indents should be equal.  
+Base block structures: `if`, `for`, `while`, `match-cases`, `function`.  
+Data structures cab have block version of definition (`struct`) or construct (`dict`, `list`).  
+Sone basically block structs also can have inline version of syntax (controls, sequence of expressions).  
+See more about inline syntax in next sections.  
 
+### 3. `if`-statement, `else`
+If statement, comparison operators, bool operators. 
+
+If is a basic control operator.  
+```python
+if condition
+    sub-expressions
+```
+As usual we have `else` - pair operator for `if`.  
+```python
+if condition
+    expr1
+else
+    expr2
+```
+`else` can be combined with a sub-`if`:  
+```python
+else
+    if cond
+        expr
+
+# the same as
+else if cond
+    expr
+```
+Condition can be any expression which returns bool result:  
+bool valaue  `true`, `false`
+`null`, `0` (means `false` in condition)  
+functions that return bool value,  
+comparison operators `<` `<=` `>` `>=` `==`,  
+logic operators `&&` `||` `!`  
+
+```python
+if x >= 10 | x < 2 && x != 0
+    res = x * 10
+else
+    y = x ** 2
+    res = 10 * y
+```
+`if` statement can have sub-expression before condition.  
+Usually it uses for local assignment or initialization that have relation to condition expression only (and maybe to sub-block).  
+Subexpression should be separated by semicolon `;`  
+Last of sub-expressions is taken as a condition.  
 ```python
 # if with sub-expressions: if sub-expr; condition ...
 if a = foo(); x < bar(a)
     ...
 ```
-
+Note.
+Inline operator `/:` has less priority than `;` so we have to cover all `if` sub-expressions by parentheses in the case with inline `if`-block.  
 ```python
-# some sugar: else-if
-if cond
-    code
-else if cond
-    code
-else
-    code
+a = 10; b = 2; 
+if (x = a + 1; y = b * 5; x > b) /: print(a, b, x, y)
 ```
+See more about [inline control expressions](#20-one-line-block---operators).  
 
-### 4. Math operators, unary operators
+### 4. Operators: math, unary, others.
+Arithmetic operators `+` `-` `*` `/` works as usual.  
+`%` - mod operator, returns remainder of division.  
+`**` - pow operator. `2 ** 3` = 8.
 ```python
 y = 5 + x * -3
 
@@ -294,8 +353,8 @@ Table of priority order:
 <- 
 ->
 = += -= *= /= %=  
-; 
 /:
+; 
 !-
 ```
 
@@ -522,7 +581,7 @@ nums += [7,8,9]
 >> [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
 
-### 10. Struct.  
+### 10.1 Struct.  
 Struct is a basic complex datatype.  
 Struct can have inner fields aka inner variable with name and type.  
 Keyword for declaration struct as custom type is a `struct`.  
@@ -551,6 +610,42 @@ r2 = aa.b.b1
 ```
 Struct fields have default values.
 numeric = 0, string = "", bool = false.
+
+
+### 10.2 Constructor-function `TypeName()`.  
+We can use function-like constructor instead of direct set of name:values in the curvy brackets.  
+There are two cases of such way.  
+1. Magic default constructor. It takes passed arguments in the amount of fields that struct type has, and makes instance using passed args in the same order as struct was defined. We have nothing to do before usage, just define the struct type.  
+```golang
+
+struct User
+    name: string
+    age: int
+
+user = User('Olgerd', 25)
+print(user.name)
+
+>> Olgerd
+
+```
+2. User-defined constructor. It's a regular function with the same name as struct type has. It should return the instance of the struct.  
+Usage in code the same as a magic default.  
+```golang
+
+struct User
+    name: string
+    age: int
+
+func User(uname:string, age:float)
+    valName = ~"mr.{uname}"
+    User{name: valName, age: toint(age)}
+
+user = User('Olgerd', 18 + 3 / 2)
+print(user.name, user.age)
+
+>> mr.Olgerd 19
+
+```
 
 ### 11.1 Struct method.  
 
@@ -589,41 +684,6 @@ b1 = B{b:1, a1:12, a2:'aa-2'}
 b1.f1(3, 4)
 # access to A-field from B-instance
 b1.a1 += 10
-```
-
-### 11.3 Constructor-function `TypeName()`.  
-We can use function-like constructor instead of direct set of name:values in the curvy brackets.  
-There are two cases of such way.  
-1. Magic default constructor. It takes passed arguments in the amount of fields that struct type has, and makes instance using passed args in the same order as struct was defined. We have nothing to do before usage, just define the struct type.  
-```golang
-
-struct User
-    name: string
-    age: int
-
-user = User('Olgerd', 25)
-print(user.name)
-
->> Olgerd
-
-```
-2. User-defined constructor. It's a regular function with the same name as struct type has. It should return the instance of the struct.  
-Usage in code the same as a magic default.  
-```golang
-
-struct User
-    name: string
-    age: int
-
-func User(uname:string, age:float)
-    valName = ~"mr.{uname}"
-    User{name: valName, age: toint(age)}
-
-user = User('Olgerd', 18 + 3 / 2)
-print(user.name, user.age)
-
->> mr.Olgerd 19
-
 ```
 
 
@@ -912,6 +972,53 @@ match a
     _  !- r1 = -2
 ```
 TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
+
+### 16.2 Matching list and tuple.
+List or tuple can be matched by special collection-patterns. They look similar to regular collections, but have some special features.  
+```python
+[12, b, _] !- ...
+```
+In collection patterns we can use several types of sub-expressions. They can be combined.  
+
+1.  Value in collection. Pattern matches if each element from pattern equals the element of such position in value we check.  
+```python
+match n
+    # list
+    [1,2,3] !- expr
+    
+    # tuple
+    (3,4,5) !- expr
+```
+2. Variable in collection `[a,b]`, `(a,b,c)`.  
+    Var in pattern will be assigned with the value according to position if pattern will be matched.  
+    Assigned var can be used in the sub block of current match-case.  
+```python
+match n
+    [a] !- print(a) # array with 1 element 
+        # in case block var `a` will contain value of n[0]
+        res = a * 100
+    [a,b,c] !- # any array with 3 elements
+        #vars a,b,c with values of list elements
+        res = a + b + c 
+```
+3. Wildcard `_` (means - any value).  
+    Wildcard don't assign anything, unlike of var-pattern.  
+```python
+match n
+    [_] !- # any array with 1 element
+    [1,_] !- # any arrays with 2 elemnts, and n[0] == 1
+    [_,_] !- # any array with 2 elements
+    (1,_) !- the same for tuple
+```
+Combined example:
+```python
+match n
+    (1, _) !- print('tuple with 1')
+    (a, b, _) !- sum = a + b
+    [a, 22, b, _] !- res = [a, b, a + b]
+```
+
+#TODO: dict pattern is planned `{k:v}`
 
 
 ### 17. multi-assignment
