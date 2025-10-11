@@ -153,8 +153,8 @@ def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
             # print('mt.found>', mtCase.__class__.__name__, '', elemStr(elems))
             pattr = mtCase.expr(elems)
             return pattr
-    # print('DEBUG: No current MTCase for `%s` ' % '_'.join([n.text for n in elems]))
-    raise InterpretErr('No current MTCase for `%s` ' % '_'.join([n.text for n in elems]))
+    # print('DEBUG: No current MTCase for `%s` ' % '~'.join([n.text for n in elems]))
+    raise InterpretErr('No current MTCase for `%s` ' % ''.join([n.text for n in elems]))
 
 
 def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
@@ -191,7 +191,7 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     return base
 
 def makeExpr(expCase:ExpCase, elems:list[Elem])->Expression:
-    dprint('makeExpr', [n.text for n in elems])
+    # dprint('makeExpr', [n.text for n in elems])
     if expCase.sub():
         return complexExpr(expCase, elems)
     return simpleExpr(expCase, elems)

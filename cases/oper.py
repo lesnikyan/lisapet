@@ -106,6 +106,8 @@ class CaseBinOper(SubCase):
             el = elems[i]
         # for el in elems:
             # skip parts in brackets: math or function calls
+            if el.text == '':
+                continue
             if el.text in '([{':
                 inBr += 1
                 continue
@@ -134,7 +136,7 @@ class CaseBinOper(SubCase):
         obr='([{'
         cbr = ')]}'
         inBrs = [] # brackets which was opened from behind
-        # prels('~~ CaseBinOper', elems)
+        # prels('~~ CaseBinOper', elems, show=1)
         for prior in range(lowesPrior, -1, -1):
             skip = -1
             # print('prior=', prior, self.priorGroups[prior] )
@@ -174,7 +176,7 @@ class CaseBinOper(SubCase):
                 
                 if el.text in self.priorGroups[prior]:
                     # we found current split item
-                    dprint('oper-expr>', '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
+                    # print('oper-expr>', '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
                     # assigMath = '+= -= *= /= %='
                     # if el.text in assigMath:
                     #     opcase = CaseBinAssign()

@@ -180,6 +180,135 @@ class MCTuple(MCSerialVals):
     def addSub(self, sub:MCElem):
         self.elems.append(sub)
 
+
+class MCKVPair(MCElem):
+    ''' local subvar in pattern like: [a,b,c] '''
+
+    def __init__(self, key, val,  src=None):
+        super().__init__(src)
+        # print('MCPairs init: ', self.__class__.__name__, key, val)
+        self.key:MCElem = key
+        self.val:MCElem = val
+
+    def do(self, ctx:Context):
+        # print('MCPairs.do', self.key)
+        self.key.do(ctx)
+        self.val.do(ctx)
+        
+    def match(self, vals:list):
+        pass
+
+class MCDPairKVal(MCKVPair):
+    ''' 'abc':_ '''
+        
+    def match(self, vals:dict):
+        k = var2val(self.key.exp.get()).getVal()
+        kkl = list(vals.keys())
+        # print('>>~>>', self.key.exp.get(), list(vals.keys()) , ' >> >>', k in kkl)
+        n, m = Null(), Null()
+        # print('m = n', n == m)
+        # print('PairKVal - match:', k, ' in :', vals)
+        if k not in vals:
+            return 0, False
+        # print('PairKVal - key passed', 'val:', vals[k])
+        if not self.val.match(vals[k]):
+            return 0, False
+        vals.pop(k)
+        return vals, True
+
+class MCDPairVVal(MCKVPair):
+    ''' 'abc':_ '''
+        
+    def match(self, vals:dict):
+        # any key matches, finding val
+        for k,v in vals.items():
+            if self.val.match(v):
+                kv = raw2val(k)
+                self.key.match(kv) # if var-pattr of key
+                vals.pop(k)
+                return vals, True
+        return 0, False
+
+class MCDPairAny(MCKVPair):
+    ''' var | _ '''
+
+    def match(self, vals:dict):
+        # any val matches, any first
+        if len(vals) < 1:
+            return 0, False
+        for k, v in vals.items():
+            kv = raw2val(k)
+            if self.key.match(kv) and self.val.match(v):
+                vals.pop(k)
+                return vals, True
+        return 0, False
+
+
+class MCDict(MCContr):
+    ''' {}, {_:v}, {a:b}, {'a':b} '''
+    
+    def __init__(self,  src=None):
+        super().__init__(src)
+        self.elems:list[MCKVPair] = []
+
+    def addSub(self, sub:MCElem):
+        self.elems.append(sub)
+
+    def do(self, ctx:Context):
+        # print('MCDict.do', [em.__class__.__name__ for em in self.elems])
+        for exp in self.elems:
+            exp.do(ctx)
+        # sort by type
+        # 1. const, 2. var, 3. _
+        kc = [] # key is const-pattern
+        vrr = [] # key is var-pattern
+        _k = [] # key is _
+        _v = [] # val is val-pattern
+        # const-pattern has an advantage over `any` patterns (var | _)
+        # key - over value
+        for ee in self.elems:
+            ee.do(ctx)
+            # print('MCDict.do', ee.__class__.__name__)
+            if isinstance(ee.key, MCValue):
+                kc.append(ee)
+            elif isinstance(ee.key, MCSubVar):
+                if isinstance(ee.val, MCValue):
+                    _v.append(ee)
+                else:
+                    vrr.append(ee)
+            elif isinstance(ee.key, MC_under):
+                if isinstance(ee.val, MCValue):
+                    _v.append(ee)
+                else:
+                    _k.append(ee)
+            
+        sels = kc + _v + vrr + _k
+        self.elems = sels
+
+    def match(self, val:DictVal):
+        if not isinstance(val.getType(), TypeDict):
+            return False
+        elemCount = len(self.elems)
+        # vKeys = val.getKeys()
+        # print('MCDict.match', [em.__class__.__name__ for em in self.elems])
+        # vvals = val.vals()
+        vvals = val.rawVals()
+        # print('>>', vvals)
+        if len(vvals) != elemCount:
+            # print('Dc mt count failed')
+            return False
+        # if len(vvals) == 0:
+        #     return True
+        for pttr in self.elems:
+            # pk, pv = pttr.key, pttr.val
+            rem, ok = pttr.match(vvals)
+            # print('Dpt.match', pttr.__class__.__name__, ok, rem)
+            if ok:
+                vvals = rem
+        if len(vvals) == 0:
+            return True
+
+
 # -----------------
 
     

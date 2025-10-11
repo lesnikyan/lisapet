@@ -40,6 +40,13 @@ class Null:
 
     def __repr__(self):
         return 'null'
+    
+    def __eq__(self, other):
+        # print('(>', other,'<)')
+        return isinstance(other, Null)
+
+    def __hash__(self):
+        return hash('Null-object')
 
     # def get(self):
     #     return Null()
@@ -288,6 +295,9 @@ class DictVal(Collection):
 
     def vals(self):
         return {k: v.get() for k,v in self.data.items()}
+
+    def rawVals(self):
+        return {k: v for k,v in self.data.items()}
 
     def __str__(self):
         def key(k):
