@@ -50,6 +50,7 @@ Content:
 16. Match-statement
     1. [Match, cases](#16-match-statement)
     2. [List and tuple patterns](#162-matching-list-and-tuple)
+    3. [Dict pattern](#163-matching-dict)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
 19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
