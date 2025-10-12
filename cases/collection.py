@@ -76,17 +76,6 @@ class CaseList(SubCase):
         spl = OperSplitter()
         opInd = spl.mainOper(elems)
         return opInd == 0
-        # if opInd != 0:
-        #     return False
-        # subElems = elems[1:-1]
-        # opInd = spl.mainOper(subElems)
-        # print('CaseList main oper ind: ', opInd)
-        # print('CaseList main oper text: ', subElems[opInd].text)
-        # # -1 : 1 varname
-        # # > 0 and elem = `,` : several elems
-        # # > 0 and elem not in [:;] one somplex expression
-        # return opInd == 0 or (opInd > 0 and subElems[opInd].text not in ';:')
-        # # return False
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         exp = ListExpr()
@@ -207,7 +196,7 @@ class CaseSlice(SubCase):
         subPart = elems[opInd+1 : -1]
         hasColon = cc.match(subPart)
         _, ccParts = cc.split(subPart)
-        dprint('CaseSlice match', hasColon, ccParts, len(ccParts))
+        # dprint('CaseSlice match', hasColon, ccParts, len(ccParts))
         return hasColon and (len(ccParts) == 2 or isLex(subPart[-1], Lt.oper, ':'))
 
 
@@ -221,7 +210,7 @@ class CaseSlice(SubCase):
         return exp, [varexp]+ keys
 
     def setSub(self, base:CollectElemExpr, subs:Expression|list[Expression])->Expression:
-        dprint('CaseSlice setSub', base, subs)
+        # dprint('CaseSlice setSub', base, subs)
         base.setVarExpr(subs[0])
         base.setKeysExpr(subs[1], subs[2])
         return base
@@ -236,13 +225,13 @@ class CaseDictLine(SubCase):
     def match(self, elems:list[Elem]) -> bool:
         if not isBrPair(elems, '{','}'):
             return False
-        
+        # prels('dict-c match', elems, show=1)
         if len(elems) == 2:
-            dprint('case-dict empty')
+            # dprint('case-dict empty')
             return True
 
         ind = bracketsPart(elems)
-        # dprint('case-dict ind', ind)
+        # print('case-dict ind', ind)
         if ind != -1:
             return False
 
@@ -269,6 +258,7 @@ class CaseDictLine(SubCase):
             # return False
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        # prels('dict split', elems, show=1)
         exp = DictExpr()
         sub = elems[1:-1]
         cs = CaseCommas()
@@ -276,15 +266,14 @@ class CaseDictLine(SubCase):
         subs = [sub] # 1 elem
         if cs.match(sub):
             _, subs = cs.split(sub)
-            # for pair in subs:
-            #     if not cc.match(pair):
-            #         raise InerpretErr('Error while split sub-dict expression: `%s` ' % elemStr(pair))
-            #     psub = cc.split(pair)
         return exp, subs
 
     def setSub(self, base:DictExpr, subs:Expression|list[Expression])->Expression:
-        dprint('CaseDict.setSub: ', base, subs)
+        # print('CaseDict.setSub: ', base, subs)
         for exp in subs:
+            if isinstance(exp, NothingExpr):
+                # empty position after comma
+                continue
             base.add(exp)
         return base
 

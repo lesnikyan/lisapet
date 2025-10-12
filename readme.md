@@ -980,7 +980,7 @@ List or tuple can be matched by special collection-patterns. They look similar t
 ```
 In collection patterns we can use several types of sub-expressions. They can be combined.  
 
-1.  Value in collection. Pattern matches if each element from pattern equals the element of such position in value we check.  
+1.  Const value in collection. Pattern matches if each element from pattern equals the element of such position in value we check.  
 ```python
 match n
     # list
@@ -1018,7 +1018,47 @@ match n
     [a, 22, b, _] !- res = [a, b, a + b]
 ```
 
-#TODO: dict pattern is planned `{k:v}`
+### 16.3 Matching dict.
+
+Base pattern is similar to regular inline constructor of dict: `{key:val, ...}`.  
+Var, value, `_` cases applicable for dicts.  
+
+1. Emplty dict:
+```python
+{} !- ...
+```
+2. Dict with 1 element:
+```python
+match x
+    {1:_} !- # numeric key, any val
+    {'name':_} !- # string key any val
+    {_:100500} !- # any key, but const val
+    {k:v} !- # local vars in key and val
+    {_:_} !- # wildcard - any key, any val, will never matched here
+```
+3. Dict with many subpatterns. 
+Subpatterns is defined like pairs in dict, over comma.  
+```python
+    !- {'name':nameVal, 'age':25, _:100500, a:b}
+    !- {'a':a, 'b':_, c:'ccc'}
+```
+Var and `_` have the same matching result, so `{k:v}` after `{_:_}` will never matched.  
+Within one pattern with many parts subpatterns have priority by predictability of result (const before any, left(key) before right(val)).  
+At first pattern looks for keys (left-part of subpattern) with const values, like `{, 'name':_,}`, if failed then tries match sub-cases with const val in right-part `{, _:'Harry',}`.  
+If pattern didn't match const cases, it will apply first pattern with key-var or wildcard `{key1:val1}`.  
+Note. Patterns with right-values `_:'abc'` take more time. Avoid them without neccessary.  
+
+In the key position all `null` instances are equal.  
+`0`, `''` and `null` are different cases.  
+```python
+x = {null:123}
+match x
+    {0:_} !- ...
+    {null:val} !- # will matched
+```
+
+TODO: cases with unnecessary `?` and variative num of elements `*` are planned.  
+
 
 
 ### 17. multi-assignment

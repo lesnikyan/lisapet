@@ -54,7 +54,7 @@ class MTString(MTCase, CaseString):
     '''
     def expr(self, elems:list[Elem])-> Expression:
         ''' Pattern: val '''
-        # print('MTString.expr', elemStr(elems))
+        # print('>> MTString.expr', elemStr(elems))
         subEx = super().expr(elems)
         expr = MCValue(subEx, elems[0].text)
         return expr
@@ -134,6 +134,7 @@ class CommaSeparatedSequence(MTContr):
     
     def match(self, elems:list[Elem]) -> bool:
         lem = len(elems)
+        # prels('CommaSeparatedSequence', elems, show=1)
         if lem < 2:
             return False
         if not self.matchEdges(elems):
@@ -143,11 +144,16 @@ class CommaSeparatedSequence(MTContr):
         priors = '( ) [ ] { } , | , : ,  `1` '
         spl = OperSplitter(priors)
         opInd = spl.mainOper(elems)
+        # print('>>>>>>>>>>>>', opInd)
         if opInd != 0:
             return False
         subElems = elems[1:-1]
         opInd = spl.mainOper(subElems)
-        return opInd == -1 or (opInd > 0 and subElems[opInd].text not in ';:')
+        nosub = ';:'
+        if isLex(elems[0], Lt.oper, '{'):
+            # {a:b}
+            nosub = ';'
+        return opInd == -1 or (opInd > 0 and subElems[opInd].text not in nosub)
 
     def split(self, elems:list[Elem]):
         sub = elems[1:-1]
@@ -202,15 +208,59 @@ class MTTuple(CommaSeparatedSequence):
 
 
 class MTColPair(MTContr, CaseColon):
-    ''' * : * '''
+    ''' pair with colon
+        * : * 
+    '''
     def match(self, elems:list[Elem]) -> bool:
-        return False
+        # print('MTColPair.match')
+        return super(CaseColon,self).match(elems)
     
+    def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        _, parts = super(CaseColon,self).split(elems)
+        if len(parts) != 2:
+            raise InterpretErr("Bad count of pair parts in MTColPair")
+        # print('MTColPair.expr', parts)
+        ekey = findCase(parts[0]).expr(parts[0])
+        eval = findCase(parts[1]).expr(parts[1])
+        exp = None
+        if isinstance(ekey, MCValue):
+            exp = MCDPairKVal(ekey, eval)
+        elif isinstance(ekey, MCSubVar):
+            if isinstance(eval, MCValue):
+                exp = MCDPairVVal(ekey, eval)
+            else:
+                exp = MCDPairAny(ekey, eval)
+        elif isinstance(ekey, MC_under):
+            if isinstance(eval, MCValue):
+                exp = MCDPairVVal(ekey, eval)
+            else:
+                exp = MCDPairAny(ekey, eval)
+        else:
+            exp = MCKVPair(ekey, eval)
+            # print('MTCol 1')
+        # print('MTColPair', elemStr(elems), exp, ekey, eval)
+        return exp
 
-class MTDict(MTContr, CaseDictLine):
+class MTDict(CommaSeparatedSequence):
     ''' '''
+    
+    def matchEdges(self, elems:list[Elem]):
+        return (isLex(elems[0], Lt.oper, '{') and isLex(elems[-1], Lt.oper, '}'))
+    
     def match(self, elems:list[Elem]) -> bool:
-        return False
+        if not super().match(elems):
+            return False
+        return True
+        # TODO: more detail check of sub expressions
+
+    def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        subPtts = self.split(elems)
+        exp = MCDict()
+        self.setSubs(exp, subPtts)
+        return exp
+
+
+
 
 class MTStruct(MTContr, CaseStructConstr):
     ''' '''
@@ -220,15 +270,21 @@ class MTStruct(MTContr, CaseStructConstr):
 class MTFail(MTCase):
     ''' case of incorrect pattern-syntax '''
 
+    def expr(self, elems:list[Elem]):
+        raise InterpretErr("Incorrect pattern-matching sequence")
+
 
 pMListInnerCases:list[MTCase] = [
-    MTVal(), MTVar(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MTE_(), MTEStar(), MTEQMark(),
+    MTVal(), MTE_(), MTVar(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MTEStar(), MTEQMark(), MTColPair(), 
 ]
 
 
 def findCase(elems:list[Elem])->MTCase:
+    # print('finCase', elems)
+    # prels('findCase1:', elems, show=1)
     for cs in pMListInnerCases:
         if cs.match(elems):
+            # print('finCase >>> ', cs.__class__.__name__)
             return cs
     return MTFail()
 

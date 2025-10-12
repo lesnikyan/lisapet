@@ -39,6 +39,7 @@ def raw2val(raw):
         case int(): t = TypeInt
         case float(): t= TypeFloat
         case str(): t = TypeString
+        case Null(): t = TypeNull()
 
     return Val(raw, t)
 
@@ -91,5 +92,29 @@ def elem2val(elem:Elem)->Var:
             return Val(bool(elem.text), TypeBool())
         if elem.text == 'null':
             return Val(Null(), TypeNull())
-            
+
+
+# def raw2val2(a)->Val:
+#     ''' make Val obj from value of simple native type
+#         (maybe collection too)'''
+#     t = None
+#     if isinstance(a, (int)):
+#         t = TypeInt()
+#     if isinstance(a, (float)):
+#         t = TypeFloat()
+#     if isinstance(a, (bool)):
+#         t = TypeBool()
+#     if isinstance(a, (str)):
+#         t = TypeString()
+#     # if isinstance(a, (list)):
+#     #     t = TypeList()
+#     # if isinstance(a, (dict)):
+#     #     t = TypeDict()
+#     # if isinstance(a, (tuple)):
+#     #     t = TypeTuple()
+#     # if isinstance(a, ()):
+#     #     t = Type
+
+#     return Val(a, t)
+
 

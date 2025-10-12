@@ -38,6 +38,55 @@ class TestDev(TestCase):
     '''
 
 
+    def _test_match_list_maybe(self):
+        ''' '''
+        code = r'''
+        
+        nn = [[], [1], [1,7], [1,2], 
+            [7], [7,2],[111,222],[1,3,7],[111,222,333],
+            # [2],[2,3], [11,3,22],[3,4,5],[3,4],
+            # [4,5,6,7,8],
+            # [1..10], 
+            1
+        ]
+        res = []
+        
+        for n <- nn
+            match n
+
+                _ !- res <- [n, 3999]
+        # 
+        print('res = ', res)
+        '''
+        _='''
+        
+                # [?] !- res <- [n, 2088]
+                # [*] !- res <- [n, 2088]
+                # [3,_,?] !- res <- [n, 222]
+                # [2,?] !- res <- [n, 222]
+                # [?,3] !- res <- [n, 222]
+                # [?,3,?] !- res <- [n, 222]
+                # [4,*] !- res <- [n, 222]
+                # [4,5,*] !- res <- [n, 222]
+                # [_,5,*] !- res <- [n, 222]
+                # [*,6,*] !- res <- [n, 222]
+                # [*,8] !- res <- [n, 222]
+                # [_,_,_,*] !- res <- [n, 222]
+                # [*] !- res <- [n, 222]
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        exp = [
+        ]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
 
     def text_test1(self):
         src = [1,2,3, 4, 5]
@@ -69,9 +118,10 @@ class TestDev(TestCase):
             
             si += 1
 
-    def _test_code(self):
+    def test_code(self):
         ''' '''
         code = r'''
+        dd = {'aa':'11'}
         # print('res = ', res)
         '''
         code = norm(code[1:])
@@ -82,7 +132,9 @@ class TestDev(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         ex.do(ctx)
-        # rvar = ctx.get('res')
+        # rvar = ctx.get('dd')
+        # dd = rvar.get().vals()
+        # print('>>', dd.values())
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
         # self.assertEqual([], rvar.vals())

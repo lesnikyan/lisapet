@@ -29,41 +29,41 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
-    def _test_match_list_maybe(self):
+
+    def test_match_dict_other(self):
         ''' '''
         code = r'''
         
-        nn = [[], [1], [1,7], [1,2], 
-            [7], [7,2],[111,222],[1,3,7],[111,222,333],
-            # [2],[2,3], [11,3,22],[3,4,5],[3,4],
-            # [4,5,6,7,8],
-            # [1..10], 
-            1
+        nn = [
+            {'aa':11}, {'bb':22}, {'aa':'33'}, {'aa3':'43'},
+            {'aa':'-33','bb':'-44'}, {'aa':'-33','dd':'-44'},  
+            {'aaa':'-33','ee':'-44'}, {'77':'-77', '88':'-88'}, 
+            {'a1':'_011','a2':'_022','a3':'_033'}, 
+            {'b1':'_111', 'b2':'_122', 'b3':'_133'}, {'c1':'211', 'c2':'222', 'c3':'233'}, 
+            {'d1':'__3', 'd2':'__2', 'd3':'__1'}, 
         ]
         res = []
         
         for n <- nn
+            # print('nn:', n)
             match n
-
-                _ !- res <- [n, 3999]
+                {'bb':v} !- res <- [n, v, 18]
+                {k:'33'} !- res <- [n, 19]
+                {k:v} !- res <- [n, (k,v), 21]
+                {'aa':v1, 'bb':v2} !- res <- [n, (v1, v2), 22]
+                {'aa':v1, _:v2} !- res <- [n, 23]
+                {_:v1, 'ee':v2} !- res <- [n, (v1,v2), 25]
+                {'77': val, _:_} !- res <- [n, 27]
+                {a:b, c:d} !- res <- [n, 28]
+                {'a1':v1, 'a2':v2, _:v3} !- res <- [n, 31]
+                {'b2':v2, 'b3':v3, _:v1} !- res <- [n, 32]
+                {'c3':v3, k2:'222', k1:v1} !- res <- [n, 33]
+                {a:'__1', b:c, _:_} !- res <- [n, 335] # doubtful case, value of key in dict is not unique
+                {a:b, c:d, e:f} !- res <- [n, 36]
+                _ !- res <- [n, 2999]
+            # print('nres:', res)
         # 
-        print('res = ', res)
-        '''
-        _='''
-        
-                # [?] !- res <- [n, 2088]
-                # [*] !- res <- [n, 2088]
-                # [3,_,?] !- res <- [n, 222]
-                # [2,?] !- res <- [n, 222]
-                # [?,3] !- res <- [n, 222]
-                # [?,3,?] !- res <- [n, 222]
-                # [4,*] !- res <- [n, 222]
-                # [4,5,*] !- res <- [n, 222]
-                # [_,5,*] !- res <- [n, 222]
-                # [*,6,*] !- res <- [n, 222]
-                # [*,8] !- res <- [n, 222]
-                # [_,_,_,*] !- res <- [n, 222]
-                # [*] !- res <- [n, 222]
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 
@@ -73,19 +73,102 @@ class TestMatch(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         ex.do(ctx)
-        exp = [
-        ]
+        exp = [[{'aa': 11}, ('aa', 11), 21], [{'bb': 22}, 22, 18], [{'aa': '33'}, 19], [{'aa3': '43'}, ('aa3', '43'), 21],
+               [{'aa': '-33', 'bb': '-44'}, ('-33', '-44'), 22], [{'aa': '-33', 'dd': '-44'}, 23], [{'aaa': '-33', 'ee': '-44'}, ('-33', '-44'), 25],
+               [{'77': '-77', '88': '-88'}, 27], [{'a1': '_011', 'a2': '_022', 'a3': '_033'}, 31], [{'b1': '_111', 'b2': '_122', 'b3': '_133'}, 32],
+               [{'c1': '211', 'c2': '222', 'c3': '233'}, 33], [{'d1': '__3', 'd2': '__2', 'd3': '__1'}, 335]]
         rvar = ctx.get('res').get()
         self.assertEqual(exp, rvar.vals())
+
+    def test_match_dict_empty_cases(self):
+        ''' '''
+        code = r'''
+        
+        nn = [
+            {'':''}, {'_':'100'}, {' ':101}, {0:102},
+            {'':'-11',' ':'-22'},
+            {'66':'-66', null:'-67'},
+        ]
+        res = []
+        
+        for n <- nn
+            # print('nn:', n)
+            match n
+                {0:_} !- res <- [n, 19]
+                {'':_} !- res <- [n, 20]
+                {' ':_} !- res <- [n, 21]
+                {'_':v} !- res <- [n, (v,), 22]
+                {k:v} !- res <- [n, (k,v), 23]
+                {null:v, _:_} !- res <- [n, 25]
+                {'':v, _:_} !- res <- [n, 26]
+                _ !- res <- [n, 2999]
+            # print('nres:', res)
+        # 
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        exp = [[{'': ''}, 20], [{'_': '100'}, ('100',), 22], [{' ': 101}, 21], [{0: 102}, 19],
+               [{'': '-11', ' ': '-22'}, 26], [{'66': '-66', Null(): '-67'}, 25]]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
+    def test_match_dict_base(self):
+        ''' '''
+        code = r'''
+        
+        nn = [
+            1, (,), [], {},
+            {1:10}, {'aa':11}, {'bb':22}, {'cc':'33'},
+            {'a1':'_011','a2':'_022','a3':'_033'}
+        ]
+        res = []
+        
+        for n <- nn
+            # print('nn:', n)
+            match n
+                () !- res <- [n, 11]
+                [] !- res <-   [n, 12]
+                {} !- res <- [n, 13]
+                {1:_} !- res <- [n, 16] # num key
+                {'aa':_} !- res <- [n, 17] # str key
+                {k:'33'} !- res <- [n, 19] # key va and str val
+                {_:_} !- res <- [n, 21] # any : any
+                {'aa':v1, _:_} !- res <- [n, 23] # 2 pairs
+                {'a1':v1, 'a2':v2, _:v3} !- res <- [n, 31] # 3 pairs, 2 key vals
+                _ !- res <- [n, 2999]
+            # print('nres:', res)
+        # 
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        exp = [[1, 2999], [(), 11], [[], 12], [{}, 13], [{1: 10}, 16],
+               [{'aa': 11}, 17], [{'bb': 22}, 21], [{'cc': '33'}, 19],
+               [{'a1': '_011', 'a2': '_022', 'a3': '_033'}, 31]]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
 
     def test_match_tuple_vars(self):
         ''' '''
         code = r'''
         
-        nn = [(,), 
-            (1,), (1,2), (1,7),
-            (11,3,22), (1,2,3),
-            # (7), (7,2),(111,222),(1,3,7),(111,222,333),
+        nn = [(,), (1,), (2,), (7),  
+            (1,2), (1,7), (7,2),(111,222),
+            (11,3,22), (1,2,3), (1,3,7),(111,222,333),
             1
         ]
         res = []
@@ -94,13 +177,13 @@ class TestMatch(TestCase):
             # print('nn:', n)
             match n
                 () !- res <- [n, 11]
+                (2) !- res <- [n, 11]
                 (a) !- res <-   [n, (a,), 12]
                 (_) !- res <- [n, 19] # shouldn't be used because prev
                 (a,2) !- res <- [n, (a,), 13]
                 (a,b) !- res <- [n, (a,b), 14]
-                (a,_,1) !- res <- [n, (a,), 23]
-                (a,_,3) !- res <- [n, (a,), 23]
-                (a,b,22) !- res <- [n, (a,b), 23]
+                (a,_,3) !- res <- [n, (a,), 21]
+                (a,b,22) !- res <- [n, (a,b), 222]
                 (a,b,c) !- res <- [n, (a,b,c), 26]
                 _ !- res <- [n, 2999]
             # print('nres:', res)
@@ -120,6 +203,9 @@ class TestMatch(TestCase):
                [(11, 3, 22), (11, 3), 23], [(1, 2, 3), (1,), 23], 
                [1, 2999]
         ]
+        exp = [[(), 11], [(1,), (1,), 12], [(2,), 11], [7, 2999], 
+               [(1, 2), (1,), 13], [(1, 7), (1, 7), 14], [(7, 2), (7,), 13], [(111, 222), (111, 222), 14], 
+               [(11, 3, 22), (11, 3), 222], [(1, 2, 3), (1,), 21], [(1, 3, 7), (1, 3, 7), 26], [(111, 222, 333), (111, 222, 333), 26], [1, 2999]]
         rvar = ctx.get('res').get()
         self.assertEqual(exp, rvar.vals())
 

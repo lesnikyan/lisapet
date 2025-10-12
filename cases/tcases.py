@@ -125,13 +125,15 @@ def bracketsPart(elems:list[Elem])->int:
         return -1
     for i in range(len(elems)):
         ee = elems[i]
-        dprint(' >>> ', ee.text)
+        # print(' >>> ', ee.text)
         # if inBr:
+        if ee.text == '':
+            continue
         if ee.text in cbr :
-            dprint('#close', ee.text)
+            # print('#close', ee.text)
             if obr.index(inBr[-1]) != cbr.index(ee.text):
-                # dprint('# ee:', ee.text, 'inbr:', inBr)
-                raise ParseErr('Incorrect brackets combinations %s on position %d %s ' % ''.join([n.text for n in elems]))
+                # print('# ee:', ee.text, 'inbr:', inBr, ' ,, cbr:', cbr)
+                raise ParseErr('Incorrect brackets combinations %s on position ' % ''.join([n.text for n in elems]))
             # close brackets
             inBr = inBr[:-1]
             if len(inBr) == 0:
