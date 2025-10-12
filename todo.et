@@ -84,7 +84,7 @@
 14.4 match cases
     ## pattern quantifiers: 
         `_` - some one, 
-        `?` - maybe one (nothing or one)
+        `?` - maybe one (nothing or one), for dict means full pair
         `*` - any things (nothing or more), for this implementation - applicable to the last position in sequene only
     ## quantifier works only in value-role, it can't be part of math or logic expression
     [?, *], [5, *], {_:'abc'} - is ok

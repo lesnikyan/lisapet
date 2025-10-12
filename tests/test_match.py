@@ -85,7 +85,7 @@ class TestMatch(TestCase):
         code = r'''
         
         nn = [
-            {'':''}, {'_':'100'}, {' ':101},
+            {'':''}, {'_':'100'}, {' ':101}, {0:102},
             {'':'-11',' ':'-22'},
             {'66':'-66', null:'-67'},
         ]
@@ -94,6 +94,7 @@ class TestMatch(TestCase):
         for n <- nn
             # print('nn:', n)
             match n
+                {0:_} !- res <- [n, 19]
                 {'':_} !- res <- [n, 20]
                 {' ':_} !- res <- [n, 21]
                 {'_':v} !- res <- [n, (v,), 22]
@@ -113,7 +114,7 @@ class TestMatch(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         ex.do(ctx)
-        exp = [[{'': ''}, 20], [{'_': '100'}, ('100',), 22], [{' ': 101}, 21],
+        exp = [[{'': ''}, 20], [{'_': '100'}, ('100',), 22], [{' ': 101}, 21], [{0: 102}, 19],
                [{'': '-11', ' ': '-22'}, 26], [{'66': '-66', Null(): '-67'}, 25]]
         rvar = ctx.get('res').get()
         self.assertEqual(exp, rvar.vals())
