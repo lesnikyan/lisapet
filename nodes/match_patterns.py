@@ -254,10 +254,7 @@ class MCDict(MCContr):
     def addSub(self, sub:MCElem):
         self.elems.append(sub)
 
-    def do(self, ctx:Context):
-        # print('MCDict.do', [em.__class__.__name__ for em in self.elems])
-        for exp in self.elems:
-            exp.do(ctx)
+    def sortSubs(self):
         # sort by type
         # 1. const, 2. var, 3. _
         kc = [] # key is const-pattern
@@ -267,7 +264,6 @@ class MCDict(MCContr):
         # const-pattern has an advantage over `any` patterns (var | _)
         # key - over value
         for ee in self.elems:
-            ee.do(ctx)
             # print('MCDict.do', ee.__class__.__name__)
             if isinstance(ee.key, MCValue):
                 kc.append(ee)
@@ -284,6 +280,11 @@ class MCDict(MCContr):
             
         sels = kc + _v + vrr + _k
         self.elems = sels
+
+    def do(self, ctx:Context):
+        # print('MCDict.do', [em.__class__.__name__ for em in self.elems])
+        for exp in self.elems:
+            exp.do(ctx)
 
     def match(self, val:DictVal):
         if not isinstance(val.getType(), TypeDict):

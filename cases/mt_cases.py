@@ -257,6 +257,7 @@ class MTDict(CommaSeparatedSequence):
         subPtts = self.split(elems)
         exp = MCDict()
         self.setSubs(exp, subPtts)
+        exp.sortSubs()
         return exp
 
 
