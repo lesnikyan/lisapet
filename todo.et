@@ -92,22 +92,29 @@
 
     - # DONE list
     - # DONE tuple
-    - dict
+    - # DONE dict
     - # DONE sub-val
     - # DONE sub-var
     - # DONE sub-wildcard
     - sub-?
     - sub-*
+    - struct common (?) we don't have common struct now
+    - struct as user-defined type: TypeName{...}
 
     # // list patterns
     [] !-  empty list
     [x] !-  list with 1 element, x - local var which will associated with value by position
     [x,y,z] !-  n-elements
-    [x, y, *] !- n-elems in the begin of list with more
+    [x, y, *] !- basic *-pattern: n-elems in the beginтштп of list with more possible next
 
     X [*,12,*] !- list has value
     X [* ,12, x,*] !- list has value, `x` - next elem ([*,x,12,*] - prev) ??
     X [*, x] !- last elem
+    thinking, not sure:
+    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
+        [* 12, 15] !- has values in such
+        [? 12, 15] !- can have values
+        [?> 12, 15] !- has values in any order
 
     # // tuple patterns, the same patterns as list
     () !- empty tuple
@@ -148,26 +155,26 @@
     rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
 
 
-21.1 reading itertor. read values from sequence in the loop iteration like 
+21.1 reading iterator. read values from sequence in the loop iteration like 
     val = iter(src) # src is collection or generator
         it should init iterator and save instance in first call, then call next() method in each iteration
         it should have reset() method
         # sugar: val <= src // ?
 
 22.1 overload += to avoid copying original list.
-    // Look too complex in current implementation where x += y is the x = (x + y)
+    // Looks too complex in current implementation where x += y is the x = (x + y)
     // may be possible if refactor to call left.do() before right.do()
     possible solution:
     for a, b, c <- iters(list1, list2, list3)
 
-23. Common lib location for importing (not sure we need it now).  
+23. Common filesystem-location of installed libraries for importing (not sure we need it now).  
 
 24. TODO: Should we implement full inline block syntax?   
 Like `for a <- b /: expr :/ ; next-block`  
 if cond /: expr :/ else /: expr :/
 Thinking
 
-16.1 inline shortening:
+16.1 inline shortening (?):
 (control /: sub-expr)
 # if
 (? x < 5 /: print(x))
@@ -176,14 +183,15 @@ Thinking
 (@ i=0; i < 5; i += 1 /: print(i))
 
 25. enum
-default values: 1,2,3...
+default values is int from 1: 1,2,3...
 # inline
-enum Color  Red, Green, Blue
+enum Color  Red, Green, Blue # >> 1,2,3
+enum Color:int  Red 5, Green 10, Blue # >> 5, 10, 11
 # block
-enum Color
-    Red = 0xf00
-    Green = 0x0f0
-    Blue = 0x00f
+enum Color: int
+    Red 0xf00
+    Green 0x0f0
+    Blue 0x00f
 
 # usage
 match color

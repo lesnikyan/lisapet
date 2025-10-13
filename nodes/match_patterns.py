@@ -85,40 +85,39 @@ class MCSubVar(MCElem):
 
     def do(self, ctx:Context):
         # print('elem subvar.do1', self.exp)
-        # self.exp.do(ctx)
         var = self.exp.get()
-        ctx.addVar(var)
         self.var = var
-        # print('elem subvar.do2', ctx.get('a'))
-        
+        # just add new var into sub-context
+        ctx.addVar(self.var)
+
     def match(self, val:Val):
         self.var.set(val)
         self.var.setType(val.getType())
         return True
 
 class MC_under(MCElem):
-    ''' _ '''
+    ''' [{( _ )}] '''
 
     def do(self, ctx:Context):
+        ''' do nothing because `_` pattern don't assign or read value '''
         # print('elem `_`.do')
-        pass
-        
+
     def match(self, val:Val):
         return True
 
 class MCContr(MatchingPattern):
-    ''' pattern with sub-elements:
+    ''' Container-pattern - complex pattern with sub-elements:
     collections, struct, etc'''
     
     def addSub(self, sub:MCElem):
-        pass
+        ''' Add sub-element of collection-pattern '''
 
 
 class MCSerialVals(MCContr):
     ''' Pattern of serial set of values.
         basically: list, tuple
     '''
-    
+
     def __init__(self,  src=None):
         super().__init__(src)
         self.elems:list[MCElem] = []
@@ -245,7 +244,8 @@ class MCDPairAny(MCKVPair):
 
 
 class MCDict(MCContr):
-    ''' {}, {_:v}, {a:b}, {'a':b} '''
+    ''' dict-pattern
+        {}, {_:v}, {a:b}, {'a':b, _:''} '''
     
     def __init__(self,  src=None):
         super().__init__(src)
@@ -260,9 +260,9 @@ class MCDict(MCContr):
         kc = [] # key is const-pattern
         vrr = [] # key is var-pattern
         _k = [] # key is _
-        _v = [] # val is val-pattern
-        # const-pattern has an advantage over `any` patterns (var | _)
-        # key - over value
+        _v = [] # val is const-pattern
+        # const-pattern before `any` patterns (var | _)
+        # key - before value
         for ee in self.elems:
             # print('MCDict.do', ee.__class__.__name__)
             if isinstance(ee.key, MCValue):
@@ -290,16 +290,12 @@ class MCDict(MCContr):
         if not isinstance(val.getType(), TypeDict):
             return False
         elemCount = len(self.elems)
-        # vKeys = val.getKeys()
         # print('MCDict.match', [em.__class__.__name__ for em in self.elems])
-        # vvals = val.vals()
         vvals = val.rawVals()
         # print('>>', vvals)
         if len(vvals) != elemCount:
             # print('Dc mt count failed')
             return False
-        # if len(vvals) == 0:
-        #     return True
         for pttr in self.elems:
             # pk, pv = pttr.key, pttr.val
             rem, ok = pttr.match(vvals)
