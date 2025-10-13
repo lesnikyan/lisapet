@@ -1037,25 +1037,45 @@ match x
     {k:v} !- # local vars in key and val
     {_:_} !- # wildcard - any key, any val, will never matched here
 ```
-3. Dict with many subpatterns. 
-Subpatterns is defined like pairs in dict, over comma.  
-```python
-    !- {'name':nameVal, 'age':25, _:100500, a:b}
-    !- {'a':a, 'b':_, c:'ccc'}
-```
-Var and `_` have the same matching result, so `{k:v}` after `{_:_}` will never matched.  
-Within one pattern with many parts subpatterns have priority by predictability of result (const before any, left(key) before right(val)).  
-At first pattern looks for keys (left-part of subpattern) with const values, like `{, 'name':_,}`, if failed then tries match sub-cases with const val in right-part `{, _:'Harry',}`.  
-If pattern didn't match const cases, it will apply first pattern with key-var or wildcard `{key1:val1}`.  
-Note. Patterns with right-values `_:'abc'` take more time. Avoid them without neccessary.  
 
-In the key position all `null` instances are equal.  
+In the key position all `null` values are equal.  
 `0`, `''` and `null` are different cases.  
 ```python
 x = {null:123}
 match x
     {0:_} !- ...
     {null:val} !- # will matched
+```
+
+3. Dict with many subpatterns. 
+Subpatterns are defined like pairs in dict, over comma.  
+```python
+    !- {'name':nameVal, 'age':25, _:100500, a:b}
+    !- {'a':a, 'b':_, c:'ccc'}
+```
+Var and `_` have the same matching result, so `{k:v}` after `{_:_}` will never matched.  
+Order of subpatterns in dict doesn't matter.  
+```python
+{'a':_, _:b}
+# the same as
+{_:b, 'a':_}
+
+```
+Within one pattern with many parts, subpatterns have priority by predictability of result (const before any, left(key) before right(val)).  
+At first pattern looks for keys (left-part of subpattern) with const values, like `{, 'name':_,}`, if failed then tries match sub-cases with const val in right-part `{, _:'Harry',}`.  
+If pattern didn't match const cases, it will apply first pattern with key-var or wildcard `{key1:val1}`.  
+Note. Patterns with right-values `_:'abc'` take more time. Avoid them without neccessary.  
+
+4. Star `*`. Means any values with any number of sub-elements including 0.  
+
+In dict pattern `*` star sub-elem matches with all elements that wasn't matched before. 
+In general It is used if we need match some elements beyond those previously defined, and with undefined number of those.  
+```python
+match n
+    {'a':b, *}  !- # 'a' key and any more elements
+    {_:_, *}    !- # one or more elements
+    {*}         !- # empty or any elements == any dict
+    _ !-        !- # here any non-dict, because after {*} case
 ```
 
 TODO: cases with unnecessary `?` and variative num of elements `*` are planned.  

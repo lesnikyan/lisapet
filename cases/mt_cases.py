@@ -81,13 +81,13 @@ class MT_Other(MTCase, CaseVar_):
 
 
 class SubElem(MTCase):
-    ''' _, ?, * '''
+    ''' [{(_, ?, *)}] '''
 
 
 class MTEStar(SubElem):
     ''' * '''
     def match(self, elems:list[Elem])-> bool:
-        return len(elems) == 1 and isLex(elems[0], Lt.word, '*')
+        return len(elems) == 1 and isLex(elems[0], Lt.oper, '*')
     
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
@@ -274,7 +274,9 @@ class MTFail(MTCase):
 
 
 pMListInnerCases:list[MTCase] = [
-    MTVal(), MTE_(), MTVar(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MTEStar(), MTEQMark(), MTColPair(), 
+    MTVal(), MTE_(), MTVar(), MTString(),
+    MTEStar(),  MTEQMark(), MTColPair(),
+    MTList(), MTTuple(), MTDict(), MTStruct(),
 ]
 
 
@@ -296,7 +298,7 @@ def subPatterns(subs:list[list[Elem]])->list[MTCase]:
         ptCase = findCase(sub)
         # print('subPatterns#1:', sub, ptCase)
         # if isinstance(ptCase, MTFail):
-            # print(' !! > MP-sub. fail', elemStr(sub))
+        #     print(' !! > MP-sub. fail', elemStr(sub))
         ptt = ptCase.expr(sub)
         res.append(ptt)
     

@@ -108,9 +108,20 @@ class MC_under(MCElem):
 class MCContr(MatchingPattern):
     ''' Container-pattern - complex pattern with sub-elements:
     collections, struct, etc'''
-    
+
     def addSub(self, sub:MCElem):
         ''' Add sub-element of collection-pattern '''
+
+
+class MCStar(MCElem):
+    ''' * '''
+
+    def do(self, ctx:Context):
+        # print('elem `*`.do')
+        pass
+
+    def match(self, val:Val|list[Val]):
+        return True, True
 
 
 class MCSerialVals(MCContr):
@@ -243,6 +254,21 @@ class MCDPairAny(MCKVPair):
         return 0, False
 
 
+class MCDPairStar(MCKVPair):
+    ''' star in dict {.., * } '''
+
+    def __init__(self, src=None):
+        super().__init__(None, src)
+
+    def do(self, ctx:Context):
+        # print('elem `*`.do')
+        pass
+
+    def match(self, vals:dict):
+        # vals.pop(k)
+        return [], True
+
+
 class MCDict(MCContr):
     ''' dict-pattern
         {}, {_:v}, {a:b}, {'a':b, _:''} '''
@@ -250,6 +276,7 @@ class MCDict(MCContr):
     def __init__(self,  src=None):
         super().__init__(src)
         self.elems:list[MCKVPair] = []
+        self.hasStar = False
 
     def addSub(self, sub:MCElem):
         self.elems.append(sub)
@@ -261,10 +288,15 @@ class MCDict(MCContr):
         vrr = [] # key is var-pattern
         _k = [] # key is _
         _v = [] # val is const-pattern
+        stars = []
         # const-pattern before `any` patterns (var | _)
         # key - before value
         for ee in self.elems:
             # print('MCDict.do', ee.__class__.__name__)
+            if isinstance(ee, MCStar):
+                stars.append(MCDPairStar())
+                self.hasStar = True
+                continue
             if isinstance(ee.key, MCValue):
                 kc.append(ee)
             elif isinstance(ee.key, MCSubVar):
@@ -278,7 +310,7 @@ class MCDict(MCContr):
                 else:
                     _k.append(ee)
             
-        sels = kc + _v + vrr + _k
+        sels = kc + _v + vrr + _k + stars
         self.elems = sels
 
     def do(self, ctx:Context):
@@ -293,31 +325,22 @@ class MCDict(MCContr):
         # print('MCDict.match', [em.__class__.__name__ for em in self.elems])
         vvals = val.rawVals()
         # print('>>', vvals)
-        if len(vvals) != elemCount:
+        if not self.hasStar and len(vvals) != elemCount:
             # print('Dc mt count failed')
             return False
         for pttr in self.elems:
             # pk, pv = pttr.key, pttr.val
             rem, ok = pttr.match(vvals)
             # print('Dpt.match', pttr.__class__.__name__, ok, rem)
-            if ok:
-                vvals = rem
-        if len(vvals) == 0:
-            return True
+            if not ok:
+                return False
+            vvals = rem
+        # in correct match all pairs was matched and removed from vvals
+        return not vvals
 
 
 # -----------------
 
-    
-class MCStar(MCElem):
-    ''' * '''
-
-    def do(self, ctx:Context):
-        # print('elem `*`.do')
-        pass
-        
-    def match(self, val:Val|list[Val]):
-        return True
     
 class MCQMark(MCElem):
     ''' ? '''

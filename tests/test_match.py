@@ -30,6 +30,49 @@ class TestMatch(TestCase):
 
 
 
+    def test_match_dict_star(self):
+        ''' '''
+        code = r'''
+        
+        nn = [
+            1,(,), [], {},
+            {'a':''}, {'b':''}, {'c':''},
+            {'a':'', 'b':''}, {'a':'', 'c':''}, {'d':'', 'e':'_n1'},  {'d':'11', 'e':'22'}, 
+            {'a':'', '1':'', '2':'', '3':''}, {'b':'', '1':'', '2':'', '3':''},  
+            {'a':'', 'b':'', 'c':'', '1':'', '2':'', '3':'', '4':'', '5':''}, 
+        ]
+        res = []
+        
+        for n <- nn
+            match n
+                {'a':v} !- res <- [n, 12]
+                {'a':v1, 'b': v2, *} !- res <- [n, 21]
+                {'a':v1, 'c': v2, *} !- res <- [n, 22]
+                {'a':v, *} !- res <- [n, 23]
+                {k:v, _:_, _:_, *} !- res <- [n, 24]
+                {k:v} !- res <- [n, 25]
+                {k:'_n1', *} !- res <- [n, 26]
+                {*} !- res <- [n, 30]
+                _ !- res <- [n, 3999]
+        
+        # print('res = ', res)
+        '''
+
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        exp = [[1, 3999], [(), 3999], [[], 3999], [{}, 30], [{'a': ''}, 12], [{'b': ''}, 25], [{'c': ''}, 25], 
+               [{'a': '', 'b': ''}, 21], [{'a': '', 'c': ''}, 22], [{'d': '', 'e': '_n1'}, 26], [{'d': '11', 'e': '22'}, 30],
+               [{'a': '', '1': '', '2': '', '3': ''}, 23], [{'b': '', '1': '', '2': '', '3': ''}, 24],
+               [{'a': '', 'b': '', 'c': '', '1': '', '2': '', '3': '', '4': '', '5': ''}, 21]]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
     def test_match_dict_other(self):
         ''' '''
         code = r'''
