@@ -96,10 +96,10 @@
     - # DONE sub-val
     - # DONE sub-var
     - # DONE sub-wildcard
-    - sub-?
-    - sub-*
-    - struct common (?) we don't have common struct now
+    - sub-? [] () {#done}
+    - sub-* [] () {#done}
     - struct as user-defined type: TypeName{...}
+    - struct common (?) we don't have common struct now
 
     # // list patterns
     [] !-  empty list
@@ -197,6 +197,15 @@ enum Color: int
 match color
     Color.Red !- ...
 
+
+26. anonimous struct
+
+struct {name: 'Bob', age: 25}
+
+#shortened sugar:
+${name: 'Bob', age: 25}
+~{ name: 'Bob', age: 25}
+{s name: 'Bob', age: 25}
 
 
 >>>

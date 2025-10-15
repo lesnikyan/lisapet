@@ -107,7 +107,8 @@ class MTE_(SubElem):
 class MTEQMark(SubElem):
     ''' ? '''
     def match(self, elems:list[Elem])-> bool:
-        return len(elems) == 1 and isLex(elems[0], Lt.word, '?')
+        # prels('MTEQMark len=', elems, show=1)
+        return len(elems) == 1 and isLex(elems[0], Lt.oper, '?')
 
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
@@ -242,7 +243,9 @@ class MTColPair(MTContr, CaseColon):
         return exp
 
 class MTDict(CommaSeparatedSequence):
-    ''' '''
+    '''
+    {}, {'a':'b'}, {a:b}, {_:_}, {'a':_,*}, {'a':b, ?}
+    '''
     
     def matchEdges(self, elems:list[Elem]):
         return (isLex(elems[0], Lt.oper, '{') and isLex(elems[-1], Lt.oper, '}'))

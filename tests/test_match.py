@@ -30,8 +30,68 @@ class TestMatch(TestCase):
 
 
 
+    def test_match_dict_maybe(self):
+        ''' q-mark as a maybe-element '''
+        code = r'''
+        
+        nn = [
+            1, [], {},
+            {'1':'111'}, {'a':'1'}, {'c':'2'}, {'b':'3'}, {'t':5}, 
+            {'c':'1', 'a':'2'}, # 'a' on 2-nd pos in code. should be matched by {'a':_, ?}
+            {'b':'3', 'c':'2'}, 
+            {'c':'3', 'd':'2'}, 
+            {'a':'122', 'z':'', 'x':'333'}, 
+            {'b':'122', 'z':'', 'c':'335'}, 
+            {'b':'122', 'z':'', 'c':'335', 'v':'336'}, 
+            {'a':'122', 'z':'', 'x':'', 'c':'444'},
+            {'a':'122', 'z':'', 'x':'', 'c':'', 'v':'555'},
+            {'a':'122', 'z':'', 'x':'', 'c':'', 'v':'', 'b':'666'},
+            {'a':'122', 'z':'', 'x':'', 'c':'', 'v':'', 'b':'', 'n':'777'},
+            {'r':'122', 'z':'', 'x':'', 'c':'', 'v':'', 'b':'', 'n':'777'},
+            
+        ]
+        res = []
+        
+        for n <- nn
+            match n
+                {'a':_, ?} !- res <- [n, 12]
+                {'b':v, ?} !- res <- [n, 13]
+                {?} !- res <- [n, 11] # put here because it will eat empty and 1-pair cases
+                {_:v, ?} !- res <- [n, 14] #  2-pairs and longer will reach here
+                {'a':v, ?,?} !- res <- [n, 15] # a + possible 2
+                {'b':v, ?,?, 'c':_} !- res <- [n, 16]
+                {'a':v, ?,?,?,?} !- res <- [n, 17] # a + possible 4 elems
+                {'a':v, *} !- res <- [n, 18] # a + more than 4 elems
+                {'a':v, ?,?,?,?, *} !- res <- [n, 19] # the same as prev
+                {*} !- res <- [n, 20]
+                _ !- res <- [n, 3999]
+        # 
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        print('TT>>')
+        exp = [[1, 3999], [[], 3999], [{}, 11], 
+               [{'1': '111'}, 11], [{'a': '1'}, 12], [{'c': '2'}, 11], [{'b': '3'}, 13], [{'t': 5}, 11], 
+               [{'c': '1', 'a': '2'}, 12], [{'b': '3', 'c': '2'}, 13], [{'c': '3', 'd': '2'}, 14], 
+               [{'a': '122', 'z': '', 'x': '333'}, 15], 
+               [{'b': '122', 'z': '', 'c': '335'}, 16], [{'b': '122', 'z': '', 'c': '335', 'v': '336'}, 16],
+               [{'a': '122', 'z': '', 'x': '', 'c': '444'}, 17], 
+               [{'a': '122', 'z': '', 'x': '', 'c': '', 'v': '555'}, 17], 
+               [{'a': '122', 'z': '', 'x': '', 'c': '', 'v': '', 'b': '666'}, 18], 
+               [{'a': '122', 'z': '', 'x': '', 'c': '', 'v': '', 'b': '', 'n': '777'}, 18], 
+               [{'r': '122', 'z': '', 'x': '', 'c': '', 'v': '', 'b': '', 'n': '777'}, 20]]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
     def test_match_dict_star(self):
-        ''' '''
+        ''' * as an any elements '''
         code = r'''
         
         nn = [

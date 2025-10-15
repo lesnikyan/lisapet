@@ -1038,7 +1038,7 @@ match x
     {_:_} !- # wildcard - any key, any val, will never matched here
 ```
 
-In the key position all `null` values are equal.  
+In the key position all `null` instances are equal.  
 `0`, `''` and `null` are different cases.  
 ```python
 x = {null:123}
@@ -1064,7 +1064,10 @@ Order of subpatterns in dict doesn't matter.
 Within one pattern with many parts, subpatterns have priority by predictability of result (const before any, left(key) before right(val)).  
 At first pattern looks for keys (left-part of subpattern) with const values, like `{, 'name':_,}`, if failed then tries match sub-cases with const val in right-part `{, _:'Harry',}`.  
 If pattern didn't match const cases, it will apply first pattern with key-var or wildcard `{key1:val1}`.  
-Note. Patterns with right-values `_:'abc'` take more time. Avoid them without neccessary.  
+Notes.   
+    Long patterns with right-values `_:'abc'` take more time. Avoid them without necessity.  
+    Be accurate using variable for key, because position of key is undefined.  
+    It's ok if 1 var key in pattern with constantly defined others.  
 
 4. Star `*`. Means any values with any number of sub-elements including 0.  
 
@@ -1078,7 +1081,28 @@ match n
     _ !-        !- # here any non-dict, because after {*} case
 ```
 
-TODO: cases with unnecessary `?` and variative num of elements `*` are planned.  
+5. Question mark `?` as a 'maybe' case.  
+Question mark in dict means 1 unnecessary element.  
+The position of `?`-elements in the dict doesn't matter. Only number matters.  
+So number of q-marks means possible elements from 0 up to number.  
+In case {?,?} - 0-2 elements.  
+```python
+match d
+    {?}             !- # empty or 1 key
+    {'a':_, ?, ?}   !- # dict has key 'a' and may contain yet 1 or 2
+    {_:_, ?, ?}     !- # dict has at least 1 key but not more than 3
+    {'b':v, _:_, ?, ?}  !- # dict has from 2 up to 4 keys, one of them is 'b'
+    {?,?,?,?}       !- # only dict with 4 keys without 'b'-key will match here, less was matched above
+    {?,?,*}         !- # doesn't make sense, because equal to {*}
+```
+
+Notes.  
+    `*` and `?` doen't make sense for variable in key like `{a:b, ?,?}` because position of key is not predictable.  
+    `*` after `?` means the same as a just `*`.  
+    For better readability, it makes sense to put `?` or `*` subs in the end of pattern.  
+
+
+TODO: cases with unnecessary `?` and variative num of elements `*` for ordered collections in dev.  
 
 
 

@@ -121,7 +121,18 @@ class MCStar(MCElem):
         pass
 
     def match(self, val:Val|list[Val]):
-        return True, True
+        return True
+
+    
+class MCQMark(MCElem):
+    ''' ? '''
+
+    def do(self, ctx:Context):
+        # print('elem `?`.do')
+        pass
+        
+    def match(self, val:Val):
+        return True
 
 
 class MCSerialVals(MCContr):
@@ -269,6 +280,29 @@ class MCDPairStar(MCKVPair):
         return [], True
 
 
+class MCDPairQMark(MCKVPair):
+    ''' question mark in dict {.., ? } 
+        can match 1 sub-element of dict, or nothing == unnecessary element
+        {?} means empty dict or 1 pair inside
+    '''
+
+    def __init__(self, src=None):
+        super().__init__(None, src)
+
+    def do(self, ctx:Context):
+        # print('elem `*`.do')
+        pass
+
+    def match(self, vals:dict):
+        # if not len(vals):
+        #     return vals, False
+        for k in vals.keys():
+            vals.pop(k)
+            break
+        return vals, True
+        # return vals, False
+
+
 class MCDict(MCContr):
     ''' dict-pattern
         {}, {_:v}, {a:b}, {'a':b, _:''} '''
@@ -277,6 +311,7 @@ class MCDict(MCContr):
         super().__init__(src)
         self.elems:list[MCKVPair] = []
         self.hasStar = False
+        self.qmarkCount = 0
 
     def addSub(self, sub:MCElem):
         self.elems.append(sub)
@@ -289,6 +324,7 @@ class MCDict(MCContr):
         _k = [] # key is _
         _v = [] # val is const-pattern
         stars = []
+        qm = []
         # const-pattern before `any` patterns (var | _)
         # key - before value
         for ee in self.elems:
@@ -296,6 +332,10 @@ class MCDict(MCContr):
             if isinstance(ee, MCStar):
                 stars.append(MCDPairStar())
                 self.hasStar = True
+                continue
+            if isinstance(ee, MCQMark):
+                qm.append(MCDPairQMark())
+                self.qmarkCount += 1
                 continue
             if isinstance(ee.key, MCValue):
                 kc.append(ee)
@@ -310,7 +350,7 @@ class MCDict(MCContr):
                 else:
                     _k.append(ee)
             
-        sels = kc + _v + vrr + _k + stars
+        sels = kc + _v + vrr + _k + qm + stars
         self.elems = sels
 
     def do(self, ctx:Context):
@@ -325,9 +365,10 @@ class MCDict(MCContr):
         # print('MCDict.match', [em.__class__.__name__ for em in self.elems])
         vvals = val.rawVals()
         # print('>>', vvals)
-        if not self.hasStar and len(vvals) != elemCount:
-            # print('Dc mt count failed')
-            return False
+        if not self.hasStar and not self.qmarkCount:
+            if len(vvals) != elemCount:
+                # print('Dc mt count failed')
+                return False
         for pttr in self.elems:
             # pk, pv = pttr.key, pttr.val
             rem, ok = pttr.match(vvals)
@@ -340,17 +381,6 @@ class MCDict(MCContr):
 
 
 # -----------------
-
-    
-class MCQMark(MCElem):
-    ''' ? '''
-
-    def do(self, ctx:Context):
-        # print('elem `?`.do')
-        pass
-        
-    def match(self, val:Val):
-        return True
 
 # --------------------
 
