@@ -428,7 +428,7 @@ class TestMatch(TestCase):
                 ['aa','cc'] !- res <- [n, 17]
                 ['aaa','_'] !- res <- [n, 18]
                 ['a',_] !- res <- [n, 19]
-                [a,b] !- res <- [n, (a,b), 20]
+                [a, b] !- res <- [n, (a,b), 20]
                 [_] !- res <- [n, 21]
                 _ !- res <- [n, 2999]
             # print('nres:', res)
@@ -443,11 +443,13 @@ class TestMatch(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         ex.do(ctx)
-        exp = [[[], 11], [[1], 21], 
+        exp = [
+            [[], 11], [[1], 21], 
             [['1'], 12], [['2'], 21], [['a'], 13], [['bb'], 14], [['ccc'], 21],
             [['', ''], ('', ''), 20], [['a', 'bb'], 16], [['aa', 'cc'], 17], 
             [['a', '_'], 19], [['a', '_abc'], 19], 
-            [['', '', ''], 15], ['a', 2999], [1, 2999]]
+            [['', '', ''], 15], ['a', 2999], [1, 2999]
+            ]
         rvar = ctx.get('res').get()
         self.assertEqual(exp, rvar.vals())
 

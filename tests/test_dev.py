@@ -51,14 +51,13 @@ class TestDev(TestCase):
         
         for n <- nn
             match n
-
+                [?] !- res <- [n, 11]
                 _ !- res <- [n, 3999]
         # 
         print('res = ', res)
         '''
         _='''
         
-                # [?] !- res <- [n, 2088]
                 # [2,?] !- res <- [n, 222]
                 # [?,3] !- res <- [n, 222]
                 # [3,_,?] !- res <- [n, 222]

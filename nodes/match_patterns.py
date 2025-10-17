@@ -47,6 +47,7 @@ class MCValue(MatchingPattern):
         
     def match(self, val:Val):
         # if not scalar or string
+        # print('MCValue match', 'expr:', self.exp)
         vtype = val.getType()
         if not isinstance(vtype, (TypeNum, TypeInt, TypeNull, TypeBool, TypeString)):
             # print('MCVal.match bad type', vtype, isinstance(vtype, TypeInt))
@@ -65,6 +66,7 @@ class MC_Other(MatchingPattern):
     def match(self, val:Val):
         return True
 
+
 class MCElem(MatchingPattern):
     ''' element of complex pattern '''
 
@@ -72,7 +74,34 @@ class MCElem(MatchingPattern):
 # ------------------------ Sub-elements of sequence ---------------------- #
 
 
-class MCSubVar(MCElem):
+class MCSub(MCElem):
+    ''' base of list|tuple subs '''
+
+    def match(self, val:Val):
+        # print('!!! MMCSub. MATCH @@@@')
+        pass
+
+    def matchInd(self, index:int, vals:list[Val]):
+        '''match elem in list by index'''
+        # print('MSub.matchInd', vals[index])
+        val = vals[index]
+        return self.match(val)
+
+
+class MCSubVal(MCSub):
+# class MCSubVal(MCValue, MCSub):
+    ''' [1, 'a'] '''
+    
+    def __init__(self, mcVal:MCValue):
+        super().__init__(mcVal.src)
+        self.mcVal = mcVal
+    
+    def match(self, val:Val):
+        # print('MCSubVal match')
+        return self.mcVal.match(val)
+
+
+class MCSubVar(MCSub):
     ''' local subvar in pattern like: [a,b,c] '''
 
     def __init__(self, expVar:VarExpr,  src=None):
@@ -92,7 +121,7 @@ class MCSubVar(MCElem):
         return True
 
 
-class MC_under(MCElem):
+class MC_under(MCSub):
     ''' [{( _ )}] '''
 
     def do(self, ctx:Context):
@@ -112,7 +141,7 @@ class MCContr(MatchingPattern):
         pass
 
 
-class MCStar(MCElem):
+class MCStar(MCSub):
     ''' * '''
 
     def do(self, _):
@@ -123,7 +152,7 @@ class MCStar(MCElem):
         return True
 
     
-class MCQMark(MCElem):
+class MCQMark(MCSub):
     ''' ? in list, tuple '''
 
     def do(self, ctx:Context):
@@ -149,6 +178,10 @@ class MCQMark(MCElem):
 # -------------------- Ordered sequences ---------------- #
 
 
+def mcIsMaybe(elem:MCElem):
+    return isinstance(elem, (MCQMark, MCStar))
+
+
 class MCSerialVals(MCContr):
     ''' Pattern of serial set of values.
         basically: list, tuple
@@ -157,21 +190,48 @@ class MCSerialVals(MCContr):
     def __init__(self,  src=None):
         super().__init__(src)
         self.elems:list[MCElem] = []
+        self.hasMaybe = False
+    
+    def addSub(self, sub:MCElem):
+        if isinstance(sub, MCValue):
+            sub = MCSubVal(sub)
+        # print(self.__class__.__name__, hash(self), '.add:', sub.__class__.__name__)
+        if mcIsMaybe(sub):
+            self.hasMaybe = True
+        self.elems.append(sub)
 
     def matchSerial(self, val:ListVal|TupleVal):
         vals = val.rawVals()
-        vi = -1
+        vi = -1 # value index
+        # mi = -1 # pattern indes
         lenv = len(vals)
+        # print(self.__class__.__name__, 'match', val.vals(), ', subs:', len(self.elems))
+        indiff = 1
+        
+        if not self.hasMaybe:
+            if lenv != len(self.elems):
+                # print('SqMatch: bad count')
+                return False
         for elem in self.elems:
-            vi += 1
+            vi += indiff
             if vi >= lenv:
                 # pattern longer than value
+                # print('SqMatch: over index count')
                 return False
-            velem = vals[vi]
-            if not elem.match(velem):
+            # nval = vals[vi]
+            # if not elem.match(nval):
+            if not elem.matchInd(vi, vals):
+                # print('SqMatch: not match')
                 return False
+            indiff = 1
+            if mcIsMaybe(elem):
+                indiff = 0
+            # print('match is mayb:', mcIsMaybe(elem), 'valInd:', vi)
+
+        # print('LMatch: after loop:', vi, (lenv - 1))
         if vi < (lenv - 1):
             # value longer than pattern
+            # print('SqMatch: shoter pattr')
             return False
         return True
 
@@ -191,9 +251,6 @@ class MCList(MCSerialVals):
         if not isinstance(val.getType(), TypeList):
             return False
         return self.matchSerial(val)
-    
-    def addSub(self, sub:MCElem):
-        self.elems.append(sub)
 
 
 class MCTuple(MCSerialVals):
@@ -209,11 +266,10 @@ class MCTuple(MCSerialVals):
     def match(self, val:ListVal):
         if not isinstance(val.getType(), TypeTuple):
             return False
-        
         return self.matchSerial(val)
     
-    def addSub(self, sub:MCElem):
-        self.elems.append(sub)
+    # def addSub(self, sub:MCElem):
+    #     self.elems.append(sub)
 
 
 # ----------------- Dict and sub-dict patterns -------------------- #
