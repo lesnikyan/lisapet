@@ -2,6 +2,8 @@
 '''
 Expressions of PatterMatch cases
 
+pattern !- executable block
+
 '''
 
 from lang import *
@@ -12,12 +14,10 @@ from nodes.keywords import *
 
 
 
-# MATCH-CASE
-
-
-
 class MCaseExpression(Expression):
     ''' '''
+
+# ------------------- Pattern cases -------------------- #
 
 
 class MatchingPattern(Expression):
@@ -35,21 +35,17 @@ class MatchingPattern(Expression):
     # def do(self, ctx:Context):
     #     pass
     
+    
 class MCValue(MatchingPattern):
     ''' 123 !- ... '''
     def __init__(self, expVal:Expression,  src=None):
         super().__init__(src)
         self.exp:Expression = expVal
 
-    # def setExp(self, exp:Exception):
-    #     self.exp = exp
-
     def do(self, ctx:Context):
-        # print('MCVal.exp', self.exp)
         self.exp.do(ctx)
         
     def match(self, val:Val):
-        # print('MCVal.exp', self.exp, self.exp.get(), ' >>', val)
         # if not scalar or string
         vtype = val.getType()
         if not isinstance(vtype, (TypeNum, TypeInt, TypeNull, TypeBool, TypeString)):
@@ -64,7 +60,6 @@ class MC_Other(MatchingPattern):
     ''' _ !- ... '''
 
     def do(self, ctx:Context):
-        # print('case-other.do')
         pass
         
     def match(self, val:Val):
@@ -73,6 +68,8 @@ class MC_Other(MatchingPattern):
 class MCElem(MatchingPattern):
     ''' element of complex pattern '''
 
+
+# ------------------------ Sub-elements of sequence ---------------------- #
 
 
 class MCSubVar(MCElem):
@@ -84,7 +81,6 @@ class MCSubVar(MCElem):
         self.var:Var = None
 
     def do(self, ctx:Context):
-        # print('elem subvar.do1', self.exp)
         var = self.exp.get()
         self.var = var
         # just add new var into sub-context
@@ -95,28 +91,31 @@ class MCSubVar(MCElem):
         self.var.setType(val.getType())
         return True
 
+
 class MC_under(MCElem):
     ''' [{( _ )}] '''
 
     def do(self, ctx:Context):
-        ''' do nothing because `_` pattern don't assign or read value '''
-        # print('elem `_`.do')
+        # do nothing because `_` pattern doesn't assign or read value
+        pass
 
-    def match(self, val:Val):
+    def match(self, _):
         return True
+
 
 class MCContr(MatchingPattern):
     ''' Container-pattern - complex pattern with sub-elements:
     collections, struct, etc'''
 
     def addSub(self, sub:MCElem):
-        ''' Add sub-element of collection-pattern '''
+        # Add sub-element of collection-pattern
+        pass
 
 
 class MCStar(MCElem):
     ''' * '''
 
-    def do(self, ctx:Context):
+    def do(self, _):
         # print('elem `*`.do')
         pass
 
@@ -125,14 +124,29 @@ class MCStar(MCElem):
 
     
 class MCQMark(MCElem):
-    ''' ? '''
+    ''' ? in list, tuple '''
 
     def do(self, ctx:Context):
         # print('elem `?`.do')
         pass
         
     def match(self, val:Val):
+        '''
+        [1, ?, 2]
+        [1,2]
+        [1, 0, 2]
+        --
+        [1, ?, ?, 5, 2]
+        [1, 5, 2]
+        [1,3,5,2]
+        [1,5,5,2]
+        [1, 5,3, 5,2]
+        
+        '''
         return True
+
+
+# -------------------- Ordered sequences ---------------- #
 
 
 class MCSerialVals(MCContr):
@@ -202,6 +216,9 @@ class MCTuple(MCSerialVals):
         self.elems.append(sub)
 
 
+# ----------------- Dict and sub-dict patterns -------------------- #
+
+
 class MCKVPair(MCElem):
     ''' local subvar in pattern like: [a,b,c] '''
 
@@ -218,6 +235,7 @@ class MCKVPair(MCElem):
         
     def match(self, vals:list):
         pass
+
 
 class MCDPairKVal(MCKVPair):
     ''' 'abc':_ '''
@@ -237,6 +255,7 @@ class MCDPairKVal(MCKVPair):
         vals.pop(k)
         return vals, True
 
+
 class MCDPairVVal(MCKVPair):
     ''' 'abc':_ '''
         
@@ -249,6 +268,7 @@ class MCDPairVVal(MCKVPair):
                 vals.pop(k)
                 return vals, True
         return 0, False
+
 
 class MCDPairAny(MCKVPair):
     ''' var | _ '''
@@ -380,9 +400,8 @@ class MCDict(MCContr):
         return not vvals
 
 
-# -----------------
+# -------------------- Whole Case ------------------- #
 
-# --------------------
 
 class CaseExpr(ControlBlock):
     ''' case in `match` block

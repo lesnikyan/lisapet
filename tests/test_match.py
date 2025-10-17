@@ -76,7 +76,7 @@ class TestMatch(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         ex.do(ctx)
-        print('TT>>')
+        # print('TT>>')
         exp = [[1, 3999], [[], 3999], [{}, 11], 
                [{'1': '111'}, 11], [{'a': '1'}, 12], [{'c': '2'}, 11], [{'b': '3'}, 13], [{'t': 5}, 11], 
                [{'c': '1', 'a': '2'}, 12], [{'b': '3', 'c': '2'}, 13], [{'c': '3', 'd': '2'}, 14], 
