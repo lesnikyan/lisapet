@@ -132,15 +132,6 @@ class MC_under(MCSub):
         return True
 
 
-class MCContr(MatchingPattern):
-    ''' Container-pattern - complex pattern with sub-elements:
-    collections, struct, etc'''
-
-    def addSub(self, sub:MCElem):
-        # Add sub-element of collection-pattern
-        pass
-
-
 class MCStar(MCSub):
     ''' * '''
 
@@ -178,8 +169,20 @@ class MCQMark(MCSub):
 # -------------------- Ordered sequences ---------------- #
 
 
+class MCContr(MatchingPattern):
+    ''' Container-pattern - complex pattern with sub-elements:
+    collections, struct, etc'''
+
+    def addSub(self, sub:MCElem):
+        # Add sub-element of collection-pattern
+        pass
+
+
 def mcIsMaybe(elem:MCElem):
     return isinstance(elem, (MCQMark, MCStar))
+
+def mcIsQm(elem:MCElem):
+    return isinstance(elem, (MCQMark))
 
 
 class MCSerialVals(MCContr):
@@ -202,34 +205,123 @@ class MCSerialVals(MCContr):
 
     def matchSerial(self, val:ListVal|TupleVal):
         vals = val.rawVals()
-        vi = -1 # value index
         # mi = -1 # pattern indes
         lenv = len(vals)
         # print(self.__class__.__name__, 'match', val.vals(), ', subs:', len(self.elems))
-        indiff = 1
         
         if not self.hasMaybe:
             if lenv != len(self.elems):
                 # print('SqMatch: bad count')
                 return False
+        
+        def backMatch(i, count, melem:MCElem):
+            ''' finding match from vals[i] '''
+            # print('backM:', i, count, melem, [v.getVal() for v in vals])
+            for vvi in range(i, i + count, 1):
+                # print('backm loop:', vvi, ':', vals[vvi].getVal())
+                if melem.match(vals[vvi]):
+                    # print('back matched:', vvi)
+                    return vvi
+            return -1 # not matchd
+        
+        def backVars(i, mels:list[MCElem]):
+            ''' mels should be instance of MC_under|MCSubVar '''
+            vvi = i
+            # for vvi in range(i, i + len(mels)):
+            for mel in mels:
+                mel.match(vals[vvi])
+                vvi += 1
+        
+        def isSubVal(elem:MCElem):
+            return isinstance(elem, MCSubVal)
+        
+        mInd = -1
+        mLast = len(self.elems) - 1
+        vi = -1 # value index
+        indiff = 1
+        qmCount = 0
+        varPref = [] # var|_ prefix after `?`
+        # cases: 1) SubVal, 2) Var|_under, 3) ?, 4) *
         for elem in self.elems:
-            vi += indiff
-            if vi >= lenv:
-                # pattern longer than value
-                # print('SqMatch: over index count')
-                return False
-            # nval = vals[vi]
-            # if not elem.match(nval):
-            if not elem.matchInd(vi, vals):
-                # print('SqMatch: not match')
-                return False
+            mInd += 1
+            # if qmCount > 0:
+            #     qmCount -= 1
             indiff = 1
             if mcIsMaybe(elem):
                 indiff = 0
+                if mcIsQm(elem):
+                    qmCount +=1
+                    
+                    # if mInd == mLast:
+                        
+                # else:
+                    # qmCount = 0
+                # we dont't need call match of ?, * cases
+                continue
+            
+            # after qm-queue
+            if qmCount:
+                # if vars or _under after ?, ?
+                if isinstance(elem, (MC_under, MCSubVar)):
+                    varPref.append(elem)
+                    continue
+                
+                if isSubVal(elem):
+                    # vi += 1
+                    # oldVi = vi
+                    # [?, 2]
+                    # [2]
+                    # [1, 2]
+                    # [1, ?, _, a, 2]
+                    # [1, 4, 5, 2]
+                    # [1, 3, 4, 5, 2]
+                    varpLen = len(varPref)
+                    findCount = qmCount + 1
+                    findIndex = vi + 1 + varpLen
+                    if findIndex >= lenv:
+                        # already out of vals
+                        return False
+                    # prevent index out of range
+                    if findCount + findIndex >= lenv:
+                        findCount = lenv - findIndex
+                    # print('inSub', )
+                    bi = backMatch(findIndex, findCount, elem)
+                    if bi > vi:
+                        vi = bi
+                        qmCount = 0
+                        # assign prev vars
+                        if varpLen:
+                            # print('varPref:', varPref)
+                            backVars(vi - varpLen, varPref)
+                            varPref = []
+                        continue
+                    # fail if no one has been matched
+                    return False
+            
+            # ordinar cases:
+            vi += indiff
+            if vi >= lenv:
+                # pattern longer than value
+                return False
+            
+            if not elem.matchInd(vi, vals):
+                # print('SqMatch: not match')
+                # if in question-marks queue
+                if qmCount > 0:
+                    # qmCount -= 1
+                    continue
+                return False
+                
             # print('match is mayb:', mcIsMaybe(elem), 'valInd:', vi)
 
         # print('LMatch: after loop:', vi, (lenv - 1))
         if vi < (lenv - 1):
+            if qmCount:
+                if qmCount >= lenv -1 - vi:
+                    if len(varPref):
+                        pass
+                    else:
+                        return True
             # value longer than pattern
             # print('SqMatch: shoter pattr')
             return False

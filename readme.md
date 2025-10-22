@@ -990,8 +990,8 @@ match n
     # tuple
     (3,4,5) !- expr
 ```
-2. Variable in collection `[a,b]`, `(a,b,c)`.  
-    Var in pattern will be assigned with the value according to position if pattern will be matched.  
+2. Variable in collection `[a,b]`, `(a,b,c)`, named non-constant element.  
+    Var in pattern is matched with any element and will be assigned with the value according to position if pattern will be matched.  
     Assigned var can be used in the sub block of current match-case.  
 ```python
 match n
@@ -1002,7 +1002,7 @@ match n
         #vars a,b,c with values of list elements
         res = a + b + c 
 ```
-3. Wildcard `_` (means - any value).  
+3. Wildcard `_` (means - any value), unnamed non-constant element.  
     Wildcard don't assign anything, unlike of var-pattern.  
 ```python
 match n
@@ -1018,6 +1018,32 @@ match n
     (a, b, _) !- sum = a + b
     [a, 22, b, _] !- res = [a, b, a + b]
 ```
+
+4. `?` - optional element.  
+In case when we need match sequence one or more element is not necessary we can use question mark `?` pattern-element.  
+Matcher can ignore optional element.  
+In common case we can think about optional + non-constant (var, `_`) that it is pattern of min-max optional segment.  
+`(a, _, ?,?)` - segment witn 2-4 elements.  
+```
+nn = [[], [1], [2], [1,2], [1,2,3], [2,4], [5,6,7,8,15], [5,8,15]]
+
+for n in nn
+    match n
+        [1, ?] !- # match [1], [1,2]
+        [?] !- # match [], [2]
+        [1,?,3] !- # [1,2,3]
+        [?, 4] !- # [2,4]
+        [5,?,?,?,a,15] !- # [5,6,7,8,15], [5,8,15]; a = 8
+        _ !- 
+```
+The same applies to cases of a tuple `(a,?,_)`.  
+Uncertainty of result with optional subpatterns.  
+Optional sub-patterns can work unpredictable with same sub-values of matching data in sequence like `[1, 10, 2, 3, 10]`, matching them as `?` or const. Especially with set of `?`-s before const pattern like `?,?,?,10`.  
+Matcher tries to find a const value one-by-one in segment with such length as a whole set of question marks (before it) has + 1, but will take only first one. Then it may cause fail if the value of const pattern will be found in optional segment.  
+Keep in mind that `match` is not a full functional query language like regexp, but just simple element-by-element search machine.  
+
+TODO: `*` for ordered sequences is planned for next update.
+
 
 ### 16.3 Matching dict.
 
@@ -1100,9 +1126,6 @@ Notes.
     `*` and `?` doen't make sense for variable in key like `{a:b, ?,?}` because position of key is not predictable.  
     `*` after `?` means the same as a just `*`.  
     For better readability, it makes sense to put `?` or `*` subs in the end of pattern.  
-
-
-TODO: cases with unnecessary `?` and variative num of elements `*` for ordered collections in dev.  
 
 
 

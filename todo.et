@@ -96,7 +96,7 @@
     - # DONE sub-val
     - # DONE sub-var
     - # DONE sub-wildcard
-    - sub-? [] () {#done}
+    - sub-? [#done] (#done) {#done}
     - sub-* [] () {#done}
     - struct as user-defined type: TypeName{...}
     - struct common (?) we don't have common struct now

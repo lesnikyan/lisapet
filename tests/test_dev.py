@@ -39,43 +39,6 @@ class TestDev(TestCase):
 
 
 
-    def _test_match_list_maybe(self):
-        ''' '''
-        code = r'''
-        
-        nn = [[], [1], [1,7], [1,2], 
-
-            1
-        ]
-        res = []
-        
-        for n <- nn
-            match n
-                [?] !- res <- [n, 11]
-                _ !- res <- [n, 3999]
-        # 
-        print('res = ', res)
-        '''
-        _='''
-        
-                # [2,?] !- res <- [n, 222]
-                # [?,3] !- res <- [n, 222]
-                # [3,_,?] !- res <- [n, 222]
-                # [?,3,?] !- res <- [n, 222]
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        exp = [
-        ]
-        rvar = ctx.get('res').get()
-        self.assertEqual(exp, rvar.vals())
-
 
     def text_test1(self):
         src = [1,2,3, 4, 5]
