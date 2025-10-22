@@ -21,7 +21,7 @@ Content:
 - [Usage](#usage)
 - [Syntax](#syntax)
 1. Basic things.
-    1. [Basic things: vars, vals](#11-vars-vals-lists-assignment-context-of-vars)
+    1. [vars, vals, assignment](#11-vars-vals-lists-assignment)
     2. [Context](#12-execution-context)
     3. [Basic types](#13-numbers-strings-bool-types)
 2. [Code blocks and formatting.](#2-sub-blocks-code-formatting)
@@ -179,7 +179,7 @@ multiline comment
 x = #@ in-line comment @# 2 + 5
 ```
 
-### 1.1 Vars, vals, lists, assignment, context of vars
+### 1.1 Vars, vals, lists, assignment.  
 Assigments of values of vars.  
 I common case we use `=` operator for assignment value to the new or already defined variable.  
 Default types of values is:  
@@ -198,10 +198,14 @@ lastName = names[2]
 # multiple assignment
 a, b, c = 10, 20, 30
 ```
+Alternatives see in next section: [`<-` operator](#6-for-statement---operator).
+
 ### 1.2 Execution context.  
-In mechanics of language, each block of code is executed in specific context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
-So we can use all local things and any things defined in all levels above.  
+In mechanics of language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
+Context-object is responsible of search datatypes, variables, functions etc in current execution context.  
+So we can use all local things and any things defined in all levels above: module-level - in functions, function- and module- levels - in for, if, match sub-levels, and so on.  
 More about visibility of things see in sections of functions, closures, structs, importing.  
+
 ### 1.3 Numbers, strings, bool. Types.
 ```python
 hello = "hello somebody!"
