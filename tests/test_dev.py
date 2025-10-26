@@ -39,7 +39,6 @@ class TestDev(TestCase):
 
 
 
-
     def text_test1(self):
         src = [1,2,3, 4, 5]
         ptt = '_,2,_,*'.split(',')
@@ -97,7 +96,7 @@ class TestDev(TestCase):
         code = r'''
         res = 0
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 

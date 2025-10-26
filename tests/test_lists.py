@@ -51,7 +51,7 @@ class TestLists(TestCase):
         
         res += [7]
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 
@@ -80,7 +80,7 @@ class TestLists(TestCase):
         foo() <- bar(2)
         foo() <- bar(3)
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 
@@ -258,7 +258,7 @@ class TestLists(TestCase):
         # m = -1 * n
         res = [x; x <-[n .. -1 * n]]
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -293,7 +293,7 @@ class TestLists(TestCase):
         res <- r2
         res <- d2
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -319,7 +319,7 @@ class TestLists(TestCase):
         d, e = x
 
         res = {'a': a, 'b': b, 'c':c, 'd':d, 'e':e}
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -346,7 +346,7 @@ class TestLists(TestCase):
         d, e = x
         
         res = {'a': a, 'b': b, 'c':c, 'd':d, 'e':e}
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -367,7 +367,7 @@ class TestLists(TestCase):
         a, b, c = 1, 2, x
         
         res = [a,b,c]
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -390,12 +390,12 @@ class TestLists(TestCase):
         nr = {}
         for i <- [0..2]
             nr <- (keys[i], nn[i])
-        print('nr:', nr)
+        # print('nr:', nr)
         rr = []
         rr <- 'preval'
         for key, val <- nr
             rr <- key
-        print('rr:', rr)
+        # print('rr:', rr)
         '''
         _ = r'''
         '''
@@ -428,7 +428,7 @@ class TestLists(TestCase):
         for i <- nn
             nr <- i * 10
         nr <- 500
-        print('nr:', nr)
+        # print('nr:', nr)
         '''
         _ = r'''
         '''
@@ -460,7 +460,7 @@ class TestLists(TestCase):
         ]
         res = [x ; i <-iter(len(nums)); x = nums[i]; i < 5 || i > 26]
         # print('src = ', src)
-        print('nums = ', res)
+        # print('nums = ', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -480,7 +480,7 @@ class TestLists(TestCase):
         code = '''
         src = ['aaa', 'bbb', 'ccc']
         res = [('uu', s) ; s <- src]
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -498,7 +498,7 @@ class TestLists(TestCase):
         debVar = 100000
         nums = [[x, x**3, y**2] ; x <- [1..10]; y = x ** 2; y < 50 && x ** 3 > 10]
         # print('src = ', src)
-        print('nums = ', nums)
+        # print('nums = ', nums)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -514,7 +514,7 @@ class TestLists(TestCase):
         # filterRes = [x ; x <- src; x % 5 > 0 && x > 10]
         # full expr:
         nums = [x ** 2 ; x <- [1..10]; x % 5 > 0 && x ** 2 > 15]
-        print('nums = ', nums)
+        # print('nums = ', nums)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -529,7 +529,7 @@ class TestLists(TestCase):
         srcGen = [[x, y] ; x <- [5..7]; y <- [1..3]]
         src = [[5, 1], [5, 2], [5, 3], [6, 1], [6, 2], [6, 3], [7, 1], [7, 2], [7, 3]]
         nums = [ x ; sub <- src ; x <- sub]
-        print('nums = ', nums)
+        # print('nums = ', nums)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -542,7 +542,7 @@ class TestLists(TestCase):
         ''' list generator. '''
         code = '''
         nums = [[x ** 2, y] ; x <- [5..7]; y <- [1..3]]
-        print('nums = ', nums)
+        # print('nums = ', nums)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -555,7 +555,7 @@ class TestLists(TestCase):
         ''' list generator. iterator in iterator '''
         code = '''
         nums = [x + y * 1000 ; x <- [5..7]; y <- [1..3]]
-        print('nums = ', nums)
+        # print('nums = ', nums)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -568,8 +568,8 @@ class TestLists(TestCase):
         ''' list generator. simplest case  '''
         code = '''
         nums = [x ** 2 ; x <- [1..5]]
-        print('src = ', src)
-        print('nums = ', nums)
+        # print('src = ', src)
+        # print('nums = ', nums)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -583,8 +583,8 @@ class TestLists(TestCase):
         code = '''
         src = [1,2,3,4,5]
         nums = [x ** 2 ; x <- src]
-        print('src = ', src)
-        print('nums = ', nums)
+        # print('src = ', src)
+        # print('nums = ', nums)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -599,9 +599,9 @@ class TestLists(TestCase):
         nums = [5..10]
         res = 0
         for n <- nums
-            print('  n >>', n)
+            # print('  n >>', n)
             res += n
-        print('res >>', res)
+        # print('res >>', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -615,9 +615,9 @@ class TestLists(TestCase):
         code = '''
         res = 0
         for n <- [5..10]
-            print('  n >>', n)
+            # print('  n >>', n)
             res += n
-        print('res >>', res)
+        # print('res >>', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -630,8 +630,8 @@ class TestLists(TestCase):
         code = '''
         a = [1, 2, ['aa','bb']]
         a[2][0] = 'a222'
-        print('list_a', a[0], a[2][0], a[2][1])
-        print(a[2][:1])
+        # print('list_a', a[0], a[2][0], a[2][1])
+        # print(a[2][:1])
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -657,7 +657,7 @@ class TestLists(TestCase):
     def test_tuple(self):
         code = '''
         a = (1, 2, ['aa','bb'])
-        print('tuple_a', a[0], a[2])
+        # print('tuple_a', a[0], a[2])
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -671,7 +671,7 @@ class TestLists(TestCase):
         code='''
         arr = [1,2,3,4,5,6,7,8,9]
         arr2 = arr[:]
-        print('arr2:', arr2, ' len:', len(arr2))
+        # print('arr2:', arr2, ' len:', len(arr2))
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -687,7 +687,7 @@ class TestLists(TestCase):
         code='''
         arr = [1,2,3,4,5,6,7,8,9]
         arr2 = arr[2:]
-        print('arr2:', arr2, ' len:', len(arr2))
+        # print('arr2:', arr2, ' len:', len(arr2))
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -719,7 +719,7 @@ class TestLists(TestCase):
         code='''
         arr = [1,2,3,4,5,6,7,8,9]
         arr2 = arr[2:-2]
-        print('arr2:', arr2, ' len:', len(arr2))
+        # print('arr2:', arr2, ' len:', len(arr2))
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -757,22 +757,22 @@ class TestLists(TestCase):
         ''' for n <- [1,2,3] 
             for n <- arrVar
         '''
-        code = '''
-        for n <- [1,2,3]
-            print('-----------------', n)
-        '''
-        code = '''
-        nn = [1,2,3]
-        for n <- nn
-            print(n)
-        '''
+        # code = '''
+        # for n <- [1,2,3]
+        #     print('-----------------', n)
+        # '''
+        # code = '''
+        # nn = [1,2,3]
+        # for n <- nn
+        #     print(n)
+        # '''
         code = '''
         func sum(nums)
             res = 0
             for n <- nums
                 res += n
             res
-        print(sum([10, 200, 300]))
+        # print(sum([10, 200, 300]))
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)

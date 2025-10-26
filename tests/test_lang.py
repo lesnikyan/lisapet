@@ -27,7 +27,7 @@ class TestLang(TestCase):
         a: int = 5
         b: float = 10
         c = b / a
-        print(c, type(c))
+        # print(c, type(c))
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -36,7 +36,7 @@ class TestLang(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         res = ctx.get('res').get()
-        print('##################t-IF1:', )
+        # print('##################t-IF1:', )
         self.assertEqual(res, 45)
 
     def test_parsing_lead_minus(self):
@@ -78,7 +78,7 @@ class TestLang(TestCase):
         
         res = [a, b, c, d, f, g, h]
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -111,9 +111,9 @@ class TestLang(TestCase):
             i +=1
         )
             res += i
-            print(res)
+            # print(res)
         
-        print('res=', res)
+        # print('res=', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -166,7 +166,7 @@ class TestLang(TestCase):
             )
             res = 100
         
-        print('res=', res)
+        # print('res=', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -189,7 +189,7 @@ class TestLang(TestCase):
         }
         
         res = dd
-        print('res=', dd)
+        # print('res=', dd)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -214,7 +214,7 @@ class TestLang(TestCase):
         ]
         
         res = aa
-        print('res=', res)
+        # print('res=', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -240,7 +240,7 @@ class TestLang(TestCase):
             1,2,
             3
             )
-        print('res=', res)
+        # print('res=', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -358,7 +358,7 @@ class TestLang(TestCase):
         a: int = 5
         b: int = 10
         c = b * a
-        print(c, type(c))
+        # print(c, type(c))
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -437,7 +437,7 @@ class TestLang(TestCase):
         dd = {'aa': 'hello AA', 'bb': 123}
         dd['bb'] = 333
         dd['cc'] = 555
-        print(dd['aa'], dd['bb'] + dd['cc'])
+        # print(dd['aa'], dd['bb'] + dd['cc'])
         '''
 
         code = norm(code[1:])
@@ -505,7 +505,7 @@ class TestLang(TestCase):
         a = 10 # first arg
         b = 3 #@  second arg  @#
         x = a + b #@ inline comment @# - 5
-        print(x)
+        # print(x)
         '''
 
         code = norm(code[1:])

@@ -56,7 +56,7 @@ class TestModule(TestCase):
             # fpath = ld.filePath(modPath)
             modName = pp['name']
             mod = modPreload(rCtx, modPath, root=basePath, name=modName)
-            print('tt>>loadMod:', rCtx.loaded[pp['name']].name)
+            # print('tt>>loadMod:', rCtx.loaded[pp['name']].name)
             self.assertIsInstance(mod, Module)
             self.assertEqual(modName, mod.name)
 
@@ -99,7 +99,7 @@ class TestModule(TestCase):
         b = pr.sum()
         res <- b
         res <- pr.mult()
-        print('res:', res)
+        # print('res:', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -125,7 +125,7 @@ class TestModule(TestCase):
         b = pr.sum()
         res <- b
         res <- pr.mult()
-        print('res:', res)
+        # print('res:', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -152,7 +152,7 @@ class TestModule(TestCase):
         b = pr.sum()
         res <- b
         res <- pr.mult()
-        print('res:', res)
+        # print('res:', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -254,7 +254,7 @@ class TestModule(TestCase):
         import tfuncs > foo f1, sum f2, mult f3
         
         res = [f1(), f2(10, 200), f3(20, 17)]
-        print('res:', res)
+        # print('res:', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -285,7 +285,7 @@ class TestModule(TestCase):
         
         # res = mult(20, 17)
         res = [foo(), sum(10, 200), mult(20, 17)]
-        print('res:', res)
+        # print('res:', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -318,7 +318,7 @@ class TestModule(TestCase):
         import tfuncs > *
         
         res = [foo(), sum(10, 200), mult(20, 17)]
-        print('res:', res)
+        # print('res:', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -354,7 +354,7 @@ class TestModule(TestCase):
         b = tfuncs.sum(10, 200)
         c = tfuncs.mult(20, 17)
         res = [a, b, c]
-        print('res:', res)
+        # print('res:', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
