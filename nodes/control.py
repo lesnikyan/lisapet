@@ -207,7 +207,7 @@ class MatchExpr(ControlBlock):
         for cs in self.cases:
             mctx = Context(ctx)
             cs.doExp(mctx)
-            avar = mctx.get('a')
+            # avar = mctx.get('a')
             # print('a:', avar)
             if cs.match(mval):
                 cs.do(mctx)

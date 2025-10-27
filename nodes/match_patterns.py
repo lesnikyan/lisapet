@@ -108,14 +108,18 @@ class MCSubVar(MCSub):
         super().__init__(src)
         self.exp:VarExpr = expVar
         self.var:Var = None
+        self.ctx = None
 
     def do(self, ctx:Context):
+        # just store new context instance
+        # preventing store previous value of var for run of the same pattern
+        self.ctx = ctx
         var = self.exp.get()
         self.var = var
-        # just add new var into sub-context
-        ctx.addVar(self.var)
 
     def match(self, val:Val):
+        # add new var into sub-context
+        self.ctx.addVar(self.var)
         self.var.set(val)
         self.var.setType(val.getType())
         return True
@@ -179,7 +183,12 @@ class MCContr(MatchingPattern):
 
 
 def mcIsMaybe(elem:MCElem):
-    return isinstance(elem, (MCQMark, MCStar))
+    return isinstance(elem, (MCQMark))
+
+
+def mcIsStar(elem:MCElem):
+    return isinstance(elem, (MCStar))
+
 
 def mcIsQm(elem:MCElem):
     return isinstance(elem, (MCQMark))
@@ -199,7 +208,7 @@ class MCSerialVals(MCContr):
         if isinstance(sub, MCValue):
             sub = MCSubVal(sub)
         # print(self.__class__.__name__, hash(self), '.add:', sub.__class__.__name__)
-        if mcIsMaybe(sub):
+        if mcIsMaybe(sub) or mcIsStar(sub):
             self.hasMaybe = True
         self.elems.append(sub)
 
@@ -207,8 +216,8 @@ class MCSerialVals(MCContr):
         vals = val.rawVals()
         # mi = -1 # pattern indes
         lenv = len(vals)
-        # print(self.__class__.__name__, 'match', val.vals(), ', subs:', len(self.elems))
-        
+        # print('\n', self.__class__.__name__, 'match', val.vals(), ', subs:', len(self.elems))
+        # print('#0', [n.__class__.__name__ for n in self.elems])
         if not self.hasMaybe:
             if lenv != len(self.elems):
                 # print('SqMatch: bad count')
@@ -228,6 +237,7 @@ class MCSerialVals(MCContr):
             ''' mels should be instance of MC_under|MCSubVar '''
             vvi = i
             # for vvi in range(i, i + len(mels)):
+            # print('backVars#1', vvi)
             for mel in mels:
                 mel.match(vals[vvi])
                 vvi += 1
@@ -240,9 +250,11 @@ class MCSerialVals(MCContr):
         vi = -1 # value index
         indiff = 1
         qmCount = 0
+        instar = False
         varPref = [] # var|_ prefix after `?`
         # cases: 1) SubVal, 2) Var|_under, 3) ?, 4) *
         for elem in self.elems:
+            # print('list match loop', elem)
             mInd += 1
             # if qmCount > 0:
             #     qmCount -= 1
@@ -258,7 +270,14 @@ class MCSerialVals(MCContr):
                     # qmCount = 0
                 # we dont't need call match of ?, * cases
                 continue
-            
+            if mcIsStar(elem):
+                instar = True
+                qmCount +=1
+                if lenv > 0:
+                    qmCount = lenv - vi
+                # print('mp-star case', qmCount)
+                continue
+                
             # after qm-queue
             if qmCount:
                 # if vars or _under after ?, ?
@@ -284,11 +303,12 @@ class MCSerialVals(MCContr):
                     # prevent index out of range
                     if findCount + findIndex >= lenv:
                         findCount = lenv - findIndex
-                    # print('inSub', )
+                    # print('inSub', findIndex, findCount, elem)
                     bi = backMatch(findIndex, findCount, elem)
                     if bi > vi:
                         vi = bi
                         qmCount = 0
+                        instar = False
                         # assign prev vars
                         if varpLen:
                             # print('varPref:', varPref)
@@ -304,28 +324,38 @@ class MCSerialVals(MCContr):
                 # pattern longer than value
                 return False
             
+            # print('listMatch #ordinar:', vi, elem.__class__)
             if not elem.matchInd(vi, vals):
                 # print('SqMatch: not match')
                 # if in question-marks queue
-                if qmCount > 0:
-                    # qmCount -= 1
-                    continue
+                # if qmCount > 0:
+                #     # qmCount -= 1
+                #     continue
                 return False
                 
             # print('match is mayb:', mcIsMaybe(elem), 'valInd:', vi)
 
-        # print('LMatch: after loop:', vi, (lenv - 1))
+        varpLen = len(varPref)
+        # print('\nLMatch: after loop: vi=%d, len-vals=%d' % (vi, lenv), 'qm=', qmCount)
+        # print([n.get() for n in vals])
         if vi < (lenv - 1):
+            # print('#1', [n.__class__.__name__ for n in self.elems])
             if qmCount:
+                # print('#2 ?', qmCount, ' >', lenv -1 - vi, ', vi=', vi)
                 if qmCount >= lenv -1 - vi:
-                    if len(varPref):
-                        pass
-                    else:
-                        return True
+                    # print('#3 lenv=%d, vi=%d,  vi - varpLen=%d (L -1 - vi)= %d' % (lenv, vi,  varpLen, (lenv -1 - vi)), varPref)
+                    if varpLen <= (lenv -1 - vi):
+                        # print('end backVars::', vi - varpLen, varPref)
+                        backVars(lenv - varpLen, varPref)
+                    
+                    # print('#3')
+                    return True
+            # print('#2')
             # value longer than pattern
-            # print('SqMatch: shoter pattr')
+            # print('SqMatch: shorter pattr')
             return False
-        return True
+        # print('list match end-True')
+        return varpLen == 0
 
 
 class MCList(MCSerialVals):

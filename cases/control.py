@@ -83,7 +83,7 @@ class CaseMatchCase(SubCase):
             return False
 
         main = OperSplitter().mainOper(elems)
-        dprint('CaseMatchCase elems[main]', elems[main].text, main)
+        # print('CaseMatchCase elems[main]', elems[main].text, main)
         return isLex(elems[main], Lt.oper, '!-')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
