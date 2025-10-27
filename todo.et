@@ -81,7 +81,7 @@
 
 14.3 refactor usage of MatchPtrCase
 
-14.4 match cases
+14.4 #DONE match cases of collections
     ## pattern quantifiers: 
         `_` - some one, 
         `?` - maybe one (nothing or one), for dict means full pair
@@ -92,18 +92,18 @@
 
     - # DONE list
     - # DONE tuple
-    - dict
+    - # DONE dict
     - # DONE sub-val
     - # DONE sub-var
     - # DONE sub-wildcard
-    - sub-?
-    - sub-*
+    - sub-? [#done] (#done) {#done}
+    - sub-* [#done] (#done) {#done}
 
     # // list patterns
     [] !-  empty list
     [x] !-  list with 1 element, x - local var which will associated with value by position
     [x,y,z] !-  n-elements
-    [x, y, *] !- n-elems in the begin of list with more
+    [x, y, *] !- basic *-pattern: n-elems in the beginтштп of list with more possible next
 
     X [*,12,*] !- list has value
     X [* ,12, x,*] !- list has value, `x` - next elem ([*,x,12,*] - prev) ??
@@ -127,6 +127,16 @@
     {'k1':x, 'k2':y, *} !- several keys with more
     {k: 'red'} != dict has value 'red', k - var with key value
 
+14.5 extended case of `?>` 'has values'
+    thinking, not sure:
+    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
+        [* 12, 15] !- has values in such
+        [? 12, 15] !- can have values
+        [?> 12, 15] !- has values in any order
+
+14.6 Struct in Pattern matching:
+    - struct as user-defined type: TypeName{...}
+    - struct common (?) we don't have common struct now
     # // struct types
     struct A a1:int, a2, a3
     struct B(A) b2:string
@@ -148,26 +158,26 @@
     rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
 
 
-21.1 reading itertor. read values from sequence in the loop iteration like 
+21.1 reading iterator. read values from sequence in the loop iteration like 
     val = iter(src) # src is collection or generator
         it should init iterator and save instance in first call, then call next() method in each iteration
         it should have reset() method
         # sugar: val <= src // ?
 
 22.1 overload += to avoid copying original list.
-    // Look too complex in current implementation where x += y is the x = (x + y)
+    // Looks too complex in current implementation where x += y is the x = (x + y)
     // may be possible if refactor to call left.do() before right.do()
     possible solution:
     for a, b, c <- iters(list1, list2, list3)
 
-23. Common lib location for importing (not sure we need it now).  
+23. Common filesystem-location of installed libraries for importing (not sure we need it now).  
 
 24. TODO: Should we implement full inline block syntax?   
 Like `for a <- b /: expr :/ ; next-block`  
 if cond /: expr :/ else /: expr :/
 Thinking
 
-16.1 inline shortening:
+16.1 inline shortening (?):
 (control /: sub-expr)
 # if
 (? x < 5 /: print(x))
@@ -176,19 +186,29 @@ Thinking
 (@ i=0; i < 5; i += 1 /: print(i))
 
 25. enum
-default values: 1,2,3...
+default values is int from 1: 1,2,3...
 # inline
-enum Color  Red, Green, Blue
+enum Color  Red, Green, Blue # >> 1,2,3
+enum Color:int  Red 5, Green 10, Blue # >> 5, 10, 11
 # block
-enum Color
-    Red = 0xf00
-    Green = 0x0f0
-    Blue = 0x00f
+enum Color: int
+    Red 0xf00
+    Green 0x0f0
+    Blue 0x00f
 
 # usage
 match color
     Color.Red !- ...
 
+
+26. anonimous struct
+
+struct {name: 'Bob', age: 25}
+
+#shortened sugar:
+${name: 'Bob', age: 25}
+~{ name: 'Bob', age: 25}
+{s name: 'Bob', age: 25}
 
 
 >>>

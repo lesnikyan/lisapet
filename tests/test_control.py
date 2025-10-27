@@ -47,7 +47,7 @@ class TestControl(TestCase):
         
         res += r2
         
-        print('res = ', res, r2)
+        # print('res = ', res, r2)
         '''
         code = norm(code[1:])
 
@@ -265,7 +265,7 @@ class TestControl(TestCase):
             else
                 res <- i * 3
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -319,11 +319,11 @@ class TestControl(TestCase):
             vv = Var('x', TypeInt)
             vv.set(Val(x, TypeInt))
             ctx.addSet({'x': vv})
-            print('~~~~ test case: %d ~~~~' % x)
+            # print('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             ress.append(ctx.get('res').get())
-            dprint('##################t-IF1:', ctx.get('res').get())
-        dprint('all:', ress)
+        #     dprint('##################t-IF1:', ctx.get('res').get())
+        # dprint('all:', ress)
 
     def test_for_iter(self):
         src = [
@@ -331,13 +331,13 @@ class TestControl(TestCase):
         res = 0
         for i <- iter(10)
             res += i
-        print('res: ', res)
+        # print('res: ', res)
         ''',
         '''
         res = 0
         for i <- [1,2,3,4,5,6,7,8,9]
             res += i
-        print('res: ', res)
+        # print('res: ', res)
         '''
         ]
         for code in src:

@@ -189,7 +189,7 @@ class TestStructs(TestCase):
         func testType1()
             tp1 = Type1 {name:'noname', id: 1}
             tp1.setName('New-Name')
-            print('tp1 name:', tp1.getName())
+            # print('tp1 name:', tp1.getName())
 
         testType1()
         '''
@@ -207,7 +207,7 @@ class TestStructs(TestCase):
         struct MyType name: string
         
         func st: MyType foo(nn: int, ff: float, arg4 )
-            print('arg4:', arg4)
+            # print('arg4:', arg4)
             div = ' ' * nn
             st.name + div + '/'
         
@@ -216,7 +216,7 @@ class TestStructs(TestCase):
         myt = MyType{name: 'Grrr'}
         myt.name = 'Rrrr'
         
-        print('p>>', myt.foo(4, 0.1, '4444'))
+        # print('p>>', myt.foo(4, 0.1, '4444'))
         '''
         tt = '''
         '''
@@ -238,10 +238,10 @@ class TestStructs(TestCase):
             name: string 
 
         func u:User setName(name)
-            print('x@1', name)
-            print('x@2', u.name)
+            # print('x@1', name)
+            # print('x@2', u.name)
             u.name = name
-            print('x@3', u.name)
+            # print('x@3', u.name)
         user = User{name:'Markos'}
         user.setName('Lukas')
         xprint(user.name)
@@ -258,7 +258,7 @@ class TestStructs(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         usr = ctx.get('user').get()
-        print('#tt user.name:', usr.get('name').get())
+        # print('#tt user.name:', usr.get('name').get())
         self.assertEqual('Lukas', usr.get('name').get())
 
     def test_struct_method_definition(self):
@@ -297,7 +297,7 @@ class TestStructs(TestCase):
             name:'Vasya'
             num:20
             sub: bb
-        print('t-inst: ', aa.name , aa.num , aa.sub.title)
+        # print('t-inst: ', aa.name , aa.num , aa.sub.title)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -317,7 +317,7 @@ class TestStructs(TestCase):
             sub: Btype
         bb = Btype{title: 'Bim-bom', vall: 11.55}
         aa = Atype{name:'Vasya', num:20, sub: bb}
-        print('var user: ', aa.name, aa.num, aa.sub.title, aa.sub.vall)
+        # print('var user: ', aa.name, aa.num, aa.sub.title, aa.sub.vall)
         '''
         tt = '''
         user = User
@@ -342,7 +342,7 @@ class TestStructs(TestCase):
             sub: Btype
         # bb = Btype{title: 'Bim-bom', vall: 11.55}
         aa = Atype{name:'Vasya', num:20, sub:Btype{}}
-        print('var user: ', aa.name, aa.num, aa.sub)
+        # print('var user: ', aa.name, aa.num, aa.sub)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -418,7 +418,7 @@ class TestStructs(TestCase):
         a = A {nname:'AAAAA'}
         @debug field assign
         a.nname = 'AA2222'
-        print(a.nname)
+        # print(a.nname)
         
         struct B aa:A
         b = B{aa:a}
@@ -430,10 +430,10 @@ class TestStructs(TestCase):
         d = D{cc:c}
         d.cc.cbb = 'c-val2'
         
-        print(b.aa.nname)
-        print(d.cc.bb.aa.nname, d.cc.cbb)
+        # print(b.aa.nname)
+        # print(d.cc.bb.aa.nname, d.cc.cbb)
         aaa = [1,2,3,4,5]
-        print(len(aaa))
+        # print(len(aaa))
         '''
         tt = '''
         '''
@@ -477,10 +477,10 @@ class TestStructs(TestCase):
         @debug =1
         male = Sex{id:1}
         female= Sex{id:1}
-        print(male)
+        # print(male)
         struct User name:string, age:int, sex:Sex, phone:string
         user = User{name:'Catod', age:25, sex:male, phone:'123-45-67'}
-        print('user data:', user.name, user.phone, user.sex)
+        # print('user data:', user.name, user.phone, user.sex)
         '''
         tt = '''
         '''
@@ -498,7 +498,7 @@ class TestStructs(TestCase):
         struct User name, age, sex, phone
         user = User{name:'Catod', age:25, sex:'male', phone:'123-45-67'}
         res = [user.name, user.age, user.sex, user.phone]
-        print('phone:', user.phone)
+        # print('phone:', user.phone)
 
         '''
         code = norm(code[1:])
@@ -508,7 +508,7 @@ class TestStructs(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         rtype = ctx.getType('User')
-        print('# TT >>>', rtype)
+        # print('# TT >>>', rtype)
         self.assertEqual('User', rtype.get().name)
         
         rvar = ctx.get('res').get()

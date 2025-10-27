@@ -81,57 +81,58 @@ class MT_Other(MTCase, CaseVar_):
 
 
 class SubElem(MTCase):
-    ''' _, ?, * '''
+    ''' [{(_, ?, *)}] '''
+
 
 class MTEStar(SubElem):
     ''' * '''
     def match(self, elems:list[Elem])-> bool:
-        return len(elems) == 1 and isLex(elems[0], Lt.word, '*')
+        return len(elems) == 1 and isLex(elems[0], Lt.oper, '*')
     
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
         return MCStar(src='*')
 
+
 class MTE_(SubElem):
     ''' _ '''
     def match(self, elems:list[Elem])-> bool:
         return len(elems) == 1 and isLex(elems[0], Lt.word, '_')
-    
+
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
         return MC_under(src='_')
 
+
 class MTEQMark(SubElem):
     ''' ? '''
     def match(self, elems:list[Elem])-> bool:
-        return len(elems) == 1 and isLex(elems[0], Lt.word, '?')
-    
+        # prels('MTEQMark len=', elems, show=1)
+        return len(elems) == 1 and isLex(elems[0], Lt.oper, '?')
+
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
         return MCQMark(src='?')
-
-# def listCasePriors():
-#     src = ('( ) [ ] { } , | , : ,  `1` ')
-    # return [raw.replace('$1$', ',') for raw in src.split(',')]
 
 
 class MTContr(MTCase):
     ''' pattern-container:
     collections, structs,etc'''
-    
+
     def sub(self)->list[Elem]:
         return True
-    
+
     def setSubs(self, base:MCContr, subs:list[MTCase]):
         for sub in subs:
             base.addSub(sub)
 
+
 class CommaSeparatedSequence(MTContr):
     ''' {,,} [,,] (,,) '''
-    
+
     def matchEdges(self, elems:list[Elem]):
         pass
-    
+
     def match(self, elems:list[Elem]) -> bool:
         lem = len(elems)
         # prels('CommaSeparatedSequence', elems, show=1)
@@ -214,35 +215,37 @@ class MTColPair(MTContr, CaseColon):
     def match(self, elems:list[Elem]) -> bool:
         # print('MTColPair.match')
         return super(CaseColon,self).match(elems)
-    
+
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         _, parts = super(CaseColon,self).split(elems)
         if len(parts) != 2:
             raise InterpretErr("Bad count of pair parts in MTColPair")
         # print('MTColPair.expr', parts)
         ekey = findCase(parts[0]).expr(parts[0])
-        eval = findCase(parts[1]).expr(parts[1])
+        rval = findCase(parts[1]).expr(parts[1])
         exp = None
         if isinstance(ekey, MCValue):
-            exp = MCDPairKVal(ekey, eval)
+            exp = MCDPairKVal(ekey, rval)
         elif isinstance(ekey, MCSubVar):
-            if isinstance(eval, MCValue):
-                exp = MCDPairVVal(ekey, eval)
+            if isinstance(rval, MCValue):
+                exp = MCDPairVVal(ekey, rval)
             else:
-                exp = MCDPairAny(ekey, eval)
+                exp = MCDPairAny(ekey, rval)
         elif isinstance(ekey, MC_under):
-            if isinstance(eval, MCValue):
-                exp = MCDPairVVal(ekey, eval)
+            if isinstance(rval, MCValue):
+                exp = MCDPairVVal(ekey, rval)
             else:
-                exp = MCDPairAny(ekey, eval)
+                exp = MCDPairAny(ekey, rval)
         else:
-            exp = MCKVPair(ekey, eval)
+            exp = MCKVPair(ekey, rval)
             # print('MTCol 1')
-        # print('MTColPair', elemStr(elems), exp, ekey, eval)
+        # print('MTColPair', elemStr(elems), exp, ekey, rval)
         return exp
 
 class MTDict(CommaSeparatedSequence):
-    ''' '''
+    '''
+    {}, {'a':'b'}, {a:b}, {_:_}, {'a':_,*}, {'a':b, ?}
+    '''
     
     def matchEdges(self, elems:list[Elem]):
         return (isLex(elems[0], Lt.oper, '{') and isLex(elems[-1], Lt.oper, '}'))
@@ -257,9 +260,8 @@ class MTDict(CommaSeparatedSequence):
         subPtts = self.split(elems)
         exp = MCDict()
         self.setSubs(exp, subPtts)
+        exp.sortSubs()
         return exp
-
-
 
 
 class MTStruct(MTContr, CaseStructConstr):
@@ -275,7 +277,9 @@ class MTFail(MTCase):
 
 
 pMListInnerCases:list[MTCase] = [
-    MTVal(), MTE_(), MTVar(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MTEStar(), MTEQMark(), MTColPair(), 
+    MTVal(), MTE_(), MTVar(), MTString(),
+    MTEStar(),  MTEQMark(), MTColPair(),
+    MTList(), MTTuple(), MTDict(), MTStruct(),
 ]
 
 
@@ -297,7 +301,7 @@ def subPatterns(subs:list[list[Elem]])->list[MTCase]:
         ptCase = findCase(sub)
         # print('subPatterns#1:', sub, ptCase)
         # if isinstance(ptCase, MTFail):
-            # print(' !! > MP-sub. fail', elemStr(sub))
+        #     print(' !! > MP-sub. fail', elemStr(sub))
         ptt = ptCase.expr(sub)
         res.append(ptt)
     

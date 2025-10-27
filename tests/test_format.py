@@ -63,7 +63,7 @@ class TestFormat(TestCase):
         # r4 = ~''
         
         res  = [r1, r2, r3]
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -91,7 +91,7 @@ class TestFormat(TestCase):
         r1 = ~'hello int:{a:05d}, float:{b:.3f}, str: {s} `{s2:<6s}` '
         r2 = ~'example2 hex1:{aa:b}, hex2:{bb:x}, oct:{cc:o} '
         res  = [r1, r2]
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -206,7 +206,7 @@ class TestFormat(TestCase):
         r1 = 'hello int:%d, float:%f, str:%s ' << (123, 12.5, 'Lalang')
         r2 = 'example2 hex1:%x, hex2:%x, oct:%o ' << (0b101100111000, 0xfedcba90, 0o12345670)
         res  = [r1, r2]
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)

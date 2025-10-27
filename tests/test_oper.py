@@ -46,7 +46,7 @@ class TestOper(TestCase):
         
         r3 = [1..5][0:3]
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 
@@ -123,7 +123,7 @@ class TestOper(TestCase):
         res = [a, b, c]; res <- dd; res <- e
         g = [3..5]; h = [3..7]; vv = bar(g, h); k, m = vv; res <- k; res <- m
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -227,7 +227,7 @@ class TestOper(TestCase):
         r1 = sa2 ?: sa1
         r2 = sa1 ?: sa2
         
-        print('res = ', res, '##', r1, r2)
+        # print('res = ', res, '##', r1, r2)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -258,7 +258,7 @@ class TestOper(TestCase):
         res += (b % a < 3 ? 1 : 1 + 1 ) # 3
         res += a - b >= 1 ? 5 : c # 7 
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -331,7 +331,7 @@ class TestOper(TestCase):
         t1 = T1{bb:4}
         d2 = {'b': 20 / t1.bb}
         
-        print(d1['a'], d2['b'])
+        # print(d1['a'], d2['b'])
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -370,7 +370,7 @@ class TestOper(TestCase):
         func unar(cond)
             inv = false
             if cond && ! inv
-                print('inverted')
+                # print('inverted')
                 return true
             false
                 

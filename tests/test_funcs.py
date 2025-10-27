@@ -454,7 +454,7 @@ class TestFunc(TestCase):
         avar.afoo(11)
         r3 = avar.a1
         
-        print('res = ', r1, r2, r3)
+        # print('res = ', r1, r2, r3)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -492,7 +492,7 @@ class TestFunc(TestCase):
             for i <- [1..5]
                 nn[i-1] = foo(x -> x ** 2 , 1, i)
             
-            print('lambda test:', n1, n2, nn)
+            # print('lambda test:', n1, n2, nn)
             
         testLambdas()
         '''
@@ -511,7 +511,7 @@ class TestFunc(TestCase):
         f1 = x -> x * 3
         n1 = foo(f1, 5)
         n2 = foo( x -> 2 ** x , 5)
-        print('n1,2 = ', n1, n2)
+        # print('n1,2 = ', n1, n2)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -537,7 +537,7 @@ class TestFunc(TestCase):
         f2 = (x, y) -> x * y
         n1 = f1(7)
         n2 = f2(res, 111)
-        print('nn = ', n1, n2)
+        # print('nn = ', n1, n2)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -559,7 +559,7 @@ class TestFunc(TestCase):
         n2 = foo2(5, 2)
         foo3 = (x, y, z) -> (x + y) * z
         n3 = foo3(2, 3, 100)
-        print('n1,2,3 = ', n1, n2, n3)
+        # print('n1,2,3 = ', n1, n2, n3)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -588,7 +588,7 @@ class TestFunc(TestCase):
             [c + x ; c <- nums]
         
         res = foo(5)
-        print(res)
+        # print(res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -606,11 +606,11 @@ class TestFunc(TestCase):
         ''' make vars and assign vals from tuple  '''
         code = '''
         func foo(name: string, nn: int, ff: float, arg4 )
-            print('arg4:', arg4)
+            # print('arg4:', arg4)
             div = ' ' * nn
             name + div + '/'
         
-        print('p>>', foo('Brrr', 4, 0.1, '4444'))
+        # print('p>>', foo('Brrr', 4, 0.1, '4444'))
         '''
         tt = '''
         '''
@@ -650,7 +650,7 @@ class TestFunc(TestCase):
                     return res
             -1000
         res = foo(10)
-        print('cc res', res)
+        # print('cc res', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)

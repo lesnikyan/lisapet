@@ -169,7 +169,7 @@ class Context(NSContext):
                     print(' ' * ind, 'x>', k, v.__class__.__name__, ':', vstr)
             c = c.upper
             ind += 1
-            
+
 
 def instance(tp:VType)->Var:
     match tp.name:

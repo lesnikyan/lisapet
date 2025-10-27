@@ -128,7 +128,7 @@ class CaseBinOper(SubCase):
         
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
-        # dprint('#a51:', [n.text for n in elems])
+        # print('#a51:', [n.text for n in elems])
         src = elemStr(elems)
         lowesPrior = len(self.priorGroups) - 1
         inBr = 0

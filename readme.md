@@ -21,7 +21,7 @@ Content:
 - [Usage](#usage)
 - [Syntax](#syntax)
 1. Basic things.
-    1. [Basic things: vars, vals](#11-vars-vals-lists-assignment-context-of-vars)
+    1. [vars, vals, assignment](#11-vars-vals-lists-assignment)
     2. [Context](#12-execution-context)
     3. [Basic types](#13-numbers-strings-bool-types)
 2. [Code blocks and formatting.](#2-sub-blocks-code-formatting)
@@ -49,7 +49,8 @@ Content:
 15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
 16. Match-statement
     1. [Match, cases](#16-match-statement)
-    2. [List and tuple patterns](#162-matching-list-and-tuple)
+    2. [List and tuple [1,2,?,a,b], [a,5,*] (1, _, ?, *)](#162-matching-list-and-tuple)
+    3. [Dict pattern {'a':a, _:_, *}](#163-matching-dict)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
 19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
@@ -178,7 +179,7 @@ multiline comment
 x = #@ in-line comment @# 2 + 5
 ```
 
-### 1.1 Vars, vals, lists, assignment, context of vars
+### 1.1 Vars, vals, lists, assignment.  
 Assigments of values of vars.  
 I common case we use `=` operator for assignment value to the new or already defined variable.  
 Default types of values is:  
@@ -197,10 +198,14 @@ lastName = names[2]
 # multiple assignment
 a, b, c = 10, 20, 30
 ```
+Alternatives see in next section: [`<-` operator](#6-for-statement---operator).
+
 ### 1.2 Execution context.  
-In mechanics of language, each block of code is executed in specific context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
-So we can use all local things and any things defined in all levels above.  
+In mechanics of language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
+Context-object is responsible of search datatypes, variables, functions etc in current execution context.  
+So we can use all local things and any things defined in all levels above: module-level - in functions, function- and module- levels - in for, if, match sub-levels, and so on.  
 More about visibility of things see in sections of functions, closures, structs, importing.  
+
 ### 1.3 Numbers, strings, bool. Types.
 ```python
 hello = "hello somebody!"
@@ -976,11 +981,11 @@ TODO: types, struct (type, fields, constructor), collections (size, some vals), 
 ### 16.2 Matching list and tuple.
 List or tuple can be matched by special collection-patterns. They look similar to regular collections, but have some special features.  
 ```python
-[12, b, _] !- ...
+[?, 12, b, _, *] !- ...
 ```
 In collection patterns we can use several types of sub-expressions. They can be combined.  
 
-1.  Const value in collection. Pattern matches if each element from pattern equals the element of such position in value we check.  
+1.  Const value in the collection. Pattern matches if element from pattern equals the element of such position in value we check.  
 ```python
 match n
     # list
@@ -989,8 +994,8 @@ match n
     # tuple
     (3,4,5) !- expr
 ```
-2. Variable in collection `[a,b]`, `(a,b,c)`.  
-    Var in pattern will be assigned with the value according to position if pattern will be matched.  
+2. Variable in collection `[a,b]`, `(a,b,c)`, named non-constant element.  
+    Var in pattern is matched with any element and will be assigned with the value according to position if pattern will be matched.  
     Assigned var can be used in the sub block of current match-case.  
 ```python
 match n
@@ -1001,7 +1006,7 @@ match n
         #vars a,b,c with values of list elements
         res = a + b + c 
 ```
-3. Wildcard `_` (means - any value).  
+3. Wildcard `_` (means - any value), unnamed non-constant element.  
     Wildcard don't assign anything, unlike of var-pattern.  
 ```python
 match n
@@ -1017,6 +1022,56 @@ match n
     (a, b, _) !- sum = a + b
     [a, 22, b, _] !- res = [a, b, a + b]
 ```
+
+4. `?` - optional element.  
+In case when we need match sequence one or more element is not necessary we can use question mark `?` pattern-element.  
+Matcher can ignore optional element.  
+In common case we can think about optional + non-constant (var, `_`) that it is pattern of min-max optional segment.  
+`(a, _, ?,?)` - segment witn 2-4 elements.  
+```
+nn = [[], [1], [2], [1,2], [1,2,3], [2,4], [5,6,7,8,15], [5,8,15]]
+
+for n in nn
+    match n
+        [1, ?] !- # match [1], [1,2]
+        [?] !- # match [], [2]
+        [1,?,3] !- # [1,2,3]
+        [?, 4] !- # [2,4]
+        [5,?,?,?,a,15] !- # [5,6,7,8,15], [5,8,15]; a = 8
+        _ !- 
+```
+The same applies to cases of a tuple `(a,?,_)`.  
+Uncertainty of result with optional subpatterns.  
+Optional sub-patterns can work unpredictable with same sub-values of matching data in sequence like `[1, 10, 2, 3, 10]`, matching them as `?` or const. Especially with set of `?`-s before const pattern like `?,?,?,10`.  
+Matcher tries to find a const value one-by-one in segment with such length as a whole set of question marks (before it) has + 1, but will take only first one. Then it may cause fail if the value of const pattern will be found in optional segment.  
+Keep in mind that `match` is not a full functional query language like regexp, but just simple element-by-element search machine.  
+
+5. Star `*` in list or tuple matches any sub elements with any count from 0 up to size of collection.  
+In common case `*` means 'any others' in the and of pattern.  
+Or it can be between two const values, meaning 'any but not the same as second one'. Here works the same rule as for `?` subpattern - first matching value (equal to 1-st const pattern after `*`) will close the uncertain subsequence.  
+Combinations `*` and any number of `?`-s means the same as just `*`.  
+Star as a length-independent subpattern can provoke uncertain behavior near vars or `_` subpattern. Be accurate with it.  
+For templates with optional subelements, it is important for predictable behavior to define a relationship between the variable to be assigned and some constant value or collection side (start, end).  
+```python
+
+match n
+    [1, *] !- # any list starts with 1
+    (*, 2) !- # any tuple that ends with 2
+    [31, *, 32] !- # list starts with 31 and ends with 32
+    [*, 44, *] !- # list has 44
+
+    # list has at least 4 elements,
+    # 1-st and two last will be assigned with var `a,b,c`.
+    [a, 55, *, b, c] !- ...
+    
+    # list starts with 60, has at least 3 elements after it, 
+    # and the 3rd from the end will be assigned with the var `a`
+    [60, *, a,  _, _] !- ...
+
+    [*] !- # any list
+    (*) !- # any tuple
+```
+
 
 ### 16.3 Matching dict.
 
@@ -1036,17 +1091,6 @@ match x
     {k:v} !- # local vars in key and val
     {_:_} !- # wildcard - any key, any val, will never matched here
 ```
-3. Dict with many subpatterns. 
-Subpatterns is defined like pairs in dict, over comma.  
-```python
-    !- {'name':nameVal, 'age':25, _:100500, a:b}
-    !- {'a':a, 'b':_, c:'ccc'}
-```
-Var and `_` have the same matching result, so `{k:v}` after `{_:_}` will never matched.  
-Within one pattern with many parts subpatterns have priority by predictability of result (const before any, left(key) before right(val)).  
-At first pattern looks for keys (left-part of subpattern) with const values, like `{, 'name':_,}`, if failed then tries match sub-cases with const val in right-part `{, _:'Harry',}`.  
-If pattern didn't match const cases, it will apply first pattern with key-var or wildcard `{key1:val1}`.  
-Note. Patterns with right-values `_:'abc'` take more time. Avoid them without neccessary.  
 
 In the key position all `null` instances are equal.  
 `0`, `''` and `null` are different cases.  
@@ -1057,7 +1101,59 @@ match x
     {null:val} !- # will matched
 ```
 
-TODO: cases with unnecessary `?` and variative num of elements `*` are planned.  
+3. Dict with many subpatterns. 
+Subpatterns are defined like pairs in dict, over comma.  
+```python
+    !- {'name':nameVal, 'age':25, _:100500, a:b}
+    !- {'a':a, 'b':_, c:'ccc'}
+```
+Var and `_` have the same matching result, so `{k:v}` after `{_:_}` will never matched.  
+Order of subpatterns in dict doesn't matter.  
+```python
+{'a':_, _:b}
+# the same as
+{_:b, 'a':_}
+
+```
+Within one pattern with many parts, subpatterns have priority by predictability of result (const before any, left(key) before right(val)).  
+At first pattern looks for keys (left-part of subpattern) with const values, like `{, 'name':_,}`, if failed then tries match sub-cases with const val in right-part `{, _:'Harry',}`.  
+If pattern didn't match const cases, it will apply first pattern with key-var or wildcard `{key1:val1}`.  
+Notes.   
+    Long patterns with right-values `_:'abc'` take more time. Avoid them without necessity.  
+    Be accurate using variable for key, because position of key is undefined.  
+    It's ok if 1 var key in pattern with constantly defined others.  
+
+4. Star `*`. Means any values with any number of sub-elements including 0.  
+
+In dict pattern `*` star sub-elem matches with all elements that wasn't matched before. 
+In general It is used if we need match some elements beyond those previously defined, and with undefined number of those.  
+```python
+match n
+    {'a':b, *}  !- # 'a' key and any more elements
+    {_:_, *}    !- # one or more elements
+    {*}         !- # empty or any elements == any dict
+    _ !-        !- # here any non-dict, because after {*} case
+```
+
+5. Question mark `?` as a 'maybe' case.  
+Question mark in dict means 1 optional element.  
+The position of `?`-elements in the dict doesn't matter. Only number matters.  
+So number of q-marks means possible elements from 0 up to number.  
+In case {?,?} - 0-2 elements.  
+```python
+match d
+    {?}             !- # empty or 1 key
+    {'a':_, ?, ?}   !- # dict has key 'a' and may contain yet 1 or 2
+    {_:_, ?, ?}     !- # dict has at least 1 key but not more than 3
+    {'b':v, _:_, ?, ?}  !- # dict has from 2 up to 4 keys, one of them is 'b'
+    {?,?,?,?}       !- # only dict with 4 keys without 'b'-key will match here, less was matched above
+    {?,?,*}         !- # doesn't make sense, because equal to {*}
+```
+
+Notes.  
+    `*` and `?` doen't make sense for variable in key like `{a:b, ?,?}` because position of key is not predictable.  
+    `*` after `?` means the same as a just `*`.  
+    For better readability, it makes sense to put `?` or `*` subs in the end of pattern.  
 
 
 
