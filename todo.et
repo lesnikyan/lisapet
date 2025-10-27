@@ -81,7 +81,7 @@
 
 14.3 refactor usage of MatchPtrCase
 
-14.4 match cases
+14.4 #DONE match cases of collections
     ## pattern quantifiers: 
         `_` - some one, 
         `?` - maybe one (nothing or one), for dict means full pair
@@ -97,9 +97,7 @@
     - # DONE sub-var
     - # DONE sub-wildcard
     - sub-? [#done] (#done) {#done}
-    - sub-* [] () {#done}
-    - struct as user-defined type: TypeName{...}
-    - struct common (?) we don't have common struct now
+    - sub-* [#done] (#done) {#done}
 
     # // list patterns
     [] !-  empty list
@@ -110,11 +108,6 @@
     X [*,12,*] !- list has value
     X [* ,12, x,*] !- list has value, `x` - next elem ([*,x,12,*] - prev) ??
     X [*, x] !- last elem
-    thinking, not sure:
-    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
-        [* 12, 15] !- has values in such
-        [? 12, 15] !- can have values
-        [?> 12, 15] !- has values in any order
 
     # // tuple patterns, the same patterns as list
     () !- empty tuple
@@ -134,6 +127,16 @@
     {'k1':x, 'k2':y, *} !- several keys with more
     {k: 'red'} != dict has value 'red', k - var with key value
 
+14.5 extended case of `?>` 'has values'
+    thinking, not sure:
+    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
+        [* 12, 15] !- has values in such
+        [? 12, 15] !- can have values
+        [?> 12, 15] !- has values in any order
+
+14.6 Struct in Pattern matching:
+    - struct as user-defined type: TypeName{...}
+    - struct common (?) we don't have common struct now
     # // struct types
     struct A a1:int, a2, a3
     struct B(A) b2:string

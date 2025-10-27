@@ -49,8 +49,8 @@ Content:
 15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
 16. Match-statement
     1. [Match, cases](#16-match-statement)
-    2. [List and tuple patterns](#162-matching-list-and-tuple)
-    3. [Dict pattern](#163-matching-dict)
+    2. [List and tuple [1,2,?,a,b], [a,5,*] (1, _, ?, *)](#162-matching-list-and-tuple)
+    3. [Dict pattern {'a':a, _:_, *}](#163-matching-dict)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
 19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
@@ -981,11 +981,11 @@ TODO: types, struct (type, fields, constructor), collections (size, some vals), 
 ### 16.2 Matching list and tuple.
 List or tuple can be matched by special collection-patterns. They look similar to regular collections, but have some special features.  
 ```python
-[12, b, _] !- ...
+[?, 12, b, _, *] !- ...
 ```
 In collection patterns we can use several types of sub-expressions. They can be combined.  
 
-1.  Const value in collection. Pattern matches if each element from pattern equals the element of such position in value we check.  
+1.  Const value in the collection. Pattern matches if element from pattern equals the element of such position in value we check.  
 ```python
 match n
     # list
@@ -1046,7 +1046,31 @@ Optional sub-patterns can work unpredictable with same sub-values of matching da
 Matcher tries to find a const value one-by-one in segment with such length as a whole set of question marks (before it) has + 1, but will take only first one. Then it may cause fail if the value of const pattern will be found in optional segment.  
 Keep in mind that `match` is not a full functional query language like regexp, but just simple element-by-element search machine.  
 
-TODO: `*` for ordered sequences is planned for next update.
+5. Star `*` in list or tuple matches any sub elements with any count from 0 up to size of collection.  
+In common case `*` means 'any others' in the and of pattern.  
+Or it can be between two const values, meaning 'any but not the same as second one'. Here works the same rule as for `?` subpattern - first matching value (equal to 1-st const pattern after `*`) will close the uncertain subsequence.  
+Combinations `*` and any number of `?`-s means the same as just `*`.  
+Star as a length-independent subpattern can provoke uncertain behavior near vars or `_` subpattern. Be accurate with it.  
+For templates with optional subelements, it is important for predictable behavior to define a relationship between the variable to be assigned and some constant value or collection side (start, end).  
+```python
+
+match n
+    [1, *] !- # any list starts with 1
+    (*, 2) !- # any tuple that ends with 2
+    [31, *, 32] !- # list starts with 31 and ends with 32
+    [*, 44, *] !- # list has 44
+
+    # list has at least 4 elements,
+    # 1-st and two last will be assigned with var `a,b,c`.
+    [a, 55, *, b, c] !- ...
+    
+    # list starts with 60, has at least 3 elements after it, 
+    # and the 3rd from the end will be assigned with the var `a`
+    [60, *, a,  _, _] !- ...
+
+    [*] !- # any list
+    (*) !- # any tuple
+```
 
 
 ### 16.3 Matching dict.
@@ -1112,7 +1136,7 @@ match n
 ```
 
 5. Question mark `?` as a 'maybe' case.  
-Question mark in dict means 1 unnecessary element.  
+Question mark in dict means 1 optional element.  
 The position of `?`-elements in the dict doesn't matter. Only number matters.  
 So number of q-marks means possible elements from 0 up to number.  
 In case {?,?} - 0-2 elements.  
