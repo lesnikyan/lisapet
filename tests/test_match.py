@@ -29,6 +29,46 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
+    def test_multicase_simple(self):
+        '''
+        Multipattern as set of cases:
+        each of sub case is valid
+        match n
+            1 | 2 | 3 !- ...
+        '''
+        code = '''
+        nn = [
+            1,2,3,4,5,6,
+            (7,), (18,28),
+            [9], [11, 12],
+            {1:11}, {2:22, 3:33}, 
+            {4:44, 44:444, 55:555}, 4444
+            ]
+        res = []
+        
+        for n <- nn
+            match n
+                1 !- res <- [n, 11]
+                2 | 3 !- res <- [n, 22]
+                4 | 5 | 6 !- res <- [n, 33]
+                (_) | [_] | {_:_} !- res <- [n, 101]
+                (a, *) | [a, *] | {a:_, _:_} !- res <- [n, (a,), 102]
+                {*} | 4444 !- res <- [n, 103]
+                _  !- res <- [n, 999]
+        
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exp = [[1, 11], [2, 22], [3, 22], [4, 33], [5, 33], [6, 33], 
+               [(7,), 101], [(18, 28), (18,), 102], [[9], 101], [[11, 12], (11,), 102], 
+               [{1: 11}, 101], [{2: 22, 3: 33}, (2,), 102], [{4: 44, 44: 444, 55: 555}, 103], [4444, 103]]
+        self.assertEqual(exp, rvar.vals())
 
     def test_match_tuple_star(self):
         ''' '''
