@@ -577,6 +577,28 @@ class MCDict(MCContr):
         # in correct match all pairs was matched and removed from vvals
         return not vvals
 
+# ----------------- Complex cases ------------------- #
+
+class MCMultiCase(MatchingPattern):
+    ''' ptt | ptt2 | ptt3  '''
+
+    def __init__(self,  src=None):
+        super().__init__(src)
+        self.cases:list[MatchingPattern] = []
+        
+    def add(self, ncase:MatchingPattern):
+        self.cases.append(ncase)
+    
+    def do(self, ctx:Context):
+        for cs in self.cases:
+            cs.do(ctx)
+            
+    def match(self, val:Val):
+        for cs in self.cases:
+            if cs.match(val):
+                return True
+        return False
+
 
 # -------------------- Whole Case ------------------- #
 

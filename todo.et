@@ -158,6 +158,23 @@
     rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
 
 
+14.7 multi-case in match
+`|` - lowest prior inside pattern
+match n
+    2 | 3 | 5 !- ...
+
+
+14.8 bool expression in match-case
+`&` next lowest prior after `|` 
+bool cases: <, >, >=, <=, ?>, !?>, len() == 5
+not cases: ==, !=, 
+match n
+    [*] >> len(n) > 5 !- 
+    _ ?? 55 ?> n !- 
+    _ & 11 ?> n !-
+    _ :? 11 ?> n !-
+
+
 21.1 reading iterator. read values from sequence in the loop iteration like 
     val = iter(src) # src is collection or generator
         it should init iterator and save instance in first call, then call next() method in each iteration

@@ -128,7 +128,7 @@ expCaseList = [
     CaseVar_(), CaseVal(), CaseString(), CaseMString(), CaseVar(), CaseBrackets(), CaseUnar(StrFormatter())]
 
 patternMatchCases = [
-    MTVal(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MT_Other()
+    MTVal(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MT_Other(), MTMultiCase()
 ]
 
 
@@ -143,7 +143,7 @@ def simpleExpr(expCase:ExpCase, elems)->Expression:
 
 def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
     # print('#makePMatchExpr:', [(n.text, Lt.name(n.type)) for n in elems])
-    # print('#makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
+    # print('#tree-makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
     cases: list[ExpCase] = patternMatchCases
     if isinstance(parent, (MTList)):
         cases = pMListInnerCases

@@ -127,6 +127,40 @@ class MTContr(MTCase):
             base.addSub(sub)
 
 
+class MTComplex(MTCase):
+    ''' combined case pattern
+        ptt | ptt
+        ptt :? ptt
+    '''
+
+
+class MTMultiCase(MTComplex):
+    ''' one of pattern
+        1 | 2 | 3 | [*]
+    '''
+
+    def match(self, elems:list[Elem]) -> bool:
+        priors = '( ) [ ] { } , | , : ,  `1`, :? '
+        spl = OperSplitter(priors)
+        opInd = spl.mainOper(elems)
+        
+        # print('MTMultiCase.match:', opInd, elems[opInd].text)
+        return opInd > 0 and isLex(elems[opInd], Lt.oper, '|')
+
+    def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
+        ps = CaseSeq('|')
+        subs = elems
+        # print('MTMultiCase.expr:', self.__class__.__name__, '', subs)
+        if ps.match(elems):
+            _, subs = ps.split(elems)
+        mcase = MCMultiCase(src=elems)
+        for sub in subs:
+            scase = findCase(sub)
+            ptt = scase.expr(sub)
+            mcase.add(ptt)
+        return mcase
+
+
 class CommaSeparatedSequence(MTContr):
     ''' {,,} [,,] (,,) '''
 
@@ -279,7 +313,7 @@ class MTFail(MTCase):
 pMListInnerCases:list[MTCase] = [
     MTVal(), MTE_(), MTVar(), MTString(),
     MTEStar(),  MTEQMark(), MTColPair(),
-    MTList(), MTTuple(), MTDict(), MTStruct(),
+    MTList(), MTTuple(), MTDict(), MTStruct(), 
 ]
 
 
