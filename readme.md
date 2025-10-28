@@ -51,6 +51,8 @@ Content:
     1. [Match, cases](#16-match-statement)
     2. [List and tuple [1,2,?,a,b], [a,5,*] (1, _, ?, *)](#162-matching-list-and-tuple)
     3. [Dict pattern {'a':a, _:_, *}](#163-matching-dict)
+    4. Struct pattern (in dev)
+    5. [Multicase `1 | 2`](#165-multicase-)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
 19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
@@ -1155,6 +1157,23 @@ Notes.
     `*` after `?` means the same as a just `*`.  
     For better readability, it makes sense to put `?` or `*` subs in the end of pattern.  
 
+
+### 16.4 Matching struct
+Not implemented yet
+
+### 16.5 Multicase `|`
+Multicase is feature for combine several patterns in one executable case.  
+Operator `|` is divider in such complex expression between patterns.  
+The case will be executed if one of patterns in set is matched.  
+```python
+match n
+    1 | 2 | 3 !- # one of 1, 2, 3 is matched
+    (*) | [*] !- # any tuple or list
+
+    # 1-key dict or dict with 2 keys one of them is 'name' is matched. 
+    # a:b will be assigned by matched pattern
+    {a:b} | {'name':_, a:b} !- ...
+```
 
 
 ### 17. multi-assignment
