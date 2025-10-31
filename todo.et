@@ -156,22 +156,19 @@
 
     # // perspective: regexp match:
     rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
+    /`[a-f]+`in/ !- 
 
 
-14.7 multi-case in match
+14.7 #DONE multi-case in match
 `|` - lowest prior inside pattern
 match n
     2 | 3 | 5 !- ...
 
 
-14.8 bool expression in match-case
-`&` next lowest prior after `|` 
+14.8 #DONE bool expression (guard) in match-case
 bool cases: <, >, >=, <=, ?>, !?>, len() == 5
-not cases: ==, !=, 
+pattern :? guard !- sub-block
 match n
-    [*] >> len(n) > 5 !- 
-    _ ?? 55 ?> n !- 
-    _ & 11 ?> n !-
     _ :? 11 ?> n !-
 
 
@@ -289,6 +286,8 @@ res = numRx.first(strVal) # string
 resList = numRx.find(strVal) # [string]
 grs = numsRx.groups(strVal) # [[string]]
 
+rx = /`^Regex$`in/
+
 
 #==
 # Maybe type: Nothing, Thing
@@ -337,25 +336,6 @@ res = (long_expressions)
 #== Type alising, make sense only for strict typeing mode (not implemented)
 type intN3 [int, int, int]
 type intN3 int[3]
-
-
-#==
-# struct constructors
-struct A a:int, b:int, c:bool
-
-func newA(a, b, c)
-    A{a:a, b:b, c:c}
-
-func new.A(a, b, c)
-    A{a:a, b:b, c:c}
-
-a = new.A(1,2)
-a = A.new(1,2)
-a = A.make(1,2)
-
-#== overloading
-func new.A(a, b)
-    A{a:a, b:b, c:true}
 
 
 #== 
@@ -427,26 +407,6 @@ func foo(arg)
         return expr2
     arg2 = expr3
     foo(arg2)
-
-@#
-
-## 
-#### thinking :
-
- -- read from list to list in one expression
-for i <- src
-    res <-  i
-
-for i <- src :: res <-  i
-
-for res: <- src
-
-[_ ; x <- src; res <- x]
-the same
-
-res = [x; x <- src]
-# No sense.
-#@
 
 
 ########################### Done section ############################# 

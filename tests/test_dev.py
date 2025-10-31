@@ -38,7 +38,6 @@ class TestDev(TestCase):
     '''
 
 
-
     def text_test1(self):
         src = [1,2,3, 4, 5]
         ptt = '_,2,_,*'.split(',')

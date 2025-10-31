@@ -44,11 +44,16 @@ class IfExpr(ControlBlock):
         self.preSubs:list[Expression] = [] # sub-expressions before conditions
         self.lastRes = None
         self.curBlock = self.mainBlock
+        self.condRes = None
+        self.inCtx = None
 
     def setCond(self, expr:Expression, subExp:list[Expression]=[]):
-        # dprint('#IfExpr setCond ', expr, subExp)
+        # print('#IfExpr setCond ', expr, subExp)
         self.cond = expr
         self.preSubs = subExp
+    
+    def condCheck(self):
+        return self.condRes
     
     def add(self, exp:Expression):
         self.curBlock.add(exp)
@@ -66,20 +71,22 @@ class IfExpr(ControlBlock):
         self.cond.do(inCtx)
         target:Block = self.mainBlock
         self.lastRes = None
-        condRes = self.cond.get()
+        self.condRes = self.cond.get()
+        self.inCtx = None
         # print('# IfExpr.do02 ', condRes, type(condRes))
         # print('## Cond-get', condRes, condRes.get())
-        if not condRes.get():
-            # dprint('## IF_ELSE')
+        if not self.condRes.get():
+            # print('## IF_ELSE')
             if not self.elseBlock:
                 # if don't have else-block return from if-block without result
                 return
             # enter to else-block
             target = self.elseBlock
-        # dprint('# IfExpr.do2 ', target)
+        # print('# IfExpr.do2 ', target)
+        self.inCtx = inCtx
         target.do(inCtx)
         self.lastRes = target.get() # for case if we need result from if block or one-line-if
-        # dprint('# IfExpr.do2 ', self.lastRes)
+        # print('# IfExpr.do2 ', self.lastRes)
 
     def get(self):
         return self.lastRes
@@ -109,54 +116,6 @@ class ElsFold:
 
 # # MATCH-CASE
 
-# class CaseExpr(ControlBlock):
-#     ''' case in `match` block
-#     '''
-    
-#     # TODO: do we need result from `match` blok?
-
-#     def __init__(self):
-#         # super().__init__()
-#         self.block = Block()
-#         self.expect:Expression = None
-
-#     def add(self, exp:Expression):
-#         self.block.add(exp)
-
-#     def setExp(self, exp:Exception):
-#         self.expect = exp
-
-#     def doExp(self, ctx:Context):
-#         self.expect.do(ctx)
-
-#     def matches(self, val:Var):
-#         # simple equal value
-#         # print('~~~ %s == %s >>  %s' % (self.expect.get(), val.get(), self.expect.get() == val.get()))
-#         if self.expect.get().getVal() == val.getVal():
-#             return True
-
-#         # type case
-#         et = self.expect.get()
-#         if isinstance(et, VType) and et == val.getType():
-#             return True
-
-#         # TODO: 
-        
-#         # list case
-        
-#         # tuple case
-        
-#         # dict case
-        
-#         # struct-constructor case
-        
-#         return False
-    
-#     def do(self, ctx:Context):
-#         self.block.do(ctx)
-#         self.lastVal = self.block.get()
-
-
 class MatchExpr(ControlBlock):
     ''' 
     1. for unpack multiresults.
@@ -180,14 +139,10 @@ class MatchExpr(ControlBlock):
         super().__init__()
         self.match:Expression = None
         self.cases:list[CaseExpr] = []
-        # self.defaultCase:CaseExpr = None
 
     def add(self, xcase:CaseExpr):
         if not isinstance(xcase, CaseExpr):
             raise InterpretErr('Trying add not-case sub-expression (%s) to `match` block' % xcase.__class__.__name__)
-        # if isinstance(xcase.expect, VarExpr_):
-        #     self.defaultCase = xcase
-        #     return
         self.cases.append(xcase)
 
     def setMatch(self, exp:Expression):
@@ -196,9 +151,7 @@ class MatchExpr(ControlBlock):
     def do(self, ctx:Context):
         # print('Match.do1')
         self.match.do(ctx)
-        done = self.doCases(ctx)
-        # if not done:
-        #     self.defaultCase.do(mctx)
+        self.doCases(ctx)
 
     def doCases(self, ctx:Context):
         mval = self.match.get()
@@ -207,8 +160,6 @@ class MatchExpr(ControlBlock):
         for cs in self.cases:
             mctx = Context(ctx)
             cs.doExp(mctx)
-            # avar = mctx.get('a')
-            # print('a:', avar)
             if cs.match(mval):
                 cs.do(mctx)
                 self.lastVal = cs.get()

@@ -29,6 +29,49 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
+    def test_pattern_post_guard(self):
+        '''
+        post-guard in matching case
+        match n
+            pattern :? guard !- ...
+        '''
+        code = '''
+        nn = [
+            101, 2, 3, 4, 
+            [11,12], [4,3], (5,1), (1,7,5), [1,2,1,2,1,2,7],
+            {1:11}, {2:22, 222:222}, {3:33, 33:333, 333:3333},
+            (1, 2, 3), (11, 12, 15),
+            ]
+        res = []
+        
+        for n <- nn
+            match n
+                101 :? 2 > 3 !- res <- [n, 'n0'] # should be skipped
+                101 :? 2 < 3 !- res <- [n, 'n1']
+                [a, b] :? a > b !- res <- [n, (a, b), 'n2']
+                (a, _) | [_,a] :? a > 2 !- res <- [n, (a, ), 'n3']
+                [*] | (*) :? 7 ?> n !- res <- [n, 'n7']
+                {*} :? len(n) > 1 !- res <- [n, 'n52']
+                {a:b} :? b > 8 !- res <- [n, (a, b), 'n51']
+                1 |2 |3 :? n ?> [2, 3]  !- res <- [n, 'n61']
+                (a, b, c) :? d = 16; c < d !- res <- [n, (a, b, c, d), 'n53']
+                _  !- res <- [n, 999]
+        
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exp = [[101, 'n1'], [2, 'n61'], [3, 'n61'], [4, 999], 
+            [[11, 12], (12,), 'n3'], [[4, 3], (4, 3), 'n2'], [(5, 1), (5,), 'n3'], 
+            [{1: 11}, (1, 11), 'n51'], [{2: 22, 222: 222}, 'n52'], [{3: 33, 33: 333, 333: 3333}, 'n52']
+        ]
+        # self.assertEqual(exp, rvar.vals())
+
     def test_multicase_simple(self):
         '''
         Multipattern as set of cases:
