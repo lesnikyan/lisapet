@@ -32,6 +32,10 @@ Case detection.
 
 class MTCase(ExpCase):
     ''' case of match pattern '''
+    
+    def hasSubExpr(self):
+        ''' For control cases in tree interprer '''
+        return False
 
 ValCases = [CaseVal(), CaseString()]
 
@@ -132,6 +136,7 @@ class MTComplex(MTCase):
         ptt | ptt
         ptt :? ptt
     '''
+    _priors = '( ) [ ] { } , | , : ,  `1`, :? '
 
 
 class MTMultiCase(MTComplex):
@@ -140,8 +145,8 @@ class MTMultiCase(MTComplex):
     '''
 
     def match(self, elems:list[Elem]) -> bool:
-        priors = '( ) [ ] { } , | , : ,  `1`, :? '
-        spl = OperSplitter(priors)
+        # priors = '( ) [ ] { } , | , : ,  `1`, :? '
+        spl = OperSplitter(MTComplex._priors)
         opInd = spl.mainOper(elems)
         
         # print('MTMultiCase.match:', opInd, elems[opInd].text)
@@ -159,6 +164,38 @@ class MTMultiCase(MTComplex):
             ptt = scase.expr(sub)
             mcase.add(ptt)
         return mcase
+
+
+class MTPtGuard(MTComplex, SubCase):
+    ''' expr :? expr '''
+    
+    def match(self, elems:list[Elem]) -> bool:
+        # priors = '( ) [ ] { } , | , : ,  `1`, :? '
+        spl = OperSplitter(MTComplex._priors)
+        opInd = spl.mainOper(elems)
+        
+        # print('MTPtGuard.match:', opInd, elems[opInd].text)
+        return opInd > 0 and isLex(elems[opInd], Lt.oper, ':?')
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[Elem]]:
+        # priors = '( ) [ ] { } , | , : ,  `1`, :? '
+        spl = OperSplitter(MTComplex._priors)
+        opInd = spl.mainOper(elems)
+        left = elems[:opInd]
+        patCase = findCase(left)
+        pattr = patCase.expr(left)
+        right = [Elem(Lt.word, 'if')] + elems[opInd+1:]
+        expr = MCPtGuard()
+        expr.pattern = pattr
+        return expr, right
+        
+    def hasSubExpr(self):
+        return True
+    
+    def setSub(self, base:MCPtGuard, subs:Expression)->Expression:
+        # print('MTPtGuard.setSub', subs)
+        base.setGuard(subs)
+        return base
 
 
 class CommaSeparatedSequence(MTContr):
@@ -311,6 +348,7 @@ class MTFail(MTCase):
 
 
 pMListInnerCases:list[MTCase] = [
+    MTMultiCase(),
     MTVal(), MTE_(), MTVar(), MTString(),
     MTEStar(),  MTEQMark(), MTColPair(),
     MTList(), MTTuple(), MTDict(), MTStruct(), 

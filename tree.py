@@ -128,7 +128,7 @@ expCaseList = [
     CaseVar_(), CaseVal(), CaseString(), CaseMString(), CaseVar(), CaseBrackets(), CaseUnar(StrFormatter())]
 
 patternMatchCases = [
-    MTVal(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), MT_Other(), MTMultiCase()
+    MT_Other(), MTPtGuard(), MTMultiCase(), MTVal(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), 
 ]
 
 
@@ -151,7 +151,12 @@ def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
         # print('mtC>', mtCase)
         if mtCase.match(elems):
             # print('mt.found>', mtCase.__class__.__name__, '', elemStr(elems))
-            pattr = mtCase.expr(elems)
+            if mtCase.hasSubExpr():
+                pattr, subElems = mtCase.split(elems)
+                subExp = elems2expr(subElems)
+                pattr = mtCase.setSub(pattr, subExp)
+            else:
+                pattr = mtCase.expr(elems)
             return pattr
     # print('DEBUG: No current MTCase for `%s` ' % '~'.join([n.text for n in elems]))
     raise InterpretErr('No current MTCase for `%s` ' % ''.join([n.text for n in elems]))
@@ -178,6 +183,7 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     
     if not subs or not subs[0]:
         return base
+    
     subExp:list[Expression] = []
     for sub in subs:
         # prels('#complexExpr1:', sub)
@@ -205,7 +211,7 @@ def elems2expr(elems:list[Elem])->Expression:
         if expCase.match(elems):
             # if expCase.sub():
             #     return complexExpr(expCase, elems)
-            # print('Case found::', expCase.__class__.__name__, '', elemStr(elems))
+            # print('Case found::', expCase.__class__.__name__, '', elemStr(elems), '\n')
             # print('Case found::', expCase.__class__.__name__)
             expr = makeExpr(expCase, elems)
             if isinstance(expr, CtrlSubExpr):

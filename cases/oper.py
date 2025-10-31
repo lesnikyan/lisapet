@@ -80,7 +80,7 @@ class CaseAssign(SubCase):
 
 
 _operPrior = ('() [] . , -x !x ~x , ** , * / % , + - ,'
-' << >> , < <= > >= !> ?> !?>, == != , &, ^ , | , && , ||, ?: , : , ? , <- , = += -= *= /= %= , ; ') # , /: !: :?, !- 
+' << >> , < <= > >= !> ?> !?>, == != , &, ^ , | , && , ||, ?: , : , ? , <- , = += -= *= /= %= , ; , /:,  !: :?, !-  ') #
 
 
 class CaseBinOper(SubCase):
@@ -476,6 +476,7 @@ class CaseInlineSub(SubCase):
         idx = OperSplitter().mainOper(elems)
         ctrl = elems[:idx]
         sub = elems[idx+1:]
+        # print('', elemStr(ctrl), '<<%s>>' % elems[idx].text, elemStr(sub))
         exp = CtrlSubExpr()
         return exp, [ctrl, sub]
     

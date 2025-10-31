@@ -25,6 +25,7 @@ class MatchingPattern(Expression):
     
     def __init__(self, src=None):
         super().__init__(None, src)
+        self.extCtx = None
 
     # def setExp(self, exp:Exception):
     #     pass
@@ -600,6 +601,45 @@ class MCMultiCase(MatchingPattern):
         return False
 
 
+class MCPtGuard(MatchingPattern):
+    '''
+    Case with boolean guard
+    ptt :? cond
+    ptt - matching pattern, including multicase
+    cond - bool expression equal to if
+    `:?` is a top-level operator in case-pattern expression with next priority afer `!-` operator
+    so case with guard should not be a part of other pattern
+    only one `:?` for one `!-`
+    exmp:
+    [a, b] | (b, a) :? a > b || b < -5 !- print(a, b)
+    '''
+    
+    def __init__(self,  src=None):
+        super().__init__(src)
+        self.cases:list[MatchingPattern] = []
+        self.pattern: MatchingPattern = None
+        self.guard:Expression = None
+        self.ctx = None
+        
+    def setGuard(self, expr:Expression):
+        self.guard = expr
+        
+    def do(self, ctx:Context):
+        self.ctx = ctx
+        self.pattern.do(ctx)
+        
+    def match(self, val:Val):
+        if not self.pattern.match(val):
+            return False
+        self.guard.do(self.ctx)
+        gres = self.guard.condCheck()
+        gval = gres.getVal()
+        if gval:
+            self.extCtx = self.guard.inCtx
+        return gval
+        
+
+
 # -------------------- Whole Case ------------------- #
 
 
@@ -630,5 +670,7 @@ class CaseExpr(ControlBlock):
     
     def do(self, ctx:Context):
         ''' body of sub-block '''
+        if self.expect.extCtx:
+            ctx = self.expect.extCtx
         self.block.do(ctx)
         self.lastVal = self.block.get()

@@ -43,11 +43,12 @@ class TestControl(TestCase):
         
         # for /: if /:
         r2 = []
-        for n <- res /:  if n % 2 > 0 /: n += 1 ; r2 <- n + 1000
+        for n <- res /:  if n % 2 > 0 /: k=n; n += 1 ; r2 <- n + 1000
         
         res += r2
         
-        # print('res = ', res, r2)
+        print('res = ', res)
+        print('r2 = ', r2)
         '''
         code = norm(code[1:])
 

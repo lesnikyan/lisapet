@@ -48,11 +48,12 @@ Content:
 14. [Builtin/native functions (print, iter,..)](#14-builtin-functions)
 15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
 16. Match-statement
-    1. [Match, cases](#16-match-statement)
+    1. [Match, cases, `!-`](#16-match-statement)
     2. [List and tuple [1,2,?,a,b], [a,5,*] (1, _, ?, *)](#162-matching-list-and-tuple)
     3. [Dict pattern {'a':a, _:_, *}](#163-matching-dict)
     4. Struct pattern (in dev)
     5. [Multicase `1 | 2`](#165-multicase-)
+    6. [Guard with pattern `[a] :? a > 5`](#166-bool-guard-in-case)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
 19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
@@ -1174,6 +1175,25 @@ match n
     # a:b will be assigned by matched pattern
     {a:b} | {'name':_, a:b} !- ...
 ```
+
+### 16.6 Bool guard in case
+Case pattern can has additional `guard` - bool condition equal to `if`. 
+Guard can be added to case-condition by operator `:?` after pattern.  
+Guard will be used after pattern has matched.  
+Guard can contain assign-part, equally to `if` statement.  
+(Actually, guard is the same object as the `if`, without execution block).  
+```python
+x = someval()
+match n
+    [a, *] :? x < a !- # list pattern, val from list in guard
+    (1, b) | [2, b] :? b > 10 !- # multipattern before guard
+    {'name':name, *} :? name !- 'Alan' && 'address' ?> n !- # complex condition in guard
+    (a, b, c) :? d = a + b; c < d !- print(a, b, c, d) # assign sub-expression, var from guard uses in sub-block  
+    _ :? n != 17 !- guard with `_`
+    _ !- # other
+```
+
+
 
 
 ### 17. multi-assignment
