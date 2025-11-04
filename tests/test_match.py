@@ -67,7 +67,7 @@ class TestMatch(TestCase):
                 TypeB{name:name, age:22} !- res <- [n, (name), 21]
                 TypeB{color:''} !- res <- [n, 27]
                 TypeB{name:name, color:color} !- res <- [n, (name, color), 28]
-                TypeA{} !- res <- [n, 29]
+                TypeA{color:_} !- res <- [n, 29]
                 TypeC{nums:[]} !- res <- [n, 30]
                 TypeC{nums:[331]} !- res <- [n, 31]
                 TypeC{nums:[a, b, c]} !- res <- [n, (a,b,c), 32]
@@ -79,7 +79,7 @@ class TestMatch(TestCase):
                 _ !- res <- [n, 2999]
             # print('nres:', res)
         # 
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 

@@ -8,6 +8,7 @@
     # split()
     # join()
     # replace()
+    len() for string
     rxreplace()
     tostr([int]), tostr(bytes), 
     tostr(anyval) # like print
@@ -81,6 +82,35 @@
 
 14.3 refactor usage of MatchPtrCase
 
+
+14.5 extended case of `?>` 'has values'
+    thinking, not sure:
+    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
+        [* 12, 15] !- has values in such
+        [? 12, 15] !- can have values
+        [?> 12, 15] !- has values in any order
+
+14.9
+    # // perspective: regexp match:
+    rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
+    /`[a-f]+`in/ !- 
+
+14.10
+    # // mixed
+    [A{}, A{*}, B{b1,*}] !- list with structs
+    {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
+
+14.11 var of whole patter
+match nn
+    x@[*] !- # x - ane list == nn
+    [x@[*], y@[*], x@*] !- # x, y - vars by subpatterns, z - others
+    x@TypeA{} !- # var with struct instance
+
+14.12 any struct
+    Nn@TypeName{} !- # Nn - var with instance
+    @{} !- #  struct with any type
+
+
 14.4 #DONE match cases of collections
     ## pattern quantifiers: 
         `_` - some one, 
@@ -139,15 +169,7 @@ pattern :? guard !- sub-block
 match n
     _ :? 11 ?> n !-
 
-
-14.5 extended case of `?>` 'has values'
-    thinking, not sure:
-    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
-        [* 12, 15] !- has values in such
-        [? 12, 15] !- can have values
-        [?> 12, 15] !- has values in any order
-
-14.6 Struct in Pattern matching:
+14.6 #DONE Struct in Pattern matching:
     - struct as user-defined type: TypeName{...}
     - struct common (?) we don't have common struct now
     # // struct types
@@ -163,17 +185,6 @@ match n
     B{b2: 'abc'} !- match by B-type (or children) by fields value
     C{c1:[1,*]} !- struct with list in field
     struct has defined list of fields, so `_`, `?`, `*` sub-elements don't make sense for structs. maybe for anonimous struct, if will be implemented.
-
-
-14.9
-    # // perspective: regexp match:
-    rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
-    /`[a-f]+`in/ !- 
-
-14.10
-    # // mixed
-    [A{}, A{*}, B{b1,*}] !- list with structs
-    {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
 
 
 
