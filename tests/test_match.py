@@ -29,6 +29,78 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
+    def test_match_struct(self):
+        ''' pattern of struct, including collections in fields. '''
+        code = r'''
+        
+        struct Type1 a:int, b:int
+        struct TypeA color:string
+        struct TypeB(TypeA) name:string, age:int
+        struct TypeC nums:list, a:int
+        struct TypeD fd:dict, fl:list, ft:tuple
+        
+        nn = [
+            Type1{},  #  empty construtor
+            Type1(10, 20), Type1(10, 0), Type1(10, 2), Type1(1, 2),
+            TypeA('000'), TypeA('fff'),
+            
+            TypeB{color:'fff', name:'Aaa', age:44},
+            TypeB{color:'red', name:'Bimbo', age:22},
+            TypeB{},  #  empty constructor when inheritance
+            TypeB{color:'green', name:'Ambo', age:33},
+            
+            TypeC{nums:[], a:1}, TypeC{nums:[331], a:2}, TypeC{nums:[34, 35, 36], a:3}, 
+            TypeD({'a':111}, [], (,)), TypeD({}, [22,33,44], (,)), TypeD({'x':1111}, [2222], (3333,)), 
+            TypeD({}, [], (555,)), TypeD({}, [], (61,62,63,64)), TypeD({}, [], (,)), 
+            TypeD{},  #  empty constructor with collections in fields 
+        ]
+        res = []
+        
+        
+        for n <- nn
+            match n
+                Type1{b:0} !- res <- [n, 10]
+                Type1{a:10, b:20} !- res <- [n, 11]
+                Type1{a:10} !- res <- [n, 12]
+                Type1{} !- res <- [n, 19]
+                TypeA{color:'fff'} !- res <- [n, 23]
+                TypeB{name:name, age:22} !- res <- [n, (name), 21]
+                TypeB{color:''} !- res <- [n, 27]
+                TypeB{name:name, color:color} !- res <- [n, (name, color), 28]
+                TypeA{} !- res <- [n, 29]
+                TypeC{nums:[]} !- res <- [n, 30]
+                TypeC{nums:[331]} !- res <- [n, 31]
+                TypeC{nums:[a, b, c]} !- res <- [n, (a,b,c), 32]
+                TypeD{fd:{'a':aval,*}} !- res <- [n, (aval,), 41]
+                TypeD{fl:[a, b, *]} !- res <- [n, (a,b), 42]
+                TypeD{ft:(a), fd:{b:c}, fl:[d]} !- res <- [n, (a,b,c,d), 43]
+                TypeD{ft:(a,*)} !- res <- [n, (a,), 44]
+                TypeD{} !- res <- [n, 49]
+                _ !- res <- [n, 2999]
+            # print('nres:', res)
+        # 
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        
+        exp = [
+            ['st@Type1{a: 0,b: 0}', 10], ['st@Type1{a: 10,b: 20}', 11], ['st@Type1{a: 10,b: 0}', 10], ['st@Type1{a: 10,b: 2}', 12], ['st@Type1{a: 1,b: 2}', 19], 
+            ['st@TypeA{color: 000}', 29], ['st@TypeA{color: fff}', 23], ['st@TypeB{name: Aaa,age: 44}', 23], 
+            ['st@TypeB{name: Bimbo,age: 22}', 'Bimbo', 21], ['st@TypeB{name: ,age: 0}', 27], ['st@TypeB{name: Ambo,age: 33}', ('Ambo', 'green'), 28], 
+            ['st@TypeC{nums: [],a: 1}', 30], ['st@TypeC{nums: [331],a: 2}', 31], ['st@TypeC{nums: [34, 35, 36],a: 3}', (34, 35, 36), 32], 
+            ["st@TypeD{fd: {'a': 111},fl: [],ft: ()}", (111,), 41], ['st@TypeD{fd: {},fl: [22, 33, 44],ft: ()}', (22, 33), 42], 
+            ["st@TypeD{fd: {'x': 1111},fl: [2222],ft: (3333,)}", (3333, 'x', 1111, 2222), 43], ['st@TypeD{fd: {},fl: [],ft: (555,)}', (555,), 44], 
+            ['st@TypeD{fd: {},fl: [],ft: (61, 62, 63, 64)}', (61,), 44], ['st@TypeD{fd: {},fl: [],ft: ()}', 49], ['st@TypeD{fd: {},fl: [],ft: ()}', 49]]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
     def test_pattern_post_guard(self):
         '''
         post-guard in matching case

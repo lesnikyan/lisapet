@@ -287,13 +287,17 @@ class MTColPair(MTContr, CaseColon):
         # print('MTColPair.match')
         return super(CaseColon,self).match(elems)
 
-    def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+    def split(self, elems:list[Elem]):
         _, parts = super(CaseColon,self).split(elems)
         if len(parts) != 2:
             raise InterpretErr("Bad count of pair parts in MTColPair")
         # print('MTColPair.expr', parts)
         ekey = findCase(parts[0]).expr(parts[0])
         rval = findCase(parts[1]).expr(parts[1])
+        return ekey, rval
+
+    def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        ekey, rval = self.split(elems)
         exp = None
         if isinstance(ekey, MCValue):
             exp = MCDPairKVal(ekey, rval)
@@ -335,10 +339,38 @@ class MTDict(CommaSeparatedSequence):
         return exp
 
 
-class MTStruct(MTContr, CaseStructConstr):
+class MTStruct(MTContr):
     ''' '''
+    
+    def __init__(self):
+        self.struCase = CaseStructConstr()
+    
     def match(self, elems:list[Elem]) -> bool:
-        return False
+        return self.struCase.match(elems)
+
+    def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        # subPtts = self.split(elems)
+        # exp = MCDict()
+        constr, subs = self.struCase.split(elems)
+        stype = constr.typeName
+        # print('MTStruct', constr, subs)
+        exp = MCStruct(stype, src = elems)
+        for sub in subs:
+            if isinstance(sub, NothingExpr) or len(sub) == 0:
+                continue
+            ptCase = findCase(sub)
+            # print('MTStruct.sub:', elemStr(sub), ptCase)
+            match ptCase:
+                case MTColPair():
+                    fvar, fpttr = ptCase.split(sub)
+                    # print('Pair ...', fvar, fpttr)
+                    if not isinstance(fvar, MCSubVar):
+                        raise InterpretErr("MTStruct has incorrect field-name lexem.")
+                    fname = fvar.exp.name
+                    exp.add(fname, fpttr)
+        return exp
+
+
 
 class MTFail(MTCase):
     ''' case of incorrect pattern-syntax '''

@@ -11,6 +11,7 @@ from vars import *
 from nodes.expression import *
 from nodes.iternodes import *
 from nodes.keywords import *
+from nodes.structs import StructInstance, StructDef
 
 
 
@@ -48,7 +49,7 @@ class MCValue(MatchingPattern):
         
     def match(self, val:Val):
         # if not scalar or string
-        # print('MCValue match', 'expr:', self.exp)
+        # print('MCValue match', 'expr:', self.exp, val)
         vtype = val.getType()
         if not isinstance(vtype, (TypeNum, TypeInt, TypeNull, TypeBool, TypeString)):
             # print('MCVal.match bad type', vtype, isinstance(vtype, TypeInt))
@@ -577,6 +578,55 @@ class MCDict(MCContr):
             vvals = rem
         # in correct match all pairs was matched and removed from vvals
         return not vvals
+
+
+
+# ----------------- Struct pattern ------------------- #
+
+class MCStruct(MatchingPattern):
+    ''' TypeNAme{fieldName: valPattern, ..}  '''
+
+    def __init__(self, typeName:str, src=None):
+        super().__init__(src)
+        self.fields:dict[str, MatchingPattern] = {}
+        self.typeName = typeName
+        self.sType:StructDef = None
+    
+    def add(self, field, pattr:MatchingPattern):
+        self.fields[field] = pattr
+    
+    def do(self, ctx:Context):
+        stype = ctx.getType(self.typeName)
+        self.sType = stype.get()
+        for fname, fpattr in self.fields.items():
+            # if not fname in self.stype.fields
+            # print('MCStruct . do', fname)
+            fpattr.do(ctx)
+        # ctx.print(forsed=1)
+    
+    def match(self, val:StructInstance):
+        # print('MCStruct.match', val.__class__, 'type:',  val.getType())
+        if not isinstance(val, StructInstance):
+            return False
+        # vtype = val.vtype
+        # print('MCStruct.match 2', val.vtype, self.sType, val.vtype == self.sType)
+        # TODO: check imported type
+        # print('MatchStruct#1', self.sType.name, '<>', val.vtype.name)
+        # if not self.sType.isInstance(val.vtype):
+        if not val.vtype.isInstance(self.sType):
+            return False
+        for fname, fpattr in self.fields.items():
+            # if false-positive check of type name
+            # if fname not in val.vtype.fields:
+            if not val.vtype.hasField(fname):
+                return False
+            fval = val.get(fname)
+            if not fpattr.match(fval):
+                return False
+        # ok if all field-patterns have passed
+        return True
+        
+        
 
 # ----------------- Complex cases ------------------- #
 
