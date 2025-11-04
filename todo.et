@@ -8,6 +8,7 @@
     # split()
     # join()
     # replace()
+    len() for string
     rxreplace()
     tostr([int]), tostr(bytes), 
     tostr(anyval) # like print
@@ -81,6 +82,35 @@
 
 14.3 refactor usage of MatchPtrCase
 
+
+14.5 extended case of `?>` 'has values'
+    thinking, not sure:
+    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
+        [* 12, 15] !- has values in such
+        [? 12, 15] !- can have values
+        [?> 12, 15] !- has values in any order
+
+14.9
+    # // perspective: regexp match:
+    rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
+    /`[a-f]+`in/ !- 
+
+14.10
+    # // mixed
+    [A{}, A{*}, B{b1,*}] !- list with structs
+    {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
+
+14.11 var of whole patter
+match nn
+    x@[*] !- # x - ane list == nn
+    [x@[*], y@[*], x@*] !- # x, y - vars by subpatterns, z - others
+    x@TypeA{} !- # var with struct instance
+
+14.12 any struct
+    Nn@TypeName{} !- # Nn - var with instance
+    @{} !- #  struct with any type
+
+
 14.4 #DONE match cases of collections
     ## pattern quantifiers: 
         `_` - some one, 
@@ -127,38 +157,6 @@
     {'k1':x, 'k2':y, *} !- several keys with more
     {k: 'red'} != dict has value 'red', k - var with key value
 
-14.5 extended case of `?>` 'has values'
-    thinking, not sure:
-    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
-        [* 12, 15] !- has values in such
-        [? 12, 15] !- can have values
-        [?> 12, 15] !- has values in any order
-
-14.6 Struct in Pattern matching:
-    - struct as user-defined type: TypeName{...}
-    - struct common (?) we don't have common struct now
-    # // struct types
-    struct A a1:int, a2, a3
-    struct B(A) b2:string
-    # cases:
-    A{} !- instance of A with default values
-    A{*} !- instance of A with any field values
-    A{a1:10} !- instance of A with a1 == 10, and default others
-    A{a1:10, *} !- instance of A with a1 == 10, and any others
-    B{} !- instance of B, or parent A if previous cases didn't matched by A-type
-    B{a1=11} !- match by B-type with inherited a1 field (A-type matches too)
-    B{b2} !- match by B-type (match that has `b2` field) (or his children, not A)
-    B{b2='abc'} !- match by B-type (or children) by fields value
-
-    # // mixed
-    [A{}, A{*}, B{b1,*}] !- list with structs
-    {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
-
-    # // perspective: regexp match:
-    rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
-    /`[a-f]+`in/ !- 
-
-
 14.7 #DONE multi-case in match
 `|` - lowest prior inside pattern
 match n
@@ -170,6 +168,24 @@ bool cases: <, >, >=, <=, ?>, !?>, len() == 5
 pattern :? guard !- sub-block
 match n
     _ :? 11 ?> n !-
+
+14.6 #DONE Struct in Pattern matching:
+    - struct as user-defined type: TypeName{...}
+    - struct common (?) we don't have common struct now
+    # // struct types
+    struct A a1:int, a2, a3
+    struct B(A) b2:string
+    struct C c1:list, c2:tuple
+    # cases:
+    A{} !- instance of A with any field values, or any chidren of A (like B)
+    A{a1:10} !- instance of A with `a1 = 10`
+    A{a1:aVar} !- instance of A, assigning val of field `a1` into variable `aVar`.
+    B{} !- instance of B (or his children)
+    B{a1: 11} !- match by B-type with inherited `a1` field
+    B{b2: 'abc'} !- match by B-type (or children) by fields value
+    C{c1:[1,*]} !- struct with list in field
+    struct has defined list of fields, so `_`, `?`, `*` sub-elements don't make sense for structs. maybe for anonimous struct, if will be implemented.
+
 
 
 21.1 reading iterator. read values from sequence in the loop iteration like 

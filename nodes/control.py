@@ -155,8 +155,9 @@ class MatchExpr(ControlBlock):
 
     def doCases(self, ctx:Context):
         mval = self.match.get()
+        vv = mval
         mval = var2val(mval)
-        # print('Match. mval', self.match, mval)
+        # print('Match. mval', self.match, vv, '::',  mval)
         for cs in self.cases:
             mctx = Context(ctx)
             cs.doExp(mctx)

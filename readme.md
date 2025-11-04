@@ -51,9 +51,10 @@ Content:
     1. [Match, cases, `!-`](#16-match-statement)
     2. [List and tuple [1,2,?,a,b], [a,5,*] (1, _, ?, *)](#162-matching-list-and-tuple)
     3. [Dict pattern {'a':a, _:_, *}](#163-matching-dict)
-    4. Struct pattern (in dev)
+    4. [Struct pattern](#164-matching-struct)
     5. [Multicase `1 | 2`](#165-multicase-)
     6. [Guard with pattern `[a] :? a > 5`](#166-bool-guard-in-case)
+    7. [Mixed patterns](#167-mixed-nested-patterns)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
 19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
@@ -1160,7 +1161,36 @@ Notes.
 
 
 ### 16.4 Matching struct
-Not implemented yet
+Struct pattern looks like general constructor with curly brackets `Typename{...}`.  
+Empty brackets means that pattern matches any instances of type.  
+Child type will be matched by parent.  
+```python
+struct A
+struct B
+struct C(B)
+
+match st
+    A{} !- # match any of A
+    B{} !- # match B and C (as a child of B)
+```
+Fields in brackets.  
+Pattern will try match those field which has in pattern.  
+So struct pattern filters instances only by fields has used in pattern, skipping others, instead of how pattern of dict works.  
+Names of fields should be just words like in struct constructor, no vars, wilcards, etc.  
+Subpattern of fields value can be any pattern of value - const, var, collection-pattern.  
+```python
+struct A a:int
+struct B b: string
+struct C(B) c:list
+
+match st
+    A{a:val} !- # any A inst, assign value of A.a to var `val`
+    B{b:'abc'} !- # B anc C inst, by value of field `b`
+    C{b:bval} :? bval ?> ['aaa', 'bbb', 'ccc'] !- # field from parent type (and complex condition)
+    B{b:_} !- # wildcard in field-value of struct doesn't make sense, but works
+    C{c:[_,*]} !- # C with non-empty list in `c`-field
+```
+
 
 ### 16.5 Multicase `|`
 Multicase is feature for combine several patterns in one executable case.  
@@ -1193,7 +1223,9 @@ match n
     _ !- # other
 ```
 
+### 16.7 Mixed (nested) patterns
 
+(in testing)
 
 
 ### 17. multi-assignment

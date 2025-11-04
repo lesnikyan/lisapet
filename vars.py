@@ -95,6 +95,11 @@ class PopupContinue(Val):
 
 # Objects
 
+
+class ObjectInstance(Val):
+    ''' parent of struct instances etc.  '''
+
+
 class ObjectElem(Val):
 
     def set(self, val:Var):
@@ -342,6 +347,7 @@ def valFrom(src:Var|Val):
 
 def var2val(var:Var|Val):
     # print('var2val 1 :', var, type(var))
+    var = valFrom(var)
     if isinstance(var, (ObjectElem)):
         var = var.get()
     if isinstance(var, (Val, Collection)):
@@ -351,7 +357,7 @@ def var2val(var:Var|Val):
     tp = var.getType()
     val = var.getVal()
     # print('var2val 3 :', val, tp)
-    if isinstance(val, (Val, Collection, FuncInst)):
+    if isinstance(val, (Val, Collection, FuncInst, ObjectInstance)):
         return val
     return Val(val, tp)
 

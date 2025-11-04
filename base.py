@@ -53,9 +53,14 @@ class Base:
 class VType(Base):
     ''' Base of Var Type '''
     name = 'type'
+    _defVal = None
     ''' '''
     def __init__(self):
         pass
+    
+    @classmethod
+    def defVal(cls):
+        cls._defVal
 
 
 class TypeAny(VType):

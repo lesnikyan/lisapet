@@ -31,6 +31,32 @@ class TestStructs(TestCase):
 
 
 
+    def test_list_dict_in_struct(self):
+        ''' Struct with collections,
+            default vals of collection.
+        '''
+        code = '''
+        struct Abc nums:list, options:dict
+        
+        res = []
+        
+        a = Abc{nums:[1,2,3], options:{'opt1':11, 'opt2':22}}
+        res <- [a.nums, a.options]
+        
+        b = Abc{}
+        res  <- [b.nums, b.options]
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        exp = [[[1, 2, 3], {'opt1': 11, 'opt2': 22}], [[], {}]]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
     def test_struct_constr_as_func_default(self):
         ''' '''
         code = r'''
@@ -58,7 +84,7 @@ class TestStructs(TestCase):
         res <- [c1.size, c1.material, c1.weight]
         
         # inst2
-        c2 = Cube(1, 'steel', 1.)
+        c2 = Cube(1., 'steel', 1.)
         c2.resize(1.2)
         res <- [c2.size, c2.material, c2.weight]
         

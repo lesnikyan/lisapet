@@ -35,7 +35,9 @@ class TestDev(TestCase):
         struct ABC a: int, b: int
         abc = ABC{a:1, b:2}
         res <- type(abc)
+        
     '''
+
 
 
     def text_test1(self):

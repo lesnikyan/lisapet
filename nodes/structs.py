@@ -12,7 +12,7 @@ AnonStructConstr *? : create instance of anonymous struct (json-like object)
 
 from nodes.expression import *
 from context import *
-from nodes.expression import ServPairExpr
+from nodes.expression import ServPairExpr, defaultValOfType
 from nodes.func_expr import FuncDefExpr, FuncCallExpr, Function
 
 
@@ -94,6 +94,24 @@ class StructDef(TypeStruct):
 
     def getName(self):
         return self.name
+    
+    def hasField(self, fname):
+        if fname in self.fields:
+            return True
+        for _,par in self.__parents.items():
+            if par.hasField(fname):
+                return True
+        return False
+    
+    def isInstance(self, sType:'StructDef'):
+        # print('.isInstance', sType.name ,':<>:', self.name, ' ??>', sType == self)
+        if sType == self:
+            return True
+        # print('__parents:', self.__parents)
+        for _,par in self.__parents.items():
+            if par.isInstance(sType):
+                return True
+        return False
 
     # def __str__(self):
     #     return 'type struct %s{}' % self.name
@@ -132,12 +150,12 @@ class DefaultStruct(StructDef):
         super().__init__('anonimous', fields)
 
 
-class StructInstance(Val, NSContext):
+class StructInstance(ObjectInstance, NSContext):
     ''' data of struct '''
 
     def __init__(self, stype:StructDef):
         super().__init__(None, stype)
-        dprint('StructInstance.__init__', '>>', stype)
+        # print('StructInstance.__init__', '>>', stype)
         self.vtype:StructDef = stype
         self.data:dict[str, Val] = {}
         self.supers:dict = {}
@@ -149,19 +167,24 @@ class StructInstance(Val, NSContext):
             # pname = st.getName()
             self.supers[pname] = StructInstance(st)
 
-    def initDefVals(self, skip=[]):
+    def initDefVals(self, skip=None):
         '''
         ignore already filled in child instance (?)
         '''
         # set current
+        if skip is None:
+            skip = []
         for fname in self.vtype.fields:
+            # print('def #1:', self.vtype.name, ' :: ', fname, skip)
             if fname not in self.data and fname not in skip:
                 ftype = self.vtype.types[fname]
                 dv = defaultValOfType(ftype) # default by type: 0, null, false, "", [], {}, (,)
+                # print('def #2:', fname, ftype, '>>', dv)
                 self.data[fname] = dv
         skip += self.vtype.fields
         # set parents
         if self.supers:
+            # print('def-supers')
             for _, sup in self.supers.items():
                 skip = sup.initDefVals(skip)
         return skip
@@ -169,7 +192,7 @@ class StructInstance(Val, NSContext):
     def get(self, fname=None):
         if fname is None:
             # dprint('StructInstance.DEBUG::: getting enmpty fieldname')
-            return '@struct <debug!> / ' + str(self) # debug
+            return 'st@' + str(self) # debug
         if fname in self.vtype.fields:
             # print('\n  == Strc.get', self.data[fname], type(self.data[fname]))
             return self.data[fname]
@@ -219,14 +242,14 @@ class StructInstance(Val, NSContext):
         # if primitives or collections
         # dprint('if prim and !types', not isinstance(valType, StructInstance) and not isinstance(valType, ftype))
         if not isinstance(ftype, StructDef):
-            dprint('!! Not struct!', fclass)
+            # print('!! Not struct!', fclass)
             if not isinstance(valType, fclass):
                 # TODO: add compatibility check
                 # print('Str.checkType:', f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
                 raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
             return
         # if struct
-        dprint('@ check type ', valType.name, '!=', self.vtype.name , valType.name != self.vtype.name)
+        # print('@ check type ', valType.name, '!=', self.vtype.name , valType.name != self.vtype.name)
         if valType.name != ftype.name:
             raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
         
@@ -239,15 +262,16 @@ class StructInstance(Val, NSContext):
         # fns = self.vtype.fields
         # vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
         vals = self.istr()
-        return 'struct instance %s(%s)' % (self.vtype.name, vals)
+        # return 'struct instance %s(%s)' % (self.vtype.name, vals)
+        return '%s{%s}' % (self.vtype.name, vals)
 
 # Expressions
 
 class StructDefExpr(DefinitionExpr):
     ''' expr `struct TypeName [fields]` '''
 
-    def __init__(self, typeName:str):
-        super().__init__()
+    def __init__(self, typeName:str, src=''):
+        super().__init__(src=src)
         self.typeName:str = typeName
         self.fields:list = [] # fields expressions
         self.superNames:list = [] # names of super types (parents)
@@ -262,18 +286,19 @@ class StructDefExpr(DefinitionExpr):
 
     def do(self, ctx:Context):
         strType = StructDef(self.typeName)
+        # print('struct def:', expSrc(self.src))
         for fexp in self.fields:
             fexp.do(ctx)
             field = fexp.get()
             fname, ftype = '', TypeAny
             # ctx.print()
+            # print('@2>>', field)
             if isinstance(field, tuple) and len(field) == 2:
                 fn, ft = field
-                # dprint('@2>>', field)
-                dprint('@20>>', fn, ft)
+                # print('@20>>', fn, ft)
                 fname = fn.name
                 ftype = ft.get()
-                dprint('@21>> type', self.typeName,',fname:', fname, ' >> ',  ftype, type(ftype))
+                # print('@21>> type', self.typeName,',fname:', fname, ' >> ',  ftype, type(ftype))
                 if not isinstance(ftype, (VType)):
                     dprint('fname:', type(ft))
                     raise EvalErr(f'Trying to put {fname} with no type.')
@@ -362,6 +387,7 @@ class StructConstr(Expression):
                 raise EvalErr('Struct def error: fiels expression returns incorrect result: %s ' % expRes)
         if len(vals) > 0:
             inst.setVals(vals)
+        # print('StructConstr: before defaults', len(vals))
         inst.initDefVals()
         self.inst = inst
 
