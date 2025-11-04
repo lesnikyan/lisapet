@@ -63,7 +63,7 @@ class CaseStructDef(SubCase):
             
         
         sub = elems[subStart:]
-        exp = StructDefExpr(typeName)
+        exp = StructDefExpr(typeName, src=elems)
         exp.setSuper(superNames)
         subs = []
         if sub:
@@ -76,9 +76,23 @@ class CaseStructDef(SubCase):
             # raise XDebug('')
         return exp, subs
 
+    def pairNorn(self, pair:ServPairExpr):
+        # field, vtype = pair.get()
+        # patch for list,dict
+        # print('pairNorm', pair.left, pair.right)
+        # print('pairNorm', vtype, vtype.__class__)
+        if isinstance(pair.right, (ListConstr, DictConstr)):
+            # type parsed as block-constructor
+            match pair.right:
+                case ListConstr(): pair.right = VarExpr(VarUndefined('list'))
+                case DictConstr(): pair.right = VarExpr(VarUndefined('dict'))
+        return pair
+
     def setSub(self, base:StructDefExpr, subs:list[Expression])->Expression:
-        dprint('', base, subs)
+        # print('CaseStructDef setSub', base, subs)
         for exp in subs:
+            if isinstance(exp, ServPairExpr):
+                exp = self.pairNorn(exp)
             base.add(exp)
         return base
 

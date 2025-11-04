@@ -19,7 +19,7 @@ class Undefined(VType):
 
 class TypeNum(VType):
     name = 'num'
-    defVal = 0
+    _defVal = 0
 
 
 class TypeInt(TypeNum):
@@ -40,7 +40,7 @@ class TypeComplex(TypeNum):
 
 class TypeBool(VType):
     name = 'bool'
-    defVal = False
+    _defVal = False
 
 
 class TypeMaybe(VType):
@@ -52,26 +52,25 @@ class TypeContainer(VType):
 
 class TypeList(TypeContainer):
     name = 'list'
-    defVal = []
 
 class TypeDict(TypeContainer):
     name = 'dict'
-    defVal = dict()
+    _defVal = dict()
 
 
 class TypeTuple(TypeContainer):
     name = 'tuple'
-    defVal = tuple()
+    _defVal = tuple()
 
 
 class TypeString(VType):
     name = 'string'
-    defVal = ''
+    _defVal = ''
 
 
 class TypeMString(TypeString):
     name='mstring'
-    defVal = ''
+    _defVal = ''
 
 
 class FuncInst(Objective):
@@ -93,7 +92,7 @@ class FuncInst(Objective):
 class TypeModule:
     ''' imported module '''
     name = 'module'
-    defVal = None
+    _defVal = None
 
 
 class ModuleTree:
@@ -127,7 +126,7 @@ class ModuleInst(Var):
 
 class TypeStruct(TypeContainer):
     name = 'struct'
-    defVal = None
+    _defVal = None
 
     def setConstr(self, cons:FuncInst):
         pass
@@ -146,7 +145,7 @@ class TypeStruct(TypeContainer):
 
 class TypeFunc(VType):
     name = 'function'
-    defVal = None
+    _defVal = None
 
 
 class TypeAccess(VType):
@@ -156,7 +155,7 @@ class TypeAccess(VType):
 
 class TypeIterator(VType):
     name = 'iterator'
-    defVal = None
+    _defVal = None
 
 
 class ComparT:
@@ -175,10 +174,6 @@ def find(self, name)->Base:
 def builtinTypes()->list[VType]:
     return [TypeAny, TypeBool, TypeInt, TypeFloat, TypeComplex, 
             TypeString, TypeList, TypeDict, TypeStruct, TypeTuple, TypeFunc]
-
-
-def defaultValOfType(tp: VType):
-    return tp.defVal
 
 
 def typeCompat(dest:VType, src:VType):

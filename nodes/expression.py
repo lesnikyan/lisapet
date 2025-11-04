@@ -4,6 +4,7 @@ Base expression objects.
 from collections.abc import  Callable
 
 from vars import *
+from typex import *
 from context import *
 
 class Expression:
@@ -425,3 +426,27 @@ def expSrc(expr:Expression|ParseErr|InterpretErr):
     if expr is None:
         exsrc = 'None_src'
     return "`%s`" % exsrc
+
+
+def defaultValOfType(tp: VType):
+    match tp:
+        case TypeAny() | TypeNull():
+            return Null()
+        case TypeBool():
+            return Val(False, TypeBool())
+        case TypeInt() | TypeFloat() | TypeComplex():
+            return Val(0, tp) 
+        case TypeString():
+            return Val('', tp)
+        case TypeList():
+            return ListVal()
+        case TypeDict():
+            return DictVal()
+        case TypeTuple():
+            return TupleVal()
+        case TypeStruct():
+            return Null() # TODO: resolve defined struct type: TypeName{}
+        case TypeFunc():
+            return Null()
+    return tp.defVal()
+
