@@ -270,7 +270,7 @@ class TestStructs(TestCase):
             # print('x@3', u.name)
         user = User{name:'Markos'}
         user.setName('Lukas')
-        xprint(user.name)
+        # xprint(user.name)
         '''
         tt = '''
 
@@ -378,7 +378,7 @@ class TestStructs(TestCase):
         ex.do(ctx)
         atype = ctx.getType('Atype')
         btype = ctx.getType('Btype')
-        dprint(atype, btype)
+        # dprint(atype, btype)
 
     def test_left_assign_arg(self):
         code='''
@@ -403,7 +403,7 @@ class TestStructs(TestCase):
         for cline in clines:
             elems = cline.code
             ind = afterLeft(elems)
-            dprint(elemStr(elems), '>>', ind, '>>>', '  ', elems[ind].text)
+            # dprint(elemStr(elems), '>>', ind, '>>>', '  ', elems[ind].text)
             self.assertEqual(elems[ind].text, '=')
 
     def test_deep_nesting_struct2(self):
@@ -421,7 +421,7 @@ class TestStructs(TestCase):
         func printBook(book)
             print(book.title, book.author, book.pages, book.prod.price)
         
-        printBook(books[0])
+        # printBook(books[0])
         '''
         tt = '''
 
@@ -433,7 +433,7 @@ class TestStructs(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         b0 = ctx.get('books').get().elems[0]
-        dprint('#tt b0:', b0.get('prod').get('price').get())
+        # dprint('#tt b0:', b0.get('prod').get('price').get())
         self.assertEqual(11.0, b0.get('prod').get('price').get())
 
     def test_deep_nesting_struct(self):
@@ -470,7 +470,7 @@ class TestStructs(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         c = ctx.get('c').get()
-        dprint('#tt b0:', c.get('cbb').get())
+        # dprint('#tt b0:', c.get('cbb').get())
         self.assertEqual('c-val2', c.get('cbb').get())
 
     def test_dot_oper(self):
@@ -553,7 +553,7 @@ class TestStructs(TestCase):
             type1.add(ff)
         inst = StructInstance(type1)
         inst.set('amount', Val(12, TypeInt()))
-        dprint('## T >>> ', inst.get('amount'))
+        # dprint('## T >>> ', inst.get('amount'))
         # inst.set('amount', value('12', TypeString))
         # dprint('## T >>> ', inst.get('amount'))
 

@@ -30,7 +30,7 @@ class TestEvalFile(TestCase):
             ctx = rootContext()
             ctx.get('len')
             # return
-            dprint('$$ run test ------------------')
+            # dprint('$$ run test ------------------')
             # # pdb.set_trace()
             exp.do(ctx)
             # r1 = ctx.get('r1').get()
@@ -46,7 +46,7 @@ class TestEvalFile(TestCase):
             ctx = rootContext()
             ctx.get('len')
             # return
-            dprint('$$ run test ------------------')
+            # dprint('$$ run test ------------------')
             # # pdb.set_trace()
             exp.do(ctx)
             res = ctx.get('res').get()

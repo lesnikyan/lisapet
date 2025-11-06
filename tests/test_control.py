@@ -47,8 +47,8 @@ class TestControl(TestCase):
         
         res += r2
         
-        print('res = ', res)
-        print('r2 = ', r2)
+        # print('res = ', res)
+        # print('r2 = ', r2)
         '''
         code = norm(code[1:])
 
@@ -117,7 +117,7 @@ class TestControl(TestCase):
         ctx = rCtx.moduleContext()
         ex.do(ctx)
         rvar = ctx.get('fres').get()
-        dprint('T>>', rvar.vals())
+        # dprint('T>>', rvar.vals())
         exp = [7, 2, 0, 1, 9, 42, 130, 25, 106, 107, 1253, 1264, 50]
         self.assertEqual(exp, rvar.vals())
 
