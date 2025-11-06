@@ -86,9 +86,12 @@
 14.5 extended case of `?>` 'has values'
     thinking, not sure:
     X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
-        [* 12, 15] !- has values in such
-        [? 12, 15] !- can have values
-        [?> 12, 15] !- has values in any order
+    [* 12, 15] !- has values in such
+    [? 12, 15] !- can have values
+    [?> 12, 15] !- has values in any order
+    (1,2,3) ??> nums # any of: ?,?,2,?,?
+    (1,2,3) *?> nums # all in any order: 2,?,3,?,1
+    (1,2,3) =?> nums # all in the same order: 1,?,2,3,?
 
 14.9
     # // perspective: regexp match:
@@ -100,15 +103,23 @@
     [A{}, A{*}, B{b1,*}] !- list with structs
     {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
 
-14.11 var of whole patter
+14.11 var of whole pattern, or subset
 match nn
     x@[*] !- # x - ane list == nn
-    [x@[*], y@[*], x@*] !- # x, y - vars by subpatterns, z - others
+    [x@[*], y@[*], *] !- # x, y - vars by subpatterns
+    [ a@<_,_,_>, ee@*] !- # sets of subelements, a - subset,  ee - others
     x@TypeA{} !- # var with struct instance
 
-14.12 any struct
-    Nn@TypeName{} !- # Nn - var with instance
-    @{} !- #  struct with any type
+
+# -------------------
+
+14.12 #DONE any struct, thoughts
+    _{} !- # any struct
+
+    // other variants:
+        Nn@TypeName{} !- # Nn - var with instance
+        @{} !- #  struct with any type
+        :struct !- any struct ?
 
 
 14.4 #DONE match cases of collections

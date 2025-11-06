@@ -29,6 +29,52 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
+    def test_match_any_struct(self):
+        ''' pattern of struct, including collections in fields. '''
+        code = r'''
+        
+        struct Type1 a:int, b:int
+        struct TypeA color:string
+        struct TypeB(TypeA) name:string, age:int
+        struct TypeC color:int
+        
+        nn = [
+            [], (,), {},
+            Type1{},
+            Type1(10, 20),
+            TypeA('fff'),
+            TypeB{color:'fff', name:'Aaa', age:44}, # child with `color`
+            TypeC{}, TypeC(0xff0), # alternative case with `color`
+        ]
+        res = []
+        
+        
+        for n <- nn
+            match n
+                _{color:cval} !- res <- [n, (cval,), 10]
+                _{} !- res <- [n, 19]
+                _ !- res <- [n, 2999]
+            # print('nres:', res)
+        # 
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        
+        exp = [
+            [[], 2999], [(), 2999], [{}, 2999], 
+            ['st@Type1{a: 0,b: 0}', 19], ['st@Type1{a: 10,b: 20}', 19], ['st@TypeA{color: fff}', ('fff',), 10],
+            ['st@TypeB{name: Aaa,age: 44}', ('fff',), 10], 
+            ['st@TypeC{color: 0}', (0,), 10], ['st@TypeC{color: 4080}', (4080,), 10]]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
     def test_match_struct(self):
         ''' pattern of struct, including collections in fields. '''
         code = r'''

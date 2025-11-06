@@ -353,8 +353,12 @@ class MTStruct(MTContr):
         # exp = MCDict()
         constr, subs = self.struCase.split(elems)
         stype = constr.typeName
-        # print('MTStruct', constr, subs)
-        exp = MCStruct(stype, src = elems)
+        # print('MTStruct', stype, subs)
+        exp = None
+        if stype == '_':
+            exp = MCAnyStruct(src = elems)
+        else:
+            exp = MCStruct(stype, src = elems)
         for sub in subs:
             if isinstance(sub, NothingExpr) or len(sub) == 0:
                 continue

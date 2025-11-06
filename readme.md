@@ -1162,7 +1162,7 @@ Notes.
 
 ### 16.4 Matching struct
 Struct pattern looks like general constructor with curly brackets `Typename{...}`.  
-Empty brackets means that pattern matches any instances of type.  
+1. Empty brackets means that pattern matches any instances of type.  
 Child type will be matched by parent.  
 ```python
 struct A
@@ -1173,7 +1173,7 @@ match st
     A{} !- # match any of A
     B{} !- # match B and C (as a child of B)
 ```
-Fields in brackets.  
+2. Fields in brackets.  
 Pattern will try match those field which has in pattern.  
 So struct pattern filters instances only by fields has used in pattern, skipping others, instead of how pattern of dict works.  
 Names of fields should be just words like in struct constructor, no vars, wilcards, etc.  
@@ -1189,6 +1189,21 @@ match st
     C{b:bval} :? bval ?> ['aaa', 'bbb', 'ccc'] !- # field from parent type (and complex condition)
     B{b:_} !- # wildcard in field-value of struct doesn't make sense, but works
     C{c:[_,*]} !- # C with non-empty list in `c`-field
+```
+3. Pattern of any-type struct.  
+In pattern of struct we can match any instance of struct ignoring type of value.  
+Undercore `_{}` lexem instead of type name is used for that.  
+```python
+
+A a:int
+B name:string
+C name:string
+...
+match nn
+    _{a:val} !- # struct with field `a` will be matched: A
+    _{name:val} !- # with field `name`: B, C
+    _{} !- # any other structs will be matched
+    _ !- # non-struct values will reach this point
 ```
 
 
