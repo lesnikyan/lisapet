@@ -22,6 +22,30 @@ from eval import *
 class TestFunc(TestCase):
 
 
+    def test_builtin_len_fo_string(self):
+        ''' test implementation of builtin function len for string type '''
+        code = r'''
+        nn = [
+            '', ' ', '123', 'a b c'
+        ]
+        nn <- """abc
+        def
+        """
+        res = []
+        for s <- nn
+            res <- len(s)
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([0, 1, 3, 5, 7], rvar.vals())
 
     def test_result_of_block_in_brackets(self):
         ''' '''

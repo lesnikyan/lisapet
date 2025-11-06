@@ -8,7 +8,7 @@
     # split()
     # join()
     # replace()
-    len() for string
+    # len() for string
     rxreplace()
     tostr([int]), tostr(bytes), 
     tostr(anyval) # like print

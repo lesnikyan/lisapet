@@ -58,6 +58,7 @@ def buit_print(_,*args):
     print(*pargs)
 
 def built_len(_, arg):
+    # print('##len:', arg.__class__)
     return arg.len()
 
 

@@ -38,7 +38,7 @@ def raw2val(raw):
     match raw:
         case int(): t = TypeInt
         case float(): t= TypeFloat
-        case str(): t = TypeString
+        case str(): return StringVal(raw)
         case Null(): t = TypeNull()
 
     return Val(raw, t)
@@ -86,7 +86,7 @@ def elem2val(elem:Elem)->Var:
     if elem.type == Lt.num:
         return numLex(elem.text)
     if elem.type == Lt.text:
-        return Val(elem.text, TypeString())
+        return StringVal(elem.text)
     if elem.type == Lt.word:
         if elem.text in bool_constants:
             return Val(bool(elem.text), TypeBool())

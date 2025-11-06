@@ -314,6 +314,17 @@ class DictVal(Collection):
         return 'DictVal(%s)' %  (vals)
 
 
+class StringVal(Val):
+    ''' '', "", ``, etc '''
+    def __init__(self, val, stype=None):
+        if not stype:
+            stype = TypeString()
+        super().__init__(val, stype)
+    
+    def len(self)->int:
+        return len(self.val)
+
+
 # not sure, maybe simple struct will be enough?
 
 class Maybe(Val):
@@ -339,18 +350,18 @@ class Thing(Maybe):
 
 
 def valFrom(src:Var|Val):
-    if isinstance(src, (Val, Collection)):
+    if isinstance(src, (Val, Collection, StringVal)):
         return src
     if isinstance(src, (Var)):
         return src.get()
 
 
 def var2val(var:Var|Val):
-    # print('var2val 1 :', var, type(var))
+    # print('var2val 1 :', var, type(var), var.__class__)
     var = valFrom(var)
     if isinstance(var, (ObjectElem)):
         var = var.get()
-    if isinstance(var, (Val, Collection)):
+    if isinstance(var, (Val, Collection, StringVal)):
         return var
     # print('var2val 2 :', var)
     # print('var2val 2 :', var, 'vv:', var.val)
