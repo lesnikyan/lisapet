@@ -733,6 +733,7 @@ class TestLists(TestCase):
     def test_list_multiline(self):
         code = '''
         # block-constructor of list
+        
         names = list
             'Anna'
             'Barbi'
@@ -740,9 +741,12 @@ class TestLists(TestCase):
             'Dolores'
             'no name'
 
+        res = []
+        
         names[4] = 'Vahtang'
         for i <- [0,1,2,3,4]
-            print(i, names[i])
+            res <- (i, names[i])
+        # print(res)
         '''
 
         code = norm(code[1:])
@@ -750,8 +754,11 @@ class TestLists(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        dprint('$$ run test ------------------')
+        # dprint('$$ run test ------------------')
         exp.do(ctx)
+        rvar = ctx.get('res').get()
+        expval = [(0, 'Anna'), (1, 'Barbi'), (2, 'Cindy'), (3, 'Dolores'), (4, 'Vahtang')]
+        self.assertEqual(expval, rvar.vals())
 
     def test_for_array(self):
         ''' for n <- [1,2,3] 

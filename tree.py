@@ -219,7 +219,7 @@ def elems2expr(elems:list[Elem])->Expression:
                 expr = expr.toControl()
             # print('#EL2EX . expr:', expr)
             return expr
-    print('DEBUG: No current ExprCase for `%s` ' % ''.join([n.text for n in elems]))
+    # print('DEBUG: No current ExprCase for `%s` ' % ''.join([n.text for n in elems]))
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
 
 

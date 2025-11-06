@@ -320,7 +320,7 @@ class TestOper(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             pos = spl.mainOper(elems)
-            dprint('tt `%s`' % sline, ' >>> ', pos)
+            # dprint('tt `%s`' % sline, ' >>> ', pos)
             self.assertEqual(exp, pos, 'in line: %s' % sline)
 
     def test_colon_vs_other(self):
@@ -410,20 +410,20 @@ class TestOper(TestCase):
         data = src.splitlines()
         rrs = []
         for code in data:
-            dprint('$$ run test ------------------')
+            # dprint('$$ run test ------------------')
             lines = code.split('; ')
             code = '\n'.join(init+lines)
-            dprint('CODE:','\n\n'+code)
+            # dprint('CODE:','\n\n'+code)
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             exp = lex2tree(clines)
             ctx = rootContext()
-            dprint('$$ eval expr ------------------')
+            # dprint('$$ eval expr ------------------')
             exp.do(ctx)
             res = ctx.get('res').get()
             barr = ctx.get('barr').get()
             rrs.append((res, barr,))
-        dprint('# tt>> ', rrs)
+        # dprint('# tt>> ', rrs)
 
 
     def test_operators_order(self):
@@ -433,7 +433,8 @@ class TestOper(TestCase):
         s = 'a = 5 + sum([1,2,3, b, c + 3])' # TODO: functios
         cs = CaseBinOper()
         for gr in cs.priorGroups:
-            dprint(gr)
+            # dprint(gr)
+            pass
         matchCases = [
             'x - 2',
             '2 + x - 5',
@@ -445,7 +446,7 @@ class TestOper(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             mres = cs.match(elems)
-            dprint('#t1 mr:', mc, mres)
+            # dprint('#t1 mr:', mc, mres)
     
     def test_CaseUnar_split(self):
         data = ['- 5', '-0xa0013bc', '!ddd',  '~0x0abc', '-123456789', '-(-(-num1))', '-(-(-(-(-(-111)))))', '!(!(!(!(!((!true))))))']
@@ -462,15 +463,15 @@ class TestOper(TestCase):
                 vv.set(Val(v, TypeAny))
                 return vv
             ctx.addSet({k: tvar(k, v) for k,v in ctxData.items()})
-            dprint('#tc11', td, mres)
+            # dprint('#tc11', td, mres)
             ex = elems2expr(elems)
             ex.do(ctx)
             res = ex.get()
-            dprint(' -- #tr11',td, res.getType(), res.get())
+            # dprint(' -- #tr11',td, res.getType(), res.get())
     
     def test_CaseUnar(self):
         
-        dprint('##test_CaseUnar True')
+        # dprint('##test_CaseUnar True')
         # match true
         data = ['- 5', '-0xa0013bc', '!foo(1,2,ddd)', '!foo(bar(1,2,3, baz("aa a aa")))', '~0xabcdef0011', 
                 '~ foo(agr1, arg2)', '-(foo(2-5)+bar(7-num4))']
@@ -481,9 +482,9 @@ class TestOper(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             mres = cs.match(elems)
-            dprint('#tc11', td, mres)
+            # dprint('#tc11', td, mres)
         
-        dprint('##test_CaseUnar False')
+        # dprint('##test_CaseUnar False')
         # match false
         fdata = ['-5 + num1', '-(2+3)-a*b-c', '! val && true', '~ num ^ 0x0011']
         cs = CaseUnar()
@@ -492,7 +493,7 @@ class TestOper(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             mres = cs.match(elems)
-            dprint('#tc12', td, mres)
+            # dprint('#tc12', td, mres)
     
     def test_CaseBinOper_split(self):
         ''' '''
@@ -508,12 +509,12 @@ class TestOper(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             # ex, subs = cs.split(elems)
-            dprint('#tt1:', mc[0])
+            # dprint('#tt1:', mc[0])
             ex = elems2expr(elems)
             ctx = Context(None)
             
             def tvar(k, v):
-                dprint('## tvar:', k, v)
+                # dprint('## tvar:', k, v)
                 vv = Var(k, TypeAny)
                 vv.set(Val(v, TypeAny))
                 return vv
@@ -521,7 +522,7 @@ class TestOper(TestCase):
             ctx.addSet({k: tvar(k, v) for k, v in mc[1].items()})
             # ctx.print()
             ex.do(ctx)
-            dprint('#t-CB1:', ex.get().get())
+            # dprint('#t-CB1:', ex.get().get())
         
 
     def test_line_assign(self):
@@ -536,7 +537,7 @@ class TestOper(TestCase):
             ctx = Context(None)
             expr.do(ctx)
             res = ctx.get('x')
-            dprint('#a7 ===> ', res.get(), res.getType())
+            # dprint('#a7 ===> ', res.get(), res.getType())
 
 
 

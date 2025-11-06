@@ -107,9 +107,9 @@ class TestModule(TestCase):
         curMod = lex2tree(clines)
         
         rCtx = rootContext()
-        dprint('## Load module...')
+        # dprint('## Load module...')
         rCtx.loadModule(stMod)
-        dprint('## Eval code ...')
+        # dprint('## Eval code ...')
         curCtx = rCtx.moduleContext()
         curMod.do(curCtx)
         res = curCtx.get('res').get()
@@ -133,9 +133,9 @@ class TestModule(TestCase):
         curMod = lex2tree(clines)
         
         rCtx = rootContext()
-        dprint('## Load module...')
+        # dprint('## Load module...')
         rCtx.loadModule(stMod)
-        dprint('## Eval code ...')
+        # dprint('## Eval code ...')
         curCtx = rCtx.moduleContext()
         curMod.do(curCtx)
         res = curCtx.get('res').get()
@@ -160,9 +160,9 @@ class TestModule(TestCase):
         curMod = lex2tree(clines)
         
         rCtx = rootContext()
-        dprint('## Load module...')
+        # dprint('## Load module...')
         rCtx.loadModule(stMod)
-        dprint('## Eval code ...')
+        # dprint('## Eval code ...')
         curCtx = rCtx.moduleContext()
         curMod.do(curCtx)
         res = curCtx.get('res').get()
@@ -210,9 +210,9 @@ class TestModule(TestCase):
         
         rCtx = rootContext()
         curCtx = rCtx.moduleContext()
-        dprint('## Load module...')
+        # dprint('## Load module...')
         rCtx.loadModule(funMod)
-        dprint('## Eval code ...')
+        # dprint('## Eval code ...')
         curMod.do(curCtx)
         
         # f1 = curCtx.get('foo')
@@ -220,7 +220,7 @@ class TestModule(TestCase):
         # f3 = curCtx.get('mult')
         # dprint('#TT 1>> ', f1, f2, f3)
         res = curCtx.get('res').get()
-        dprint('#TT 2>> ', res.vals())
+        # dprint('#TT 2>> ', res.vals())
         self.assertEqual([['abc', 'abc', 'abc'], 210, 340], res.vals())
 
     def importFuncs(self):
@@ -263,17 +263,17 @@ class TestModule(TestCase):
 
         rCtx = rootContext()
         curCtx = rCtx.moduleContext()
-        dprint('## Load module...')
+        # dprint('## Load module...')
         rCtx.loadModule(funMod)
-        dprint('## Eval code ...')
+        # dprint('## Eval code ...')
         curMod.do(curCtx)
 
         f1 = curCtx.get('f1')
         f2 = curCtx.get('f2')
         f3 = curCtx.get('f3')
-        dprint('#TT 1>> ', f1, f2, f3)
+        # dprint('#TT 1>> ', f1, f2, f3)
         res = curCtx.get('res').get()
-        dprint('#TT 2>> ', res.vals())
+        # dprint('#TT 2>> ', res.vals())
         self.assertEqual([123, 210, 340], res.vals())
 
     def test_import_module_func_names(self):
@@ -294,17 +294,17 @@ class TestModule(TestCase):
         
         rCtx = rootContext()
         curCtx = rCtx.moduleContext()
-        dprint('## Load module...')
+        # dprint('## Load module...')
         rCtx.loadModule(funMod)
-        dprint('## Eval code ...')
+        # dprint('## Eval code ...')
         curMod.do(curCtx)
 
         f1 = curCtx.get('foo')
         f2 = curCtx.get('sum')
         f3 = curCtx.get('mult')
-        dprint('#TT 1>> ', f1, f2, f3)
+        # dprint('#TT 1>> ', f1, f2, f3)
         res = curCtx.get('res').get()
-        dprint('#TT 2>> ', res.vals())
+        # dprint('#TT 2>> ', res.vals())
         self.assertEqual([123, 210, 340], res.vals())
 
     def test_import_module_func(self):
@@ -327,17 +327,17 @@ class TestModule(TestCase):
         
         rCtx = rootContext()
         curCtx = rCtx.moduleContext()
-        dprint('## Load module...')
+        # dprint('## Load module...')
         rCtx.loadModule(funMod)
-        dprint('## Eval code ...')
+        # dprint('## Eval code ...')
         curMod.do(curCtx)
         
         f1 = curCtx.get('foo')
         f2 = curCtx.get('sum')
         f3 = curCtx.get('mult')
-        dprint('#TT 1>> ', f1, f2, f3)
+        # dprint('#TT 1>> ', f1, f2, f3)
         res = curCtx.get('res').get()
-        dprint('#TT 2>> ', res.vals())
+        # dprint('#TT 2>> ', res.vals())
         self.assertEqual([123, 210, 340], res.vals())
 
     def test_import_module(self):

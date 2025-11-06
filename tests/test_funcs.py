@@ -22,6 +22,30 @@ from eval import *
 class TestFunc(TestCase):
 
 
+    def test_builtin_len_fo_string(self):
+        ''' test implementation of builtin function len for string type '''
+        code = r'''
+        nn = [
+            '', ' ', '123', 'a b c'
+        ]
+        nn <- """abc
+        def
+        """
+        res = []
+        for s <- nn
+            res <- len(s)
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([0, 1, 3, 5, 7], rvar.vals())
 
     def test_result_of_block_in_brackets(self):
         ''' '''
@@ -402,7 +426,7 @@ class TestFunc(TestCase):
         rr = ctx.get('rr')
         rr2 = ctx.get('rr2')
         self.assertEqual({2: 417, 4: 741, 6: 1079, 3: 423, 5: 753, 7: 1087}, rr.get().vals())
-        dprint('>>', rr2.get())
+        # dprint('>>', rr2.get())
 
     def test_func_in_loop_in_func(self):
         ''' src-iter/func/src-iter '''
@@ -598,7 +622,7 @@ class TestFunc(TestCase):
         ex.do(ctx)
         exp = [5005, 10005, 15005, 20005, 25005]
         resVal = ctx.get('res').get()
-        dprint(resVal)
+        # dprint(resVal)
         self.assertListEqual(exp, resVal.get())
 
 
@@ -627,7 +651,7 @@ class TestFunc(TestCase):
             ('func setName(name:string)', CaseFuncDef),
         ]
         for code, ctype in data:
-            dprint('Code:', code)
+            # dprint('Code:', code)
             # code = norm(code[1:])
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
@@ -635,7 +659,7 @@ class TestFunc(TestCase):
             cases = getCases()
             for cs in cases:
                 if cs.match(elems):
-                    dprint('#tt found cae: ', cs, 'exp:', ctype)
+                    # dprint('#tt found cae: ', cs, 'exp:', ctype)
                     self.assertIsInstance(cs, ctype)
                     break
 
@@ -659,7 +683,7 @@ class TestFunc(TestCase):
         ctx = rootContext()
         exp.do(ctx)
         res = ctx.get('res').getVal()
-        dprint('#t >>> r:', res)
+        # dprint('#t >>> r:', res)
         self.assertEqual(res, 15)
 
     def test_call_func(self):
@@ -699,16 +723,16 @@ class TestFunc(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        dprint('$$ run test ------------------')
+        # dprint('$$ run test ------------------')
         exp.do(ctx)
         fn:Function = ctx.get('foo')
-        dprint('#tt1>>> ', fn, type(fn))
+        # dprint('#tt1>>> ', fn, type(fn))
         args = [value(2, TypeInt),value(3, TypeInt),value(4, TypeInt)]
         fn.setArgVals(args)
         ctxCall = Context(None)
         fn.do(ctxCall)
         res = fn.get()
-        dprint('#tt2>>> ', res)
+        # dprint('#tt2>>> ', res)
 
 
 

@@ -123,7 +123,7 @@ class TestLang(TestCase):
         ex.do(ctx)
         # ctx.print()
         res = ctx.get('res')
-        dprint('tt>', res.getVal())
+        # dprint('tt>', res.getVal())
         exp = 100
         self.assertEqual(exp, res.getVal())
 
@@ -149,7 +149,7 @@ class TestLang(TestCase):
         ex.do(ctx)
         # ctx.print()
         res = ctx.get('res')
-        dprint('tt>', res.getVal())
+        # dprint('tt>', res.getVal())
         exp = 1000
         self.assertEqual(exp, res.getVal())
 
@@ -176,7 +176,7 @@ class TestLang(TestCase):
         ex.do(ctx)
         # ctx.print()
         res = ctx.get('res')
-        dprint('tt>', res.getVal())
+        # dprint('tt>', res.getVal())
         exp = 100
         self.assertEqual(exp, res.getVal())
 
@@ -199,7 +199,7 @@ class TestLang(TestCase):
         ex.do(ctx)
         # ctx.print()
         res = ctx.get('res').get()
-        dprint('tt>', res.vals())
+        # dprint('tt>', res.vals())
         exp = {'a': 1, 'b': 2}
         self.assertEqual(exp, res.vals())
 
@@ -223,7 +223,7 @@ class TestLang(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         res = ctx.get('res').get()
-        dprint('tt>', res.get())
+        # dprint('tt>', res.get())
         exp = ['aa aa aa', 'bb bb bb', [1, 2, 3]]
         self.assertEqual(exp, res.get())
 
@@ -249,7 +249,7 @@ class TestLang(TestCase):
         ctx = rootContext()
         ex.do(ctx)
         res = ctx.get('res').get()
-        dprint('tt>', res.vals())
+        # dprint('tt>', res.vals())
         self.assertEqual([3,1,2], res.get())
 
     def test_unclosed_brackets_expr(self):
@@ -272,7 +272,7 @@ class TestLang(TestCase):
             # res = cs.match(clines[0].code)
             # msg = 'src: %s, exp: %s' % (code, bool(exp))
             res = cs.expr(clines[0].code)
-            dprint('tt> ', res, code)
+            # dprint('tt> ', res, code)
             self.assertIsInstance(res, UnclosedExpr)
 
     def test_unclosed_brackets_case(self):
@@ -332,7 +332,7 @@ class TestLang(TestCase):
             clines:CLine = elemStream(tlines)
             exp = lex2tree(clines)
             ctx = rootContext()
-            dprint('$$ run test ------------------')
+            # dprint('$$ run test ------------------')
             exp.do(ctx)
             mstr1 = ctx.get('mstr')
             res = mstr1.getVal()
@@ -417,10 +417,10 @@ class TestLang(TestCase):
             'orange' :'#ff8800'
             
         dd['blue'] = 'dark-blue'
+        res = []
         for n <- ['red', 'green', 'blue']
-            print(n, dd[n])
-        '''
-        t='''
+            res <- (n, dd[n])
+        # print(res)
         '''
 
         code = norm(code[1:])
@@ -428,8 +428,11 @@ class TestLang(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        dprint('$$ run test ------------------')
+        # dprint('$$ run test ------------------')
         exp.do(ctx)
+        rvar = ctx.get('res').get()
+        expval = [('red', '#ff0000'), ('green', '#00ff00'), ('blue', 'dark-blue')]
+        self.assertEqual(expval, rvar.vals())
 
     def test_dict_construct(self):
         # one-line
@@ -445,7 +448,7 @@ class TestLang(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        dprint('$$ run test ------------------')
+        # dprint('$$ run test ------------------')
         exp.do(ctx)
 
     def test_CaseDictLine_match(self):
@@ -465,14 +468,14 @@ class TestLang(TestCase):
         ]
         cd = CaseDictLine()
         for code, exp in data:
-            dprint(code, exp)
+            # dprint(code, exp)
             # continue
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             res = cd.match(elems)
             # self.assertEqual(res, exp)
-            dprint('## t:', code, exp, '>>>', res)
+            # dprint('## t:', code, exp, '>>>', res)
 
     def test_bracketsPart(self):
         data = [
@@ -489,7 +492,7 @@ class TestLang(TestCase):
             elems = clines[0].code
             ind = bracketsPart(elems)
             res = elems[ind]
-            dprint('## t:', code, exp, '>>>', ind, res.text)
+            # dprint('## t:', code, exp, '>>>', ind, res.text)
             self.assertEqual(res.text, exp)
 
     def test_multiline_commets(self):
@@ -499,7 +502,7 @@ class TestLang(TestCase):
         #@ line1
         multiline comment
         @#x = 5 + 2
-        print(x)
+        # print(x)
         '''
         code = '''
         a = 10 # first arg
@@ -513,14 +516,14 @@ class TestLang(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        dprint('$$ run test ------------------')
+        # dprint('$$ run test ------------------')
         exp.do(ctx)
 
     def test_str_in_fun(self):
         code = 'print("Hello buhlo 123!")'
         code = 'st =\'aaa\' + "Hello buhlo 123!" + \'bbb\''
         tlines = splitLexems(code)
-        dprint('lexems', [x.val for n in tlines for x in n.lexems ])
+        # dprint('lexems', [x.val for n in tlines for x in n.lexems ])
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
 
@@ -600,7 +603,7 @@ class TestLang(TestCase):
                 '1.2j3.5', '1j2.3', '2.3j4', '1.j0.5', '2.5e7', '3.5e-4']
         for d in data:
             res = numLex(d)
-            dprint('', res.get(), res.getType().__class__.name)
+            # dprint('', res.get(), res.getType().__class__.name)
 
     def test_split(self):
         code_input1 = '''
@@ -624,7 +627,7 @@ class TestLang(TestCase):
             for lx in tl.lexems:
                 # dprint(lx.val)
                 if lx.mark == Mk.line:
-                    dprint(','.join(s))
+                    # dprint(','.join(s))
                     s = []
                     # dprint('')
                     continue
@@ -658,14 +661,14 @@ class TestLang(TestCase):
             tlines = splitLexems(code.strip())
             parsed = tlines[0].lexems
             res = [n.val for n in parsed]
-            dprint('#tt>> ',code, ' : ', [n.val for n in parsed])
+            # dprint('#tt>> ',code, ' : ', [n.val for n in parsed])
             self.assertEqual(res, exp, '%s != %s ' % (';'.join(res), exps))
     
     def test_split_oper(self):
         args = ['=++', '++=', '!=-', '-=!', '()++', '()=>()', '++;(-)', '=[-()]']
         for tt in args:
             res = splitOper(tt)
-            dprint('', tt, res)
+            # dprint('', tt, res)
     
     def test_split_line(self):
         ''' '''
@@ -675,12 +678,12 @@ class TestLang(TestCase):
         ]
         for tt in args:
             src, exp = tt
-            dprint('space %d, word %d, num %d, oper %d, text %d, quot %d, esc %d' % (Lt.space, Lt.word, Lt.num, Lt.oper, Lt.text, Lt.quot, Lt.esc))
+            # dprint('space %d, word %d, num %d, oper %d, text %d, quot %d, esc %d' % (Lt.space, Lt.word, Lt.num, Lt.oper, Lt.text, Lt.quot, Lt.esc))
             # res, etype = splitLine(src)
             lastType, extArg = Lt.none, {}
             res, etype, r3 = splitLine(src, lastType, **extArg)
-            dprint([n.val for n in res.lexems])
-            dprint([(n.val, n.mark, n.ltype) for n in res.lexems])
+            # dprint([n.val for n in res.lexems])
+            # dprint([(n.val, n.mark, n.ltype) for n in res.lexems])
 
     def test_parsing_list_gen_(self):
         ''' Case where whole expression consists of valid number chars:
@@ -726,7 +729,7 @@ class TestLang(TestCase):
         # dprint('space %d, word %d, num %d, oper %d, text %d, quot %d, esc %d' % (Lt.space, Lt.word, Lt.num, Lt.oper, Lt.text, Lt.quot, Lt.esc))
         for tt in args:
             rt = charType(([], tt[1]), tt[0])
-            dprint("Args: '%s', %s; exp: %s ? %s" % (tt[0], Lt.name(tt[1]), Lt.name(tt[2]), Lt.name(rt)))
+            # dprint("Args: '%s', %s; exp: %s ? %s" % (tt[0], Lt.name(tt[1]), Lt.name(tt[2]), Lt.name(rt)))
             errmsg = "Args: '%s', %s, %s res = %s" % (tt[0], Lt.name(tt[1]), Lt.name(tt[2]), Lt.name(rt))
             self.assertEqual(rt, tt[2], errmsg)
             

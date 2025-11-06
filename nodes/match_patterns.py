@@ -595,26 +595,20 @@ class MCStruct(MatchingPattern):
     def add(self, field, pattr:MatchingPattern):
         self.fields[field] = pattr
     
-    def do(self, ctx:Context):
-        stype = ctx.getType(self.typeName)
-        self.sType = stype.get()
+    def doSubs(self, ctx:Context):
         for fname, fpattr in self.fields.items():
             # if not fname in self.stype.fields
             # print('MCStruct . do', fname)
             fpattr.do(ctx)
         # ctx.print(forsed=1)
     
-    def match(self, val:StructInstance):
-        # print('MCStruct.match', val.__class__, 'type:',  val.getType())
-        if not isinstance(val, StructInstance):
-            return False
-        # vtype = val.vtype
-        # print('MCStruct.match 2', val.vtype, self.sType, val.vtype == self.sType)
-        # TODO: check imported type
-        # print('MatchStruct#1', self.sType.name, '<>', val.vtype.name)
-        # if not self.sType.isInstance(val.vtype):
-        if not val.vtype.isInstance(self.sType):
-            return False
+    def do(self, ctx:Context):
+        stype = ctx.getType(self.typeName)
+        self.sType = stype.get()
+        self.doSubs(ctx)
+
+    
+    def matchFields(self, val:StructInstance):
         for fname, fpattr in self.fields.items():
             # if false-positive check of type name
             # if fname not in val.vtype.fields:
@@ -625,8 +619,36 @@ class MCStruct(MatchingPattern):
                 return False
         # ok if all field-patterns have passed
         return True
-        
-        
+    
+    def match(self, val:StructInstance):
+        # print('MCStruct.match', val.__class__, 'type:',  val.getType())
+        if not isinstance(val, StructInstance):
+            return False
+        # vtype = val.vtype
+        # print('MCStruct.match 2', val.vtype, self.sType, val.vtype == self.sType)
+        # TODO: check imported type
+        # print('MatchStruct#1', self.sType.name, '<>', val.vtype.name)
+        if not val.vtype.isInstance(self.sType):
+            return False
+        return self.matchFields(val)
+
+
+
+class MCAnyStruct(MCStruct):
+    ''' TypeNAme{fieldName: valPattern, ..}  '''
+
+    def __init__(self, src=None):
+        super().__init__('', src)
+    
+    def do(self, ctx:Context):
+        self.sType = StructDef('')
+        self.doSubs(ctx)
+
+    def match(self, val:StructInstance):
+        if not isinstance(val, StructInstance):
+            return False
+        return self.matchFields(val)
+    
 
 # ----------------- Complex cases ------------------- #
 
