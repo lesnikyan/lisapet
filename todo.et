@@ -97,6 +97,8 @@
     # // perspective: regexp match:
     rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
     /`[a-f]+`in/ !- 
+    res@rx(`(\d+)([a-z]+)`) -> a, b, c ?: a != '0 ' !- res - regexp-results, a - 1-st full-match, b, c - parts of 1-st group 
+    `(\d+)([a-z]+)`iu ^ a,b,c !- 
 
 14.10
     # // mixed
@@ -109,6 +111,17 @@ match nn
     [x@[*], y@[*], *] !- # x, y - vars by subpatterns
     [ a@<_,_,_>, ee@*] !- # sets of subelements, a - subset,  ee - others
     x@TypeA{} !- # var with struct instance
+
+14.13 case of other val types: int, float, numeric, string, bool, null, 
+
+    null !- # ...
+    true | false !- ?
+    :bool !- 
+    :string
+    :int
+    a:int !- 
+    b:float !- foo(b)
+
 
 
 # -------------------

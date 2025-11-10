@@ -832,3 +832,31 @@ class CtrlSubExpr(Expression):
         self.control.add(self.sub)
         return self.control
 
+
+class RegexpOper(BinOper):
+    ''' re <oper> string '''
+
+    def __init__(self, oper, left:Expression=None, right:Expression=None):
+        super().__init__(oper, left, right)
+
+
+
+class RegexpMatchOper(RegexpOper):
+    ''' re =~ string '''
+    
+    def __init__(self, left = None, right = None):
+        super().__init__('=~', left, right)
+
+    def do(self, ctx:Context):
+        self.left.do(ctx)
+        re = self.left.get()
+        if isinstance(re, (Var)):
+            re = re.getVal()
+        self.right.do(ctx)
+        src = self.right.get()
+        src = var2val(src)
+        # if isinstance(src, (Var)):
+        #     re = src.getVal()
+        res = re.match(src)
+        self.res = res
+    

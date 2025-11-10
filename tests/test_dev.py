@@ -20,6 +20,7 @@ from cases.utils import *
 from nodes.tnodes import Var
 from nodes import setNativeFunc, Function
 from tests.utils import *
+from libs.regexp import *
 
 
 import pdb
@@ -40,7 +41,7 @@ class TestDev(TestCase):
 
 
 
-    def text_test1(self):
+    def _text_test1(self):
         src = [1,2,3, 4, 5]
         ptt = '_,2,_,*'.split(',')
         si, pi = 0, 0

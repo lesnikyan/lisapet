@@ -10,6 +10,8 @@ from lang import *
 c_space = [' ', '\t', '\n', '\r' ]
 c_esc = '\'\"ntr\\/`'
 c_esc_map = {'n':'\n', 't':'\t', 'r':'\r', '\\':'\\', '/':'/', '\'':'\'', '\"':'\"', '`':'`'}
+c_esc_back = '`'
+c_esc_back_map = {'`':'`'}
 c_nums = [n for n in '1234567890']
 c_oper = '+~-*/=%^&!?<>()[]:.;,|{}\\'
 # single-line comment, to and of line
@@ -22,7 +24,7 @@ rxChar = re.compile(r'[a-zA-Z_\$@]')
 c_quot = "\'\"`"
 c_regex = '| / % '
 
-opers = [n for n in ('; , ... .. ** ++ -- += -= *= /= %=  && || == != <= >= << >> => ?> !?> -> <- !- := ?: /: !: :? :>'
+opers = [n for n in ('; , ... .. ** ++ -- += -= *= /= %=  && || == != <= >= << >> => ?> !?> -> <- !- := ?: /: !: :? :> =~ ?~ /~'
 # ' """ \'\'\' ``` '
 ' < > = + - * / | \\ { } [ ] . , : ? ~ ! % ^ & * ( )').split(' ') if n]
 
@@ -181,6 +183,8 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
         openMultStr = kw['open_m_str']
         
     escMod = False # if escape case
+    escType = ''
+    totalEsc = True
     # qMod = '' # if in qutes (string)
     # rxMod = '' # if native regexp
     # inRaw = False # for feature `raw string`
@@ -204,7 +208,10 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
         # print('\n#6 ', cur, " s='%s'"%s, 'prev-type:', Lt.name(curType), '|', 'esc:', escMod)
         
         if escMod:
-            if s not in c_esc_map:
+            esc_map = c_esc_map
+            if escType == '`':
+                esc_map = c_esc_back_map
+            if totalEsc and s not in esc_map:
                 raise ParseErr('Not currect escape sequence: `%s` ' % src[i-1: i + 1])
         
 
@@ -234,9 +241,18 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
             if escMod:
                 # in the string and after esc slash
                 dprint('## in esc' ,  'multi:', openMultStr , '; cur:', cur, 's:', s)
-                if s not in c_esc_map:
-                    raise ParseErr('Incorrect escape sequence: `\\%s`' % s)
-                cur.append(c_esc_map[s])
+                esc_map = c_esc_map
+                if escType == '`':
+                    esc_map = c_esc_back_map
+                if s not in esc_map:
+                    if totalEsc:
+                        raise ParseErr('Incorrect escape sequence: `\\%s`' % s)
+                    else:
+                        cur.append('\\')
+                if s in esc_map:
+                    cur.append(esc_map[s])
+                else:
+                    cur.append(s)
                 escMod = False
                 # cur = nextRes(cur, curType, '')
                 continue
@@ -303,6 +319,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 cur = nextRes(cur, curType, '')
                 curType = Lt.text
                 openQuote = s
+                totalEsc = s != '`'
                 continue
 
         # finalize word
