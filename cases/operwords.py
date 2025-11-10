@@ -11,6 +11,7 @@ from vars import *
 from vals import isLex
 
 from cases.tcases import *
+import math
 
 
 class CaseReturn(SubCase):
@@ -71,3 +72,66 @@ class CaseContinue(SubCase):
     def setSub(self, base:ContinueExpr, subs:list[Expression])->Expression:
         # base.setSub(subs[0])
         return base
+
+
+class CaseRegexp(SubCase):
+    ''' re`pattern`, re'...', re"123"
+        `` quotes most useful for pattern without escape sequences
+        re`abc`/`imu` : regexp with flags in string
+        re`abc`/flags : regexp with flags in variable
+        re`abc`imu : regexp with flags
+        re`abc`{flags} : regexp with flags in variable
+        re`abs`/flags =~ src : matching - bool
+        re`abs`/flags /~ src : replace - string
+        re`abs`/flags ?~ src : search - list[list]
+        
+        think about:
+        re {patternVar} {flagsVar}
+    '''
+    
+    def match(self, elems:list[Elem])-> bool:
+        # re`abc`: 2
+        # re`abc`imu: 3
+        # re`abc`{flags}: 2
+        if not isLex(elems[0], Lt.word, 're'):
+            return False
+        elen = len(elems)
+        if elen not in [2,3,5]:
+            return False
+        res = True
+        if elen > 1:
+            # print('r-match:', Lt.name(elems[1].type), 'len=', elen)
+            # print('r-match:', elemStr(elems, ','))
+            res &= elems[1].type in (Lt.text, Lt.mttext)
+        if res and elen == 3:
+            # if native flags
+            res &= elems[2].type == Lt.word and math.prod([s in 'aiLmsux' for s in elems[2].text])
+        if res and elen > 4:
+            # if flags in var
+            # print('r-match:5len', elemStr(elems, ','))
+            res &= (isLex(elems[2], Lt.oper, '{') 
+                and isLex(elems[4], Lt.oper, '}')
+                and elems[3].type == Lt.word)
+        return res
+    
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        # elems[0]: re
+        patt = elems[1].text
+        flags = ''
+        elen = len(elems)
+        match elen:
+            case 3:
+                # re`..`sum
+                flags = elems[2].text
+            case 5:
+                # re`..`{var}
+                flags = VarExpr(Var(elems[3].text, TypeString()))
+        
+        exp = RegexpExpr(patt, flags, src=elems)
+        return exp, []
+    
+    def setSub(self, base:ContinueExpr, subs:list[Expression])->Expression:
+        # base.setSub(subs[0])
+        return base
+
+

@@ -80,7 +80,7 @@ class CaseAssign(SubCase):
 
 
 _operPrior = ('() [] . , -x !x ~x , ** , * / % , + - ,'
-' << >> , < <= > >= !> ?> !?>, == != , &, ^ , | , && , ||, ?: , : , ? , <- , = += -= *= /= %= , ; , /:,  !: :?, !-  ') #
+' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , && , ||, ?: , : , ? , <- , = += -= *= /= %= , ; , /:,  !: :?, !-  ') #
 
 
 class CaseBinOper(SubCase):
@@ -228,6 +228,8 @@ def makeOperExp(elem:Elem)->OperCommand:
         return IsInExpr(isNot=True)
     if oper == '.':
         return OperDot()
+    if oper == '=~':
+        return RegexpMatchOper()
     if oper == '..':
         return ListGenExpr()
     if oper =='<-':

@@ -1545,28 +1545,15 @@ etml - possible extension of html/xml template.
 
 *
 
-Possible exension (thoughts):
+Possible features (thoughts):
 01. functions can be overloaded by types (maybe)
 02. operators are functions, exception: brackets () [] {}, maybe.
-10. mapping and pattern matching
+10. mapping and pattern matching (done!)
 11. functions doesn't needs braces like haskell (for what?)
 12. functional elements: lambdas(done!), composition, carrying.
 13. interface as list of functions (thinking)
-14. functions with ducktype args based on interfaces
+14. functions with ducktype args based on interfaces (what did that mean? anonimous interface as a list of func-names?)
 
-```
-u = user{"vasya", 16, 1.5}
-
-rx = \[a-z-_]{2,5}\i
-text = "Hello somebody here! 123"
-res = rx.find(text)
-
-
-// one line
-for n <- 0..5 => print "next: %d" << n
-if res = rx.match(text); !res.empty() => print " result: %s" << res.first()
-
-```
 *
 #TODO:
 Convert / rewrite code to Go, Java, Rust.  

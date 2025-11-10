@@ -14,7 +14,7 @@ oper group replacement:
 '''
 
 operPrior = ('( ) [ ] { } , . , -x !x ~x , ** , * / % , + - ,'
-' << >> , < <= > >= !> ?> !?>, == != , &, ^ , | , && , ||, ?: , : , ? , `1`, <- , ->, = += -= *= /= %= , ; , /: , !: :? => , !- ')
+' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , && , ||, ?: , : , ? , `1`, <- , ->, = += -= *= /= %= , ; , /: , !: :? => , !- ')
 
 unaryOperators = '- ! ~'.split(' ')
 
@@ -81,9 +81,9 @@ def prels(pref, elems:list[Elem], *args, **kwargs):
     print(pref, el_text(elems), *args)
 
 
-def elemStr(elems:list[Elem]):
+def elemStr(elems:list[Elem], delim=' '):
     # dprint('debug elemStr', elems)
-    return ' '.join([ee.text for ee in elems])
+    return delim.join([ee.text for ee in elems])
 
 class OperSplitter:
     def __init__(self, priors=None):
