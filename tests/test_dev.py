@@ -41,41 +41,31 @@ class TestDev(TestCase):
 
 
 
-    def _text_test1(self):
-        src = [1,2,3, 4, 5]
-        ptt = '_,2,_,*'.split(',')
-        si, pi = 0, 0
+    def _test_n(self):
         import re
-        numrx = re.compile(r'\d+')
-        ls = len(src)
-        res = None
-        while si < ls:
-            el = src[si]
-            qn = ptt[pi]
-            
-            if qn == '*':
-                res = True
-                break
-            
-            if qn == '_':
-                # if :
-                    pi += 1
-            
-            if numrx.match(qn):
-                pvv = int(qn)
-                if pvv == el:
-                    pi += 1
-                else:
-                    res = False
-                    break
-            
-            si += 1
+        src = ''' 
+        abc 123
+        qe 456
+        hjk 890
+        '''
+        pt = re.compile(r'([a-z]+)\s+((\d)\d+)', re.MULTILINE)
+        src = 'qwe 123 asd 456 zxc 789'
+        pt = re.compile(r'([a-z]+)\s+((\d)\d+)', re.IGNORECASE)
+        iter = pt.finditer(src)
+        
+        for mt in iter:
+            print('mt>>', mt.group(0))
+            print('ttr>>', mt.groups())
 
-    def test_code(self):
+
+    def _test_code(self):
         ''' '''
         code = r'''
-        dd = {'aa':'11'}
-        # print('res = ', res)
+        # dd = {'aa':'11'}
+        print(1, "1\n2\t3")
+        print(2, `1 \n 2 \t3 \\ \/ \` \' \"`)
+        print("Hello there! \n\t Here new line, \\ back-slash and \"Words in quotes.\" ")
+        # print('res = ', 1)
         '''
         code = norm(code[1:])
 
