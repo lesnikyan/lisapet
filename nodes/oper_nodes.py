@@ -840,7 +840,6 @@ class RegexpOper(BinOper):
         super().__init__(oper, left, right)
 
 
-
 class RegexpMatchOper(RegexpOper):
     ''' re =~ string '''
     
@@ -849,14 +848,30 @@ class RegexpMatchOper(RegexpOper):
 
     def do(self, ctx:Context):
         self.left.do(ctx)
-        re = self.left.get()
-        if isinstance(re, (Var)):
-            re = re.getVal()
+        rx = self.left.get()
+        if isinstance(rx, (Var)):
+            rx = rx.getVal()
         self.right.do(ctx)
         src = self.right.get()
         src = var2val(src)
-        # if isinstance(src, (Var)):
-        #     re = src.getVal()
-        res = re.match(src)
+        res = rx.match(src)
+        self.res = res
+
+
+class RegexpSearchOper(RegexpOper):
+    ''' re =~ string '''
+    
+    def __init__(self, left = None, right = None):
+        super().__init__('?~', left, right)
+
+    def do(self, ctx:Context):
+        self.left.do(ctx)
+        rx = self.left.get()
+        if isinstance(rx, (Var)):
+            rx = var2val(rx)
+        self.right.do(ctx)
+        src = self.right.get()
+        src = var2val(src)
+        res = rx.find(src)
         self.res = res
     

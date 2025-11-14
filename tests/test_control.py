@@ -44,11 +44,13 @@ class TestControl(TestCase):
         # for /: if /:
         r2 = []
         for n <- res /:  if n % 2 > 0 /: k=n; n += 1 ; r2 <- n + 1000
-        
         res += r2
         
-        # print('res = ', res)
-        # print('r2 = ', r2)
+        # expression before controls
+        r3 = []; (for i <- [1..5] /: if n=i*2; n >5 /: x = i * 10; y = i + 100; r3 <- (x + y))
+        res += r3
+        
+        print('res = ', res)
         '''
         code = norm(code[1:])
 
@@ -62,7 +64,7 @@ class TestControl(TestCase):
         # rvar = ctx.get('res')
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
-        exp = [11, 22, 33, 300, 600, 900, 30, 35, 40, 45, 50, 1012, 1034, 1036, 1046]
+        exp = [11, 22, 33, 300, 600, 900, 30, 35, 40, 45, 50, 1012, 1034, 1036, 1046, 133, 144, 155]
         self.assertEqual(exp, rvar.vals())
 
 

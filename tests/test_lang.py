@@ -39,6 +39,28 @@ class TestLang(TestCase):
         # print('##################t-IF1:', )
         self.assertEqual(res, 45)
 
+    def test_parsing_string_backtiks(self):
+        ''' ` string `
+            '''
+        code = r'''
+        res = `1 \n 2 \t3 \s\w\d\b \ \/ \` \' \" `
+        # mres = ``` \n \t \\ \s \w ```
+        1
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        ctx = rootContext()
+        ex.do(ctx)
+        rvar = ctx.get('res')
+        ex = r'''1 \n 2 \t3 \s\w\d\b \ \/ ` \' \" '''
+        self.assertEqual(ex, rvar.getVal())
+        # Multiline case wasn't implemented
+        # mvar = ctx.get('mres')
+        # mex = r''' \n \t \\ '''
+        # self.assertEqual(mex, mvar.getVal())
+
     def test_parsing_lead_minus(self):
         ''' x = -1 * n
             '''

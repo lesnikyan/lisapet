@@ -72,6 +72,11 @@ class TypeMString(TypeString):
     name='mstring'
     _defVal = ''
 
+class TypeRegexp(VType):
+    name='re'
+    _defVal = None
+    
+
 
 class FuncInst(Objective):
     '''function object is stored in context, callable, returns result '''

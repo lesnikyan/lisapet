@@ -122,6 +122,43 @@ match nn
     a:int !- 
     b:float !- foo(b)
 
+15.1 regexp
+# DONE rx = re`abc`iu
+# DONE match
+rx =~ 'source string abc'
+# DONE find
+rx ?~ 'source string'
+
+# replace
+(re`\s`i : `-`) /~ 'source string abc'
+re`\s`i >> "-" /~ 'source string abc'
+re`\s`i / "-" /~ 'source string abc'
+'source string abc' <= (re`\s`i /~ ,'-')
+'source string abc' -+ (re`\s`i /~ ,'-')
+replace(src, rx, repl)
+
+
+# split - overloaded `/`
+'source string' / re`\s+`
+
+# str-str split
+'source string abc' / ' '
+
+
+16.1 Overload operators
+Add API for overload operators.
+1. exist operators
+def overlod(operator, leftType, ritghType=Any, handler)
+..
+handler = ...
+overload('>>', TypeAny, TypeList, handler)
+
+2. new operators by python (not sure) 
+
+
+17. Fix escapes in ` `-strings.
+all escape sequences should not work, except \`.
+
 
 
 # -------------------

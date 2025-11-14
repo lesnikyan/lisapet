@@ -39,7 +39,7 @@ pref = {
     Lt.num: []
 }
 
-def charType(prevs:int, s:str) -> int:
+def charType(prevs:int, s:str, esc_map=None) -> int:
     prevChars, prev = prevs
     base = Lt.none
     if s in c_space:
@@ -207,15 +207,15 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
         i += 1
         # print('\n#6 ', cur, " s='%s'"%s, 'prev-type:', Lt.name(curType), '|', 'esc:', escMod)
         
+        esc_map = c_esc_map
         if escMod:
             esc_map = c_esc_map
-            if escType == '`':
+            if openQuote == '`':
                 esc_map = c_esc_back_map
             if totalEsc and s not in esc_map:
                 raise ParseErr('Not currect escape sequence: `%s` ' % src[i-1: i + 1])
-        
 
-        sType = charType((cur, curType), s)
+        sType = charType((cur, curType), s, esc_map=esc_map)
         
         if isinstance(sType, tuple):
             # unexpected changing of prev type
@@ -242,7 +242,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 # in the string and after esc slash
                 dprint('## in esc' ,  'multi:', openMultStr , '; cur:', cur, 's:', s)
                 esc_map = c_esc_map
-                if escType == '`':
+                if openQuote == '`':
                     esc_map = c_esc_back_map
                 if s not in esc_map:
                     if totalEsc:
@@ -257,7 +257,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 # cur = nextRes(cur, curType, '')
                 continue
         
-            # escape sequences
+            # start escape sequences
             if s == '\\': # sType == Lt.esc:
                 dprint('## esc ', s)# esc = True
                 # curType = Lt.esc
@@ -271,6 +271,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 cur = nextRes(cur, curType, '')
                 curType = Lt.none
                 openQuote = None
+                escMod = False
                 continue
             
             if i > 1 and curType == Lt.mttext and sType == Lt.quot:
