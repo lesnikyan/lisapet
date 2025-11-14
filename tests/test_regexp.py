@@ -29,15 +29,105 @@ class TestRegexp(TestCase):
 
 
 
-    def test_regexp_oper_replace(self):
+    def _test_regexp_replace(self):
         '''
-        /~ operator
         '''
+
+    def _test_regexp_split(self):
+        '''
+        '''
+
+    def test_regexp_oper_search_for(self):
+        ''' loop by rx ?~ results '''
+        
+        code = r'''
+        src = """
+        a11 b22 c33
+        d44
+        e55 f66 g77 h88 i99 j101 k202 
+        """
+        res = []
+        
+        for s <- re`\w(\d+)`m ?~ src
+            res <- (s, s[1])
+            # print(s)
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        expv = [(['a11', '11'], '11'), (['b22', '22'], '22'), (['c33', '33'], '33'),
+            (['d44', '44'], '44'), (['e55', '55'], '55'), (['f66', '66'], '66'),
+            (['g77', '77'], '77'), (['h88', '88'], '88'), (['i99', '99'], '99'),
+            (['j101', '101'], '101'), (['k202', '202'], '202')]
+        self.assertEqual(expv, rvar.vals())
 
     def test_regexp_oper_search(self):
         '''
         ?~ operator
         '''
+        code = r'''
+        res = []
+        
+        # empty result []
+        s0 = ['', '  ', '1 2 3', 'a s d']
+        for n <- s0
+            res <- ('>0', n, re`\w{2,}` ?~ n)
+        
+        # one result [['...']]
+        s1 = [' 12', ' 123 ', 'asd', 'asd123']
+        for n <- s1
+            res <- ('>1', n, re`\w{2,}` ?~ n)
+        
+        # one result with groups[['','','']]
+        s2 = ['1q01', '2Ww022', '3Ee345 ', '4Rrfv567 432']
+        for n <- s2
+            rx = re`\d([a-z]+)(\d+)`i
+            res <- ('>2', n, rx ?~ n)
+            
+        # several results [[''],['']]
+        s3 = ['1a11 2bbb 3eab a44fff 5remember 6beep',]
+        for n <- s3
+            rx = re`\d[a-f]+`
+            res <- ('>3', n, rx ?~ n)
+            
+        # several results with groups [['',''],['','']]
+        s4 = [
+            'John Tompson 111-22-33, Cat Morris 122-23-24',
+            '1-2-3 11-22-33 111-222-333',
+            '0-0-0 1-1-1 2-2-2 1111111111-222222222222-3333333333',
+        ]
+        for n <- s4
+            rx = re`(\d+)\-(\d+)\-(\d+)`
+            fres = rx ?~ n
+            res <- ('>4', n, fres)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        expv = [('>0', '', []), ('>0', '  ', []), ('>0', '1 2 3', []), ('>0', 'a s d', []), 
+                ('>1', ' 12', [['12']]), ('>1', ' 123 ', [['123']]), ('>1', 'asd', [['asd']]), ('>1', 'asd123', [['asd123']]), 
+                ('>2', '1q01', [['1q01', 'q', '01']]), ('>2', '2Ww022', [['2Ww022', 'Ww', '022']]), 
+                ('>2', '3Ee345 ', [['3Ee345', 'Ee', '345']]), ('>2', '4Rrfv567 432', [['4Rrfv567', 'Rrfv', '567']]), 
+                ('>3', '1a11 2bbb 3eab a44fff 5remember 6beep', [['1a'], ['2bbb'], ['3eab'], ['4fff'], ['6bee']]), 
+                ('>4', 'John Tompson 111-22-33, Cat Morris 122-23-24', [['111-22-33', '111', '22', '33'], ['122-23-24', '122', '23', '24']]), 
+                ('>4', '1-2-3 11-22-33 111-222-333', [['1-2-3', '1', '2', '3'], ['11-22-33', '11', '22', '33'], ['111-222-333', '111', '222', '333']]), 
+                ('>4', '0-0-0 1-1-1 2-2-2 1111111111-222222222222-3333333333', 
+                 [['0-0-0', '0', '0', '0'], ['1-1-1', '1', '1', '1'], ['2-2-2', '2', '2', '2'], 
+                  ['1111111111-222222222222-3333333333', '1111111111', '222222222222', '3333333333']])]
+        self.assertEqual(expv, rvar.vals())
 
     def test_regexp_oper_match(self):
         '''
@@ -76,15 +166,15 @@ class TestRegexp(TestCase):
 
 
 
-    def test_cases_split(self):
+    def test_re_parsing_CaseRegexp_split(self):
         ''' '''
         data = [
             (r're``','',''),
             (r're``miLx','', 'miLx'),
             (r're`abc`','abc',''),
-            (r're`\\n\\t\s\d\w\``','\\n\\t\\s\\d\\w`',''),
+            (r're`\n\t\s\d\w \` \' \" `','\\n\\t\\s\\d\\w ` \\\' \\" ',''),
             (r're`abc`ui','abc','ui'),
-            (r're` \' " \'\'\' """ `mx', ' \' " \'\'\' """ ','mx'),
+            ('re` \' " \'\'\' """ `mx', ' \' " \'\'\' """ ','mx'),
             (r're`abc`{fls}','abc', (VarExpr, 'fls')),
             # (r'','',''),
         ]
@@ -100,7 +190,7 @@ class TestRegexp(TestCase):
                 rflags = (VarExpr, rexp.flags.get().name)
             self.assertEqual(exflg, rflags)
 
-    def test_cases_match(self):
+    def test_re_parsing_CaseRegexp_match(self):
         ''' '''
         data = [
             ('``', 0),

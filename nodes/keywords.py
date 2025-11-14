@@ -66,29 +66,6 @@ class ContinueExpr(Expression):
         return self.val
 
 
-class Regexp(Val):
-
-    def __init__(self, rule):
-        self.rule:re.Pattern = rule
-
-    def match(self, src:Val) -> Val:
-        ''' '''
-        res = self.rule.match(src.getVal())
-        return Val(bool(res), TypeBool())
-        
-    def replace(self, src:Val, repl:Val) -> Val:
-        ''' '''
-        return Val('', TypeString())
-    
-    def split(self, src:Val) -> ListVal:
-        '''  '''
-        return ListVal()
-    
-    def search(self, src:Val) -> ListVal:
-        '''  '''
-        return ListVal()
-
-
 class RegexpExpr(Expression):
     
     def __init__(self, patt, flags, src):

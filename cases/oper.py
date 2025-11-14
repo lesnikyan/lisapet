@@ -230,6 +230,8 @@ def makeOperExp(elem:Elem)->OperCommand:
         return OperDot()
     if oper == '=~':
         return RegexpMatchOper()
+    if oper == '?~':
+        return RegexpSearchOper()
     if oper == '..':
         return ListGenExpr()
     if oper =='<-':

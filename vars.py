@@ -325,6 +325,46 @@ class StringVal(Val):
         return len(self.val)
 
 
+class Regexp(Val):
+
+    def __init__(self, rule):
+        # value of super-Val is just for debug needs
+        super().__init__(rule, TypeRegexp())
+        self.rule:re.Pattern = rule
+
+    def match(self, src:Val) -> Val:
+        ''' '''
+        res = self.rule.match(src.getVal())
+        return Val(bool(res), TypeBool())
+        
+    def replace(self, src:Val, repl:Val) -> Val:
+        ''' '''
+        return Val('', TypeString())
+    
+    def split(self, src:Val) -> ListVal:
+        '''  '''
+        return ListVal()
+    
+    def find(self, src:Val) -> ListVal:
+        '''Searches all the matches and return table (list of lists)
+            1-st (index=0) column contains matching of  full-pattern
+            2-nd and others - sub values of groups
+            src = value with string
+            returns ListVal object
+        '''
+        iter = self.rule.finditer(src.getVal())
+        rvals = []
+        for mt in iter:
+            full = mt.group(0)
+            # print('Rx.find1:', full)
+            groups = mt.groups()
+            grval = [full]
+            grval.extend(groups)
+            rvals.append(ListVal(elems=[StringVal(s) for s in grval]))
+        return ListVal(elems=rvals)
+
+
+
 # not sure, maybe simple struct will be enough?
 
 class Maybe(Val):
@@ -350,7 +390,7 @@ class Thing(Maybe):
 
 
 def valFrom(src:Var|Val):
-    if isinstance(src, (Val, Collection, StringVal)):
+    if isinstance(src, (Val, Collection, StringVal, Regexp)):
         return src
     if isinstance(src, (Var)):
         return src.get()
