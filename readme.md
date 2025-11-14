@@ -27,10 +27,10 @@ Content:
 2. [Code blocks and formatting.](#2-sub-blocks-code-formatting)
 3. [`if`-statement](#3-if-statement-else)
 4. [Operators. Math, bool, unary, others.](#4-operators-math-unary-others)
-5. [Collections `[,]`, `{:}`, `(,)`](#5-collections-list-array-tuple-dict-map)
-6. [For-statement: `for i <- [1..5]`](#6-for-statement---operator)
-7. [Functions:`func foo()`](#7-function-definition-context-of-functions)
-8. [Dict `{'key':val}`](#8-dict-linear-and-block-constructor)
+5. [Collections, short overview `[,]`, `(,)`](#5-collections-list-array-tuple-dict-map)
+6. [Dict `{'key':val}`](#6-dict-linear-and-block-constructor)
+7. [For-statement: `for i <- [1..5]`](#7-for-statement---operator)
+8. [Functions:`func foo()`](#8-function-definition-context-of-functions)
 9. Collection features:
     1. [append operator `nums <- 15`](#91-arrow-appendset-operator--)
     2. [deletion operator `data - [key]`](#92-minus-key---key-delete-operator)
@@ -49,20 +49,25 @@ Content:
 15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
 16. Match-statement
     1. [Match, cases, `!-`](#16-match-statement)
-    2. [List and tuple [1,2,?,a,b], [a,5,*] (1, _, ?, *)](#162-matching-list-and-tuple)
-    3. [Dict pattern {'a':a, _:_, *}](#163-matching-dict)
-    4. [Struct pattern](#164-matching-struct)
+    2. [List and tuple `[0,x,_,?,*]` `(_,?,*)`](#162-matching-list-and-tuple)
+    3. [Dict pattern `{'a':a, _:_, *}`](#163-matching-dict)
+    4. [Struct pattern `N{ }`, `_{ }`](#164-matching-struct)
     5. [Multicase `1 | 2`](#165-multicase-)
     6. [Guard with pattern `[a] :? a > 5`](#166-bool-guard-in-case)
     7. [Mixed patterns](#167-mixed-nested-patterns)
+    8.
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
 19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
 20. [Inline block `.. ; ..`  Inline controls `for /:`](#20-one-line-block---operators)
-21. [String formatting `<<`, `~" "` operators](#21-string-formatting)
+21. [String formatting `"%s" << x` , `~" {x} "`](#21-string-formatting)
 22. [Import modules](#22-import-modules)
 23. [Function as object](#23-function-as-an-object)
 24. [Closures](#24-closures)
+25. Regular expression:
+    1. [Base syntax ```re`[abc]`i```](#251-regular-expressions-re)
+    2. [match `=~`](#252-regexp-match-)
+    3. [find `?~`](#253-regexp-find-)
 
 *
 ## Status.
@@ -211,20 +216,65 @@ So we can use all local things and any things defined in all levels above: modul
 More about visibility of things see in sections of functions, closures, structs, importing.  
 
 ### 1.3 Numbers, strings, bool. Types.
-```python
-hello = "hello somebody!"
-'unary-quotes'
-'''multiline
-string'''python
-
+Numeric types.  
+```golang
 nums = [
-    0123, # int, leading 0 will be irnored 
+    true, # bool
+    123, # int, decimal
+    0123, # decimal, leading 0 will be irnored 
     0b1111, # int, binary
     0o777, # int octa
     0xfba01, # int hex
     0.15]   # float
+```
 
-#types
+Strings.  
+Strings can be defined by several type of quotes.  
+```golang
+hello = "hello somebody!"
+us = 'unary-quotes'
+```
+Classic escape sequences is work.
+```golang
+print("Hello there! \n\t Here new line, \\ back-slash and \"Words in quotes.\" ")
+```
+```
+Hello there!
+         Here new line, \ back-slash and "Words in quotes."
+```
+Backticks is an yet one type of quotes, designed to create little more ascetic strings.  
+In backticks sequences like `\s` doesn't try to be  interpreted as an escape sequence.  
+Its very useful for making strings with slashes, quotes, etc, like regexp needs.  
+```golang
+s = `\s\w\b\d` # no errors about incorrect escaping
+```
+In back quotes most escape sequences don't work.  
+(``` \` ``` does)  
+```golang
+print(`\n\t\'\" `)
+```
+```
+>> \n\t\'\" 
+```
+
+
+Multiline strings.
+Triple quotes is a main way to create multiline string.  
+Triple backticks work too. Thinking about escape sequences. Now it  just works like other, except warnings of wrong sequences like ``` \w \s ```.  
+````golang
+'''multiline
+string'''
+""" yet 
+one """
+```
+and more
+in backticks
+```
+````
+Data type.  
+Type of variable is defined by `:` operator.  
+`varName : typeName`
+```python
 name:string = "Vasya"
 age:int = 25
 weight:float = 70
@@ -236,12 +286,13 @@ no:bool = false
 Types such as a collections, structs, functions, etc will be explaned next sections.
 
 ### 2. Sub-blocks, code-formatting.
-Control structures, data-structures, functions, etc. have inner place with internal line / expressions, here we call it as an expression block or sub-block.  
-Cild or sub block separated by indent with one or more whitespaces relaated to parent.  
+Control structures, data-structures, functions, etc. have inner place with internal lines / expressions, here we call it as an expression block or sub-block.  
+Child or sub block separated by indent with one or more whitespaces related to parent. 
 All indents should be equal.  
+First indent defines all other indents in file.  
 Base block structures: `if`, `for`, `while`, `match-cases`, `function`.  
-Data structures cab have block version of definition (`struct`) or construct (`dict`, `list`).  
-Sone basically block structs also can have inline version of syntax (controls, sequence of expressions).  
+Data structures can have block version of definition (`struct`) or constructor (`dict`, `list`).  
+Some blocks also can have inline version of syntax (controls, sequence of expressions).  
 See more about inline syntax in next sections.  
 
 ### 3. `if`-statement, `else`
@@ -270,9 +321,9 @@ else if cond
     expr
 ```
 Condition can be any expression which returns bool result:  
-bool valaue  `true`, `false`
+bool value: `true`, `false`  
 `null`, `0` (means `false` in condition)  
-functions that return bool value,  
+functions that return appropriate value,  
 comparison operators `<` `<=` `>` `>=` `==`,  
 logic operators `&&` `||` `!`  
 
@@ -293,10 +344,9 @@ if a = foo(); x < bar(a)
     ...
 ```
 Note.
-Inline operator `/:` has less priority than `;` so we have to cover all `if` sub-expressions by parentheses in the case with inline `if`-block.  
+Inline operator `/:` has less priority than `;` so we have to cover whole `if` expression by parentheses in the case with inline `if`-block.  
 ```python
-a = 10; b = 2; 
-if (x = a + 1; y = b * 5; x > b) /: print(a, b, x, y)
+a = 10; b = 2; (if x = a + 1; x > b /: print(a, b, x))
 ```
 See more about [inline control expressions](#20-one-line-block---operators).  
 
@@ -336,7 +386,7 @@ Compare:
 `==` `!=` `>` `<` `>=` `<` `<=`  
 Logical:  
 `&&` `||` `!`  
-Others, have specific behaviour, will be explained further:  
+Others, have specific behaviour, and will be explained further:  
 `?>` `!?>` `?:` `<-` `->` `!-` `/:`  
 
 Table of priority order:
@@ -348,6 +398,7 @@ Table of priority order:
 * / % 
 + - 
 << >> 
+=~ ?~ /~
 < <= > >= !> ?> !?>
 == != 
 &
@@ -364,39 +415,43 @@ Table of priority order:
 = += -= *= /= %=  
 /:
 ; 
+:?
 !-
 ```
 
-
 ### 5. Collections: list (array), tuple, dict (map)
+1. List, inline constructor.  
 ```python
-# List, inline constructor
 
 nums = ['One', 'Two', 'Three']
+```
 
-# List, block constructor (for long elements)
-
+List, block constructor (for long elements)
+```python
 names = list
     'Anna'
     'Barbi'
     'Cindy'
     'Muxtar'
-
-# change value
+```
+Elements of lists.
+```python
+# set / change element
 names[3] = 'Vaxtang'
 
-# read value
+# read value of element
 firstName = names[0]
 ```
 Negative indexes are allowed.  
 It accesses to the element by position from the end of list.  
-`[-1]` is a last element.  
+`[-1]` is a last element (1-st from end).  
 ```python
 nums = [1,2,3,4,5]
 print(nums[-2])
 >> 4
 ```
-Tuples: `(val, val, val)`.  
+
+2. Tuples: `(val, val, val)`.  
 
 Tuple. Few values in the brackets over comma.  
 Tuple is immutable.
@@ -415,7 +470,33 @@ vals = (1, 22, 33,3)
 a, b, c = vals
 ```
 
-### 6. `for` statement, `<-` operator
+### 6. Dict. Linear and block constructor
+```python
+# linear constr
+dd = {'a':1, 'b':2}
+
+# block constr
+ddd = dict
+    'a': 'a a a a a a a a a a a a a a a a a'
+    'b': 'b b b b b b b b b b b b b b b b b'
+
+# set val by key
+dd['c'] = 3
+```
+```python
+# read
+u = {'name':'Vasya', 'age':22, weight:60.0}
+print('User name:', u['name'])
+
+>> User name: Vasya
+```
+More feature of collections:
+[`<-` operator](#91-arrow-appendset-operator--),
+[`list - [key]`](#92-minus-key---key-delete-operator),
+[`[]+[]`](#93-list-plus---).
+
+
+### 7. `for` statement, `<-` operator
 - Range-iterator
 ```python
 for i=0; i < 5; i = i + 1
@@ -479,7 +560,7 @@ for i <- [1..10]
 >> [5,6,7,8]
 ```
 
-### 7. Function definition, context of functions.
+### 8. Function definition, context of functions.
 
 Keyword `func`.  
 Last expression is a returning result.  
@@ -511,23 +592,6 @@ func foo(x, y)
 
 ```
 See more about functions in sections: 14, 15, 23.
-
-### 8. Dict. Linear and block constructor
-```python
-# linear constr
-dd = {'a':1, 'b':2}
-
-# block constr
-ddd = dict
-    'a': 'a a a a a a a a a a a a a a a a a'
-    'b': 'b b b b b b b b b b b b b b b b b'
-
-# set val by key
-dd['c'] = 3
-
-# read
-print(dd['a'], ddd['b'])
-```
 
 ### 9.1 arrow-append/set operator `<-`
 Left-arrow with list or dict in the right operand  puts value into collection.  
@@ -1296,30 +1360,34 @@ if 'c' !?> {'a':1, 'b':2} ...
 ```
 
 ### 20. One-line block `;` `/:` operators
-Shortened syntax for those who like long lines and hate tall columns :)  
+(Note! there is not a usual code style. Just special tool for specific cases.)  
+1. One-line multiespressions.  
+"Horisontal" syntax for those who like long lines and hate tall columns :)  
+Several simple expressions without sub-lines, like assignment or function call,  
+can be separated within the one line by `;` operator.
 ```python
 a = 1; b = 2; c = 3
 a = 10 + a; b += 20; c -= 30;
 res = [a, b, c]; res <- dd; res <- e
 ```
-`/:` operator.  
-One-line control expressions are possible.  
-`if`
+2. Inline bloks.  
+It's just syntax sugar for some control structures with subexpressions.  
+Mostly for usage for 1-line cases, like short code in console-input.  
+Inline blocks is defined by `/:` operator that separates control statement and his sub-expressions.  
+Implemented for `if`, `for`, `while`.  
 ```python
 if x < 10 /: print(x)
 ```
-`for`
 ```python
 for i <- names /: print(name)
 ```
-Complex examples.  
+We can put several expressions into a control.
 ```python
-# multiexpression over `;`
-res = []
-for i <- [1..5] /: x = i * 10; y = i + 100; res <- (x + y) 
+res = [] ; 
+for i <- [1..5] /: x = i * 10 ; y = i + 100; res <- (x + y)
 ```
-Every next inline sub after `/:` is childe of previous block.  
-So here no way for several inline sub-blocks like if-else.  
+Nested controls.  
+Every next inline sub control after `/:` is a childe of previous block.  
 ```python
 # `if` in `for`
 for i <- [1..10] /: if i % 2 != 0 /: print(i)
@@ -1328,15 +1396,35 @@ for i <- [1..10] /: if i % 2 != 0 /: print(i)
 for i <- [1..10]
     if i % 2 != 0
         print(i)
-
 ```
-But you can use parenthesis.  
+So there no way for several inline sub-blocks like if-else.  
+But you can use parenthesis and `;` to combine independent expressions.  
 ```python
 for i <- [1..10] /: (if i % 2 != 0 /: print('odd', i)) ; (if i %2 == 0 /: print('even', i))
 ```
+It's ok to combine multiple nested controls, with child subexpressions separated by a semicolon `;`.  
+But be accurate with using `/:` and `;` in one line.  
+Remember that `/:` has less priority tnan `;`.  
+So all expressions separated by `;` after `/:` will be interpret as a sub-block.  
+But `;` before control statement in the same line will cause error.  
+Use parenthesis for such case.  
+```python
+res = []; (for i <- [1..5] /: if n=i*2; n > 4 /: x = i * 10; y = i + 100; res <- (x + y))
+```
+The same for `while`.  
+```python
+res = []; c=1; (while c < 5 /: res <- c; c += 1)
+```
+Full example in console run:  
+```python
+py -m run -c \
+    "res = []; (for i <- [1..5] /: if n=i*2; n > 4 /: x = i * 10; y = i + 100; res <- (x + y)) "\
+    -r res
+>> [133, 144, 155]
+```
 
 
-### 21. String formatting  
+### 21.1 String formatting  
 There are two syntax implementations.  
 1) `%` - formatting with binary operator `<<`.  
 It's classic `%s`-formatting. Uses native `%` operator inside with %-formatting syntax of native language (python here).
@@ -1353,10 +1441,10 @@ Be accurate with `"'``quotes``'"` inside includes.
 a, b, s = (123, 12.5, 'ABC')
 name = 'Bob'
 
-# simple tpl
+# simple template
 hey = ~' Hello {name}!'
 
-# with {val:patterns}
+# with {val:pattern}
 hello1 = ~'hello int:{a:05d}, float:{b:.3f}, str: `{s2:<5s}`.'
 
 # with function call
@@ -1366,6 +1454,31 @@ func fHello(s)
 ~'Some prefix, {fHello(`Formatter`)} '
 ```
 See more examples in `tests/test_format.py`.
+
+21.2 String functions.
+
+1. Split.
+
+```python
+split("1,2,3", ',')
+>> ['1','2','3']
+```
+
+2. Join.
+
+```python
+join(['a','b','c'], '_')
+>> 'a_b_c'
+```
+
+3. Replace.
+
+```python
+src = "<div> Hello </div>"
+replace(src, 'div', 'span')
+>> '<span> Hello </span>'
+```
+
 
 ### 22. Import modules.  
 We can use things from another module by using `import` command.  
@@ -1532,6 +1645,102 @@ f3 = getFuu(11)
 res = f3(4) # here `mult` is called
 >> 44
 ```
+
+### 25.1 Regular expressions. `re`
+1. Regular expression is a native object in lisapet.  
+Regexp is created by keyword `re` before string quotes.  
+Most usable quotes for regexp is back-quotes, they ignores almost all escape sequences except very needed like ``` \` ```.  
+Other quotes works too (triple multiline is not currently, thinking about that).  
+```golang
+rx1 = re`pattern`
+rx2 = re"pattern"
+```
+
+3. Syntax of regexp patterns is similar to Python (or Perl).  
+```golang
+re`\b\d\w\s\t\n` #// escapes
+re`[a-z][0-9][^inverted]` #// classes
+re`^full string$` #// start and end
+re`any-count* one-more+ maybe-one? count{2,5}` #// quantifiers
+re`(group) (?:ignored group)` #// groups
+#// and so on
+```
+
+2. Flags.  
+`re`-syntax allows native regexp flags: `a,i,L,m,s,u,x`.  
+Flag or flags can be added to pattern right after pattern quotes without white spaces or separators.  
+Flags set is corresponding to pythons flags of regexp.  
+```golang
+re`pattern`is
+re`pattern`aim
+re`pattern`Lux
+```
+Another way to add flags (mostly if we need generate them programmatically) is take them from string variable.  
+Just put variable on the flags position in the curly brackets (it looks similar to string formatting).  
+```golang
+flags = 'muL'
+rx = re`pattern`{flags}
+```
+
+Regexp objects have its own set of operators and can be used as a pattern of match-cases (in dev).
+
+### 25.2 Regexp match `=~`
+Most basic regexp operator is a matching `=~`  
+It can accept regexp as a left operand and the string as a right.  
+Result of matching operator is a `bool` value:
+```golang
+src = "aaa"
+if re`\w+`ai =~ src
+    print(src, 'has matched')
+```
+
+### 25.3 Regexp find `?~`
+Finding substrings, operator `?~`  
+Operator `?~` searches matches in string and returns list of found matches.  
+Flags can make changes in result.  
+Result of rx-find operator is a table represented as a list of lists.  
+Each row of result is a result of the matching.  
+If a pattern don't has groups then we will obtain single subvalue in each row.  
+```golang
+src = """
+Let's get started learning regular expressions.
+"""
+res = re`[a-z']+`ai ?~ src
+
+# >> [["Let's"], ['get'], ['started'], ['learning'], ['regular'], ['expressions']]
+```
+In pattern with groups 1-st sub value in each row will be result of matching of full pattern. Other values after first - results of matching groups.  
+```golang
+src = 'Tom Red, 111-22-33; Bob Green, 444-55-66'
+rx = re`([^,;]+),\s*(\d+-\d+-\d+)`
+res = rx ?~ src
+
+>> [['Tom Red, 111-22-33', 'Tom Red', '111-22-33'], 
+    [' Bob Green, 444-55-66', ' Bob Green', '444-55-66']]
+```
+
+Since regexp finding returns list of results, we can use results of `?~` right in the loop statement.  
+```golang
+src = "h88 i99 j101 k202"
+
+for s <- re`\w(\d+)`m ?~ src
+    res <- (s, s[1])
+```
+Or in the comprehantion expression.
+```golang
+src = "h88 i99 j101 k202"
+res = [s[1:] ; s <- re`(\w)(\d+)`m ?~ src]
+
+>> [['h', '88'], ['i', '99'], ['j', '101'], ['k', '202']]
+```
+
+
+### 25.4 Regexp replace
+In dev
+
+### 25.5 Regexp split 
+In dev
+
 
 
 --------------------------------------------------------
