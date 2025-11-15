@@ -28,14 +28,66 @@ class TestRegexp(TestCase):
     ''' Test builtin regexp lib. '''
 
 
+    def test_regexp_replace(self):
+        ''' replace(src, rx, repl) '''
+        code = r'''
+        res = []
+        
+        src1 = '11-1-1, 22=2-2, 33/3/3'
+        r1 = replace(src1, re`[\-=/]`, ':')
+        res <- r1
+        
+        src2 = 'a111 b222 c333'
+        r2 = replace(src2, re`([a-z])(\d+)`i, `<\1:\2:\1>`)
+        res <- r2
+        
+        src3 = 'Tom Red works hard. Elise Orange singing more. Ben Grayhold lying on sofa.'
+        r3 = replace(src3, re`([A-Z][a-z]+)\s+([A-Z][a-z]+)`, '<person fname="\\1" sname="\\2">')
+        res <- r3
+        
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        expv = [
+            '11:1:1, 22:2:2, 33:3:3', '<a:111:a> <b:222:b> <c:333:c>', 
+            '<person fname="Tom" sname="Red"> works hard. '
+            '<person fname="Elise" sname="Orange"> singing more. '
+            '<person fname="Ben" sname="Grayhold"> lying on sofa.']
+        self.assertEqual(expv, rvar.vals())
 
-    def _test_regexp_replace(self):
+    def test_regexp_split(self):
+        ''' split(string, Regexp) '''
+        code = r'''
+        src = """a11 b22,c33
+        d44;d45
+        e55|f66    g77 h88 i99 /j101-k202--n204
+        """
+        parts = split(src, re`[\s\n\t\|/;,-]+`)
+        res = []
+        for s <- parts
+            res <- ~'<{s}>'
+        
+        # print('parts:', parts)
+        # print(res)
         '''
-        '''
-
-    def _test_regexp_split(self):
-        '''
-        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        expv = ['<a11>', '<b22>', '<c33>', '<d44>', '<d45>', '<e55>', '<f66>',
+                '<g77>', '<h88>', '<i99>', '<j101>', '<k202>', '<n204>']
+        self.assertEqual(expv, rvar.vals())
 
     def test_regexp_oper_search_for(self):
         ''' loop by rx ?~ results '''
