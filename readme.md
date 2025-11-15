@@ -68,6 +68,8 @@ Content:
     1. [Base syntax ```re`[abc]`i```](#251-regular-expressions-re)
     2. [match `=~`](#252-regexp-match-)
     3. [find `?~`](#253-regexp-find-)
+    4. [Replace by regexp](#254-regexp-replace)
+    5. [Split by regexp](#255-regexp-split)
 
 *
 ## Status.
@@ -1667,7 +1669,7 @@ re`(group) (?:ignored group)` #// groups
 ```
 
 2. Flags.  
-`re`-syntax allows native regexp flags: `a,i,L,m,s,u,x`.  
+`re`-syntax allows native [(pythons) regexp flags](https://docs.python.org/3/library/re.html#flags): `a,i,L,m,s,u,x`.  
 Flag or flags can be added to pattern right after pattern quotes without white spaces or separators.  
 Flags set is corresponding to pythons flags of regexp.  
 ```golang
@@ -1736,10 +1738,26 @@ res = [s[1:] ; s <- re`(\w)(\d+)`m ?~ src]
 
 
 ### 25.4 Regexp replace
-In dev
+Function `replace(src, old, repl, count)` can receive regexp as a second arg.  
+Backreferences like `\1` work as well according to groups order.  
+```golang
+src2 = 'a111 b222 c333'
+r2 = replace(src2, re`([a-z])(\d+)`i, `<\1:\2:\1>`)
+
+>> '<a:111:a> <b:222:b> <c:333:c>'
+```
 
 ### 25.5 Regexp split 
-In dev
+Function `split(src, rx)` can use regexp too.  
+```golang
+src = "h88 i99 /j101;k202--n204"
+res = []
+
+for s <- split(src, re`[\s/;-]+`)
+    res <- ~'<{s}>'
+
+>> ['<h88>', '<i99>', '<j101>', '<k202>', '<n204>']
+```
 
 
 

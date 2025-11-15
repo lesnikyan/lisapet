@@ -327,32 +327,40 @@ class StringVal(Val):
 
 class Regexp(Val):
 
-    def __init__(self, rule):
+    def __init__(self, pattern):
         # value of super-Val is just for debug needs
-        super().__init__(rule, TypeRegexp())
-        self.rule:re.Pattern = rule
+        super().__init__(pattern, TypeRegexp())
+        self.pattern:re.Pattern = pattern
 
     def match(self, src:Val) -> Val:
         ''' '''
-        res = self.rule.match(src.getVal())
+        res = self.pattern.match(src.getVal())
         return Val(bool(res), TypeBool())
         
-    def replace(self, src:Val, repl:Val) -> Val:
+    def replace(self, src:StringVal, repl:StringVal, count:Val=None) -> StringVal:
         ''' '''
-        return Val('', TypeString())
+        sval:str = src.getVal()
+        repVal:str = repl.getVal()
+        cval = 0
+        if count is not None:
+            cval = count.getVal()
+        res = self.pattern.sub(repVal, sval, cval)
+        return StringVal(res)
     
-    def split(self, src:Val) -> ListVal:
+    def split(self, src:StringVal) -> ListVal:
         '''  '''
-        return ListVal()
+        sval = src.getVal()
+        rval = self.pattern.split(sval)
+        return ListVal(elems=[StringVal(s) for s in rval])
     
-    def find(self, src:Val) -> ListVal:
+    def find(self, src:StringVal) -> ListVal:
         '''Searches all the matches and return table (list of lists)
             1-st (index=0) column contains matching of  full-pattern
             2-nd and others - sub values of groups
             src = value with string
             returns ListVal object
         '''
-        iter = self.rule.finditer(src.getVal())
+        iter = self.pattern.finditer(src.getVal())
         rvals = []
         for mt in iter:
             full = mt.group(0)
@@ -397,11 +405,12 @@ def valFrom(src:Var|Val):
 
 
 def var2val(var:Var|Val):
+    ''' Convert Var to Val instance  '''
     # print('var2val 1 :', var, type(var), var.__class__)
     var = valFrom(var)
     if isinstance(var, (ObjectElem)):
         var = var.get()
-    if isinstance(var, (Val, Collection, StringVal)):
+    if isinstance(var, (Val, Collection, Regexp, StringVal)):
         return var
     # print('var2val 2 :', var)
     # print('var2val 2 :', var, 'vv:', var.val)
@@ -413,4 +422,4 @@ def var2val(var:Var|Val):
     return Val(val, tp)
 
 def str2list(val):
-    return ListVal(elems=[Val(s, TypeString()) for s in list(val)])
+    return ListVal(elems=[StringVal(s) for s in list(val)])

@@ -29,7 +29,6 @@ from tests.utils import *
 class TestControl(TestCase):
 
 
-
     def test_inline_controls(self):
         ''' for /: if /: '''
         code = r'''
@@ -50,7 +49,7 @@ class TestControl(TestCase):
         r3 = []; (for i <- [1..5] /: if n=i*2; n >5 /: x = i * 10; y = i + 100; r3 <- (x + y))
         res += r3
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 

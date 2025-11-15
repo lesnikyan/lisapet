@@ -7,27 +7,45 @@
 from nodes.builtins import *
 
 
-def split(_, src, sep):
-    val = getVal(src)
-    sepVal = getVal(sep)
-    parts = val.split(sepVal)
-    return ListVal(elems = [Val(n, TypeString()) for n in parts])
+def rx_split(src:StringVal, rx:Regexp):
+    return rx.split(src)
 
 
-def join(_, vals, sep=None) -> str:
+def split(_, src:StringVal, sep:Regexp):
+    src, sep = var2val(src), var2val(sep)
+    if isinstance(sep, Regexp):
+        return rx_split(src, sep)
+    # sepVal = getVal(sep)
+    parts = src.getVal().split(sep.getVal())
+    return ListVal(elems = [StringVal(s) for s in parts])
+
+
+def join(_, vals:ListVal, sep=None) -> str:
     elems = built_list(0, vals).vals()
     if sep is None:
         sep = ""
     else:
         sep = str(sep.getVal())
     res = sep.join([n for n in elems])
-    return Val(res, TypeString())
+    return StringVal(res)
 
-def replace(_, src, olds, news):
-    sval = getVal(src)
+
+def rx_replace(src:StringVal, rx:Regexp, repl:StringVal, count:Val=None):
+    return rx.replace(src, repl, count)
+
+
+def replace(_, src:StringVal, olds:StringVal, repl:StringVal, count:Val=None):
+    olds = var2val(olds)
+    src, repl = var2val(src), var2val(repl)
+    if isinstance(olds, Regexp):
+        return rx_replace(src, olds, repl, count)
+    sval:str = getVal(src)
     oval = getVal(olds)
-    nval = getVal(news)
-    res = sval.replace(oval, nval)
-    return Val(res, TypeString())
+    nval = getVal(repl)
+    cval = -1
+    if count is not None:
+        cval = count.getVal()
+    res = sval.replace(oval, nval, cval)
+    return StringVal(res)
 
 
