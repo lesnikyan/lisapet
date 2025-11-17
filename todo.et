@@ -121,6 +121,26 @@ match nn
     :int
     a:int !- 
     b:float !- foo(b)
+    
+    [a:int, b:float] !-
+    {a:b:float, }
+
+    {a:<b:float>, <:string>:<:int>}
+    {a:<int>, 'c':d@<float>, <string>:<bool>}
+
+    # default val + *star
+    0* - int
+    0.* - float
+    true|false - bool
+    ''* - string
+    # any-case by type-specific syntax
+    re`.*`m - string
+    [*] - list
+    {*} - dict
+    (*) - tuple
+    _{} - struct
+
+
 
 15.1 regexp
 # DONE rx = re`abc`iu
@@ -129,18 +149,17 @@ rx =~ 'source string abc'
 # DONE find
 rx ?~ 'source string'
 
+# DONE replace(src, rx, repl)
 # replace
 (re`\s`i : `-`) /~ 'source string abc'
 re`\s`i >> "-" /~ 'source string abc'
 re`\s`i / "-" /~ 'source string abc'
 'source string abc' <= (re`\s`i /~ ,'-')
 'source string abc' -+ (re`\s`i /~ ,'-')
-replace(src, rx, repl)
 
-
+# DONE split(src, re``)
 # split - overloaded `/`
 'source string' / re`\s+`
-
 # str-str split
 'source string abc' / ' '
 

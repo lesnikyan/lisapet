@@ -335,7 +335,8 @@ class Regexp(Val):
     def match(self, src:Val) -> Val:
         ''' '''
         res = self.pattern.match(src.getVal())
-        return Val(bool(res), TypeBool())
+        # print('rx.match:', src.getVal(), self.pattern.pattern, bool(res))
+        return bool(res)
         
     def replace(self, src:StringVal, repl:StringVal, count:Val=None) -> StringVal:
         ''' '''

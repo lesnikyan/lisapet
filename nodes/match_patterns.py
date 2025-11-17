@@ -73,6 +73,26 @@ class MCElem(MatchingPattern):
     ''' element of complex pattern '''
 
 
+class MCRegexp(MatchingPattern):
+    ''' re`` !- ..
+        re`pattern`mix !-
+    '''
+
+    def __init__(self, expVal:Expression,  src=None):
+        super().__init__(src)
+        self.exp:Expression = expVal
+        self.pattern:Regexp = None
+
+    def do(self, ctx:Context):
+        self.exp.do(ctx)
+        self.pattern = self.exp.get()
+        
+    def match(self, val:StringVal):
+        if not isinstance(val.getType(), TypeString):
+            return False
+        return self.pattern.match(val)
+
+
 # ------------------------ Sub-elements of sequence ---------------------- #
 
 

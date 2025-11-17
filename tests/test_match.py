@@ -29,6 +29,50 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
+    def test_match_simple_regexp(self):
+        ''' pattern of struct, including collections in fields. '''
+        code = r'''
+        
+        res = []
+        nn = [
+            'a', 'b', 'c', 'cc', 'd',
+            'dd', 'def', 'fefefe', 'ddddddeeeee', 
+            'naaa:111', 'nbbb:222', '333:cccc', 'def:445', 
+            'houp', 'rupor', 'pirog', 'group', 'spore', 'hh',
+            [], (,), {}, 1, 2.5, true, null
+        ]
+        
+        for n <- nn
+            match n
+                re`a|b|c` !- res <- [n, 1] 
+                re`[def]+$` !- res <- [n, 2] 
+                re`([a-z]+\:[0-9]+)` !- res <- [n, 3] 
+                re`^[houpring]{3,6}$` !- res <- [n, 4] 
+                re`[0-9]+` !- res <- [n, 5] 
+                re`.+` !- res <- [n, 999] 
+                _ !- res <- [n, 2999]
+            # print('nres:', res)
+        # 
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        
+        exp = [['a', 1], ['b', 1], ['c', 1], ['cc', 1], 
+               ['d', 2], ['dd', 2], ['def', 2], ['fefefe', 2], ['ddddddeeeee', 2], 
+               ['naaa:111', 3], ['nbbb:222', 3], ['333:cccc', 5], ['def:445', 3], 
+               ['houp', 4], ['rupor', 4], ['pirog', 4], ['group', 4], 
+               ['spore', 999], ['hh', 999], [[], 2999], [(), 2999], 
+               [{}, 2999], [1, 2999], [2.5, 2999], [True, 2999], [Null(), 2999]]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
     def test_match_any_struct(self):
         ''' pattern of struct, including collections in fields. '''
         code = r'''

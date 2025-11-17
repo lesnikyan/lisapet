@@ -128,7 +128,7 @@ expCaseList = [
     CaseVar_(), CaseVal(), CaseString(), CaseMString(), CaseVar(), CaseBrackets(), CaseUnar(StrFormatter())]
 
 patternMatchCases = [
-    MT_Other(), MTPtGuard(), MTMultiCase(), MTVal(), MTString(), MTList(), MTTuple(), MTDict(), MTStruct(), 
+    MT_Other(), MTPtGuard(), MTMultiCase(), MTVal(), MTString(), MTRegexp(), MTList(), MTTuple(), MTDict(), MTStruct(), 
 ]
 
 

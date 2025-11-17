@@ -11,6 +11,7 @@ from cases.tcases import *
 from cases.oper import CaseBrackets
 from cases.collection import *
 from cases.structs import *
+from cases.operwords import CaseRegexp
 
 
 '''
@@ -61,6 +62,17 @@ class MTString(MTCase, CaseString):
         # print('>> MTString.expr', elemStr(elems))
         subEx = super().expr(elems)
         expr = MCValue(subEx, elems[0].text)
+        return expr
+
+
+class MTRegexp(MTCase, CaseRegexp):
+    ''' regexp pattern
+    '''
+    def expr(self, elems:list[Elem])-> Expression:
+        ''' Pattern: val '''
+        # print('>> MTRegexp.expr', elemStr(elems))
+        subEx, _ = super().split(elems)
+        expr = MCRegexp(subEx, elems[0].text)
         return expr
 
 
@@ -385,7 +397,7 @@ class MTFail(MTCase):
 
 pMListInnerCases:list[MTCase] = [
     MTMultiCase(),
-    MTVal(), MTE_(), MTVar(), MTString(),
+    MTVal(), MTE_(), MTVar(), MTString(), MTRegexp(),
     MTEStar(),  MTEQMark(), MTColPair(),
     MTList(), MTTuple(), MTDict(), MTStruct(), 
 ]
