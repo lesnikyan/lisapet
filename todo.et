@@ -22,7 +22,7 @@
     from(json_str): data_obj
 
 
-32. Type auto-casting. Important for struct constructors
+3.2. Type auto-casting. Important for struct constructors
 
 
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
@@ -37,6 +37,20 @@
         key/index error for collections
         type-casting error(for example: list to int, non-number string to float )
         IO-error: read/write data
+
+5.2 exception handling.
+We dont have exceptions like python
+java We will handle critical errors.
+
+crit!
+!crit
+
+catch, get, pickup, 
+catch crit
+    processing
+?crit
+    processing
+
 
 8. logging | with named args: #debug: log(d: (msg, arg1, arg2)) #info log(i: ("Found %d records", 15))
     module `logs`
@@ -93,12 +107,19 @@
     (1,2,3) *?> nums # all in any order: 2,?,3,?,1
     (1,2,3) =?> nums # all in the same order: 1,?,2,3,?
 
-14.9
-    # // perspective: regexp match:
+14.9 # DONE  // perspective: regexp match:
     rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
     /`[a-f]+`in/ !- 
     res@rx(`(\d+)([a-z]+)`) -> a, b, c ?: a != '0 ' !- res - regexp-results, a - 1-st full-match, b, c - parts of 1-st group 
     `(\d+)([a-z]+)`iu ^ a,b,c !- 
+
+14.9.2 think about transfer matched regexp to sub-expression 
+match s
+    pattern@re`\d+([a-z]+)` !- res = pattern ?~ s
+    pattern := re`\d+([a-z]+)`i !- 
+    re`\d+([a-z]+)` => pattern !- 
+    re`\d+([a-z]+)` => p@(x) !- 
+
 
 14.10
     # // mixed
