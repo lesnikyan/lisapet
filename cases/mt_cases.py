@@ -43,7 +43,6 @@ ValCases = [CaseVal(), CaseString()]
 class MTVal(MTCase, CaseVal):
     ''' matching value
     12 !-
-    
     true !-
     null !-
     '''
@@ -228,7 +227,7 @@ class CommaSeparatedSequence(MTContr):
         priors = '( ) [ ] { } , | , : ,  `1` '
         spl = OperSplitter(priors)
         opInd = spl.mainOper(elems)
-        # print('>>>>>>>>>>>>', opInd)
+        # print('1>>>>>>>>>>>>', opInd,  elems[opInd].text)
         if opInd != 0:
             return False
         subElems = elems[1:-1]
@@ -237,7 +236,11 @@ class CommaSeparatedSequence(MTContr):
         if isLex(elems[0], Lt.oper, '{'):
             # {a:b}
             nosub = ';'
-        return opInd == -1 or (opInd > 0 and subElems[opInd].text not in nosub)
+        # print('2>>>>>>>>', opInd,  subElems[opInd].text)
+        obrs = '([{'
+        return opInd == -1 or (
+            opInd == 0 and subElems[opInd].text in obrs ) or (
+            opInd > 0 and subElems[opInd].text not in nosub)
 
     def split(self, elems:list[Elem]):
         sub = elems[1:-1]
@@ -245,10 +248,19 @@ class CommaSeparatedSequence(MTContr):
         subs = []
         if sub:
             subs.append(sub)
-        # print('SSq.split:', self.__class__.__name__, '', subs)
+        # print('SSq.split1:', self.__class__.__name__, '', [elemStr(s) for s in subs])
         if cs.match(sub):
             _, subs = cs.split(sub)
-        return subPatterns(subs)
+            # print('SSq.split2:','', [elemStr(s) for s in subs])
+            
+        subPats = subPatterns(subs)
+        res = []
+        for sp in subPats:
+            # print('sp:', type(sp))
+            if isinstance(sp, (MCContr, MCStruct)):
+                sp = MCSubCover(sp)
+            res.append(sp)
+        return res
 
 
 class MTList(CommaSeparatedSequence):
@@ -286,6 +298,7 @@ class MTTuple(CommaSeparatedSequence):
 
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         subPtts = self.split(elems)
+        # print('MTTuple.e subPtts:', subPtts)
         exp = MCTuple()
         self.setSubs(exp, subPtts)
         return exp
@@ -346,6 +359,7 @@ class MTDict(CommaSeparatedSequence):
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         subPtts = self.split(elems)
         exp = MCDict()
+        # print('MTDict.e subPtts:', subPtts)
         self.setSubs(exp, subPtts)
         exp.sortSubs()
         return exp
@@ -419,7 +433,7 @@ def subPatterns(subs:list[list[Elem]])->list[MTCase]:
     # print('subPatterns#00:', subs)
     for sub in subs:
         ptCase = findCase(sub)
-        # print('subPatterns#1:', sub, ptCase)
+        # print('subPatterns#1:', elemStr(sub), ptCase.__class__)
         # if isinstance(ptCase, MTFail):
         #     print(' !! > MP-sub. fail', elemStr(sub))
         ptt = ptCase.expr(sub)

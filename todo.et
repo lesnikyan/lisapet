@@ -77,25 +77,6 @@ catch crit
 13. Interfaces as a some list of method signatures.
 
 
-14.2 maybe refactor !- as a start-line operator? with explicit indent for any sub-expressions. Not sure.
-    match x
-        !- 1
-            expr
-        !- 2
-            expr
-
-14.2 Looks like multi-if will be more useful:
-    if
-        a < 5
-            expr1
-        b == 7
-            expr2
-        a < b /: expr3 # same line block
-        _
-            expr4
-
-14.3 refactor usage of MatchPtrCase
-
 
 14.5 extended case of `?>` 'has values'
     thinking, not sure:
@@ -117,14 +98,8 @@ catch crit
 match s
     pattern@re`\d+([a-z]+)` !- res = pattern ?~ s
     pattern := re`\d+([a-z]+)`i !- 
-    re`\d+([a-z]+)` => pattern !- 
+    re`\d+([a-z]+)` => rx !- res = split(s, rx)
     re`\d+([a-z]+)` => p@(x) !- 
-
-
-14.10
-    # // mixed
-    [A{}, A{*}, B{b1,*}] !- list with structs
-    {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
 
 14.11 var of whole pattern, or subset
 match nn
@@ -132,6 +107,12 @@ match nn
     [x@[*], y@[*], *] !- # x, y - vars by subpatterns
     [ a@<_,_,_>, ee@*] !- # sets of subelements, a - subset,  ee - others
     x@TypeA{} !- # var with struct instance
+
+
+14.10
+    # // mixed
+    [A{}, A{*}, B{b1,*}] !- list with structs
+    {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
 
 14.13 case of other val types: int, float, numeric, string, bool, null, 
 
@@ -162,15 +143,7 @@ match nn
     _{} - struct
 
 
-
-15.1 regexp
-# DONE rx = re`abc`iu
-# DONE match
-rx =~ 'source string abc'
-# DONE find
-rx ?~ 'source string'
-
-# DONE replace(src, rx, repl)
+15.2 regexp operators
 # replace
 (re`\s`i : `-`) /~ 'source string abc'
 re`\s`i >> "-" /~ 'source string abc'
@@ -178,8 +151,8 @@ re`\s`i / "-" /~ 'source string abc'
 'source string abc' <= (re`\s`i /~ ,'-')
 'source string abc' -+ (re`\s`i /~ ,'-')
 
-# DONE split(src, re``)
-# split - overloaded `/`
+# split 
+- overloaded `/`
 'source string' / re`\s+`
 # str-str split
 'source string abc' / ' '
@@ -196,12 +169,45 @@ overload('>>', TypeAny, TypeList, handler)
 2. new operators by python (not sure) 
 
 
-17. Fix escapes in ` `-strings.
-all escape sequences should not work, except \`.
+# -------------------------
+Not sure:
 
+14.2 maybe refactor !- as a start-line operator? with explicit indent for any sub-expressions. Not sure.
+    match x
+        !- 1
+            expr
+        !- 2
+            expr
 
+14.2 Looks like multi-if will be more useful:
+    if
+        a < 5
+            expr1
+        b == 7
+            expr2
+        a < b /: expr3 # same line block
+        _
+            expr4
 
 # -------------------
+
+
+14.3 #DONE refactor usage of MatchPtrCase
+
+15.1 regexp
+# DONE rx = re`abc`iu
+# DONE match
+rx =~ 'source string abc'
+
+# DONE find
+rx ?~ 'source string'
+
+# DONE replace(src, rx, repl)
+
+# DONE split(src, re``)
+
+17. #DONE Fix escapes in ` `-strings.
+all escape sequences should not work, except \`.
 
 14.12 #DONE any struct, thoughts
     _{} !- # any struct

@@ -54,6 +54,8 @@ class MCValue(MatchingPattern):
         if not isinstance(vtype, (TypeNum, TypeInt, TypeNull, TypeBool, TypeString)):
             # print('MCVal.match bad type', vtype, isinstance(vtype, TypeInt))
             return False
+        if not isinstance(self.exp.get().getType(), vtype.__class__):
+            return False
         if self.exp.get().getVal() == val.get():
             return True
         return False
@@ -105,9 +107,27 @@ class MCSub(MCElem):
 
     def matchInd(self, index:int, vals:list[Val]):
         '''match elem in list by index'''
-        # print('MSub.matchInd', vals[index])
         val = vals[index]
+        # print('MSub.matchInd', val)
         return self.match(val)
+
+
+class MCSubCover(MCSub):
+    '''
+    subelement with container
+    [[], (), {}, S{}]
+    '''
+    def __init__(self, sub:MatchingPattern):
+        super().__init__(sub.src)
+        # print('MCSubCover.init', sub.__class__)
+        self.sub = sub
+        
+    def do(self, ctx:Context):
+        self.sub.do(ctx)
+    
+    def match(self, val:Val):
+        # print('MCSubCover match', self.sub.match(val))
+        return self.sub.match(val)
 
 
 class MCSubVal(MCSub):
@@ -239,7 +259,7 @@ class MCSerialVals(MCContr):
         # mi = -1 # pattern indes
         lenv = len(vals)
         # print('\n', self.__class__.__name__, 'match', val.vals(), ', subs:', len(self.elems))
-        # print('#0', [n.__class__.__name__ for n in self.elems])
+        # print('matchSerial#0', [n.__class__.__name__ for n in self.elems])
         if not self.hasMaybe:
             if lenv != len(self.elems):
                 # print('SqMatch: bad count')

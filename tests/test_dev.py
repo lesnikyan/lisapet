@@ -41,6 +41,39 @@ class TestDev(TestCase):
 
 
 
+    def _test_match_mixed_with_regexp(self):
+        ''' replace(src, rx, repl) '''
+        code = r'''
+        res = []
+        
+        struct A a1:int
+        struct B(A) b1: int
+        struct C c1:string
+        
+        
+        nns = [
+            
+        ]
+        for nn <- nns
+            match nn
+                false !- res <- (nn, -100)
+                [*] | (*) | {*}  !- res <- (nn, 888)
+                _ !- res <- (nn, 999)
+        
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        null = Null()
+        expv = []
+        self.assertEqual(expv, rvar.vals())
+
     def _test_n(self):
         import re
         src = ''' 
