@@ -29,6 +29,173 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
+
+    def test_match_mixed_nested(self):
+        ''' replace(src, rx, repl) '''
+        code = r'''
+        res = []
+        
+        struct A a1:int
+        struct B(A) b1: int
+        struct C c1:string
+        
+        
+        nns = [
+            '', null, 0, false, (,), {}, [], 
+            [(,), (,)], ([],[]), [{}, {}], ({}, {}),
+            {1:[], 2:[]}, {1:(,), 2:(,)},
+            [{5:5}, {}], [{5:5}, {6:7, 8:9}], 
+            ({7:7}, {}, ), ({7:7}, {8:9, 11:22}), 
+            [{1:[(,), (,)], 2:[(,), (,)]}, {3:[(,), (,)], 4:[(,), (,)]}], 
+            [{1:(,)}], ({1:[]},), [{1:22}], [({1:33},)], ([{1:[44]}],),
+            [A(11)], [A(11), 1], [(A{}, 11), (B{}, 22)],
+            (A(11),), ([A(12), B(13)], [B(14), C('015')]),
+            {'a':A{}, 'b':B{}}, {'a':A(22), 'b':B(33)},
+        ]
+        
+        for nn <- nns
+            match nn
+                [(), ()] !- res <- (nn, 1)
+                ([], []) !- res <- (nn, 2)
+                [{}, {}] !- res <- (nn, 3)
+                ({}, {}) !- res <- (nn, 4)
+                
+                [(1), (*)] !- res <- (nn, 5)
+                ([3], [*]) !- res <- (nn, 6)
+                [{5:5}, {*}] !- res <- (nn, 7)
+                ({7:7}, {*}) !- res <- (nn, 8)
+                
+                {1:[], 2:[]} !- res <- (nn, 9)
+                {1:(), 2:()} !- res <- (nn, 10)
+                
+                [{1:[(), ()], 2:[(), ()]}, {3:[(), ()], 4:[(), ()]}] !- res <- (nn, 11)
+                [{1:()}] !- res <- (nn, 12)
+                ({1:[]}) !- res <- (nn, 13)
+                [{1:_}] !- res <- (nn, 41)
+                [({1:_})] !- res <- (nn, 42)
+                ([{1:_}]) !- res <- (nn, 43)
+                
+                [A{a1:11}, _] !- res <- (nn, 14)
+                [A{a1:11}] !- res <- (nn, 141)
+                (A{a1:11}) !- res <- (nn, 142)
+                [(A{}, 11), (B{}, 22)] !- res <- (nn, 143)
+                ([A{}, B{}], [B{}, C{}]) !- res <- (nn, 15)
+                {'a':A{}, 'b':B{}} !- res <- (nn, 16)
+                
+                [*] !- res <- (nn, 917)
+                (*) !- res <- (nn, 918)
+                {*} !- res <- (nn, 919)
+                _ !- res <- (nn, 999)
+        
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        null = Null()
+        expv = [
+            ('', 999), (null, 999), (0, 999), (False, 999), ((), 918), ({}, 919), ([], 917), 
+            ([(), ()], 1), (([], []), 2), ([{}, {}], 3), (({}, {}), 4), 
+            ({1: [], 2: []}, 9), ({1: (), 2: ()}, 10), ([{5: 5}, {}], 7), ([{5: 5}, {6: 7, 8: 9}], 7), 
+            (({7: 7}, {}), 8), (({7: 7}, {8: 9, 11: 22}), 8), 
+            ([{1: [(), ()], 2: [(), ()]}, {3: [(), ()], 4: [(), ()]}], 11), 
+            ([{1: ()}], 12), (({1: []},), 13), 
+            ([{1: 22}], 41), ([({1: 33},)], 42), (([{1: [44]}],), 43), 
+            (['st@A{a1: 11}'], 141), (['st@A{a1: 11}', 1], 14), ([('st@A{a1: 0}', 11), ('st@B{b1: 0}', 22)], 143), (('st@A{a1: 11}',), 142), 
+            ((['st@A{a1: 12}', 'st@B{b1: 13}'], ['st@B{b1: 14}', 'st@C{c1: 015}']), 15), 
+            ({'a': 'st@A{a1: 0}', 'b': 'st@B{b1: 0}'}, 16), ({'a': 'st@A{a1: 22}', 'b': 'st@B{b1: 33}'}, 16)]
+        self.assertEqual(expv, rvar.vals())
+
+    def test_match_mixed_multicases(self):
+        ''' replace(src, rx, repl) '''
+        code = r'''
+        res = []
+        
+        struct A a1:int
+        struct B(A) b1: int
+        struct C c1:string
+        
+        
+        nns = [
+            '', null, 0, false, (,), {}, [], 1, [2],
+            [1,2,3], (1,2,3), {'a':1, 'b':2, 'c':3},
+            A(1), B(2), C('c3'),
+        ]
+        for nn <- nns
+            match nn
+                false !- res <- (nn, -100)
+                # 0 | null | false | "" | [] !- res <- (nn, 0)
+                0 | null | "" | [] !- res <- (nn, 0)
+                [1,2,3] | (1,2,3) | {'a':_, 'b':_, 'c':_} !- res <- (nn, 1)
+                A{a1:1} | B{b1:2} | C{c1:'c3'} !- res <- (nn, 2)
+                [*] | (*) | {*}  !- res <- (nn, 888)
+                _ !- res <- (nn, 999)
+        
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        null = Null()
+        expv = [('', 0), (null, 0), (0, 0), (False, -100), ((), 888), ({}, 888), ([], 0), 
+                (1, 999), ([2], 888), ([1, 2, 3], 1), ((1, 2, 3), 1), ({'a': 1, 'b': 2, 'c': 3}, 1), 
+                ('st@A{a1: 1}', 2), ('st@B{b1: 2}', 2), ('st@C{c1: c3}', 2)]
+        self.assertEqual(expv, rvar.vals())
+
+    def test_match_simple_regexp(self):
+        ''' pattern of struct, including collections in fields. '''
+        code = r'''
+        
+        res = []
+        nn = [
+            'a', 'b', 'c', 'cc', 'd',
+            'dd', 'def', 'fefefe', 'ddddddeeeee', 
+            'naaa:111', 'nbbb:222', '333:cccc', 'def:445', 
+            'houp', 'rupor', 'pirog', 'group', 'spore', 'hh',
+            [], (,), {}, 1, 2.5, true, null
+        ]
+        
+        for n <- nn
+            match n
+                re`a|b|c` !- res <- [n, 1] 
+                re`[def]+$` !- res <- [n, 2] 
+                re`([a-z]+\:[0-9]+)` !- res <- [n, 3] 
+                re`^[houpring]{3,6}$` !- res <- [n, 4] 
+                re`[0-9]+` !- res <- [n, 5] 
+                re`.+` !- res <- [n, 999] 
+                _ !- res <- [n, 2999]
+            # print('nres:', res)
+        # 
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        
+        exp = [['a', 1], ['b', 1], ['c', 1], ['cc', 1], 
+               ['d', 2], ['dd', 2], ['def', 2], ['fefefe', 2], ['ddddddeeeee', 2], 
+               ['naaa:111', 3], ['nbbb:222', 3], ['333:cccc', 5], ['def:445', 3], 
+               ['houp', 4], ['rupor', 4], ['pirog', 4], ['group', 4], 
+               ['spore', 999], ['hh', 999], [[], 2999], [(), 2999], 
+               [{}, 2999], [1, 2999], [2.5, 2999], [True, 2999], [Null(), 2999]]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exp, rvar.vals())
+
     def test_match_any_struct(self):
         ''' pattern of struct, including collections in fields. '''
         code = r'''

@@ -22,7 +22,7 @@
     from(json_str): data_obj
 
 
-32. Type auto-casting. Important for struct constructors
+3.2. Type auto-casting. Important for struct constructors
 
 
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
@@ -37,6 +37,20 @@
         key/index error for collections
         type-casting error(for example: list to int, non-number string to float )
         IO-error: read/write data
+
+5.2 exception handling.
+We dont have exceptions like python
+java We will handle critical errors.
+
+crit!
+!crit
+
+catch, get, pickup, 
+catch crit
+    processing
+?crit
+    processing
+
 
 8. logging | with named args: #debug: log(d: (msg, arg1, arg2)) #info log(i: ("Found %d records", 15))
     module `logs`
@@ -63,6 +77,101 @@
 13. Interfaces as a some list of method signatures.
 
 
+
+14.5 extended case of `?>` 'has values'
+    thinking, not sure:
+    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
+    [* 12, 15] !- has values in such
+    [? 12, 15] !- can have values
+    [?> 12, 15] !- has values in any order
+    (1,2,3) ??> nums # any of: ?,?,2,?,?
+    (1,2,3) *?> nums # all in any order: 2,?,3,?,1
+    (1,2,3) =?> nums # all in the same order: 1,?,2,3,?
+
+14.9 # DONE  // perspective: regexp match:
+    rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
+    /`[a-f]+`in/ !- 
+    res@rx(`(\d+)([a-z]+)`) -> a, b, c ?: a != '0 ' !- res - regexp-results, a - 1-st full-match, b, c - parts of 1-st group 
+    `(\d+)([a-z]+)`iu ^ a,b,c !- 
+
+14.9.2 think about transfer matched regexp to sub-expression 
+match s
+    pattern@re`\d+([a-z]+)` !- res = pattern ?~ s
+    pattern := re`\d+([a-z]+)`i !- 
+    re`\d+([a-z]+)` => rx !- res = split(s, rx)
+    re`\d+([a-z]+)` => p@(x) !- 
+
+14.11 var of whole pattern, or subset
+match nn
+    x@[*] !- # x - ane list == nn
+    [x@[*], y@[*], *] !- # x, y - vars by subpatterns
+    [ a@<_,_,_>, ee@*] !- # sets of subelements, a - subset,  ee - others
+    x@TypeA{} !- # var with struct instance
+
+
+14.10
+    # // mixed
+    [A{}, A{*}, B{b1,*}] !- list with structs
+    {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
+
+14.13 case of other val types: int, float, numeric, string, bool, null, 
+
+    null !- # ...
+    true | false !- ?
+    :bool !- 
+    :string
+    :int
+    a:int !- 
+    b:float !- foo(b)
+    
+    [a:int, b:float] !-
+    {a:b:float, }
+
+    {a:<b:float>, <:string>:<:int>}
+    {a:<int>, 'c':d@<float>, <string>:<bool>}
+
+    # default val + *star
+    0* - int
+    0.* - float
+    true|false - bool
+    ''* - string
+    # any-case by type-specific syntax
+    re`.*`m - string
+    [*] - list
+    {*} - dict
+    (*) - tuple
+    _{} - struct
+
+
+15.2 regexp operators
+# replace
+(re`\s`i : `-`) /~ 'source string abc'
+re`\s`i >> "-" /~ 'source string abc'
+re`\s`i / "-" /~ 'source string abc'
+'source string abc' <= (re`\s`i /~ ,'-')
+'source string abc' -+ (re`\s`i /~ ,'-')
+
+# split 
+- overloaded `/`
+'source string' / re`\s+`
+# str-str split
+'source string abc' / ' '
+
+
+16.1 Overload operators
+Add API for overload operators.
+1. exist operators
+def overlod(operator, leftType, ritghType=Any, handler)
+..
+handler = ...
+overload('>>', TypeAny, TypeList, handler)
+
+2. new operators by python (not sure) 
+
+
+# -------------------------
+Not sure:
+
 14.2 maybe refactor !- as a start-line operator? with explicit indent for any sub-expressions. Not sure.
     match x
         !- 1
@@ -80,88 +189,25 @@
         _
             expr4
 
-14.3 refactor usage of MatchPtrCase
+# -------------------
 
 
-14.5 extended case of `?>` 'has values'
-    thinking, not sure:
-    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
-    [* 12, 15] !- has values in such
-    [? 12, 15] !- can have values
-    [?> 12, 15] !- has values in any order
-    (1,2,3) ??> nums # any of: ?,?,2,?,?
-    (1,2,3) *?> nums # all in any order: 2,?,3,?,1
-    (1,2,3) =?> nums # all in the same order: 1,?,2,3,?
-
-14.9
-    # // perspective: regexp match:
-    rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
-    /`[a-f]+`in/ !- 
-    res@rx(`(\d+)([a-z]+)`) -> a, b, c ?: a != '0 ' !- res - regexp-results, a - 1-st full-match, b, c - parts of 1-st group 
-    `(\d+)([a-z]+)`iu ^ a,b,c !- 
-
-14.10
-    # // mixed
-    [A{}, A{*}, B{b1,*}] !- list with structs
-    {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
-
-14.11 var of whole pattern, or subset
-match nn
-    x@[*] !- # x - ane list == nn
-    [x@[*], y@[*], *] !- # x, y - vars by subpatterns
-    [ a@<_,_,_>, ee@*] !- # sets of subelements, a - subset,  ee - others
-    x@TypeA{} !- # var with struct instance
-
-14.13 case of other val types: int, float, numeric, string, bool, null, 
-
-    null !- # ...
-    true | false !- ?
-    :bool !- 
-    :string
-    :int
-    a:int !- 
-    b:float !- foo(b)
+14.3 #DONE refactor usage of MatchPtrCase
 
 15.1 regexp
 # DONE rx = re`abc`iu
 # DONE match
 rx =~ 'source string abc'
+
 # DONE find
 rx ?~ 'source string'
 
-# replace
-(re`\s`i : `-`) /~ 'source string abc'
-re`\s`i >> "-" /~ 'source string abc'
-re`\s`i / "-" /~ 'source string abc'
-'source string abc' <= (re`\s`i /~ ,'-')
-'source string abc' -+ (re`\s`i /~ ,'-')
-replace(src, rx, repl)
+# DONE replace(src, rx, repl)
 
+# DONE split(src, re``)
 
-# split - overloaded `/`
-'source string' / re`\s+`
-
-# str-str split
-'source string abc' / ' '
-
-
-16.1 Overload operators
-Add API for overload operators.
-1. exist operators
-def overlod(operator, leftType, ritghType=Any, handler)
-..
-handler = ...
-overload('>>', TypeAny, TypeList, handler)
-
-2. new operators by python (not sure) 
-
-
-17. Fix escapes in ` `-strings.
+17. #DONE Fix escapes in ` `-strings.
 all escape sequences should not work, except \`.
-
-
-
-# -------------------
 
 14.12 #DONE any struct, thoughts
     _{} !- # any struct

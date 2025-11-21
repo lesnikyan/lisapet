@@ -855,7 +855,7 @@ class RegexpMatchOper(RegexpOper):
         src = self.right.get()
         src = var2val(src)
         res = rx.match(src)
-        self.res = res
+        self.res = Val(res, TypeBool())
 
 
 class RegexpSearchOper(RegexpOper):

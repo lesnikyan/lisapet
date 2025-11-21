@@ -203,14 +203,16 @@ class CaseVal(ExpCase):
         # prels('CaseVal.match:', elems, show=1)
         if elems[0].type in [Lt.num]:
             return True
-        if isLex(elems[0], Lt.word, 'null'):
+        # if isLex(elems[0], Lt.word, ):
+        #     return True
+        if isLex(elems[0], Lt.word, ['true', 'false', 'null']):
             return True
         return False
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
         res = ValExpr(elem2val(elems[0]))
-        # print('## CaseVal', res.get().vtype)
+        # print('## CaseVal', res.get().getVal(), res.get().vtype.__class__.__name__)
         return res
 
 

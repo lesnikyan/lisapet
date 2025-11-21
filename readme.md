@@ -54,8 +54,8 @@ Content:
     4. [Struct pattern `N{ }`, `_{ }`](#164-matching-struct)
     5. [Multicase `1 | 2`](#165-multicase-)
     6. [Guard with pattern `[a] :? a > 5`](#166-bool-guard-in-case)
-    7. [Mixed patterns](#167-mixed-nested-patterns)
-    8.
+    7. [Mixed patterns: `[]|{}`, `[A{},B{}]`](#167-mixed-nested-patterns)
+    8. [Regexp case](#168-regexp-case)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. [Ternary `?:` operator](#18-ternary-operator-)
 19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
@@ -1305,8 +1305,40 @@ match n
 ```
 
 ### 16.7 Mixed (nested) patterns
+Multipattern can contain collections or structs.  
+```python
+struct A a1: int
+struct B(A) b1: int
 
-(in testing)
+match n
+    [1,2,3] | (1,2,3) | {'a':_, 'b':_, 'c':_} !- # some collections
+    A{a1:1} | B{b1:2} | C{c1:'c3'} !- # some structs
+    [*] | (*) | {*}  !- # any collections
+```
+Containers can contain another containers.  
+```python
+match n
+    # dict / list / tuple
+    [(), ()] !- # top list
+    ([], []) !- # top tuple
+    [{}, {}] !- # dict in
+    [{1:()}] !- # 3-lvl, tuple is last
+    ({2:[]}) !- # 3-lvl, list is last
+    [({3:_})] !- #-lvl dict is last
+    # with structs
+    [(A{}, 11), (B{}, 22)] !- ...
+    {'a':A{}, 'b':B{}} !- ...
+```
+
+
+### 16.8 Regexp case
+String value can be matched by regular expression.  
+```golang
+match n
+    re`aa|bb|cc` !- #// simple pattern 
+    re`^[houpring]{3,6}$` !- #// full string
+    re`.+`m !- #// non empty string
+```
 
 
 ### 17. multi-assignment
@@ -1735,6 +1767,7 @@ res = [s[1:] ; s <- re`(\w)(\d+)`m ?~ src]
 
 >> [['h', '88'], ['i', '99'], ['j', '101'], ['k', '202']]
 ```
+Also regexp can be [used as case of strings](#168-regexp-case) in `match` statement.  
 
 
 ### 25.4 Regexp replace

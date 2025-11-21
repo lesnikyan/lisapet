@@ -89,7 +89,7 @@ def elem2val(elem:Elem)->Var:
         return StringVal(elem.text)
     if elem.type == Lt.word:
         if elem.text in bool_constants:
-            return Val(bool(elem.text), TypeBool())
+            return Val(bool(elem.text == 'true'), TypeBool())
         if elem.text == 'null':
             return Val(Null(), TypeNull())
 
