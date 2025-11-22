@@ -108,7 +108,7 @@ class CaseListBlock(SubCase):
         return isLex(elems[0], Lt.word, 'list')
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        return ListConstr(), []
+        return ListConstr(byword = True), []
 
     def setSub(self, base:ListConstr, subs:Expression|list[Expression])->Expression:
         dprint('ListConstr.setSub empty: ', base, subs)
@@ -291,7 +291,7 @@ class CaseDictBlock(SubCase):
         return isLex(elems[0], Lt.word, 'dict')
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        return DictConstr(), []
+        return DictConstr(byword=True), []
 
     def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
         dprint('CaseDictBlock.setSub empty: ', base, subs)

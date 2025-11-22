@@ -47,9 +47,11 @@ class ListExpr(CollectionExpr):
 
 class ListConstr(MultilineVal, ListExpr):
     ''' list '''
+    tname = 'list'
 
-    def __init__(self):
+    def __init__(self, byword = False):
         super().__init__()
+        self.byword = byword
 
 
 
@@ -84,10 +86,14 @@ class DictExpr(CollectionExpr):
 
 class DictConstr(MultilineVal, DictExpr):
     ''' dict '''
+    tname = 'dict'
 
-    def __init__(self):
+    # def __init__(self):
+    #     super().__init__()
+
+    def __init__(self, byword = False):
         super().__init__()
-
+        self.byword = byword
 
 class CollectElemExpr(Expression, CollectElem):
     

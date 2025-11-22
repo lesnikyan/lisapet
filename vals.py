@@ -47,6 +47,7 @@ def raw2val(raw):
 def numLex(tx:str)->Var:
     ''' 123, 12.3, 1.2e3, 0b1001, 0o137, 0xabc01, 1.5j2.3 '''
     if rxInt.match(tx):
+        # print('Int found:', tx)
         return Val(int(tx), TypeInt())
     if rxBin.match(tx):
         return Val(int(tx, 2), TypeInt())
@@ -55,6 +56,7 @@ def numLex(tx:str)->Var:
     if rxHex.match(tx):
         return Val(int(tx, 16), TypeInt())
     if rxFloat.match(tx):
+        # print('Float found:', tx)
         return Val(float(tx), TypeFloat())
     if rxComplex.match(tx):
         real, imag = tx.split('j')

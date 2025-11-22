@@ -832,6 +832,39 @@ class CtrlSubExpr(Expression):
         self.control.add(self.sub)
         return self.control
 
+from nodes.datanodes import ListConstr, DictConstr
+
+class IsTypeExpr(BinOper):
+    ''' val :: type '''
+
+    def __init__(self, left=None, right=None):
+        super().__init__('::', left, right)
+
+    
+    def do(self, ctx:Context):
+        self.left.do(ctx)
+        lop = var2val(self.left.get())
+        
+        # print(':: expr:', self.right)
+        if isinstance(self.right, (ListConstr, DictConstr)) and self.right.byword:
+            tname = self.right.tname
+            self.right = VarExpr(Var(tname, TypeAny()))
+        # TODO: think about `null`
+        # elif isinstance(self.right, (Val)) and isinstance(self.right.getType(), TypeNull()):
+        #     tname = self.right.tname
+        #     self.right = VarExpr(Var('null', TypeAny()))
+        self.right.do(ctx)
+        rop = var2val(self.right.get())
+        
+        # print('::1>', lop, rop)
+        if not isinstance(rop, TypeVal):
+            raise EvalErr("Incorrect right operand of `::` operator.")
+        expt = rop.getVal()
+        # print('::2>', expt, lop.getType())
+        res = Val(isinstance(lop.getType(), expt.__class__), TypeBool())
+        # print(':: 3> ', res)
+        self.res = res
+
 
 class RegexpOper(BinOper):
     ''' re <oper> string '''

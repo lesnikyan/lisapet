@@ -22,6 +22,15 @@
     from(json_str): data_obj
 
 
+2.3 # DONE Check type operator 
+    var :: type
+
+2.4 TODO: More types:  
+    byte, common numeric,
+    common struct, implemented struct
+    Maybe (Some, Nothing).
+
+
 3.2. Type auto-casting. Important for struct constructors
 
 
@@ -78,6 +87,24 @@ catch crit
 
 
 
+14.0.1 Multiline and singleline cases: 
+match val
+    ptr /: x = 1; res = 2 + x
+    ptr2
+        y = 2
+        res = 2 + y
+
+
+14.0.2 Last expression is a result of match
+
+func foo(a)
+    match a
+        ptr1
+            b = 2 + a
+            b
+        _ /: a + a
+
+
 14.5 extended case of `?>` 'has values'
     thinking, not sure:
     X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
@@ -129,6 +156,13 @@ match nn
 
     {a:<b:float>, <:string>:<:int>}
     {a:<int>, 'c':d@<float>, <string>:<bool>}
+    
+    a:int !-
+    {a: b::int, c: d::list, e: ::float}
+
+    # :: as a type-checker in non-match places
+    if a :: int # type (a) == int
+    [a :: int, b] :? b :: float !- 
 
     # default val + *star
     0* - int
