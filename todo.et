@@ -164,6 +164,26 @@ match nn
     if a :: int # type (a) == int
     [a :: int, b] :? b :: float !- 
 
+    (val) (:: type)
+    _ :: int
+    x :: int
+    1 :: int
+    1 :: float
+    # combo cases 
+        x :: (int | float)  x :: (int | float)
+        [_::int] [a :: int, b :: float, _ :: int] [? :: int, x :: string] 
+        {a: b :: int, c :: string : _:: float} 
+        {::string : ::int}
+        _{a: val :: int} _{ a : _ :: int} _{ a :: int}
+    # complex type
+        x :: [int], y :: {string:int}
+
+    # questions:
+        ? :: int, x :: (int | float)
+
+
+    ---
+
     # default val + *star
     0* - int
     0.* - float

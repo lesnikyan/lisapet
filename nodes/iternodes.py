@@ -163,7 +163,7 @@ class IndexIterator(NIterator):
         return self.index < self.last
 
     def get(self):
-        return Val(self.index, TypeInt)
+        return Val(self.index, TypeInt())
 
 
 class SrcIterator(NIterator):

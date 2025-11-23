@@ -834,12 +834,20 @@ class CtrlSubExpr(Expression):
 
 from nodes.datanodes import ListConstr, DictConstr
 
+def valHasType(val:Val|Var, typeVal:TypeVal):
+    lop = var2val(val)
+    rop = var2val(typeVal)
+    expt = rop.getVal()
+    if not isinstance(rop, TypeVal):
+        raise EvalErr("Incorrect right operand of `::` operator.")
+    return isinstance(lop.getType(), expt.__class__)
+
+
 class IsTypeExpr(BinOper):
     ''' val :: type '''
 
     def __init__(self, left=None, right=None):
         super().__init__('::', left, right)
-
     
     def do(self, ctx:Context):
         self.left.do(ctx)

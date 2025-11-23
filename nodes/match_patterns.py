@@ -12,6 +12,7 @@ from nodes.expression import *
 from nodes.iternodes import *
 from nodes.keywords import *
 from nodes.structs import StructInstance, StructDef
+from nodes.oper_nodes import valHasType
 
 
 
@@ -69,6 +70,51 @@ class MC_Other(MatchingPattern):
         
     def match(self, val:Val):
         return True
+
+
+class MCType(MatchingPattern):
+    ''' var, _ with type
+            var :: type
+            _ :: type
+        no-var with type
+            :: type
+            ::int !- 
+        in collection
+            [::int, ::int]
+    '''
+    def __init__(self, typeExpr:Expression,  src=None):
+        super().__init__(src)
+        self.xtype:Expression = typeExpr # expected type
+
+    def do(self, ctx:Context):
+        self.xtype.do(ctx)
+        
+    def match(self, val:Val):
+        xtype = self.xtype.get()
+        # print('MCType', val, val.getType(), ' :: ', xtype, xtype.get())
+        return valHasType(val, xtype)
+
+
+class MCTypedElem(MatchingPattern):
+    ''' var :: type
+        123 : type
+        _ :: type
+    '''
+    def __init__(self, left:MatchingPattern, typeExpr:Expression,  src=None):
+        super().__init__(src)
+        self.xtype:Expression = typeExpr # expected type
+        self.left = left
+    
+    def do(self, ctx:Context):
+        self.xtype.do(ctx)
+        self.left.do(ctx)
+        
+    def match(self, val:Val):
+        xtype = self.xtype.get()
+        # print('tem.match1:', xtype, val)
+        if not valHasType(val, xtype):
+            return False
+        return self.left.match(val)
 
 
 class MCElem(MatchingPattern):
@@ -157,13 +203,16 @@ class MCSubVar(MCSub):
         # preventing store previous value of var for run of the same pattern
         self.ctx = ctx
         var = self.exp.get()
+        # print('MCSubVar.do var:', var)
         self.var = var
 
     def match(self, val:Val):
         # add new var into sub-context
+        # print('MCSubVar.match val:', val)
         self.ctx.addVar(self.var)
         self.var.set(val)
         self.var.setType(val.getType())
+        # print('MCSubVar.match var:', self.var)
         return True
 
 
@@ -328,14 +377,6 @@ class MCSerialVals(MCContr):
                     continue
                 
                 if isSubVal(elem):
-                    # vi += 1
-                    # oldVi = vi
-                    # [?, 2]
-                    # [2]
-                    # [1, 2]
-                    # [1, ?, _, a, 2]
-                    # [1, 4, 5, 2]
-                    # [1, 3, 4, 5, 2]
                     varpLen = len(varPref)
                     findCount = qmCount + 1
                     findIndex = vi + 1 + varpLen
@@ -431,16 +472,13 @@ class MCTuple(MCSerialVals):
         if not isinstance(val.getType(), TypeTuple):
             return False
         return self.matchSerial(val)
-    
-    # def addSub(self, sub:MCElem):
-    #     self.elems.append(sub)
 
 
 # ----------------- Dict and sub-dict patterns -------------------- #
 
 
 class MCKVPair(MCElem):
-    ''' local subvar in pattern like: [a,b,c] '''
+    ''' pair  key:val in dict '''
 
     def __init__(self, key, val,  src=None):
         super().__init__(src)
@@ -477,7 +515,7 @@ class MCDPairKVal(MCKVPair):
 
 
 class MCDPairVVal(MCKVPair):
-    ''' 'abc':_ '''
+    ''' '_:123 '''
         
     def match(self, vals:dict):
         # any key matches, finding val
@@ -499,10 +537,16 @@ class MCDPairAny(MCKVPair):
             return 0, False
         for k, v in vals.items():
             kv = raw2val(k)
+            # print('==',  (kv.get(), v.get()), (self.key.match(kv), self.val.match(v)))
             if self.key.match(kv) and self.val.match(v):
                 vals.pop(k)
                 return vals, True
         return 0, False
+
+
+class MCDPairTyped(MCDPairAny):
+    ''' '::string : ::int '''
+
 
 
 class MCDPairStar(MCKVPair):
@@ -560,15 +604,17 @@ class MCDict(MCContr):
         # sort by type
         # 1. const, 2. var, 3. _
         kc = [] # key is const-pattern
+        tk = [] # key by type
         vrr = [] # key is var-pattern
         _k = [] # key is _
         _v = [] # val is const-pattern
+        tv = [] # val by type
         stars = []
         qm = []
         # const-pattern before `any` patterns (var | _)
         # key - before value
         for ee in self.elems:
-            # print('MCDict.do', ee.__class__.__name__)
+            # print('MCDict.sort0', ee.__class__.__name__)
             if isinstance(ee, MCStar):
                 stars.append(MCDPairStar())
                 self.hasStar = True
@@ -577,20 +623,34 @@ class MCDict(MCContr):
                 qm.append(MCDPairQMark())
                 self.qmarkCount += 1
                 continue
-            if isinstance(ee.key, MCValue):
+            
+            eek = ee.key
+            if isinstance(eek, MCTypedElem):
+                eek = eek.left
+            eev = ee.val
+            if isinstance(eev, MCTypedElem):
+                eev = eev.left
+            # print('MCDict.sort1', eek, eev)
+            
+            if isinstance(eek, MCValue):
                 kc.append(ee)
-            elif isinstance(ee.key, MCSubVar):
-                if isinstance(ee.val, MCValue):
+            if isinstance(eek, MCType):
+                tk.append(ee)
+            elif isinstance(eek, MCSubVar):
+                if isinstance(eev, MCValue):
                     _v.append(ee)
+                elif isinstance(eev, MCType):
+                    tv.append(ee)
                 else:
                     vrr.append(ee)
-            elif isinstance(ee.key, MC_under):
-                if isinstance(ee.val, MCValue):
+            elif isinstance(eek, MC_under):
+                if isinstance(eev, MCValue):
                     _v.append(ee)
                 else:
                     _k.append(ee)
             
-        sels = kc + _v + vrr + _k + qm + stars
+        # print('DcMc.sort2', kc, tk, _v, tv, vrr , _k , qm , stars)
+        sels = kc + tk + _v + tv + vrr + _k + qm + stars
         self.elems = sels
 
     def do(self, ctx:Context):
@@ -611,8 +671,9 @@ class MCDict(MCContr):
                 return False
         for pttr in self.elems:
             # pk, pv = pttr.key, pttr.val
+            # print('Dct.match1', pttr.__class__.__name__)
             rem, ok = pttr.match(vvals)
-            # print('Dpt.match', pttr.__class__.__name__, ok, rem)
+            # print('Dct.match2', pttr.__class__.__name__, ok, rem)
             if not ok:
                 return False
             vvals = rem
