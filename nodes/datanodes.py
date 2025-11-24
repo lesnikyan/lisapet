@@ -47,9 +47,11 @@ class ListExpr(CollectionExpr):
 
 class ListConstr(MultilineVal, ListExpr):
     ''' list '''
+    tname = 'list'
 
-    def __init__(self):
+    def __init__(self, byword = False):
         super().__init__()
+        self.byword = byword
 
 
 
@@ -84,10 +86,14 @@ class DictExpr(CollectionExpr):
 
 class DictConstr(MultilineVal, DictExpr):
     ''' dict '''
+    tname = 'dict'
 
-    def __init__(self):
+    # def __init__(self):
+    #     super().__init__()
+
+    def __init__(self, byword = False):
         super().__init__()
-
+        self.byword = byword
 
 class CollectElemExpr(Expression, CollectElem):
     
@@ -140,7 +146,7 @@ class SliceExpr(Expression, CollectElem):
     def setKeysExpr(self, beginExpr:Expression, closeExpr:Expression):
         ''' openExpr, closeExpr'''
         if isinstance(beginExpr, NothingExpr):
-            beginExpr = ValExpr(Val(0, TypeInt))
+            beginExpr = ValExpr(Val(0, TypeInt()))
         # if isinstance(closeExpr, NothingExpr):
         #     closeExpr = ValExpr(Var(-1, None, TypeInt))
         self.beginExpr = beginExpr
@@ -160,7 +166,7 @@ class SliceExpr(Expression, CollectElem):
         self.beginExpr.do(ctx)
         self.closeExpr.do(ctx)
         if isinstance(self.closeExpr, NothingExpr):
-            self.closeExpr = ValExpr(Val(self.target.len(), TypeInt))
+            self.closeExpr = ValExpr(Val(self.target.len(), TypeInt()))
         # dprint('## self.target', self.target)
 
     def get(self)->Var:

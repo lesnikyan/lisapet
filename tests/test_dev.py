@@ -42,7 +42,7 @@ class TestDev(TestCase):
 
 
     def _test_match_mixed_with_regexp(self):
-        ''' replace(src, rx, repl) '''
+        '''  '''
         code = r'''
         res = []
         

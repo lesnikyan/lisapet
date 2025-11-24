@@ -84,6 +84,47 @@ class MTVar(MTCase,CaseVar):
         ptt = MCSubVar(vexpr)
         return ptt
 
+_base_types = "int,float,bool,string,list,tuple,dict,struct,function".split(',')
+
+class MTDuaColon(MTCase):
+    ''' :: type  '''
+    def match(self, elems:list[Elem])-> bool:
+        return len(elems) == 2 and isLex(elems[0], Lt.oper, '::') and isLex(elems[1], Lt.word, _base_types)
+    
+    def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
+        ''' return base expression, Sub(elems) '''
+        tname = elems[1].text
+        typeExpr = VarExpr(Var(tname, TypeAny()))
+        return MCType(typeExpr, src=elems)
+
+
+class MTTypedVal(MTCase):
+    '''
+        _ :: int
+        abc :: int
+        123 :: float
+    '''
+    def match(self, elems:list[Elem])-> bool:
+        if len(elems) != 3:
+            # no combo types
+            return False
+        if elems[0].type not in [Lt.word, Lt.num]:
+            return False
+        if not isLex(elems[1], Lt.oper, '::'):
+            return False
+        return isLex(elems[2], Lt.word, _base_types)
+    
+    def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
+        ''' return base expression, Sub(elems) '''
+        tname = elems[2].text
+        typeExpr = VarExpr(Var(tname, TypeAny()))
+        lelem = elems[:1]
+        leftCase = findCase(lelem)
+        if not leftCase:
+            raise EvalErr("No correct left for MTTyped")
+        left = leftCase.expr(lelem)
+        return MCTypedElem(left, typeExpr, src=elems)
+
 
 class MT_Other(MTCase, CaseVar_):
     ''' _ !-  '''
@@ -252,12 +293,14 @@ class CommaSeparatedSequence(MTContr):
         if cs.match(sub):
             _, subs = cs.split(sub)
             # print('SSq.split2:','', [elemStr(s) for s in subs])
-            
+        subs = [sb for sb in subs if sb]
+        # print(subs)
+        # skipping empty sub [a, b, c, <empty part after last comma>]
         subPats = subPatterns(subs)
         res = []
         for sp in subPats:
             # print('sp:', type(sp))
-            if isinstance(sp, (MCContr, MCStruct)):
+            if isinstance(sp, (MCContr, MCStruct, MCType, MCTypedElem)):
                 sp = MCSubCover(sp)
             res.append(sp)
         return res
@@ -322,23 +365,29 @@ class MTColPair(MTContr, CaseColon):
         return ekey, rval
 
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        '''
+        order: key-val, val-val, key-type, val-type, any
+        '''
         ekey, rval = self.split(elems)
         exp = None
-        if isinstance(ekey, MCValue):
+        tkey = ekey
+        if isinstance(tkey, MCTypedElem):
+            tkey = tkey.left
+        tval = rval
+        if isinstance(tval, MCTypedElem):
+            tval = tval.left
+        if isinstance(tkey, MCValue):
             exp = MCDPairKVal(ekey, rval)
-        elif isinstance(ekey, MCSubVar):
-            if isinstance(rval, MCValue):
+        elif isinstance(tkey, (MCSubVar, MC_under)):
+            if isinstance(tval, MCValue):
                 exp = MCDPairVVal(ekey, rval)
             else:
                 exp = MCDPairAny(ekey, rval)
-        elif isinstance(ekey, MC_under):
-            if isinstance(rval, MCValue):
-                exp = MCDPairVVal(ekey, rval)
-            else:
-                exp = MCDPairAny(ekey, rval)
+        elif isinstance(tkey, (MCTypedElem, MCType)):
+            exp = MCDPairTyped(ekey, rval)
         else:
+            # print('MTCol 1', ekey, rval)
             exp = MCKVPair(ekey, rval)
-            # print('MTCol 1')
         # print('MTColPair', elemStr(elems), exp, ekey, rval)
         return exp
 
@@ -410,7 +459,7 @@ class MTFail(MTCase):
 
 
 pMListInnerCases:list[MTCase] = [
-    MTMultiCase(),
+    MTMultiCase(), MTTypedVal(), MTDuaColon(),
     MTVal(), MTE_(), MTVar(), MTString(), MTRegexp(),
     MTEStar(),  MTEQMark(), MTColPair(),
     MTList(), MTTuple(), MTDict(), MTStruct(), 

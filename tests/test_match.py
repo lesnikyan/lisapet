@@ -29,9 +29,196 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
+    def test_match_type_in_collections(self):
+        ''' test match
+            [::int, b::int]
+            (::int, ::string)
+            {k::string : val::list}
+        '''
+        code = r'''
+        res = []
+        
+        func foo(x)
+            2 * x
+        
+        m3 = x -> x * 3
+        
+        nns = [ 
+            [111, 112], ["", "ab"], [false, 22, 3.3], [1.0, "acbd", true],
+            [(1,2,3)], ["4", (4,)], 
+            (11,), (true,), (false,), (1, 2.5, 0 == 0), ("", "abba"),
+            ((1,1), []), ("5", [5]), ([],),
+            {'s': 11}, {12:"c1"}, {15:16}, {22:33}, 
+            {'aa':'bb', 23:35}, {111:14, 'qwerty':15}, {11:101, 12:102}, 
+            {'aaa':'bbb', 32:34, 15:17},
+            {'ak' : [1,2,3]}, {'bk':(3,4,5)}, 
+            {'ck':{21:23}}, {'ee':{'q':897}, 45: {32:34}},
+            {'foo': foo}, [foo, m3, (x -> x * 7)]
+        ]
+        for nn <- nns
+            match nn
+                [x, a::int] !- res <- (nn, (x, a), '[int, int]', 11)
+                [::string, b :: string] !- res <- (nn, (b,), '[string, string]', 12)
+                [::bool, ::int, ::float] !- res <- (nn, '[bool, int, float]', 13)
+                [a::float, b :: string, c :: bool] !- res <- (nn, (a,b,c), '[float, string, bool]', 14)
+                
+                [a::tuple] !- res <- (nn, (a,), '[tuple]', 15)
+                [::string, ::tuple] !- res <- (nn, '[strn, tuple]', 16)
+                
+                (::int) !- res <- (nn, '(int)', 20)
+                (x::bool) !- res <- (nn, ('x:', x), '(bool)', 21)
+                (::int, ::float, ::bool) !- res <- (nn, '(int, float, bool)', 22)
+                (a::int, b::float, c::bool, d::string) !- res <- (nn, '(int, float, bool, string)', 23)
+                (a::string, b::string) !- res <- (nn, 'strn, strn', 24)
+                [a :: tuple, b::list] !- res <- (nn, [a, b], '(tuple, list)', 25)
+                (a::string, b::list) !- res <- (nn, '(strn, list)', 26)
+                (::list) !- res <- (nn, '(list)', 27)
+                
+                {key::string : vv::int} !- res <- (nn, (key, vv), '{}', 30)
+                {k :: int : 'c1'} !- res <- (nn, '{k::int : "c1" }', 31)
+                {15 : b::int} !- res <- (nn, (b,), '{15: b::int}', 32)
+                {a : ::int} !- res <- (nn, (a,), '{a:int}', 33)
+                
+                {::int : 14, _: :: int} !- res <- (nn, '{}', 34)
+                {::string : ::string, ::int : ::int} !- res <- (nn, '{}', 35)
+                {11:v1, ::int : v2} !- res <- (nn, (v1, v2), '{11:v1, int:v2}', 36)
+                {a::string : b::string, c::int : d::int, 15:17} !- 
+                    res <- (nn, (a, b, c, d), '{a::string : b::string, c::int : d::int, 15:17}', 37)
+                {a: ::list} !- res <- (nn, (a,), '{}', 37)
+                {a: b::tuple} !- res <- (nn, '{}', 38)
+                {a: b::dict} !- res <- (nn, (a, b,), '{}', 39)
+                {a::int : b::dict, c: {'q':d}} !- res <- (nn, (a, b, c, d), '{}', 391)
+                {a::string : f1::function} !- 
+                    b = f1(5)
+                    res <- ('f1', (a, b,), '{a::string : f1::function}', 40)
+                
+                [f1::function, f2::function, f3::function] !- 
+                    rr = [f(11) ; f <- [f1, f2, f3]]
+                    res <- ('f,f,f', rr, '[f1::function, f2::function, f3::function]', 41)
+                
+                _ !- res <- (nn, 999)
+        
+        # print('>>\n')
+        # for n <- res /: print(n)
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        null = Null()
+        expv = [
+            ([111, 112], (111, 112), '[int, int]', 11), (['', 'ab'], ('ab',), '[string, string]', 12), ([False, 22, 3.3], '[bool, int, float]', 13), 
+            ([1.0, 'acbd', True], (1.0, 'acbd', True), '[float, string, bool]', 14), ([(1, 2, 3)], ((1, 2, 3),), '[tuple]', 15), 
+            (['4', (4,)], '[strn, tuple]', 16), ((11,), '(int)', 20), ((True,), ('x:', True), '(bool)', 21), 
+            ((False,), ('x:', False), '(bool)', 21), ((1, 2.5, True), '(int, float, bool)', 22), (('', 'abba'), 'strn, strn', 24),
+            (((1, 1), []), 999), (('5', [5]), '(strn, list)', 26), (([],), '(list)', 27), ({'s': 11}, ('s', 11), '{}', 30), 
+            ({12: 'c1'}, '{k::int : "c1" }', 31), ({15: 16}, (16,), '{15: b::int}', 32), ({22: 33}, (22,), '{a:int}', 33), 
+            ({'aa': 'bb', 23: 35}, '{}', 35), ({111: 14, 'qwerty': 15}, '{}', 34), ({11: 101, 12: 102}, (101, 102), '{11:v1, int:v2}', 36), 
+            ({'aaa': 'bbb', 32: 34, 15: 17}, ('aaa', 'bbb', 32, 34), '{a::string : b::string, c::int : d::int, 15:17}', 37), 
+            ({'ak': [1, 2, 3]}, ('ak',), '{}', 37), ({'bk': (3, 4, 5)}, '{}', 38), ({'ck': {21: 23}}, ('ck', {21: 23}), '{}', 39), 
+            ({'ee': {'q': 897}, 45: {32: 34}}, (45, {32: 34}, 'ee', 897), '{}', 391), ('f1', ('foo', 10), '{a::string : f1::function}', 40), 
+            ('f,f,f', [22, 33, 77], '[f1::function, f2::function, f3::function]', 41)]
+        self.assertEqual(expv, rvar.vals())
+
+    def test_match_case_by_typed_vals(self):
+        ''' test match var :: int !- '''
+        code = r'''
+        res = []
+        
+        func foo(x)
+            2 * x
+        
+        m3 = x -> x * 3
+        
+        nns = [
+            1, 1.5, true, 
+            "abc", [3], (4,5), {6:7},
+            foo, m3, (x -> x * 5)
+        ]
+        for nn <- nns
+            match nn
+                a::int !- res <- (nn, 'int', 11)
+                a::float !- res <- (nn, 'float', 12)
+                a::bool !- res <- (nn, 'bool', 13)
+                a::string !- res <- (nn, 'string', 21)
+                a:: list !- res <- (nn, 'list', 22)
+                a:: dict !- res <- (nn, 'dict', 23)
+                a:: tuple !- res <- (nn, 'tuple', 24)
+                a:: function !- 
+                    fres = [nn(x) ; x <- [17, 20]]
+                    res <- (fres, 'function', 25)
+                _ !- res <- (nn, 999)
+        
+        # print(res)
+        # for n <- res /: print(n)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        null = Null()
+        expv = [(1, 'int', 11), (1.5, 'float', 12), (True, 'bool', 13), ('abc', 'string', 21), 
+                ([3], 'list', 22), ((4, 5), 'tuple', 24), ({6: 7}, 'dict', 23), 
+                ([34, 40], 'function', 25), ([51, 60], 'function', 25), ([85, 100], 'function', 25)]
+        self.assertEqual(expv, rvar.vals())
+
+    def test_match_case_by_type_simple(self):
+        ''' test match ::int !- '''
+        code = r'''
+        res = []
+        
+        func foo(x)
+            2 * x
+        
+        m3 = x -> x * 3
+        
+        nns = [
+            1, 1.5, true, 
+            "abc", [3], (4,5), {6:7},
+            foo, m3, (x -> x * 5)
+        ]
+        for nn <- nns
+            match nn
+                ::int !- res <- (nn, 'int', 11)
+                ::float !- res <- (nn, 'float', 12)
+                ::bool !- res <- (nn, 'bool', 13)
+                ::string !- res <- (nn, 'string', 21)
+                :: list !- res <- (nn, 'list', 22)
+                :: dict !- res <- (nn, 'dict', 23)
+                :: tuple !- res <- (nn, 'tuple', 24)
+                :: function !- 
+                    fres = [nn(x) ; x <- [7, 10]]
+                    res <- (fres, 'function', 25)
+                _ !- res <- (nn, 999)
+        
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        null = Null()
+        expv = [(1, 'int', 11), (1.5, 'float', 12), (True, 'bool', 13), ('abc', 'string', 21), 
+                ([3], 'list', 22), ((4, 5), 'tuple', 24), ({6: 7}, 'dict', 23), 
+                ([14, 20], 'function', 25), ([21, 30], 'function', 25), ([35, 50], 'function', 25)]
+        self.assertEqual(expv, rvar.vals())
+
 
     def test_match_mixed_nested(self):
-        ''' replace(src, rx, repl) '''
+        '''  '''
         code = r'''
         res = []
         

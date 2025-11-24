@@ -22,6 +22,15 @@
     from(json_str): data_obj
 
 
+2.3 # DONE Check type operator 
+    var :: type
+
+2.4 TODO: More types:  
+    byte, common numeric,
+    common struct, implemented struct
+    Maybe (Some, Nothing).
+
+
 3.2. Type auto-casting. Important for struct constructors
 
 
@@ -78,6 +87,24 @@ catch crit
 
 
 
+14.0.1 Multiline and singleline cases: 
+match val
+    ptr /: x = 1; res = 2 + x
+    ptr2
+        y = 2
+        res = 2 + y
+
+
+14.0.2 Last expression is a result of match
+
+func foo(a)
+    match a
+        ptr1
+            b = 2 + a
+            b
+        _ /: a + a
+
+
 14.5 extended case of `?>` 'has values'
     thinking, not sure:
     X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
@@ -109,26 +136,39 @@ match nn
     x@TypeA{} !- # var with struct instance
 
 
-14.10
-    # // mixed
+14.10 #DONE // mixed
     [A{}, A{*}, B{b1,*}] !- list with structs
     {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
 
-14.13 case of other val types: int, float, numeric, string, bool, null, 
+14.13 #DONE  case of other val types: int, float, numeric, string, bool, null, 
 
-    null !- # ...
-    true | false !- ?
-    :bool !- 
-    :string
-    :int
-    a:int !- 
-    b:float !- foo(b)
-    
-    [a:int, b:float] !-
-    {a:b:float, }
+    {a: b::int, c: d::list, e: ::float}
 
-    {a:<b:float>, <:string>:<:int>}
-    {a:<int>, 'c':d@<float>, <string>:<bool>}
+    # :: as a type-checker in non-match places
+    if a :: int # type (a) == int
+    [a :: int, b] :? b :: float !- 
+
+    (val) (:: type)
+    _ :: int
+    x :: int
+    1 :: int
+    1 :: float
+    # combo cases 
+        x :: (int | float)  x :: (int | float)
+        [_::int] [a :: int, b :: float, _ :: int] [? :: int, x :: string] 
+        {a: b :: int, c :: string : _:: float} 
+        {::string : ::int}
+        _{a: val :: int} _{ a : _ :: int} _{ a :: int}
+
+14.13.2
+    # questions:
+        ? :: int, x :: (int | float)
+
+    # complex type
+        x :: [int], y :: {string:int}
+
+
+    ---
 
     # default val + *star
     0* - int

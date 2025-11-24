@@ -55,11 +55,17 @@ Content:
     5. [Multicase `1 | 2`](#165-multicase-)
     6. [Guard with pattern `[a] :? a > 5`](#166-bool-guard-in-case)
     7. [Mixed patterns: `[]|{}`, `[A{},B{}]`](#167-mixed-nested-patterns)
-    8. [Regexp case](#168-regexp-case)
+    8. [Regexp case ```re`abc` ```](#168-regexp-case)
+    9. [Type pattern `::`](#169-type-matching-_int)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
-18. [Ternary `?:` operator](#18-ternary-operator-)
-19. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
-20. [Inline block `.. ; ..`  Inline controls `for /:`](#20-one-line-block---operators)
+18. Operators with bool condition.  
+    1. [Ternary `?:` operator](#18-ternary-operator-)
+    2. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
+    3. [Check type `::`](#183-check-type-operator-)
+19. [optimized place :) ]
+20. Inline syntax.  
+    [Few-expressions block ` ; `](#20-one-line-block---operators)  
+    [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
 21. [String formatting `"%s" << x` , `~" {x} "`](#21-string-formatting)
 22. [Import modules](#22-import-modules)
 23. [Function as object](#23-function-as-an-object)
@@ -353,7 +359,7 @@ a = 10; b = 2; (if x = a + 1; x > b /: print(a, b, x))
 See more about [inline control expressions](#20-one-line-block---operators).  
 
 ### 4. Operators: math, unary, others.
-Arithmetic operators `+` `-` `*` `/` works as usual.  
+1. Arithmetic operators `+` `-` `*` `/` works as usual.  
 `%` - mod operator, returns remainder of division.  
 `**` - pow operator. `2 ** 3` = 8.
 ```python
@@ -371,25 +377,28 @@ c=4
 d=3
 res = 5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8
 ```
-Other unary operators.  
+2. Other unary operators.  
 `!` logical NOT  
 `~` bitwise NOT  
 
-Operators with assignment   
+3. Operators with assignment   
 `+=` `-=` `*=` `/=` `%=` 
 ```python
 x = 1
 x += 2
 ```
-Classic c-like operators.   
+4. Classic c-like operators.   
 Bitwise:  
 `&` `|` `^` `<<` `>>` `~`  
 Compare:  
 `==` `!=` `>` `<` `>=` `<` `<=`  
 Logical:  
 `&&` `||` `!`  
-Others, have specific behaviour, and will be explained further:  
-`?>` `!?>` `?:` `<-` `->` `!-` `/:`  
+
+5. Others, have specific behaviour, and will be explained further:  
+`?>` `!?>` `?:` `<-` `->` `!-` `/:` `::` 
+
+More details in [Bool expressions](#181-ternary-operator-), [Inline expressions](#20-one-line-block---operators)
 
 Table of priority order:
 ```
@@ -402,6 +411,7 @@ Table of priority order:
 << >> 
 =~ ?~ /~
 < <= > >= !> ?> !?>
+::
 == != 
 &
 ^
@@ -1340,6 +1350,45 @@ match n
     re`.+`m !- #// non empty string
 ```
 
+### 16.9 Type matching `_::int`
+Case can be matched by a type.  
+Operator `::` is used for that.  
+Now basic types have been implemented.  
+```python
+match x
+    ::int !- # all int values
+    ::float !- # float values
+    :: bool !- ..
+    ::string !- ..
+```
+Collections can be matched by type too.  
+```python
+match data
+    ::list !- ...
+    ::dict !- ...
+    ::tuple !- ...
+```
+Var pattern or `_` can be restricted by type.  
+```python
+match n
+    a::int !- print(a)
+    a::string !- print(a)
+    _::float !- ...
+```
+Actually `::type` means the same as a pattern `_::type`.
+But in dict this two sub-elements can act differently alittle in combination with `?` or `*` sub elements.  
+
+Typed pattern can be the part of collection pattern.  
+In dict pattern typed key is found before typed val.  
+```python
+match data
+    [::int, a::int, _::float] !- # in list
+    (::string, val::float) !- # in tuple
+    {k::string : v::int} !- # in dict
+    {::string : _::list} !- # list in dict
+```
+
+
 
 ### 17. multi-assignment
 ```python
@@ -1353,7 +1402,7 @@ a, b, c = (1, 2, 3)
 a, b, c = [1,2,3]
 ```
 
-### 18. Ternary operator `?:`
+### 18.1 Ternary operator `?:`
 classic ternary oper `condition ? valIfTrue : elseVal`  
 ```python
 x = a < b ? 10 : 20
@@ -1364,9 +1413,10 @@ returns val1 if not null (zero num, empty string, list or tuple); otherwize retu
 x = val1 ?: va2
 ```
 
-### 19. Val-in `?>` and val-not-in `!?>` operators.  
+### 18.2 Val-in `?>` and val-not-in `!?>` operators.  
 Boolean operators for check value or key in collection.  
-`a ?> vals` : If collection `vals` contains value `a`  
+1. If collection `vals` contains value `a`  
+ `a ?> vals`  
 ```python
 # base usage 
 val ?> collection
@@ -1378,7 +1428,7 @@ if val ?> ('a', 'b', 'c') ...
 # key for dict
 if 'a' ?> {'a':1, 'b':2} ...
 ```
-If collection doesn't have value `!?>`  
+2. If collection doesn't have value `!?>`  
 `val !?> collection`
 ```python
 !(val ?> nums)
@@ -1392,6 +1442,33 @@ Examples:
 if 5 !?> [1,2,3] ... # True
 if 'c' !?> {'a':1, 'b':2} ...
 ```
+
+### 18.3 Check type operator `::`  
+If we need to check type of value we can use operator `::`  
+Left oparend is value (var, ect..), right - name of type.  
+```python
+src = [10, 2.5 , "three", [4]]
+
+for val <- src
+    if val :: int
+        # 10 
+    if val :: float
+        # 2.5
+    if val :: string
+        # "three"
+    if val :: list
+        # [4]
+```
+Basic list of types usable in `::` operator:
+```
+int, float, bool
+string, list, tuple, dict,
+function
+```
+Some types can be added in the future.  
+
+### 19. Free place :)  
+
 
 ### 20. One-line block `;` `/:` operators
 (Note! there is not a usual code style. Just special tool for specific cases.)  

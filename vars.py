@@ -187,7 +187,15 @@ class ListVal(Collection):
         del self.elems[index.getVal()]
 
     def vals(self):
-        return [(n.get()) for n in self.elems]
+        
+        r = []
+        for n in self.elems:
+            if isinstance(n, (FuncInst, ObjectInstance)):
+                r.append(n)
+                continue
+            r.append(n.get())
+        return r
+        # return [(n.get()) for n in self.elems]
         # return [(n.get() if not isinstance(n, Collection) else n.vals()) for n in self.elems]
 
     def rawVals(self):
@@ -231,6 +239,7 @@ class TupleVal(Collection):
         # return tuple(self.elems)
 
     def addVal(self, val:Val):
+        # print('() <-', val)
         self.elems.append(val)
 
     def getVal(self, key:Val|int):
@@ -243,7 +252,13 @@ class TupleVal(Collection):
         return [n for n in self.elems]
     
     def vals(self):
-        return [(n.get()) for n in self.elems]
+        r = []
+        for n in self.elems:
+            if isinstance(n, (FuncInst, ObjectInstance)):
+                r.append(n)
+                continue
+            r.append(n.get())
+        return tuple(r)
 
     def has(self, val:Val):
         v = val.getVal()

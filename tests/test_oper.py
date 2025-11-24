@@ -25,6 +25,53 @@ import pdb
 class TestOper(TestCase):
 
 
+    def test_type_check_operator(self):
+        ''' replace(src, rx, repl) '''
+        code = r'''
+        res = []
+        x:int = 1.5555
+        
+        res <- (1, 'int', (1 :: int))
+        res <- (-1, 'int', 1 :: int)
+        res <- (1000000, 'int', 1 :: int)
+        res <- (0xffff, 'int', 1 :: int)
+        res <- (1., 'int', 1. :: int)
+        res <- (1., 'float', 1. :: float)
+        res <- (x, 'int', x :: int)
+        res <- (x, 'float', x :: float)
+        res <- ([], 'list', [] :: list)
+        res <- ("list", 'list', "list" :: list)
+        res <- ((1,), 'tuple', (1,) :: tuple)
+        res <- ({1:2}, 'dict', {1:2} :: dict)
+        res <- ({}, 'dict', {} :: dict)
+        res <- (true, 'bool', true :: bool)
+        res <- (false, 'bool', false :: bool)
+        res <- ("abc", 'string', "abc" :: string)
+        f1 = x -> x * 2
+        res <- ('x -> x * 2', 'function', f1 :: int)
+        res <- ('x -> x * 2', 'function', f1 :: function)
+        
+        # print('res', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        # ctx.print(forsed=1)
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+
+        # null = Null()
+        expv = [
+            (1, 'int', True), (-1, 'int', True), (1000000, 'int', True), (65535, 'int', True),
+            (1.0, 'int', False), (1.0, 'float', True), (1.5555, 'int', False), 
+            (1.5555, 'float', True), ([], 'list', True), ('list', 'list', False), ((1,), 'tuple', True), 
+            ({1: 2}, 'dict', True), ({}, 'dict', True), (True, 'bool', True), (False, 'bool', True), 
+            ('abc', 'string', True), ('x -> x * 2', 'function', False), ('x -> x * 2', 'function', True)]
+        self.assertEqual(expv, rvar.vals())
+
     def test_brackets_after_brackets(self):
         ''' slice of generator: 
                 iter gen [a..n][a..b], 

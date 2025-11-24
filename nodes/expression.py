@@ -290,13 +290,15 @@ class ServPairExpr(Expression):
         self.right.do(ctx)
 
     def get(self):
+        # ll, rr = self.left.get(), self.right.get()
+        # print('>', ll, ll.getType())
         return self.left.get(), self.right.get()
     
     def getTypedVar(self):
         return TypedVarExpr(self.left, self.right)
 
     def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
-        dprint('ServPairExpr.setArgs', left, right)
+        # print('ServPairExpr.setArgs', left, right)
         self.left = left
         self.right = right
 
