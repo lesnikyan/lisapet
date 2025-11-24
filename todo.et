@@ -136,28 +136,12 @@ match nn
     x@TypeA{} !- # var with struct instance
 
 
-14.10
-    # // mixed
+14.10 #DONE // mixed
     [A{}, A{*}, B{b1,*}] !- list with structs
     {k: B{b2:'hello'}, *} !- dict that has inst of B with b2=='hello' in value
 
-14.13 case of other val types: int, float, numeric, string, bool, null, 
+14.13 #DONE  case of other val types: int, float, numeric, string, bool, null, 
 
-    null !- # ...
-    true | false !- ?
-    :bool !- 
-    :string
-    :int
-    a:int !- 
-    b:float !- foo(b)
-    
-    [a:int, b:float] !-
-    {a:b:float, }
-
-    {a:<b:float>, <:string>:<:int>}
-    {a:<int>, 'c':d@<float>, <string>:<bool>}
-    
-    a:int !-
     {a: b::int, c: d::list, e: ::float}
 
     # :: as a type-checker in non-match places
@@ -175,11 +159,13 @@ match nn
         {a: b :: int, c :: string : _:: float} 
         {::string : ::int}
         _{a: val :: int} _{ a : _ :: int} _{ a :: int}
-    # complex type
-        x :: [int], y :: {string:int}
 
+14.13.2
     # questions:
         ? :: int, x :: (int | float)
+
+    # complex type
+        x :: [int], y :: {string:int}
 
 
     ---

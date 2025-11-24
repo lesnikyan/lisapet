@@ -55,8 +55,8 @@ Content:
     5. [Multicase `1 | 2`](#165-multicase-)
     6. [Guard with pattern `[a] :? a > 5`](#166-bool-guard-in-case)
     7. [Mixed patterns: `[]|{}`, `[A{},B{}]`](#167-mixed-nested-patterns)
-    8. [Regexp case](#168-regexp-case)
-    9. 
+    8. [Regexp case ```re`abc` ```](#168-regexp-case)
+    9. [Type pattern `::`](#169-type-matching-_int)
 17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
 18. Operators with bool condition.  
     1. [Ternary `?:` operator](#18-ternary-operator-)
@@ -1349,6 +1349,45 @@ match n
     re`^[houpring]{3,6}$` !- #// full string
     re`.+`m !- #// non empty string
 ```
+
+### 16.9 Type matching `_::int`
+Case can be matched by a type.  
+Operator `::` is used for that.  
+Now basic types have been implemented.  
+```python
+match x
+    ::int !- # all int values
+    ::float !- # float values
+    :: bool !- ..
+    ::string !- ..
+```
+Collections can be matched by type too.  
+```python
+match data
+    ::list !- ...
+    ::dict !- ...
+    ::tuple !- ...
+```
+Var pattern or `_` can be restricted by type.  
+```python
+match n
+    a::int !- print(a)
+    a::string !- print(a)
+    _::float !- ...
+```
+Actually `::type` means the same as a pattern `_::type`.
+But in dict this two sub-elements can act differently alittle in combination with `?` or `*` sub elements.  
+
+Typed pattern can be the part of collection pattern.  
+In dict pattern typed key is found before typed val.  
+```python
+match data
+    [::int, a::int, _::float] !- # in list
+    (::string, val::float) !- # in tuple
+    {k::string : v::int} !- # in dict
+    {::string : _::list} !- # list in dict
+```
+
 
 
 ### 17. multi-assignment
