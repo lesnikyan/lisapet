@@ -81,19 +81,22 @@ Content:
 ## Status.
 Actually it is on-dev. Most basic features and needed things is done.  
 Details see next, in `syntax` section.  
-As an one-hands made project all updates are committed into dev and almost immediately merged into main branch, without version numeration. Tests covers all the changes as possible.  
+As an one-hands made project (withous users) all updates are committed into dev and almost immediately merged into main branch, without version numeration.  
+Tests covers all changes whenever possible.  
+Therefore, critical changes to previously added things happen extremely rarely.  
 
 *
 Basic principles.
-1. no extra thingth, block is defined by line shifting like python or ruby
-2. basic collections: list, dict, tuple
-3. arithmetic expressions - like python syntax: (a + 1/2) * b - c ** 2 .
-4. control structs: `if-else`, `match`, `for`, `while`.
-5. functions: function is an object, value of last expression is a returning result. Explicit `return` works too.
-6. `struct` as a complex type. struct can have methods. Inheritance works too.
-7. functions have typed args, by default as Any type.
-8. Import modules.
-9. Some syntax sugar: list slice, list generator, `<-`, `?>`, `?:` operators, multiple assignment.
+1. No extra thingth, block is defined by line shifting without endline operator.
+2. Basic collections: list, dict, tuple
+3. Arithmetic expressions - python-like syntax: (a + 1/2) * b - c ** 2 .
+4. Control structs: `if-else`, `match`, `for`, `while`.
+5. Functions: value of last expression is a returning result. Explicit `return` works too.  Function is an object. Lambdas `x -> y`.
+6. `struct` is a main complex type. struct can have methods. Inheritance works too.
+7. Vars, struct fields, func args have type `x : type`, internal `Any` type by default.
+8. Import modules or things from modules.
+9. Syntax sugar and useful operators is ok. For example: list slice, list generator, `<-`, `?>`, `?:`, `::` operators, multiple assignment, inline syntax of blocks.
+10. Native regexp.
 
 *
 
@@ -173,10 +176,10 @@ Traceback (most recent call last):
 ZeroDivisionError: division by zero
 ```
 
-See code of run.py, loader.py, eval.py for understanding how to use LISAPET as an imbedded engine, add custom python functions for using in LP code, etc.  
+See code of tests, run.py, loader.py, eval.py for understanding how to use LISAPET as an imbedded engine, add custom python functions for using in LP code, etc.  
 
 ## Syntax.
-The Syntax section has been updated as new features have been added to the code, so it looks a bit chaotic.  
+The Syntax section is updated as new features are added to the code, so it looks a bit chaotic.  
 Done parts:  
 
 ### 0. Comments.
@@ -197,13 +200,14 @@ x = #@ in-line comment @# 2 + 5
 ```
 
 ### 1.1 Vars, vals, lists, assignment.  
-Assigments of values of vars.  
-I common case we use `=` operator for assignment value to the new or already defined variable.  
-Default types of values is:  
+Assigning values ​​to variables.  
+In general, we use the `=` operator to assign a value to a new or already defined variable.  
+
+Basic types of values is:  
 numeric types (`int`, `float`),  
-bool (with values: `true`, `false`).  
+`bool` (with values: `true`, `false`).  
 Sequence and collection types: `string`, `list`, `dict`, `tuple`.  
-Complex types such as `struct` and `function`.  
+Complex types such a `struct` and `function`.  
 ```python
 x = 1 # assignment
 x = 2 # reassignment
@@ -215,17 +219,17 @@ lastName = names[2]
 # multiple assignment
 a, b, c = 10, 20, 30
 ```
-Alternatives see in next section: [`<-` operator](#6-for-statement---operator).
+Alternatives see in next sections: [`<-` operator](#6-for-statement---operator).
 
 ### 1.2 Execution context.  
-In mechanics of language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
+In the mechanics of language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
 Context-object is responsible of search datatypes, variables, functions etc in current execution context.  
-So we can use all local things and any things defined in all levels above: module-level - in functions, function- and module- levels - in for, if, match sub-levels, and so on.  
-More about visibility of things see in sections of functions, closures, structs, importing.  
+So we can use all local things and any things defined in all levels above: module-level - in the function, function- and module- level - in the control sub-level (for, if, match), and so on.  
+See more about visibility of things in sections of functions, closures, structs, importing.  
 
 ### 1.3 Numbers, strings, bool. Types.
 Numeric types.  
-```golang
+```python
 nums = [
     true, # bool
     123, # int, decimal
@@ -252,9 +256,9 @@ Hello there!
 ```
 Backticks is an yet one type of quotes, designed to create little more ascetic strings.  
 In backticks sequences like `\s` doesn't try to be  interpreted as an escape sequence.  
-Its very useful for making strings with slashes, quotes, etc, like regexp needs.  
+It's very useful for making strings with slashes, quotes, etc, like regexp needs.  
 ```golang
-s = `\s\w\b\d` # no errors about incorrect escaping
+s = `\s\w\b\d` #// no errors about incorrect escaping
 ```
 In back quotes most escape sequences don't work.  
 (``` \` ``` does)  
@@ -276,7 +280,7 @@ string'''
 one """
 ```
 and more
-in backticks
+in b\acktick\s
 ```
 ````
 Data type.  
@@ -289,24 +293,23 @@ weight:float = 70
 
 yes:bool = true
 no:bool = false
-
 ```
 Types such as a collections, structs, functions, etc will be explaned next sections.
 
 ### 2. Sub-blocks, code-formatting.
-Control structures, data-structures, functions, etc. have inner place with internal lines / expressions, here we call it as an expression block or sub-block.  
-Child or sub block separated by indent with one or more whitespaces related to parent. 
+Control structures, data-structures, functions, etc. have inner place with internal lines (expressions), here we call it as an expression block, child or sub-block.  
+Sub block is separated by indent with one or more whitespaces related to parent.  
 All indents should be equal.  
-First indent defines all other indents in file.  
+First indent defines all other indents in the file.  
 Base block structures: `if`, `for`, `while`, `match-cases`, `function`.  
-Data structures can have block version of definition (`struct`) or constructor (`dict`, `list`).  
+Data structures can have block version of definition (`struct`) or constructor (`dict` and `list`).  
 Some blocks also can have inline version of syntax (controls, sequence of expressions).  
-See more about inline syntax in next sections.  
+See more about inline syntax [in next sections](#20-one-line-block---operators).  
 
 ### 3. `if`-statement, `else`
-If statement, comparison operators, bool operators. 
+`if` statement, comparison operators, bool operators. 
 
-If is a basic control operator.  
+`if` is a basic control operator.  
 ```python
 if condition
     sub-expressions
@@ -328,12 +331,13 @@ else
 else if cond
     expr
 ```
-Condition can be any expression which returns bool result:  
+Condition can contain any expression which returns bool result:  
 bool value: `true`, `false`  
 `null`, `0` (means `false` in condition)  
-functions that return appropriate value,  
-comparison operators `<` `<=` `>` `>=` `==`,  
-logic operators `&&` `||` `!`  
+Functions that return appropriate value.  
+Classic comparison operators `<` `<=` `>` `>=` `==` `!=`  
+Check value operators: `?>` `!?>` `::`  
+Logic operators `&&` `||` `!`  
 
 ```python
 if x >= 10 | x < 2 && x != 0
@@ -379,7 +383,7 @@ res = 5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8
 ```
 2. Other unary operators.  
 `!` logical NOT  
-`~` bitwise NOT  
+`~` bitwise NOT (overloaded for the string as a formatting operator)  
 
 3. Operators with assignment   
 `+=` `-=` `*=` `/=` `%=` 
@@ -390,15 +394,24 @@ x += 2
 4. Classic c-like operators.   
 Bitwise:  
 `&` `|` `^` `<<` `>>` `~`  
-Compare:  
+`<<` overloaded for the string too.  
+Comparison:  
 `==` `!=` `>` `<` `>=` `<` `<=`  
 Logical:  
 `&&` `||` `!`  
 
 5. Others, have specific behaviour, and will be explained further:  
-`?>` `!?>` `?:` `<-` `->` `!-` `/:` `::` 
+`?>` `!?>` `?:` `<-` `->` `!-` `:?` `/:` `::` `=~` `?~`
 
-More details in [Bool expressions](#181-ternary-operator-), [Inline expressions](#20-one-line-block---operators)
+More details in   
+[Bool expressions `?:` `?>` `!?>`](#181-ternary-operator-) , 
+[one-line `;` `/:`](#20-one-line-block---operators),   
+[append `<-`](#91-arrow-appendset-operator--), 
+[`for` `<-` ](#7-for-statement---operator), 
+[lambda `->`](#15-lambda-functions-and-high-order-functions-right-arrow--),  
+[`match` `!-` `:?` `::`](#16-match-statement),  
+[regexp `=~` `?~` ](#252-regexp-match-)
+[type check `::`](#183-check-type-operator-)
 
 Table of priority order:
 ```
@@ -432,7 +445,7 @@ Table of priority order:
 ```
 
 ### 5. Collections: list (array), tuple, dict (map)
-1. List, inline constructor.  
+1. List, linear constructor.  
 ```python
 
 nums = ['One', 'Two', 'Three']
@@ -456,7 +469,7 @@ firstName = names[0]
 ```
 Negative indexes are allowed.  
 It accesses to the element by position from the end of list.  
-`[-1]` is a last element (1-st from end).  
+`[-1]` is a last element (1-st from the end).  
 ```python
 nums = [1,2,3,4,5]
 print(nums[-2])
@@ -465,7 +478,7 @@ print(nums[-2])
 
 2. Tuples: `(val, val, val)`.  
 
-Tuple. Few values in the brackets over comma.  
+Tuple. Few values in the parenthesis over comma.  
 Tuple is immutable.
 ```python
 vals = (1, 100, 'More numbers')
@@ -509,18 +522,19 @@ More feature of collections:
 
 
 ### 7. `for` statement, `<-` operator
-- Range-iterator
+1. Range-iterator. It works like classic C-like `for`.  
+`for` {init-expression} `;` {condition-check} `;` {post-iteration expression}
 ```python
-for i=0; i < 5; i = i + 1
+for i=0; i < 5; i += 1
     y = y + 2
-    for j=-3; j <= 0; j = j + 1
+    for j=-3; j <= 0; j += 1
         a = a - j ** 2
         if a % 2 == 0
             b = b + 1
 res = y
 ```
 
-- Iterator, arrow-assign operator `<-`  
+2. Iterator, arrow-assign operator `<-`  
 Left-arrow `<-` operator has several options.  
 Here we use left-arrow as an iterative assignment in `for` statement.  
 It looks, like we pick the element from the sequence one-by-one.
@@ -544,7 +558,7 @@ for x <- [1..10]
 for k, val <- {'a':1, 'b':2}
     ...
 ```
-Function `iter()`  
+3. Function `iter()`  
 ```python
 # One arg iter(last+1)
 iter(3) # >> 0,1,2
@@ -556,7 +570,7 @@ iter(1,7,2) # >> 1,3,5
 
 ```
 
-Keywords `continue`, `break`.  
+4. Keywords `continue`, `break`.  
 
 ```python
 r = []
@@ -574,7 +588,7 @@ for i <- [1..10]
 
 ### 8. Function definition, context of functions.
 
-Keyword `func`.  
+1. Keyword `func`.  
 Last expression is a returning result.  
 Keyword `return` allowed to. 
 ```python
@@ -603,13 +617,18 @@ func foo(x, y)
     res
 
 ```
-See more about functions in sections: 14, 15, 23.
+See more about functions in sections:
+[14 builtins](#14-builtin-functions), 
+[15 lambdas](#15-lambda-functions-and-high-order-functions-right-arrow--),
+[23 func-object](#23-function-as-an-object), 
+[24 closures](#24-closures).
 
 ### 9.1 arrow-append/set operator `<-`
 Left-arrow with list or dict in the right operand  puts value into collection.  
 (not in `for` statement or sequence generator)  
 For list it appends new value; `list <- val`  
-For dict it sets or updates value by key from passed tuple with `dict <- (val, key)`.  
+For dict it sets or updates value by key from passed tuple with two sub elements  
+`dict <- (val, key)`.  
 ```python
 # list:
 nn = [5]
@@ -668,10 +687,10 @@ nums += [7,8,9]
 
 ### 10.1 Struct.  
 Struct is a basic complex datatype.  
-Struct can have inner fields aka inner variable with name and type.  
-Keyword for declaration struct as custom type is a `struct`.  
+Struct have fields (aka inner variable) with name and type.  
+Keyword for declaration structs is a `struct`.  
 Struct can be defined by inline syntax or block syntax.  
-Block-definition is more useful for big struct or fields type-name.  
+Block-definition is more useful for big structs or fields type-name.  
 Struct constructor uses camel-brackets, instead of no-brackets syntax in definition.  
 ```golang
 #// definition.  linear
@@ -698,9 +717,9 @@ numeric = 0, string = "", bool = false.
 
 
 ### 10.2 Constructor-function `TypeName()`.  
-We can use function-like constructor instead of direct set of name:values in the curvy brackets.  
+We can use callable constructor instead of direct set of name:values in the curvy brackets.  
 There are two cases of such way.  
-1. Magic default constructor. It takes passed arguments in the amount of fields that struct type has, and makes instance using passed args in the same order as struct was defined. We have nothing to do before usage, just define the struct type.  
+1. Magic default constructor. It takes passed arguments in the amount of fields that struct type has, and makes instance using passed args in the same order as it was defined in the struct. We have nothing to do before usage, just define the struct type.  
 ```golang
 
 struct User
@@ -713,8 +732,8 @@ print(user.name)
 >> Olgerd
 
 ```
-2. User-defined constructor. It's a regular function with the same name as struct type has. It should return the instance of the struct.  
-Usage in code the same as a magic default.  
+2. User-defined constructor. It's a regular function with the same name as the struct type. It should return the instance of the struct (remember that last expression in function is a result).  
+Usage in code the same as for default callable construct.  
 ```golang
 
 struct User
@@ -736,17 +755,21 @@ print(user.name, user.age)
 
 Struct can have methods.  
 Method can be declared after declaration of struct type.  
+The main attribute of method is a variable typed by struct type, between `func` keyword and name of function:  
+`func var:TypeName myMethod({args})`
+This variable will be an istance of struct in the body of method.  
 ```golang
-#// def
+#// definition
 struct A a1:int
 
-#// variable after `func` is instance of struct
+#// variable after `func` is an instance of struct
 func a:A plusA1(x:int)
     a.a1 += x
 
 #// call
-aa = A{} # default val of A.a1 is 0
-aa.plusA1(5)
+aa = A{} #// default val of A.a1 is 0
+
+aa.plusA1(5) #// set aa.a1 to 5
 ```
 
 ### 11.2 Struct inheritance. Multiple inheritance is allowed.
@@ -767,7 +790,7 @@ struct B(Aaaa, Cccc) b:int
 b1 = B{b:1, a1:12, a2:'aa-2'}
 #// call A-struct method from B-instance
 b1.f1(3, 4)
-# access to A-field from B-instance
+#/ access to A-field from B-instance
 b1.a1 += 10
 ```
 
@@ -1402,7 +1425,7 @@ a, b, c = (1, 2, 3)
 a, b, c = [1,2,3]
 ```
 
-### 18.1 Ternary operator `?:`
+### 18.1 Ternary operator `?:`  
 classic ternary oper `condition ? valIfTrue : elseVal`  
 ```python
 x = a < b ? 10 : 20
