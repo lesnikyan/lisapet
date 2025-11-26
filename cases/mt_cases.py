@@ -300,7 +300,7 @@ class CommaSeparatedSequence(MTContr):
         res = []
         for sp in subPats:
             # print('sp:', type(sp))
-            if isinstance(sp, (MCContr, MCStruct, MCType, MCTypedElem)):
+            if isinstance(sp, (MCContr, MCStruct, MCType, MCTypedElem, MCRegexp)):
                 sp = MCSubCover(sp)
             res.append(sp)
         return res
@@ -387,7 +387,7 @@ class MTColPair(MTContr, CaseColon):
             exp = MCDPairTyped(ekey, rval)
         else:
             # print('MTCol 1', ekey, rval)
-            exp = MCKVPair(ekey, rval)
+            exp = MCDPairAny(ekey, rval)
         # print('MTColPair', elemStr(elems), exp, ekey, rval)
         return exp
 

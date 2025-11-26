@@ -1371,6 +1371,7 @@ match n
     re`aa|bb|cc` !- #// simple pattern 
     re`^[houpring]{3,6}$` !- #// full string
     re`.+`m !- #// non empty string
+    [re`\d+`, *] !- #// regexp can be a sub-element of a container-pattern
 ```
 
 ### 16.9 Type matching `_::int`

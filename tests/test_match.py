@@ -29,6 +29,75 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
+
+
+    def test_match_mixed_with_regexp(self):
+        '''  '''
+        code = r'''
+        res = []
+        
+        struct A a1:string
+        struct B(A) b1: string
+        
+        nns = [
+            # [], (,), {},
+            ["abc"], ("werq",), ["327"], ("010",), ["0xfed"],
+            ["56473829","amba"], ('samba', 'salsa'), 
+            {"xyz":1}, {"0xfde":0xfd0},
+            ["Napoleon543"], ({"Napoleon123": 1002}, "napo@bumbum.es"),
+            {"Red line": "alert", "Green place":"rest"}, {"Green tree": "yield", "Red wine":"drink"}, 
+            A("<div>"), A("<xml>"), A('ggg'),
+            B('123'), B{a1:'feed', b1:'abc'}, B{a1:'food', b1:'abc'}, 
+            [A('xxx')],
+        ]
+        for nn <- nns
+            match nn
+                [re`[a-d]+`] | (re`[qwerty]+`) !- res <- (nn, 1)
+                [re`[\d+]+`] | (re`[0-3]+`) | [re`0x[0-9a-f]{2,}`] !- res <- (nn, 2)
+                [re`^[\d+]+$`, re`.+`] | (re`^[a-z]+$`, re`^[^\s]+$`)  !- res <- (nn, 3)
+                [re`[w-z]+`] | (re`[w-z]+`) | {re`[w-z]+`:_}  !- res <- (nn, 4)
+                {re`.+`:1} !- res <- (nn, 5)
+                {re`0x[\d0-f]+$`:_} !- res <- (nn, 51)
+                {re`^Red.+$`: a:: string, re`^Green.+$`: b:: string} !- res <- (nn, (a, b), 52)
+                [re'Napo.+'] | ({re`Napo[a-z]+\d+` : ::int}, re`\w+@\w+\.\w`) !- res <- (nn, 61)
+                
+                B{b1:re`\d+`} !- res <- (nn, 71)
+                B{a1:re`^[a-f]+$`} !- res <- (nn, 72)
+                A{a1:re`<(?:html|div|span)>`} !- res <- [nn, 73]
+                _{a1:re`g+`} !- res <- (nn, 74)
+                B{} !- res <- (nn, 701)
+                A{} !- res <- (nn, 702)
+                [A{a1:re`x+`}] !- res <- (nn, 75)
+                
+                [*] !- res <- (nn, 881)
+                (*) !- res <- (nn, 882)
+                {*}  !- res <- (nn, 883)
+                _ !- res <- (nn, 999)
+        
+        # print('>>\n')
+        # for n <- res /: print('', (n,))
+        # print(res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        null = Null()
+        expv = [
+            (['abc'], 1), (('werq',), 1), (['327'], 2), (('010',), 2), (['0xfed'], 2), 
+            (['56473829', 'amba'], 3), (('samba', 'salsa'), 3), ({'xyz': 1}, 4), 
+            ({'0xfde': 4048}, 51), (['Napoleon543'], 61), (({'Napoleon123': 1002}, 'napo@bumbum.es'), 61), 
+            ({'Red line': 'alert', 'Green place': 'rest'}, ('alert', 'rest'), 52), 
+            ({'Green tree': 'yield', 'Red wine': 'drink'}, ('drink', 'yield'), 52), 
+            ['st@A{a1: <div>}', 73], ('st@A{a1: <xml>}', 702), ('st@A{a1: ggg}', 74), 
+            ('st@B{b1: 123}', 71), ('st@B{b1: abc}', 72), ('st@B{b1: abc}', 701), 
+            (['st@A{a1: xxx}'], 75)]
+        self.assertEqual(expv, rvar.vals())
+
     def test_match_type_in_collections(self):
         ''' test match
             [::int, b::int]

@@ -13,6 +13,7 @@
     tostr([int]), tostr(bytes), 
     tostr(anyval) # like print
 
+2.0 module math
 2.1 module `file`
     read(filepath)
     write(filepath, content)
@@ -30,6 +31,13 @@
     common struct, implemented struct
     Maybe (Some, Nothing).
 
+NEED FIX:
+    1. print struct instance
+    2. multi-args constructor for inherited struct type 
+        A a:int
+        A(a) 
+        B b : int
+        B(a, b) 
 
 3.2. Type auto-casting. Important for struct constructors
 
@@ -121,8 +129,10 @@ func foo(a)
     res@rx(`(\d+)([a-z]+)`) -> a, b, c ?: a != '0 ' !- res - regexp-results, a - 1-st full-match, b, c - parts of 1-st group 
     `(\d+)([a-z]+)`iu ^ a,b,c !- 
 
+
 14.9.2 think about transfer matched regexp to sub-expression 
 match s
+
     pattern@re`\d+([a-z]+)` !- res = pattern ?~ s
     pattern := re`\d+([a-z]+)`i !- 
     re`\d+([a-z]+)` => rx !- res = split(s, rx)
@@ -134,6 +144,11 @@ match nn
     [x@[*], y@[*], *] !- # x, y - vars by subpatterns
     [ a@<_,_,_>, ee@*] !- # sets of subelements, a - subset,  ee - others
     x@TypeA{} !- # var with struct instance
+
+- regexp-assign should differ from subval-assign
+    for example
+    [a, b@[c, d]] !- 
+    [a@~re``, b@re``] !- # a - regexp, b - value
 
 
 14.10 #DONE // mixed
