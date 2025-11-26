@@ -24,7 +24,7 @@ def getVal(arg):
     if isinstance(arg, Var):
         v = arg.get()
     if isinstance(v, (ListVal, DictVal, TupleVal)):
-        v = v.vals()
+        v = [getVal(e) for e in v.vals()]
     # elif isinstance(v, StructInstance):
     #     v = v.istr()
     elif isinstance(v, Val):
@@ -32,16 +32,16 @@ def getVal(arg):
     return v
 
 
-
 def buit_print(_,*args):
     pargs = []
     # print('b-print1:', args)
     for n in args:
-        # print('b-print:::', n)
+        # print('b-print:::', n, n.__class__.__name__)
         if isinstance(n, (Function)):
             pargs.append(str(n))
             continue
         v = getVal(n)
+        # print('b-print0::', v, v.__class__.__name__)
         # v = n
         # if isinstance(n, Var):
         #     v = n.get()

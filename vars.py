@@ -160,13 +160,13 @@ class ListVal(Collection):
         self.elems[i] = val
 
     def getVal(self, key:Val|int):
-        dprint('ListVal.getVal1, index:', key)
+        # dprint('ListVal.getVal1, index:', key)
         # dprint('ListVal.getVal1, elems:', self.elems)
         i = key
         # if isinstance(key, Val):
         #     i = key.get()
         i = key.getVal()
-        dprint('@ i=', i)
+        # dprint('@ i=', i)
         if i < len(self.elems):
             return self.elems[i]
         raise EvalErr('List out of range by index %d ' % i)

@@ -557,5 +557,33 @@ class TestStructs(TestCase):
         # inst.set('amount', value('12', TypeString))
         # dprint('## T >>> ', inst.get('amount'))
 
+    def test_result_struct(self):
+        ''' '''
+        code = r'''
+        
+        struct A a:int
+        res = []
+        a = A(123)
+        b = A(456)
+        c = A(789)
+        res <- [a]
+        res <- [[b]]
+        res <- (c,)
+        # print(res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        expv = [['st@A{a: 123}'], [['st@A{a: 456}']], ('st@A{a: 789}',)]
+        self.assertEqual(expv, rvar.vals())
+
+
 if __name__ == '__main__':
     main()

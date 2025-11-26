@@ -39,24 +39,6 @@ class TestDev(TestCase):
         
     '''
 
-
-    def _test_n(self):
-        import re
-        src = ''' 
-        abc 123
-        qe 456
-        hjk 890
-        '''
-        pt = re.compile(r'([a-z]+)\s+((\d)\d+)', re.MULTILINE)
-        src = 'qwe 123 asd 456 zxc 789'
-        pt = re.compile(r'([a-z]+)\s+((\d)\d+)', re.IGNORECASE)
-        iter = pt.finditer(src)
-        
-        for mt in iter:
-            print('mt>>', mt.group(0))
-            print('ttr>>', mt.groups())
-
-
     def _test_code(self):
         ''' '''
         code = r'''
