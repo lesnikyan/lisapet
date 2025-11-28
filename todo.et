@@ -5,13 +5,17 @@
 
 1. string functions: 
     element like list: name[0], "abc"[1]
-    # split()
+    # split() # regexp added
     # join()
-    # replace()
+    # replace() # regexp added
     # len() for string
-    rxreplace()
-    tostr([int]), tostr(bytes), 
-    tostr(anyval) # like print
+    # tostr([int]), 
+    $ tostr(anyval) # any type, 
+    TODO:
+    tostr(dictVal, keyOrder) 
+    tostr([a..b]) # gen obj
+    tostr(bytes), 
+    bstr(bytes:[]) # bytes to string
 
 2.0 module math
 2.1 module `file`
@@ -26,6 +30,10 @@
 2.3 # DONE Check type operator 
     var :: type
 
+2.3.1 Check type of struct instance var :: TypeName
+2.3.2 Check match type of struct instance ::TypeName
+
+
 2.4 TODO: More types:  
     byte, common numeric,
     common struct, implemented struct
@@ -38,6 +46,8 @@ NEED FIX:
         A(a) 
         B b : int
         B(a, b) 
+    3. fix case with comprehensions [1..3] + [5..8]
+
 
 3.2. Type auto-casting. Important for struct constructors
 

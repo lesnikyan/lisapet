@@ -23,14 +23,101 @@ def getVal(arg):
     v = arg
     if isinstance(arg, Var):
         v = arg.get()
-    if isinstance(v, (ListVal, DictVal, TupleVal)):
-        v = [getVal(e) for e in v.vals()]
+    if isinstance(v, (ListVal, TupleVal)):
+        t = [getVal(e) for e in v.vals()]
+        if isinstance(v, TupleVal):
+            t = tuple(t)
+        v = t
+    elif isinstance(v, (DictVal)):
+        v = {k: getVal(vv) for k,vv in v.data.items()}
+        # v = [getVal(e) for e in v.vals()]
     # elif isinstance(v, StructInstance):
     #     v = v.istr()
     elif isinstance(v, Val):
         v = v.getVal()
     return v
 
+
+def esc_str(s:str):
+    scov = "'%s'"
+    if s.find("'") > -1:
+        scov = '"%s"'
+        if s.find('"') > -1:
+            s = s.replace('"', '\\"')
+    # print('\\e:', s, scov)
+    return scov % s
+    
+
+def _elem_str(arg):
+    ''' prepare elem of collection for tostr() '''
+    e = arg
+    k = ''
+    if isinstance(arg, tuple):
+        k, e = e
+        k = tostr(k)
+        if isinstance(k, str):
+            k = esc_str(k)
+        else:
+            k = tostr(k) # mostly for numeric
+    
+    if isinstance(e, str):
+        e = esc_str(e)
+    else:
+        e = tostr(e)
+    se = e
+    if isinstance(arg, tuple):
+        se = '%s:%s' % (k, se)
+    # print('se:', se)
+    return se
+
+def tostr(arg):
+    v = getVal(arg)
+    rval = v
+    # print('\n_tostr1:::', arg, '>>', v, v.__class__.__name__)
+    # if isinstance(v, str):
+    #     rval = esc_str(v)
+        
+    
+    if isinstance(v, (list, tuple, dict)):
+        # [1, 2, 'a', [3, 'b']]
+        #
+        vals = []
+        isrc = v
+        if isinstance(v, dict):
+            isrc = v.items()
+        for e in isrc:
+            se = _elem_str(e)
+            vals.append(se)
+        cover = '%s'
+        match v:
+            case list():
+                cover = "[%s]"
+            case tuple():
+                cover = "(%s)"
+            case dict():
+                cover = "{%s}"
+        # print('cover:', cover)
+        rval = cover % (','.join(vals))
+        
+    if isinstance(v, StructInstance):
+        rval = v.istr()
+    if isinstance(v, (Null)):
+        rval = 'null'
+    elif isinstance(v, (bool)):
+        rval = str(v).lower()
+    elif isinstance(v, (int, float, Function)):
+        rval = str(v)
+    # print('_tosrt9:', arg, ':', rval)
+    return rval
+
+
+def built_tostr(_, arg):
+    # pargs = []
+    # print('_tostr:', args)
+    rval = tostr(arg)
+    # print('_tostr3::', rval, rval.__class__.__name__)
+    return StringVal(rval)
+    
 
 def buit_print(_,*args):
     pargs = []

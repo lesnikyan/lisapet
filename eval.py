@@ -20,6 +20,7 @@ def rootContext(ctx:Context = None)->RootContext:
     setNativeFunc(ctx, 'iter', loop_iter, TypeIterator)
     setNativeFunc(ctx, 'type', built_type, TypeType)
     setNativeFunc(ctx, 'toint', built_int, TypeInt)
+    setNativeFunc(ctx, 'tostr', built_tostr, TypeString)
     setNativeFunc(ctx, 'tolist', built_list, TypeList)
     setNativeFunc(ctx, 'foldl', built_foldl, TypeAny)
     setNativeFunc(ctx, 'join', lstr.join, TypeString)

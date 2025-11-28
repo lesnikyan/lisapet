@@ -321,6 +321,7 @@ class OpMath(BinOper):
         dprint('#bin-overs-1', a, b)
         match self.oper:
             case '+' :
+                # TODO: fix case with comprehensions [1..3] + [5..8]
                 if isinstance(a, (ListVal)) and isinstance(b, ListVal):
                     return (True, self.listPlus(a, b))
             case '-' :

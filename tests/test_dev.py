@@ -42,10 +42,6 @@ class TestDev(TestCase):
     def _test_code(self):
         ''' '''
         code = r'''
-        # dd = {'aa':'11'}
-        print(1, "1\n2\t3")
-        print(2, `1 \n 2 \t3 \\ \/ \` \' \"`)
-        print("Hello there! \n\t Here new line, \\ back-slash and \"Words in quotes.\" ")
         # print('res = ', 1)
         '''
         code = norm(code[1:])
