@@ -114,20 +114,26 @@ class ObjectElem(Val):
 # Collections
 
 
-class Collection(Container):
+class ValSequence(Val):
+    
+    def getElem(self, key:Val):
+        pass
+
+
+
+class Collection(Container, ValSequence):
 
     def setVal(self, key:Var, val:Var):
         pass
 
-    def getVal(self, key:Var):
-        pass
+    # def getVal(self, key:Var):
+    #     pass
     
     def len(self)->int:
         return 0
 
     def vals(self):
         pass
-
 
 class ListVal(Collection):
     ''' classic List / Array object'''
@@ -159,14 +165,15 @@ class ListVal(Collection):
             raise EvalErr('List out of range by index %d ' % i)
         self.elems[i] = val
 
-    def getVal(self, key:Val|int):
-        # dprint('ListVal.getVal1, index:', key)
-        # dprint('ListVal.getVal1, elems:', self.elems)
-        i = key
-        # if isinstance(key, Val):
-        #     i = key.get()
+    # def getVal(self, key:Val|int):
+    #     raise XDebug("dict getVal")
+        # i = key.getVal()
+        # if i < len(self.elems):
+        #     return self.elems[i]
+        # raise EvalErr('List out of range by index %d ' % i)
+    
+    def getElem(self, key:Val):
         i = key.getVal()
-        # dprint('@ i=', i)
         if i < len(self.elems):
             return self.elems[i]
         raise EvalErr('List out of range by index %d ' % i)
@@ -242,7 +249,14 @@ class TupleVal(Collection):
         # print('() <-', val)
         self.elems.append(val)
 
-    def getVal(self, key:Val|int):
+    # def getVal(self, key:Val|int):
+    #     raise XDebug("dict getVal")
+        # i = key.getVal()
+        # if i < len(self.elems):
+        #     return self.elems[i]
+        # raise EvalErr('Tuple out of range by index %d ' % i)
+    
+    def getElem(self, key:Val):
         i = key.getVal()
         if i < len(self.elems):
             return self.elems[i]
@@ -268,7 +282,7 @@ class TupleVal(Collection):
         return False
 
     def __str__(self):
-        vals = ', '.join([ '%s' % n.get() for n in self.elems])
+        vals = ', '.join([ '%s' % str(n.get()) for n in self.elems])
         return 'TupleVal(%s)' %  (vals)
 
 
@@ -296,8 +310,15 @@ class DictVal(Collection):
             res.addVal(k)
         return res
 
-    def getVal(self, key:Val):
-        # k = self.inKey(key)
+    # def getVal(self, key:Val):
+    #     raise XDebug("dict getVal")
+    #     # k = self.inKey(key)
+    #     k = key.getVal()
+    #     if k in self.data:
+    #         return self.data[k]
+    #     raise EvalErr('List out of range by key %s ' % k)
+    
+    def getElem(self, key:Val):
         k = key.getVal()
         if k in self.data:
             return self.data[k]
@@ -329,12 +350,19 @@ class DictVal(Collection):
         return 'DictVal(%s)' %  (vals)
 
 
-class StringVal(Val):
+class StringVal(ValSequence):
     ''' '', "", ``, etc '''
     def __init__(self, val, stype=None):
         if not stype:
             stype = TypeString()
         super().__init__(val, stype)
+    
+    def getElem(self, key:Val):
+        k = key.getVal()
+        data = self.getVal()
+        if len(data) <= k:
+            raise EvalErr('List out of range by key %s ' % k)
+        return StringVal(data[k])
     
     def len(self)->int:
         return len(self.val)

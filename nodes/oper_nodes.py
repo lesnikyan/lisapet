@@ -293,8 +293,8 @@ class OpMath(BinOper):
 
     def collMinus(self, a:Collection, b:list):
         ''' a:dict|list - b:[int] '''
-        key = b.getVal(Val(0, TypeInt()))
-        val = a.getVal(key)
+        key = b.getElem(Val(0, TypeInt()))
+        val = a.getElem(key)
         a.delete(key)
         return val
 
@@ -303,6 +303,10 @@ class OpMath(BinOper):
         res = a.copy()
         res.addMany(b)
         return res
+    
+    def stringPlus(self, a, b):
+        res = a.getVal() + b.getVal()
+        return StringVal(res)
 
     def strLshift(self, a, b):
         ''' "str pattern " << (vals) '''
@@ -324,6 +328,8 @@ class OpMath(BinOper):
                 # TODO: fix case with comprehensions [1..3] + [5..8]
                 if isinstance(a, (ListVal)) and isinstance(b, ListVal):
                     return (True, self.listPlus(a, b))
+                if isinstance(a, (StringVal)) and isinstance(b, StringVal):
+                    return (True, self.stringPlus(a, b))
             case '-' :
                 if isinstance(a, (ListVal, DictVal)) and isinstance(b, ListVal):
                     return (True, self.collMinus(a, b))

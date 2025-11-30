@@ -52,8 +52,6 @@ class TestDev(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         ex.do(ctx)
-        # rvar = ctx.get('dd')
-        # dd = rvar.get().vals()
         # print('>>', dd.values())
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()

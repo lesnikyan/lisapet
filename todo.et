@@ -11,6 +11,9 @@
     # len() for string
     # tostr([int]), 
     $ tostr(anyval) # any type, 
+    string[index] - get elem
+    string + string
+    string[a : b] - slice
     TODO:
     tostr(dictVal, keyOrder) 
     tostr([a..b]) # gen obj
@@ -47,6 +50,8 @@ NEED FIX:
         B b : int
         B(a, b) 
     3. fix case with comprehensions [1..3] + [5..8]
+    4. multiassign in: 
+        for var1, var2,.. <- src
 
 
 3.2. Type auto-casting. Important for struct constructors
@@ -66,8 +71,8 @@ NEED FIX:
         IO-error: read/write data
 
 5.2 exception handling.
-We dont have exceptions like python
-java We will handle critical errors.
+We dont have exceptions like python, java 
+We will handle critical errors.
 
 crit!
 !crit
@@ -87,6 +92,7 @@ catch crit
     console, 
     network, 
     db,
+
 10 serialization: 
     1) data objects (collections, struct inst) 
     2) executive tree (prepared exec file)
@@ -147,6 +153,11 @@ match s
     pattern := re`\d+([a-z]+)`i !- 
     re`\d+([a-z]+)` => rx !- res = split(s, rx)
     re`\d+([a-z]+)` => p@(x) !- 
+
+# transfer foundg roups
+    re`(\d+) (\w+)` :> a, b !- print(a, b)
+# transfer regexp rom pattern
+    ptt@re`(sub)` !- res = ptt ?~ sourceString
 
 14.11 var of whole pattern, or subset
 match nn

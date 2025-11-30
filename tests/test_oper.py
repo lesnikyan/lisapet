@@ -25,6 +25,149 @@ import pdb
 class TestOper(TestCase):
 
 
+    def test_code_get_string_elem(self):
+        ''' test str[index] '''
+        code = (r'''
+        res = [11]
+        s1 = 'abcd1'
+        s2 = "efgh2"
+        s3 = `ijk3`
+        '''
+        """
+        s4 = '''mnop4'''
+        """
+        r'''
+        s5 = """qrst"""
+        s6 = ```uvwxyz```
+        nums = '0123456789'
+        
+        struct A a:string
+        struct B(A) b: string
+        
+        aa= A('qwerty')
+        bb = B{a:'perin', b:'xyzlog'}
+        sss = ['abc', 'def']
+        
+        func foo()
+            "function_resUlT"
+        
+        
+        src = [
+            ("abc", 0),
+            ('def', 2),
+            (`hijk`, -1),
+            (s1, 0),
+            (s1, 3),
+            (s2, 1),
+            (s2, -1),
+            (s3, 1),
+            (s3, 2),
+            (s4, 0),
+            (s4, 1),
+            (s5, 0),
+            (s5, 2),
+            (s6, 1),
+            (s6, -1),
+            (nums, 0),
+            (nums, 5),
+            (aa.a, 2),
+            (bb.a, -1),
+            (bb.b, 2),
+            (sss[0], 1),
+            (sss[1], 2),
+            (foo(), 2),
+            (foo(), 8),
+            (foo(), -3),
+            (foo() + `</~:>`, -3),
+            
+        ]
+        
+        for t <- src
+            s, index = t
+            res <- (s, index, s[index]) 
+        
+        
+        # print('res = ', res)
+        ''')
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [11, 
+               ('abc', 0, 'a'), ('def', 2, 'f'), ('hijk', -1, 'k'), ('abcd1', 0, 'a'), ('abcd1', 3, 'd'), 
+               ('efgh2', 1, 'f'), ('efgh2', -1, '2'), ('ijk3', 1, 'j'), ('ijk3', 2, 'k'), 
+               ('mnop4', 0, 'm'), ('mnop4', 1, 'n'), ('qrst', 0, 'q'), ('qrst', 2, 's'), 
+               ('uvwxyz', 1, 'v'), ('uvwxyz', -1, 'z'), ('0123456789', 0, '0'), ('0123456789', 5, '5'), 
+               ('qwerty', 2, 'e'), ('perin', -1, 'n'), ('xyzlog', 2, 'z'), ('abc', 1, 'b'), ('def', 2, 'f'), 
+               ('function_resUlT', 2, 'n'), ('function_resUlT', 8, '_'), 
+               ('function_resUlT', -3, 'U'), ('function_resUlT</~:>', -3, '~')]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_code_string_plus(self):
+        ''' test str + str '''
+        code = (r'''
+        res = [11]
+        s1 = 'abcd1'
+        s2 = "efgh2"
+        s3 = `ijk3`
+        '''
+        """
+        s4 = '''mnop4'''
+        """
+        r'''
+        s5 = """qrst"""
+        s6 = ```uvwxyz```
+        nums = '0123456789'
+        
+        struct A a:string
+        struct B(A) b: string
+        
+        aa= A('qwerty')
+        bb = B{a:'perin', b:'xyzlog'}
+        sss = ['abc', 'def']
+        
+        func foo()
+            "function_resUlT"
+        
+        
+        res = [
+            "" + "", '' + '', `` + ``,
+            "a" + `b`,
+            'c' + "def",
+            """mult1_""" + ```-mult2```,
+            s1 + s2,
+            foo() + s3,
+            s4 + "!~/",
+            """ 
+            mult3
+            arba jambo,
+            """ + s5, nums + s6, 
+            aa.a + "Aa-",
+            `B:` + bb.b + "" + bb.a, 
+            "sss:" + sss[0] + sss[1] 
+        ]
+        
+        # print('res = ', res)
+        ''')
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = ['', '', '', 'ab', 'cdef', 'mult1_-mult2', 'abcd1efgh2', 'function_resUlTijk3', 
+               'mnop4!~/', ' \n    mult3\n    arba jambo,\n    qrst', '0123456789uvwxyz', 
+               'qwertyAa-', 'B:xyzlogperin', 'sss:abcdef']
+        self.assertEqual(exv, rvar.vals())
+
     def test_type_check_operator(self):
         ''' replace(src, rx, repl) '''
         code = r'''

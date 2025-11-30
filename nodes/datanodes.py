@@ -110,24 +110,26 @@ class CollectElemExpr(Expression, CollectElem):
 
     def do(self, ctx:Context):
         self.target = None
-        dprint('## COLL[x1] self.varExpr', self.varExpr)
+        # print('## COLL[x1] self.varExpr', self.varExpr)
         self.varExpr.do(ctx) # before []
         target = self.varExpr.get() # found collection
-        dprint('## COLL[x2] target1', self.target)
-        if isinstance(target, Var):
-            target = target.get()
+        # print('## COLL[x2] target1', self.target)
+        # if isinstance(target, Var):
+        target = var2val(target)
         self.target = target
-        dprint('## COLL[x3] target2', self.target)
+        # print('## COLL[x3] target2', self.target)
         self.keyExpr.do(ctx) #  [ into ]
 
     def set(self, val:Var):
         ''' '''
         key = self.keyExpr.get()
+        if not isinstance(self.target, Collection):
+            raise EvalErr("Bad collection instance for setVal")
         self.target.setVal(key, val)
 
     def get(self)->Var:
         key = self.keyExpr.get()
-        elem = self.target.getVal(key)
+        elem = self.target.getElem(key)
         return elem
 
 
