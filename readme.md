@@ -66,7 +66,10 @@ Content:
 20. Inline syntax.  
     [Few-expressions block ` ; `](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
-21. [String formatting `"%s" << x` , `~" {x} "`](#21-string-formatting)
+21. [String features](#21-string-features)
+    1. [insert `"%s" << x`](#211-percent-formatting)
+    2. [include `~"{x}"`](#212-format-by-including-expressions)
+    3. [base functions](#213-string-functions)
 22. [Import modules](#22-import-modules)
 23. [Function as object](#23-function-as-an-object)
 24. [Closures](#24-closures)
@@ -228,7 +231,7 @@ So we can use all local things and any things defined in all levels above: modul
 See more about visibility of things in sections of functions, closures, structs, importing.  
 
 ### 1.3 Numbers, strings, bool. Types.
-Numeric types.  
+1. Numeric types.  
 ```python
 nums = [
     true, # bool
@@ -240,7 +243,7 @@ nums = [
     0.15]   # float
 ```
 
-Strings.  
+2. Strings.  
 Strings can be defined by several type of quotes.  
 ```golang
 hello = "hello somebody!"
@@ -283,7 +286,13 @@ and more
 in b\acktick\s
 ```
 ````
-Data type.  
+String operators:  
+Concatenation: `string + string`  
+Get sub element (like list): `string[index]`  
+Formatting operators see in [](#211-string-formatting)
+
+
+3. Data type.  
 Type of variable is defined by `:` operator.  
 `varName : typeName`
 ```python
@@ -1560,15 +1569,20 @@ py -m run -c \
 ```
 
 
-### 21.1 String formatting  
+### 21 String features  
+
+- String formatting.
 There are two syntax implementations.  
-1) `%` - formatting with binary operator `<<`.  
+
+### 21.1 Percent formatting
+`%` - formatting with binary operator `<<`.  
 It's classic `%s`-formatting. Uses native `%` operator inside with %-formatting syntax of native language (python here).
 ```python
 'hello int:%d, float:%f, str:%s ' << (123, 12.5, 'Lalang')
 ```
 
-2) `~`strings / var-embedding syntax.  
+### 21.2 Format by including expressions
+`~`strings / var-embedding syntax.  
 Uses `~` unary operator before string and stringify expressions into `{}` brackets (includes).  
 Includes can be simple var-name, or be more complex expression with template-modifier over `:`.  
 Any expression returning stringify value is allowed: `var`, `struct.field`, `list`/`dict` element, `function` call.  
@@ -1591,7 +1605,7 @@ func fHello(s)
 ```
 See more examples in `tests/test_format.py`.
 
-21.2 String functions.
+### 21.3 String functions.
 
 1. Split.
 
@@ -1613,6 +1627,14 @@ join(['a','b','c'], '_')
 src = "<div> Hello </div>"
 replace(src, 'div', 'span')
 >> '<span> Hello </span>'
+```
+
+4. tostr
+```python
+tostr(123)      # '123'
+tostr(1 == 1)     # 'true'
+tostr([1,2, (3, 4)])  # '[1,2,(3,4)]'
+tostr({'a': 123}) # "{'a':123}"
 ```
 
 
