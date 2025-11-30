@@ -39,65 +39,9 @@ class TestDev(TestCase):
         
     '''
 
-
-
-    def _test_match_mixed_with_regexp(self):
-        '''  '''
-        code = r'''
-        res = []
-        
-        struct A a1:int
-        struct B(A) b1: int
-        struct C c1:string
-        
-        
-        nns = [
-            
-        ]
-        for nn <- nns
-            match nn
-                false !- res <- (nn, -100)
-                [*] | (*) | {*}  !- res <- (nn, 888)
-                _ !- res <- (nn, 999)
-        
-        # print(res)
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        rvar = ctx.get('res').get()
-        null = Null()
-        expv = []
-        self.assertEqual(expv, rvar.vals())
-
-    def _test_n(self):
-        import re
-        src = ''' 
-        abc 123
-        qe 456
-        hjk 890
-        '''
-        pt = re.compile(r'([a-z]+)\s+((\d)\d+)', re.MULTILINE)
-        src = 'qwe 123 asd 456 zxc 789'
-        pt = re.compile(r'([a-z]+)\s+((\d)\d+)', re.IGNORECASE)
-        iter = pt.finditer(src)
-        
-        for mt in iter:
-            print('mt>>', mt.group(0))
-            print('ttr>>', mt.groups())
-
-
     def _test_code(self):
         ''' '''
         code = r'''
-        # dd = {'aa':'11'}
-        print(1, "1\n2\t3")
-        print(2, `1 \n 2 \t3 \\ \/ \` \' \"`)
-        print("Hello there! \n\t Here new line, \\ back-slash and \"Words in quotes.\" ")
         # print('res = ', 1)
         '''
         code = norm(code[1:])
@@ -108,8 +52,6 @@ class TestDev(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         ex.do(ctx)
-        # rvar = ctx.get('dd')
-        # dd = rvar.get().vals()
         # print('>>', dd.values())
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()

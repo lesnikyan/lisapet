@@ -632,19 +632,19 @@ class MCDict(MCContr):
                 eev = eev.left
             # print('MCDict.sort1', eek, eev)
             
-            if isinstance(eek, MCValue):
+            if isinstance(eek, (MCValue, MCRegexp)):
                 kc.append(ee)
             if isinstance(eek, MCType):
                 tk.append(ee)
             elif isinstance(eek, MCSubVar):
-                if isinstance(eev, MCValue):
+                if isinstance(eev, (MCValue, MCRegexp)):
                     _v.append(ee)
                 elif isinstance(eev, MCType):
                     tv.append(ee)
                 else:
                     vrr.append(ee)
             elif isinstance(eek, MC_under):
-                if isinstance(eev, MCValue):
+                if isinstance(eev, (MCValue, MCRegexp)):
                     _v.append(ee)
                 else:
                     _k.append(ee)
