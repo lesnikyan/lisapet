@@ -48,11 +48,12 @@ def esc_str(s:str):
     return scov % s
     
 
-def _elem_str(arg):
+def _elem_str(arg, parent=None):
     ''' prepare elem of collection for tostr() '''
     e = arg
     k = ''
-    if isinstance(arg, tuple):
+    isDictPair = isinstance(parent, dict) and isinstance(arg, tuple)
+    if isDictPair:
         k, e = e
         k = tostr(k)
         if isinstance(k, str):
@@ -65,7 +66,7 @@ def _elem_str(arg):
     else:
         e = tostr(e)
     se = e
-    if isinstance(arg, tuple):
+    if isDictPair:
         se = '%s:%s' % (k, se)
     # print('se:', se)
     return se
@@ -86,7 +87,7 @@ def tostr(arg):
         if isinstance(v, dict):
             isrc = v.items()
         for e in isrc:
-            se = _elem_str(e)
+            se = _elem_str(e, v)
             vals.append(se)
         cover = '%s'
         match v:
