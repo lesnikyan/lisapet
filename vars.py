@@ -135,6 +135,13 @@ class Collection(Container, ValSequence):
     def vals(self):
         pass
 
+
+class SequenceGen:
+
+    def allVals(self):
+        pass
+
+
 class ListVal(Collection):
     ''' classic List / Array object'''
     

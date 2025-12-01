@@ -8,11 +8,9 @@ from lang import *
 from vars import *
 # from typex import *
 from nodes.expression import *
-from nodes.tnodes import MString
-from nodes.structs import StructInstance
 from nodes.func_expr import FuncCallExpr
-from nodes.structs import MethodCallExpr
-from nodes.structs import StructConstr, StructConstrBegin
+from nodes.structs import StructInstance, MethodCallExpr, StructConstr, StructConstrBegin
+from nodes.tnodes import MString
 
 # from formatter import  StrFormatter
 
@@ -234,24 +232,24 @@ class OpMath(BinOper):
             '>>': self.rshift
         }
         # eval expressions
-        dprint('#oper-left:', self.left)
-        dprint('#oper-right:', self.right)
+        # dprint('#oper-left:', self.left)
+        # dprint('#oper-right:', self.right)
         self.left.do(ctx)
         self.right.do(ctx)
         # print('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
-        dprint('#bin-oper2', a, b)
+        # print('#bin-oper2', a, b)
         
         # overloaded operators:
         over, res = self.overs(a, b)
-        dprint('#bin-oper-over:', over, res)
+        # dprint('#bin-oper-over:', over, res)
         if over:
             self.res = res
             return
         
         # dprint(' ( %s )' % self.oper, a.getVal(), b.getVal())
-        dprint('>types (%s %s %s)' % (a.getType(), self.oper, b.getType()))
+        # dprint('>types (%s %s %s)' % (a.getType(), self.oper, b.getType()))
         vtype = a.getType()
         if vtype != b.getType():
             # TODO fix different types
@@ -320,12 +318,17 @@ class OpMath(BinOper):
         # dprint('tpl % args: ', tpl % args)
         return Val(tpl % args, TypeString)
 
+    def normalize(self, val:Val):
+        if isinstance(val, Val) and isinstance(val.getVal(), SequenceGen):
+            return val.val.allVals()
+        return val
+
     def overs(self, a, b):
         a, b = valFrom(a), valFrom(b)
-        dprint('#bin-overs-1', a, b)
+        a, b = self.normalize(a), self.normalize(b)
+        # print('#bin-overs-1', a, b)
         match self.oper:
             case '+' :
-                # TODO: fix case with comprehensions [1..3] + [5..8]
                 if isinstance(a, (ListVal)) and isinstance(b, ListVal):
                     return (True, self.listPlus(a, b))
                 if isinstance(a, (StringVal)) and isinstance(b, StringVal):

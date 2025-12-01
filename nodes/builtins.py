@@ -160,11 +160,12 @@ def built_type(_, val:Val|Var):
     return Val(val.getType(), TypeType())
 
 
+# TODO: refactor
 def built_list(_, src):
     ''' Convert list-generator, tuple, args, etc to list object.
         TODO: args needs variadic function syntax to be implemented.
     '''
-    # print('b-list1:', src)
+    # print('b-list0:', src)
     val = getVal(src)
     
     # print('b-list1:', val)
@@ -175,6 +176,8 @@ def built_list(_, src):
         res = val.allVals()
     elif isinstance(val, str):
         res = str2list(val)
+    elif isinstance(src, TupleVal):
+        res = ListVal(elems=[n for n in src.elems])
     # print('b-list2:', res)
     return res
 
@@ -186,8 +189,6 @@ def built_foldl(ctx:Context, start, elems, fun:Function):
         fun.setArgVals([r, n])
         fun.do(ctx)
         r = fun.get()
-    # rval = r.getVal()
-    # rtype = valType(rval)
     return r
 
 
