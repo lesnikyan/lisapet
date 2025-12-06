@@ -759,6 +759,20 @@ print(user.name, user.age)
 >> mr.Olgerd 19
 
 ```
+3. Constructor of inherited type.  
+The default constructor of a child structure has the same arguments as the structure's fields.  
+Order of args is the same as fields was defined, from first parent to last child level.  
+```golang
+
+struct A a:int
+struct B(A) b:float
+struct C(B) c:string
+
+c = C(11, 20.05, "Hello!")
+
+#//>> st@C{a: 11, b: 20.05, c: 'Hello!'}
+```
+
 
 ### 11.1 Struct method.  
 
@@ -801,6 +815,17 @@ b1 = B{b:1, a1:12, a2:'aa-2'}
 b1.f1(3, 4)
 #/ access to A-field from B-instance
 b1.a1 += 10
+```
+Same name from multiple parents.  
+If several fields from parents have the same name here only first will be taken, in order that was used in the struct definition. 
+```golang
+struct A a:int
+struct B a:string
+
+struct C(A, B) c:list #// C.a is int
+
+struct D(B, A) d:dict #// D.a is string
+
 ```
 
 

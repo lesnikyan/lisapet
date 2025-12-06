@@ -31,6 +31,138 @@ class TestStructs(TestCase):
 
 
 
+
+    def test_inherined_struct_callable_constr(self):
+        ''' '''
+        code = r'''
+        
+        struct A a:int
+        struct B(A) b: int
+        struct C(B) c:int, s:string
+        
+        res = []
+        
+        b1 = B(1, 10) # a=1, b=0
+        b2 = B(2, 20)
+        c = C(3, 30, 333, 'Ccc')
+        
+        res <- ('b1', b1.a, b1.b)
+        res <- ('b2', b2.a, b2.b)
+        res <- ('c0', c.a, c.b, c.c, c.s)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [('b1', 1, 10), ('b2', 2, 20), ('c0', 3, 30, 333, 'Ccc')]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_inherined_struct_depth(self):
+        ''' '''
+        code = r'''
+        
+        struct A a:int
+        struct B(A) b: int
+        struct C(B) c:int, s:string
+        struct D(C) d: string, q:int
+        struct E(D) e:int
+        
+        func st:A addA(v:int)
+            st.a += v
+        
+        res = []
+        
+        b1 = B{a:1, b:10}
+        c = C{a:3, b:30, c:333, s:'Ccc'}
+        d = D{a:4, b:40, c:444, s:'Ddd', d:'QWERT', q:1004}
+        e0 = E{a:5, b:50, c:555, s:'Eee', d:'WERTY', q:1005, e:5000}
+        e0.addA(-10)
+        
+        res <- ('b1', b1, b1.a, b1.b)
+        res <- ('c0', c, c.a, c.b, c.c, c.s)
+        res <- ('d0', d, d.a, d.b, d.c, d.s, d.d)
+        res <- ('e0', e0, e0.a, e0.d, e0.e)
+        
+        # print(); for r <- res /: print('=', r)
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('b1', 'st@B{a: 1,b: 10}', 1, 10), 
+            ('c0', 'st@C{a: 3,b: 30,c: 333,s: Ccc}', 3, 30, 333, 'Ccc'), 
+            ('d0', 'st@D{a: 4,b: 40,c: 444,s: Ddd,d: QWERT,q: 1004}', 4, 40, 444, 'Ddd', 'QWERT'), 
+            ('e0', 'st@E{a: -5,b: 50,c: 555,s: Eee,d: WERTY,q: 1005,e: 5000}', -5, 'WERTY', 5000)]
+        self.assertEqual(exv, rvar.vals())
+
+
+    def test_inherined_struct_wide(self):
+        ''' '''
+        code = r'''
+        
+        struct A a:int
+        struct B b: int
+        struct C(A, B) c:int, s:string
+        struct D(B, A) d: string
+        
+        struct B1 a:int, b:int
+        struct E1 a:int, b:string
+        struct F (B1, E1) f:list
+        struct G(E1, B1) g:tuple
+        
+        func st:B1 addB(v:int)
+            st.b += v
+            
+        func st:E1 addB(v:string)
+            st.b += v
+        
+        res = []
+        
+        c1 = C(10, 100, 101, 'c-ss')
+        d1 = D(20, 200, 'd-dd')
+        f1 = F(3, 33, [8,88])
+        g1 = G(4, 'g44', (9,99))
+        
+        f1.addB(3000)
+        g1.addB('_G')
+        
+        res <- ('c1', c1, c1.a, c1.b, c1.c, c1.s)
+        res <- ('d1', d1, d1.a, d1.b, d1.d)
+        res <- ('f1', f1, f1.b)
+        res <- ('g1', g1, g1.b)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('c1', 'st@C{b: 100,a: 10,c: 101,s: c-ss}', 10, 100, 101, 'c-ss'), 
+            ('d1', 'st@D{a: 200,b: 20,d: d-dd}', 200, 20, 'd-dd'), 
+            ('f1', 'st@F{a: 3,b: 3033,f: [8, 88]}', 3033), 
+            ('g1', 'st@G{a: 4,b: g44_G,g: (9, 99)}', 'g44_G')]
+        self.assertEqual(exv, rvar.vals())
+
     def test_list_dict_in_struct(self):
         ''' Struct with collections,
             default vals of collection.
