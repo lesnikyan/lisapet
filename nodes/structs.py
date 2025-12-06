@@ -26,9 +26,11 @@ class StructDef(TypeStruct):
     def __init__(self, name, fields:list[Var]=[]):
         self.name=name
         self.fields = []
+        self.nfields = [] # full fields count with inherited
         self.__parents:dict[str,TypeStruct] = {}
         self.methods:dict[str,FuncInst] = []
         self.types:dict[str, VType] = {}
+        self.ntypes:dict[str, VType] = {}
         if fields:
             self.__fillData(fields)
         self.__typeMethods:dict[str,FuncInst] = {}
@@ -44,24 +46,26 @@ class StructDef(TypeStruct):
         return self.__constr
 
     def addParent(self, superType: TypeStruct):
-        dprint('StructDef. addParent1 :', superType)
+        # dprint('StructDef. addParent1 :', superType)
         self.__parents[superType.getName()] = superType
+        self.nfields = [n for n in superType.nfields if n not in self.nfields] + self.nfields
+        self.ntypes.update({k:v for k, v in superType.ntypes.items() if k not in self.ntypes})
         
     def getParents(self):
         return self.__parents
 
     def addMethod(self, func:FuncInst):
         name = func.getName()
-        dprint('struct.add Method:', name)
+        # dprint('struct.add Method:', name)
         if name in self.__typeMethods:
             raise EvalErr('Method `%s` already defined in type `%s`.' % (name, self.name))
         self.__typeMethods[name] = func
 
     def getMethod(self, name):
-        dprint('getMeth', name)
+        # dprint('getMeth', name)
         if not name in self.__typeMethods:
             for sname, stype in self.__parents.items():
-                dprint('StDef.getMethod ', sname, stype)
+                # dprint('StDef.getMethod ', sname, stype)
                 try:
                     mt = stype.getMethod(name)
                     return mt
@@ -85,9 +89,18 @@ class StructDef(TypeStruct):
 
     def add(self, f:Var):
         tp:VType = f.getType()
-        # dprint('StructDef.add ## ', f, tp)
+        # print('StructDef.add ## ', f, tp)
         self.fields.append(f.name)
+        self.nfields.append(f.name)
         self.types[f.name] = tp
+        self.ntypes[f.name] = tp
+
+    def getFieldsNested(self):
+        fields = []
+        for sname, stype in self.__parents.items():
+            fields.extend(stype.getFieldsNested())
+        fields.extend([(fname, self.types[fname]) for fname in self.fields])
+        return fields
 
     def getFields(self):
         return self.fields
@@ -124,22 +137,35 @@ class StructDefConstrFunc(Function):
         super().__init__(stype.getName()+'')
         self.stype = stype
         self.block = Block()
-        fields = stype.getFields()
-        for fname in fields:
-            self.addArg(Var(fname, stype.types[fname]))
+        fnames = []
+        ftypes = {}
+        self.fields = []
+        nfields = stype.getFieldsNested()
+        # print('\nSCon1:', self.stype.name,'::', nfields)
+        for fname, ftype in nfields:
+            # print('SCon2:', fname, ftype)
+            if fname not in fnames:
+                # print('SCon200:', fname)
+                fnames.append(fname)
+                ftypes[fname] = ftype
+                self.fields.append((fname, ftype))
+        for fname, ftype in self.fields:
+            self.addArg(Var(fname, ftype))
 
     def do(self, ctx: Context):
         self.res = None
         self.block.storeRes = True # save last expr value
 
         inst = StructInstance(self.stype)
-        fields = self.stype.getFields()
+        # fields = self.stype.getFieldsNested()
         vals = []
         vals = [ var2val(a) for a in self.callArgs]
-        for i in range(len(fields)):
-            inst.set(fields[i], self.argVars[i])
-        if len(vals) > 0:
-            inst.setVals(vals)
+        # print('SCon3:', self.fields,  vals, '\n', self.argVars)
+        for i in range(len(self.fields)):
+            # inst.set(fields[i][0], self.argVars[i])
+            inst.set(self.fields[i][0], vals[i])
+        # if len(vals) > 0:
+        #     inst.setVals(vals)
         inst.initDefVals()
         self.res = inst
 
@@ -157,59 +183,97 @@ class StructInstance(ObjectInstance, NSContext):
         super().__init__(None, stype)
         # print('StructInstance.__init__', '>>', stype)
         self.vtype:StructDef = stype
+        self.ifields = [] # fields of instance
         self.data:dict[str, Val] = {}
         self.supers:dict = {}
         self.initSuper()
 
     def initSuper(self):
-        superTypes = self.vtype.getParents()
-        for pname, st in superTypes.items():
-            # pname = st.getName()
-            self.supers[pname] = StructInstance(st)
+        self.ifields = self.vtype.nfields[:]
+        # superTypes = self.vtype.getParents()
+        # for pname, st in superTypes.items():
+        #     # pname = st.getName()
+        #     self.supers[pname] = StructInstance(st)
+
+    # def initDefVals0(self, skip=None):
+    #     '''
+    #     ignore already filled in child instance (?)
+    #     '''
+    #     # set current
+    #     if skip is None:
+    #         skip = []
+    #     for fname in self.vtype.fields:
+    #         # print('def #1:', self.vtype.name, ' :: ', fname, skip)
+    #         if fname not in self.data and fname not in skip:
+    #             ftype = self.vtype.types[fname]
+    #             dv = defaultValOfType(ftype) # default by type: 0, null, false, "", [], {}, (,)
+    #             # print('def #2:', fname, ftype, '>>', dv)
+    #             self.data[fname] = dv
+    #     skip += self.vtype.fields
+    #     # set parents
+    #     if self.supers:
+    #         # print('def-supers')
+    #         for _, sup in self.supers.items():
+    #             skip = sup.initDefVals(skip)
+    #     return skip
 
     def initDefVals(self, skip=None):
         '''
         ignore already filled in child instance (?)
         '''
         # set current
-        if skip is None:
-            skip = []
-        for fname in self.vtype.fields:
+        # if skip is None:
+        #     skip = []
+        for fname in self.vtype.nfields:
             # print('def #1:', self.vtype.name, ' :: ', fname, skip)
-            if fname not in self.data and fname not in skip:
-                ftype = self.vtype.types[fname]
+            if fname not in self.data:
+                ftype = self.vtype.ntypes[fname]
                 dv = defaultValOfType(ftype) # default by type: 0, null, false, "", [], {}, (,)
                 # print('def #2:', fname, ftype, '>>', dv)
                 self.data[fname] = dv
-        skip += self.vtype.fields
+        # skip += self.vtype.nfields
         # set parents
-        if self.supers:
-            # print('def-supers')
-            for _, sup in self.supers.items():
-                skip = sup.initDefVals(skip)
-        return skip
+        # if self.supers:
+        #     # print('def-supers')
+        #     for _, sup in self.supers.items():
+        #         skip = sup.initDefVals(skip)
+        # return skip
+
+    # def get(self, fname=None):
+    #     if fname is None:
+    #         # dprint('StructInstance.DEBUG::: getting enmpty fieldname')
+    #         return 'st@' + str(self) # debug
+    #     if fname in self.vtype.fields:
+    #         # print('\n  == Strc.get', self.data[fname], type(self.data[fname]))
+    #         return self.data[fname]
+    #     if self.supers:
+    #         for _, sup in self.supers.items():
+    #             if fname not in sup.vtype.fields:
+    #                 continue
+    #             return sup.get(fname)
+    #     raise EvalErr(f'Incorrect field `{fname}` of struct `{self.vtype.getName()}` ')
 
     def get(self, fname=None):
         if fname is None:
             # dprint('StructInstance.DEBUG::: getting enmpty fieldname')
             return 'st@' + str(self) # debug
-        if fname in self.vtype.fields:
+        if fname in self.vtype.nfields:
             # print('\n  == Strc.get', self.data[fname], type(self.data[fname]))
             return self.data[fname]
-        if self.supers:
-            for _, sup in self.supers.items():
-                if fname not in sup.vtype.fields:
-                    continue
-                return sup.get(fname)
+        # if self.supers:
+        #     for _, sup in self.supers.items():
+        #         if fname not in sup.vtype.fields:
+        #             continue
+        #         return sup.get(fname)
         raise EvalErr(f'Incorrect field `{fname}` of struct `{self.vtype.getName()}` ')
     
     def find(self, fname):
         ''' find sub-field by name'''
-        dprint('st.find', fname, ':', self.vtype.fields)
+        # dprint('st.find', fname, ':', self.vtype.fields)
         return self.data[fname]
 
     def setVals(self, vals:list[Val]):
-        if len(vals) != len(self.vtype.fields):
+        if len(vals) != len(self.vtype.nfields):
             raise EvalErr(f'Incorrect number of values in constructor of struct {self.vtype.name}')
         for i in range(len(vals)):
             self.set(self.vtype.fields[i], vals[i])
@@ -217,30 +281,27 @@ class StructInstance(ObjectInstance, NSContext):
     def set(self, fname:str, val:Val):
         # check type
         # print('StructInstance.set:', fname, val)
-        dprint('StructInstance.set types:', self.vtype.name, '>', self.vtype.types)
-        if fname in self.vtype.fields:
+        # print('StructInstance.set types:', self.vtype.name, '>', self.vtype.types)
+        if fname in self.vtype.nfields:
             self.checkType(fname, val)
             self.data[fname] = val
             return
-        if self.supers:
-            for _, sup in self.supers.items():
-                if fname not in sup.vtype.fields:
-                    continue
-                return sup.set(fname, val)
+        # TODO: Fix deeper inheritance than 2 lvls
+        # if self.supers:
+        #     for _, sup in self.supers.items():
+        #         if fname not in sup.vtype.fields:
+        #             continue
+        #         return sup.set(fname, val)
         raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
 
     def checkType(self, fname, val:Val):
         valType = val.getType()
-        ftype = self.vtype.types[fname] # class inherited of VType or inst of StructInstance
+        ftype = self.vtype.ntypes[fname] # class inherited of VType or inst of StructInstance
         fclass = ftype.__class__
-        # print('Type: name / mtypes', self.vtype.name, self.vtype.types)
-        # print('Type Check ???1:', valType, val)
-        # print('Type Check ???2:', valType.__class__, '<?>', fclass,' if:', isinstance(valType, fclass))
-        # dprint('Type struct???3:', isinstance(valType, StructInstance))
+        # print('Type Check ???1:', fname, ftype.__class__, '<<', valType.__class__, val)
         if ftype == TypeAny:
             return # ok
         # if primitives or collections
-        # dprint('if prim and !types', not isinstance(valType, StructInstance) and not isinstance(valType, ftype))
         if not isinstance(ftype, StructDef):
             # print('!! Not struct!', fclass)
             if not isinstance(valType, fclass):
@@ -254,15 +315,12 @@ class StructInstance(ObjectInstance, NSContext):
             raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
         
     def istr(self):
-        fns = self.vtype.fields
+        fns = self.vtype.nfields
         vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
         return vals
 
     def __str__(self):
-        # fns = self.vtype.fields
-        # vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
         vals = self.istr()
-        # return 'struct instance %s(%s)' % (self.vtype.name, vals)
         return '%s{%s}' % (self.vtype.name, vals)
 
 # Expressions
@@ -300,7 +358,7 @@ class StructDefExpr(DefinitionExpr):
                 ftype = ft.get()
                 # print('@21>> type', self.typeName,',fname:', fname, ' >> ',  ftype, type(ftype))
                 if not isinstance(ftype, (VType)):
-                    dprint('fname:', type(ft))
+                    # dprint('fname:', type(ft))
                     raise EvalErr(f'Trying to put {fname} with no type.')
 
             elif isinstance(field, Var):

@@ -52,6 +52,7 @@ class Function(FuncInst):
         # print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
         # print('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
         if self.argNum != len(args):
+            # print('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
             raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
         for i in range(nn):
@@ -62,7 +63,7 @@ class Function(FuncInst):
             atype = self.argVars[i].getType()
             argVar = Var(aname, atype)
             argVar.set(arg)
-            dprint('FN setArgVals-4: ', atype, aname)
+            # dprint('FN setArgVals-4: ', atype, aname)
             if isinstance(atype, TypeAny):
                 argVar.setType(arg.getType())
             # print('set arg8  >> ', self.argVars[i], 'val:', arg)

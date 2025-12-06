@@ -43,6 +43,13 @@ class TestDev(TestCase):
     def _test_code(self):
         ''' '''
         code = r'''
+        
+        struct A a:int
+        struct B(A) b:float
+        struct C(B) c:string
+        
+        c = C(11, 20.05, "Hello!")
+        print(c)
         # print('res = ', 1)
         '''
         code = norm(code[1:])

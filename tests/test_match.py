@@ -47,7 +47,7 @@ class TestMatch(TestCase):
             ["Napoleon543"], ({"Napoleon123": 1002}, "napo@bumbum.es"),
             {"Red line": "alert", "Green place":"rest"}, {"Green tree": "yield", "Red wine":"drink"}, 
             A("<div>"), A("<xml>"), A('ggg'),
-            B('123'), B{a1:'feed', b1:'abc'}, B{a1:'food', b1:'abc'}, 
+            B('', '123'), B{a1:'feed', b1:'abc'}, B{a1:'food', b1:'abc'}, 
             [A('xxx')],
         ]
         for nn <- nns
@@ -93,9 +93,8 @@ class TestMatch(TestCase):
             ({'0xfde': 4048}, 51), (['Napoleon543'], 61), (({'Napoleon123': 1002}, 'napo@bumbum.es'), 61), 
             ({'Red line': 'alert', 'Green place': 'rest'}, ('alert', 'rest'), 52), 
             ({'Green tree': 'yield', 'Red wine': 'drink'}, ('drink', 'yield'), 52), 
-            ['st@A{a1: <div>}', 73], ('st@A{a1: <xml>}', 702), ('st@A{a1: ggg}', 74), 
-            ('st@B{b1: 123}', 71), ('st@B{b1: abc}', 72), ('st@B{b1: abc}', 701), 
-            (['st@A{a1: xxx}'], 75)]
+            ['st@A{a1: <div>}', 73], ('st@A{a1: <xml>}', 702), ('st@A{a1: ggg}', 74), ('st@B{a1: ,b1: 123}', 71), 
+            ('st@B{a1: feed,b1: abc}', 72), ('st@B{a1: food,b1: abc}', 701), (['st@A{a1: xxx}'], 75)]
         self.assertEqual(expv, rvar.vals())
 
     def test_match_type_in_collections(self):
@@ -305,8 +304,8 @@ class TestMatch(TestCase):
             [{1:[(,), (,)], 2:[(,), (,)]}, {3:[(,), (,)], 4:[(,), (,)]}], 
             [{1:(,)}], ({1:[]},), [{1:22}], [({1:33},)], ([{1:[44]}],),
             [A(11)], [A(11), 1], [(A{}, 11), (B{}, 22)],
-            (A(11),), ([A(12), B(13)], [B(14), C('015')]),
-            {'a':A{}, 'b':B{}}, {'a':A(22), 'b':B(33)},
+            (A(11),), ([A(12), B(0, 13)], [B(0, 14), C('015')]),
+            {'a':A{}, 'b':B{}}, {'a':A(22), 'b':B(0,33)},
         ]
         
         for nn <- nns
@@ -356,15 +355,14 @@ class TestMatch(TestCase):
         null = Null()
         expv = [
             ('', 999), (null, 999), (0, 999), (False, 999), ((), 918), ({}, 919), ([], 917), 
-            ([(), ()], 1), (([], []), 2), ([{}, {}], 3), (({}, {}), 4), 
-            ({1: [], 2: []}, 9), ({1: (), 2: ()}, 10), ([{5: 5}, {}], 7), ([{5: 5}, {6: 7, 8: 9}], 7), 
+            ([(), ()], 1), (([], []), 2), ([{}, {}], 3), (({}, {}), 4), ({1: [], 2: []}, 9), 
+            ({1: (), 2: ()}, 10), ([{5: 5}, {}], 7), ([{5: 5}, {6: 7, 8: 9}], 7), 
             (({7: 7}, {}), 8), (({7: 7}, {8: 9, 11: 22}), 8), 
-            ([{1: [(), ()], 2: [(), ()]}, {3: [(), ()], 4: [(), ()]}], 11), 
-            ([{1: ()}], 12), (({1: []},), 13), 
-            ([{1: 22}], 41), ([({1: 33},)], 42), (([{1: [44]}],), 43), 
-            (['st@A{a1: 11}'], 141), (['st@A{a1: 11}', 1], 14), ([('st@A{a1: 0}', 11), ('st@B{b1: 0}', 22)], 143), (('st@A{a1: 11}',), 142), 
-            ((['st@A{a1: 12}', 'st@B{b1: 13}'], ['st@B{b1: 14}', 'st@C{c1: 015}']), 15), 
-            ({'a': 'st@A{a1: 0}', 'b': 'st@B{b1: 0}'}, 16), ({'a': 'st@A{a1: 22}', 'b': 'st@B{b1: 33}'}, 16)]
+            ([{1: [(), ()], 2: [(), ()]}, {3: [(), ()], 4: [(), ()]}], 11), ([{1: ()}], 12), 
+            (({1: []},), 13), ([{1: 22}], 41), ([({1: 33},)], 42), (([{1: [44]}],), 43), 
+            (['st@A{a1: 11}'], 141), (['st@A{a1: 11}', 1], 14), ([('st@A{a1: 0}', 11), ('st@B{a1: 0,b1: 0}', 22)], 143),
+            (('st@A{a1: 11}',), 142), ((['st@A{a1: 12}', 'st@B{a1: 0,b1: 13}'], ['st@B{a1: 0,b1: 14}', 'st@C{c1: 015}']), 15), 
+            ({'a': 'st@A{a1: 0}', 'b': 'st@B{a1: 0,b1: 0}'}, 16), ({'a': 'st@A{a1: 22}', 'b': 'st@B{a1: 0,b1: 33}'}, 16)]
         self.assertEqual(expv, rvar.vals())
 
     def test_match_mixed_multicases(self):
@@ -380,7 +378,7 @@ class TestMatch(TestCase):
         nns = [
             '', null, 0, false, (,), {}, [], 1, [2],
             [1,2,3], (1,2,3), {'a':1, 'b':2, 'c':3},
-            A(1), B(2), C('c3'),
+            A(1), B(0,2), C('c3'),
         ]
         for nn <- nns
             match nn
@@ -403,9 +401,10 @@ class TestMatch(TestCase):
         ex.do(ctx)
         rvar = ctx.get('res').get()
         null = Null()
-        expv = [('', 0), (null, 0), (0, 0), (False, -100), ((), 888), ({}, 888), ([], 0), 
-                (1, 999), ([2], 888), ([1, 2, 3], 1), ((1, 2, 3), 1), ({'a': 1, 'b': 2, 'c': 3}, 1), 
-                ('st@A{a1: 1}', 2), ('st@B{b1: 2}', 2), ('st@C{c1: c3}', 2)]
+        expv = [
+            ('', 0), (null, 0), (0, 0), (False, -100), ((), 888), ({}, 888), ([], 0), (1, 999), ([2], 888), 
+            ([1, 2, 3], 1), ((1, 2, 3), 1), ({'a': 1, 'b': 2, 'c': 3}, 1), 
+            ('st@A{a1: 1}', 2), ('st@B{a1: 0,b1: 2}', 2), ('st@C{c1: c3}', 2)]
         self.assertEqual(expv, rvar.vals())
 
     def test_match_simple_regexp(self):
@@ -478,7 +477,7 @@ class TestMatch(TestCase):
                 _{} !- res <- [n, 19]
                 _ !- res <- [n, 2999]
             # print('nres:', res)
-        # 
+        
         # print('res = ', res)
         '''
         code = norm(code[1:])
@@ -491,9 +490,8 @@ class TestMatch(TestCase):
         ex.do(ctx)
         
         exp = [
-            [[], 2999], [(), 2999], [{}, 2999], 
-            ['st@Type1{a: 0,b: 0}', 19], ['st@Type1{a: 10,b: 20}', 19], ['st@TypeA{color: fff}', ('fff',), 10],
-            ['st@TypeB{name: Aaa,age: 44}', ('fff',), 10], 
+            [[], 2999], [(), 2999], [{}, 2999], ['st@Type1{a: 0,b: 0}', 19], ['st@Type1{a: 10,b: 20}', 19], 
+            ['st@TypeA{color: fff}', ('fff',), 10], ['st@TypeB{color: fff,name: Aaa,age: 44}', ('fff',), 10], 
             ['st@TypeC{color: 0}', (0,), 10], ['st@TypeC{color: 4080}', (4080,), 10]]
         rvar = ctx.get('res').get()
         self.assertEqual(exp, rvar.vals())
@@ -561,8 +559,8 @@ class TestMatch(TestCase):
         
         exp = [
             ['st@Type1{a: 0,b: 0}', 10], ['st@Type1{a: 10,b: 20}', 11], ['st@Type1{a: 10,b: 0}', 10], ['st@Type1{a: 10,b: 2}', 12], ['st@Type1{a: 1,b: 2}', 19], 
-            ['st@TypeA{color: 000}', 29], ['st@TypeA{color: fff}', 23], ['st@TypeB{name: Aaa,age: 44}', 23], 
-            ['st@TypeB{name: Bimbo,age: 22}', 'Bimbo', 21], ['st@TypeB{name: ,age: 0}', 27], ['st@TypeB{name: Ambo,age: 33}', ('Ambo', 'green'), 28], 
+            ['st@TypeA{color: 000}', 29], ['st@TypeA{color: fff}', 23], ['st@TypeB{color: fff,name: Aaa,age: 44}', 23], 
+            ['st@TypeB{color: red,name: Bimbo,age: 22}', 'Bimbo', 21], ['st@TypeB{color: ,name: ,age: 0}', 27], ['st@TypeB{color: green,name: Ambo,age: 33}', ('Ambo', 'green'), 28], 
             ['st@TypeC{nums: [],a: 1}', 30], ['st@TypeC{nums: [331],a: 2}', 31], ['st@TypeC{nums: [34, 35, 36],a: 3}', (34, 35, 36), 32], 
             ["st@TypeD{fd: {'a': 111},fl: [],ft: ()}", (111,), 41], ['st@TypeD{fd: {},fl: [22, 33, 44],ft: ()}', (22, 33), 42], 
             ["st@TypeD{fd: {'x': 1111},fl: [2222],ft: (3333,)}", (3333, 'x', 1111, 2222), 43], ['st@TypeD{fd: {},fl: [],ft: (555,)}', (555,), 44], 
