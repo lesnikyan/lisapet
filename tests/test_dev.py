@@ -44,6 +44,26 @@ class TestDev(TestCase):
         ''' '''
         code = r'''
         
+        # print('res = ', 1)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        # print('>>', dd.values())
+        # self.assertEqual(0, rvar.getVal())
+        # rvar = ctx.get('res').get()
+        # self.assertEqual([], rvar.vals())
+
+
+    def _test_code(self):
+        ''' '''
+        code = r'''
+        
         struct A a:int
         struct B(A) b:float
         struct C(B) c:string
@@ -141,28 +161,6 @@ class TestDev(TestCase):
         rvar = ctx.get('rrs').get()
         self.assertEqual([10, 22, 121, 48, 115, 37, 120], rvar.vals())
 
-    def __tt(self):
-        '''
-        # thoughts about OOP
-        
-        struct C c:int
-        struct D(A,C) d1:int, d2:float
-        
-        func d:D f1(x, y)
-            d.f1(x, y)
-            d.a1 = 1
-            d.A.f1(x, y) # ??
-            d.super().f1(x, y) # ??
-            super(d).f1(x, y) # for methods only # ??
-        
-        #struct D:(A,C) d1:int, d2:float
-        
-        struct E(A,B)
-            A, B
-            e1:int
-            e2:D
-        '''
-
     def _test_print(self):
         ''' '''
         code = r'''
@@ -239,12 +237,14 @@ class TestDev(TestCase):
 
 
     def _test_tuple_assign_left(self):
+        # not sure we need now
         ''' make vars and assign vals from tuple
             
             A) tuple as a result of comma-separated expression: var = a, b, c
             Shuold do:
             1. any value-returning sub-expression, like list constructor
             2. think about common case of `x, x, x` expression; not sure.
+            
             tuple as destination of assignment operator, or: result-to-tuple mapping
             Should do:
             1. reuse defined vars.
@@ -261,7 +261,7 @@ class TestDev(TestCase):
                 c) mapping list to tuple with the same size looks ok.
             '''
         code = '''
-        (a, b, s) = 1,2,3
+        (a, b, c) = 1,2,3
         print('', a, b, c)
         '''
         code = norm(code[1:])
