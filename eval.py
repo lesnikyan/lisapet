@@ -8,6 +8,7 @@ from context import Context, RootContext
 from nodes.func_expr import setNativeFunc
 from nodes.builtins import *
 import libs.str as lstr
+import libs.dicts as dc
 
 
 def rootContext(ctx:Context = None)->RootContext:
@@ -26,6 +27,8 @@ def rootContext(ctx:Context = None)->RootContext:
     setNativeFunc(ctx, 'join', lstr.join, TypeString)
     setNativeFunc(ctx, 'split', lstr.split, TypeList)
     setNativeFunc(ctx, 'replace', lstr.replace, TypeList)
+    setNativeFunc(ctx, 'dkeys', dc.dict_keys, TypeList)
+    setNativeFunc(ctx, 'ditems', dc.dict_items, TypeList)
     
     constants = {
     'true': (TypeBool, Val(True, TypeBool())),

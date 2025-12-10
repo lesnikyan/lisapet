@@ -68,7 +68,7 @@ class DictExpr(CollectionExpr):
         self.exprList.append(exp)
 
     def do(self, ctx:Context):
-        self.data = DictVal(None)
+        self.data = DictVal()
         # dprint('## DictExpr.do1 self.data:', self.data)
         for exp in self.exprList:
             # dprint('dictExp. next:', exp)

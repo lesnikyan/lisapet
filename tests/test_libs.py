@@ -25,6 +25,70 @@ from tests.utils import *
 class TestLibs(TestCase):
 
 
+    def test_dict_func_ditems(self):
+        ''' '''
+        code = r'''
+        res = []
+        src = [
+            {}, {1:11}, {2:22, 3:33},
+            {'a':'a11'}, {'bb':'b22','cc':'c33','dd':'d44'}, 
+            {'nums' : [1,2,3]}, {'names' : ['Adam','Bob','Cindy']}
+        ]
+        
+        for dd <- src
+            kvs = ditems(dd)
+            res <- (dd, kvs)
+        
+        
+        # print('\n'); for r <- res /: print(r)
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ({}, []), ({1: 11}, [(1, 11)]), ({2: 22, 3: 33}, [(2, 22), (3, 33)]), 
+            ({'a': 'a11'}, [('a', 'a11')]), ({'bb': 'b22', 'cc': 'c33', 'dd': 'd44'}, [('bb', 'b22'), ('cc', 'c33'), ('dd', 'd44')]), 
+            ({'nums': [1, 2, 3]}, [('nums', [1, 2, 3])]), ({'names': ['Adam', 'Bob', 'Cindy']}, [('names', ['Adam', 'Bob', 'Cindy'])])]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_dict_func_dkeys(self):
+        ''' '''
+        code = r'''
+        res = []
+        src = [
+            {}, {1:11}, {2:22, 3:33},
+            {'a':'a11'}, {'bb':'b22','cc':'c33','dd':'d44'}, 
+        ]
+        
+        for dd <- src
+            kk = dkeys(dd)
+            res <- (dd, kk)
+        
+        
+        # print('\n'); for r <- res /: print(r)
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ({}, []), ({1: 11}, [1]), ({2: 22, 3: 33}, [2, 3]), 
+            ({'a': 'a11'}, ['a']), 
+            ({'bb': 'b22', 'cc': 'c33', 'dd': 'd44'}, ['bb', 'cc', 'dd'])]
+        self.assertEqual(exv, rvar.vals())
 
     def test_tostr(self):
         ''' '''
