@@ -16,7 +16,7 @@ from vars import *
 class Context(NSContext):
     def __init__(self, parent:'Context'=None):
         self.vars:dict = dict()
-        self.types:dict[str, VType] = {}
+        self.types:dict[str, TypeProperty] = {}
         self.funcs:dict[str,FuncInst] = {}
         self.upper:Context = parent # upper level context
 
@@ -50,22 +50,15 @@ class Context(NSContext):
             name = tp.get().getName()
         if name in self.types:
             raise EvalErr(f'Type {tp.name} already defined.')
-        dprint('>>>>>>> :tp:', tp)
-        self.types[name] = tp
+        # print('>>>>>>> :tp:', tp)
+        tprop = TypeProperty(tp, FuncBinder(tp.get()))
+        self.types[name] = tprop
 
     def getType(self, name)->VType:
-        return self.find(name)
-        # src = self
-        # print(' -- getType:', name)
-        # # self.print(forsed=1)
-        # while True:
-        #     print('ctx cur types:', src.types.keys())
-        #     if name in src.types:
-        #         print('--- > type',src.types[name])
-        #         return src.types[name]
-        #     if src.upper == None:
-        #         raise EvalErr('Cant find var|type name `%s` in current context' % name)
-        #     src = src.upper
+        tp = self.find(name)
+        if isinstance(tp, TypeProperty):
+            return tp.type
+        return tp
 
     def addSet(self, vars:Var|dict[str,Var]):
         if not isinstance(vars, dict):
@@ -97,11 +90,17 @@ class Context(NSContext):
 
     def addTypeMethod(self, typeName, func:FuncInst):
         typeVal = self.getType(typeName)
-        xtype:TypeStruct = typeVal.get()
+        xtype:TypeStruct|FuncBinder = typeVal.get()
         dprint('**addTypeMethod', typeName, xtype, func)
         if not isinstance(xtype, TypeStruct):
             raise EvalErr('Strange  type fpund by name `%s`' % typeName, xtype)
         xtype.addMethod(func)
+
+    def bindTypeMethod(self, typeName, func:FuncInst):
+        tp = self.findIn(typeName)
+        if not isinstance(tp, TypeProperty):
+            raise EvalErr("Incorrect name %s of type to bind method." % typeName)
+        tp.funcs.addMethod(func)
 
     def addVar(self, varName:Var|str, vtype:VType=None):
         # dprint('x.addVar0 >> var:', varName, varName.name)
@@ -117,7 +116,10 @@ class Context(NSContext):
         # self.addSet({name:var})
 
     def get(self, name)->Base:
-        return self.find(name)
+        res = self.find(name)
+        if isinstance(res, TypeProperty):
+            res = res.type
+        return res
 
     def findIn(self, name):
         src = self
@@ -249,11 +251,11 @@ class ModuleContext(Context):
         # print('findIn ## 2:', res)
         return None
 
-    def getType(self, name):
-        tt = self.find(name)
-        # print('Mctx.GetType : ', tt)
-        if tt:
-            return tt
+    # def getType(self, name):
+    #     tt = self.find(name)
+    #     # print('Mctx.GetType : ', tt)
+    #     if tt:
+    #         return tt
         # raise EvalErr('ModCtx getType')
         
 

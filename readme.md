@@ -45,7 +45,10 @@ Content:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
     2. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
 13. [Multiline expressions](#13-multiline-expressions-if-for-math-expr)
-14. [Builtin/native functions (print, iter,..)](#14-builtin-functions)
+14. Builtin (native) functions
+    1. [Global functions: print, iter, etc.](#141-global-native-functions)
+    2. [Bind native function as a method of type](#142-binding-method-for-type)
+
 15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
 16. Match-statement
     1. [Match, cases, `!-`](#16-match-statement)
@@ -759,6 +762,20 @@ print(user.name, user.age)
 >> mr.Olgerd 19
 
 ```
+3. Constructor of inherited type.  
+The default constructor of a child structure has the same arguments as the structure's fields.  
+Order of args is the same as fields was defined, from first parent to last child level.  
+```golang
+
+struct A a:int
+struct B(A) b:float
+struct C(B) c:string
+
+c = C(11, 20.05, "Hello!")
+
+#//>> st@C{a: 11, b: 20.05, c: 'Hello!'}
+```
+
 
 ### 11.1 Struct method.  
 
@@ -801,6 +818,17 @@ b1 = B{b:1, a1:12, a2:'aa-2'}
 b1.f1(3, 4)
 #/ access to A-field from B-instance
 b1.a1 += 10
+```
+Same name from multiple parents.  
+If several fields from parents have the same name here only first will be taken, in order that was used in the struct definition. 
+```golang
+struct A a:int
+struct B a:string
+
+struct C(A, B) c:list #// C.a is int
+
+struct D(B, A) d:dict #// D.a is string
+
 ```
 
 
@@ -982,6 +1010,7 @@ res = ( (a + b) * 15
 ```
 
 ### 14. Builtin functions:  
+### 14.1 Global native functions
 Include native (python) function as an builtin function.  
 It needs some preparation of data and returning results.  
 ```python
@@ -1023,6 +1052,45 @@ strings: `join(srcList, delim)`, `split(src, sep)`, `replace(src, old, new)`
 type conversion:  `tolist()`, `toint()`, `tostr()`
 
 TODO: int2char, [int] to string, char_code  
+
+### 14.2 Binding method for type
+In case when we want call function like method of base type, like `list` or `string` we can bind function with such type by magic.  
+Binding of native functions has been implemented now.  
+Special function is useful for binding:  
+`bindNativeMethod(ctx:Context, typeName, func, fname, rtype:VType)`  
+Binding args:
+1) root context
+2) type name
+3) function for binding
+4) name of method
+5) returning type (python class)  
+
+Args of bound function:  
+1. Context of call (make sense if arg of method is a  function)
+2. instance of type (target value/variable)
+3. other - args of method  
+1 and 2 - is necessary.  
+
+How to:
+```python
+# native python function
+def list_reverse(_, inst:ListVal):
+    src = inst.rawVals().copy()
+    src.reverse()
+    return ListVal(elems=src)
+```
+```python
+
+# binding method in python code
+bindNativeMethod(ctx, 'list', list_reverse, 'reverse', TypeList)
+```
+Then we can use `reverse` method for `list`-values in LP code:
+```python
+nums = [1,2,3]
+res = nums.reverse() # >> [3,2,1]
+```
+See `eval.py` for more examples.
+
 
 ### 15. Lambda functions and high-order functions. Right-arrow `->`.
 Right-arrow is an operator for definition lambda-function.  

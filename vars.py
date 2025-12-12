@@ -135,6 +135,13 @@ class Collection(Container, ValSequence):
     def vals(self):
         pass
 
+
+class SequenceGen:
+
+    def allVals(self):
+        pass
+
+
 class ListVal(Collection):
     ''' classic List / Array object'''
     
@@ -286,10 +293,16 @@ class TupleVal(Collection):
         return 'TupleVal(%s)' %  (vals)
 
 
+def dkeyCover(k):
+      if isinstance(k, str):
+            return StringVal(k) 
+      return Val(k, valType(k))
+
+
 class DictVal(Collection):
     ''' classic List / Array object'''
     
-    def __init__(self, name=None):
+    def __init__(self):
         super().__init__(None, TypeDict())
         self.data:dict[str|int|bool,Val] = {}
 
@@ -298,25 +311,6 @@ class DictVal(Collection):
         
     def inKey(self, key:Var)->str:
         return '%s__%s' % (key.get(), key.getType().__class__.__name__)
-
-    def setVal(self, key:Val, val:Val):
-        # k = self.inKey(key)
-        self.data[key.get()] = val
-
-    def getKeys(self):
-        # res = [ListVar(k) for k in self.data]
-        res = ListVal()
-        for k in self.data:
-            res.addVal(k)
-        return res
-
-    # def getVal(self, key:Val):
-    #     raise XDebug("dict getVal")
-    #     # k = self.inKey(key)
-    #     k = key.getVal()
-    #     if k in self.data:
-    #         return self.data[k]
-    #     raise EvalErr('List out of range by key %s ' % k)
     
     def getElem(self, key:Val):
         k = key.getVal()
@@ -333,6 +327,19 @@ class DictVal(Collection):
     def has(self, key:Val):
         k = key.getVal()
         return k in self.data
+
+    def setVal(self, key:Val, val:Val):
+        # k = self.inKey(key)
+        self.data[key.get()] = val
+
+    def keys(self) -> ListVal:
+        kk = [dkeyCover(k) for k in self.data.keys()]
+        return ListVal(elems=kk)
+    
+    def items(self):
+        kv = [TupleVal(elems=[dkeyCover(k), v])
+              for k,v in self.data.items()]
+        return ListVal(elems=kv)
 
     def vals(self):
         return {k: v.get() for k,v in self.data.items()}
@@ -415,6 +422,33 @@ class Regexp(Val):
             rvals.append(ListVal(elems=[StringVal(s) for s in grval]))
         return ListVal(elems=rvals)
 
+
+class FuncBinder(FuncSpace):
+    '''
+    Binds functions to the type like method tu struct definition
+    '''
+    def __init__(self, btype:VType):
+        '''
+        Docstring for __init__
+        
+        :param btype: base type
+        '''
+        self.type = btype
+        self.name = btype.name
+        self.__funcs:dict[str, FuncInst] = {}
+    
+    def addMethod(self, func:FuncInst):
+        name = func.getName()
+        # dprint('struct.add Method:', name)
+        if name in self.__funcs:
+            raise EvalErr('Bound function `%s` already defined for type `%s`.' % (name, self.name))
+        self.__funcs[name] = func
+        
+    def getMethod(self, name):
+        # dprint('getMeth', name)
+        if not name in self.__funcs:
+            raise EvalErr('Method `%s` didn`t define in type `%s`.' % (name, self.name))
+        return self.__funcs[name]
 
 
 # not sure, maybe simple struct will be enough?

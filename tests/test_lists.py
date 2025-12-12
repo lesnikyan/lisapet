@@ -21,7 +21,60 @@ from tree import *
 class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
+    def test_code_listgen_plus(self):
+        ''' '''
+        code = r'''
+        res = []
+        n1 = [1,2,3]
+        n2 = [11, 12, 13]
+        g1 = [70..75]
+        g2 = [x * 100 + 1 ; x <- [3..5]]
+        
+        res <- [10, 20] + n1
+        res <- n1 + n2
+        res <- n2 + [30, 40]
+        res <- n1 + g1
+        res <- g1 + n2
+        res <- [22,33] + g1
+        res <- g1 + [44,55]
+        res <- n1 + g2
+        res <- g2 + n2
+        res <- [51, 52] + g2
+        res <- g2 + [53, 54]
+        res <- g1 + g2
+        res <- g2 + g1
+        
+        res <- [31..34] + g1
+        res <- g1 + [35..38]
+        res <- [41..45] + g2
+        res <- g2 + [46..49]
+        res <- g1 + tolist("abc")
+        res <- g1 + tolist((81,82))
+        res <- n1 + (g1 + g2) + n2 + [61..65] + [99]
+        
+        # print(); for n <- res /: print(n)
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
 
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        
+        rvar = ctx.get('res').get()
+        exv = [
+            [10, 20, 1, 2, 3], [1, 2, 3, 11, 12, 13], [11, 12, 13, 30, 40], 
+            [1, 2, 3, 70, 71, 72, 73, 74, 75], [70, 71, 72, 73, 74, 75, 11, 12, 13], [22, 33, 70, 71, 72, 73, 74, 75], 
+            [70, 71, 72, 73, 74, 75, 44, 55], [1, 2, 3, 301, 401, 501], [301, 401, 501, 11, 12, 13], 
+            [51, 52, 301, 401, 501], [301, 401, 501, 53, 54], [70, 71, 72, 73, 74, 75, 301, 401, 501], 
+            [301, 401, 501, 70, 71, 72, 73, 74, 75], [31, 32, 33, 34, 70, 71, 72, 73, 74, 75], 
+            [70, 71, 72, 73, 74, 75, 35, 36, 37, 38], [41, 42, 43, 44, 45, 301, 401, 501], 
+            [301, 401, 501, 46, 47, 48, 49], [70, 71, 72, 73, 74, 75, 'a', 'b', 'c'], [70, 71, 72, 73, 74, 75, 81, 82], 
+            [1, 2, 3, 70, 71, 72, 73, 74, 75, 301, 401, 501, 11, 12, 13, 61, 62, 63, 64, 65, 99]]
+        self.assertEqual(exv, rvar.vals())
 
 
     def test_single_list_in_list(self):

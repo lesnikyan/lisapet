@@ -210,7 +210,8 @@ class SrcIterator(NIterator):
         return self.src[key]
 
 
-class ListGenIterator(NIterator):
+
+class ListGenIterator(NIterator, SequenceGen):
     ''' [a..b] from a to b, step |1| 
         TODO: step !?> (-1, 1)
             [1..10 ; 2]

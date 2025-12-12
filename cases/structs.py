@@ -169,15 +169,7 @@ class CaseStructBlockConstr(SubCase):
     #     return InterpretContext.get().hasStruct(elems[0].text)
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        typeName = elems[0].text
-        # if  InterpretContext.get().hasStruct(typeName):
-        #     # begin of multiline srtuct constructor
-        #     expr 
-        # sub = elems[2:-1]
-        # cs = CaseCommas()
-        # subs = [sub]
-        # if cs.match(sub):
-        #     _, subs = cs.split(sub)
+        # typeName = elems[0].text
         return StructConstrBegin(elems[0].text), []
 
     def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
@@ -186,29 +178,3 @@ class CaseStructBlockConstr(SubCase):
         #     base.add(exp)
         # return base
 
-
-# def checkTypes(elems:list[Elem], exp:list[int]):
-#     if len(elems) != len(exp):
-#         return False
-#     for i in range(len(elems)):
-#         if elems[i].type != exp[i]:
-#             return False
-#     return True
-
-
-# class CaseStructField(SubCase):
-#     def match(self, elems:list[Elem]) -> bool:
-#         if len(elems) != 3:
-#             return False
-#         return checkTypes(elems, [Lt.word, Lt.oper, Lt.word]) and elems[1].text == '.'
-
-#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-#         return StructField(), [[elems[0]],[elems[2]]]
-
-#     def setSub(self, base:StructField, subs:Expression|list[Expression])->Expression:
-#         dprint('CaseStructField:', base, subs)
-#         # raise EvalErr('')
-#         base.set(subs[0], subs[1])
-#         return base
-        
-    

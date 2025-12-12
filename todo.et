@@ -17,7 +17,36 @@
     TODO:
     tostr(dictVal, keyOrder) 
     tostr([a..b]) # gen obj
-    bstr(bytes:[]) # bytes to string
+    
+    decode(from bytes) / encode (to bytes) 
+    # think about type.related methods: 
+        'abc'.encode('utf-8')
+        nums = []; nums.len()
+
+1.01 import python-implemented modules from /libs
+
+1.02 container of functions aka namespace or static methods. 
+#call
+A.foo(a, b)
+# def
+A func foo(a, b)
+    ..
+func A foo(a, b)
+    ..
+
+group A
+func A.foo(a, b)
+    ..
+
+1.2 method sugar
+    #  method-like syntax for base types
+    func val:string encode(encoding='utf-8')
+        ... # do something
+    1) bind builtin functions: dict:keys,items, intersect,diff; string:slice,join,split; list:merge,intersect,diff; 
+    2) call builtin method: 'aa bb cc'.split(' '); text.split(re`\s+`)
+    3) user-defined binding: func val:list foo(arg:int)
+    4) test user-defined 
+
 
 2.0 module math
 2.1 module `file`
@@ -29,11 +58,8 @@
     from(json_str): data_obj
 
 
-2.3 # DONE Check type operator 
-    var :: type
-
-2.3.1 Check type of struct instance var :: TypeName
-2.3.2 Check match type of struct instance ::TypeName
+2.3.1 Check type of struct instance>> var :: TypeName
+2.3.2 Check match type of struct instance>> _::TypeName
 
 
 2.4 TODO: More types:  
@@ -42,20 +68,31 @@
     Maybe (Some, Nothing).
 
 NEED FIX:
-    1. print struct instance
-    2. multi-args constructor for inherited struct type 
-        A a:int
-        A(a) 
-        B b : int
-        B(a, b) 
-    3. fix case with comprehensions [1..3] + [5..8]
-    4. multiassign in: 
-        for var1, var2,.. <- src
 
-3.2. Type auto-casting. Important for struct constructors
+    4. multiassign in: 
+        # python-like immediate assign: not sure. 
+        for var1, var2,.. <- src
+        # OK. works fine.
+        for k, v <- dict
+        # DONE. dkeys(dict) - make sense
+        # key-val pairs from dict
+        # DONE: ditems(dict)
+        for n <- [(1,2), (3,4), ] # could be resolved by next reassign: a, b = n 
+ 
+loop over dict
+    - keys(): data.keys() or keys(data)
+    - for key <- iter(data) # for key <- dkeys(data) 
+    - for key, val <- data
+
+    1. print struct instance
+        - ',' separator -> ', '
+        - add quotes for strings
+
+3.2. Type auto-casting. Important for struct constructors, function args
 
 
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
+
 
 5. error handling (with printing source code)
     # DONE: parser errors, interpretation errors
@@ -105,8 +142,28 @@ catch crit
     - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but :: thinkable
     - unused/unnamed var `_` for function args foo(_, x), multiple assignment `for key, _ <- dict`:: thinkable
 
-13. Interfaces as a some list of method signatures.
+    # type-groups: 
+        numeric, bool, string, list, tuple, dict, struct, function, regexp, [set, maybe, tree, ...]
 
+func foo(a, b, [c=0, d=''])
+    ..
+
+func bar(a, b, [c...])
+    for n <- c /: ..
+--
+func foo()
+    1
+func foo(x)
+    x * 2
+func foo(x, y)
+    x + y
+func foo(nums:list)
+    sum(nums)
+func foo(x, y, nums...)
+        [x + y * n ; n <- nums]
+    
+
+13. Interfaces as a some list of method signatures.
 
 
 14.9.2 think about transfer matched regexp to sub-expression 
@@ -171,22 +228,6 @@ func foo(a)
     (1,2,3) =?> nums # all in the same order: 1,?,2,3,?
 
 
-
-    ---
-
-    # default val + *star
-    0* - int
-    0.* - float
-    true|false - bool
-    ''* - string
-    # any-case by type-specific syntax
-    re`.*`m - string
-    [*] - list
-    {*} - dict
-    (*) - tuple
-    _{} - struct
-
-
 15.2 regexp operators
 # replace
 (re`\s`i : `-`) /~ 'source string abc'
@@ -213,6 +254,74 @@ overload('>>', TypeAny, TypeList, handler)
 2. new operators by python (not sure) 
 
 
+
+
+21.1 reading iterator. read values from sequence in the loop iteration like 
+    val = iter(src) # src is collection or generator
+        it should init iterator and save instance in first call, then call next() method in each iteration
+        it should have reset() method
+        # sugar: val <= src // ?
+
+22.1 overload += to avoid copying original list.
+    // Looks too complex in current implementation where x += y is the x = (x + y)
+    // may be possible if refactor to call left.do() before right.do()
+    possible solution:
+    for a, b, c <- iters(list1, list2, list3)
+
+23. Common filesystem-location of installed libraries for importing (not sure we need it now).  
+
+24. TODO: Should we implement full inline block syntax?   
+Like `for a <- b /: expr :/ ; next-block`  
+if cond /: expr :/ else /: expr :/
+Thinking
+
+16.1 inline shortening (?):
+(control /: sub-expr)
+# if
+(? x < 5 /: print(x))
+# for
+(@ i <- [] /: print(i))
+(@ i=0; i < 5; i += 1 /: print(i))
+
+25. enum
+default values is int from 1: 1,2,3...
+# inline
+enum Color  Red, Green, Blue # >> 1,2,3
+enum Color:int  Red 5, Green 10, Blue # >> 5, 10, 11
+# block
+enum Color: int
+    Red 0xf00
+    Green 0x0f0
+    Blue 0x00f
+
+# usage
+match color
+    Color.Red !- ...
+
+
+26. anonimous struct
+
+struct {name: 'Bob', age: 25}
+
+#shortened sugar:
+${name: 'Bob', age: 25}
+~{ name: 'Bob', age: 25}
+{s name: 'Bob', age: 25}
+
+27. parents method and direct parent
+# thoughts about OOP
+
+struct C c:int
+struct D(A,C) d1:int, d2:float
+
+func d:D f1(x, y)
+    d.f1(x, y)
+    d.a1 = 1
+    d.A.f1(x, y) # ??
+    d.super().f1(x, y) # ??
+    super(d).f1(x, y) # for methods only # ??
+
+
 # -------------------------
 Not sure:
 
@@ -235,7 +344,16 @@ Not sure:
 
 # -------------------
 
+Fixes:
+    2. #DONE multi-args constructor for inherited struct type 
+        A a:int
+        A(a) 
+        B b : int
+        B(a, b) 
+    3. # DONE fix case with comprehensions [1..3] + [5..8]
 
+2.3 # DONE Check type operator 
+    var :: type
 
 14.9 # DONE  // perspective: regexp match:
     rx(`[1-9][A-E]+`) !-  regexp returning by function rx (not implemented yet), or some another inline implementation of regexp
@@ -372,60 +490,6 @@ match n
     B{b2: 'abc'} !- match by B-type (or children) by fields value
     C{c1:[1,*]} !- struct with list in field
     struct has defined list of fields, so `_`, `?`, `*` sub-elements don't make sense for structs. maybe for anonimous struct, if will be implemented.
-
-
-
-21.1 reading iterator. read values from sequence in the loop iteration like 
-    val = iter(src) # src is collection or generator
-        it should init iterator and save instance in first call, then call next() method in each iteration
-        it should have reset() method
-        # sugar: val <= src // ?
-
-22.1 overload += to avoid copying original list.
-    // Looks too complex in current implementation where x += y is the x = (x + y)
-    // may be possible if refactor to call left.do() before right.do()
-    possible solution:
-    for a, b, c <- iters(list1, list2, list3)
-
-23. Common filesystem-location of installed libraries for importing (not sure we need it now).  
-
-24. TODO: Should we implement full inline block syntax?   
-Like `for a <- b /: expr :/ ; next-block`  
-if cond /: expr :/ else /: expr :/
-Thinking
-
-16.1 inline shortening (?):
-(control /: sub-expr)
-# if
-(? x < 5 /: print(x))
-# for
-(@ i <- [] /: print(i))
-(@ i=0; i < 5; i += 1 /: print(i))
-
-25. enum
-default values is int from 1: 1,2,3...
-# inline
-enum Color  Red, Green, Blue # >> 1,2,3
-enum Color:int  Red 5, Green 10, Blue # >> 5, 10, 11
-# block
-enum Color: int
-    Red 0xf00
-    Green 0x0f0
-    Blue 0x00f
-
-# usage
-match color
-    Color.Red !- ...
-
-
-26. anonimous struct
-
-struct {name: 'Bob', age: 25}
-
-#shortened sugar:
-${name: 'Bob', age: 25}
-~{ name: 'Bob', age: 25}
-{s name: 'Bob', age: 25}
 
 
 >>>

@@ -52,6 +52,7 @@ class Function(FuncInst):
         # print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
         # print('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
         if self.argNum != len(args):
+            # print('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
             raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
         for i in range(nn):
@@ -62,7 +63,7 @@ class Function(FuncInst):
             atype = self.argVars[i].getType()
             argVar = Var(aname, atype)
             argVar.set(arg)
-            dprint('FN setArgVals-4: ', atype, aname)
+            # dprint('FN setArgVals-4: ', atype, aname)
             if isinstance(atype, TypeAny):
                 argVar.setType(arg.getType())
             # print('set arg8  >> ', self.argVars[i], 'val:', arg)
@@ -239,7 +240,7 @@ class NFunc(Function):
     def setArgVals(self, args:list[Var]):
         self.argVars = []
         for arg in (args):
-            dprint('~NFsetA', arg)
+            # print('~NFsetA', self.getName(), arg)
             if isinstance(arg, Var):
                 arg = arg.get()
             self.argVars.append(arg)
@@ -247,12 +248,9 @@ class NFunc(Function):
     def do(self, ctx: Context):
         args = []
         for arg in self.argVars:
-            dprint('#T arg = ', arg)
-            a = arg
-            args.append(a)
+            args.append(arg)
+        # print('NF do1', [str(n) for n in args])
         res = self.callFunc(ctx, *args)
-        # if isinstance(res, Var):
-        #     res = res.get()
         if not isinstance(res, Val):
             # not Val, Not ListVal, etc.
             res =  Val(res, self.resType)
@@ -261,9 +259,30 @@ class NFunc(Function):
     def get(self)->Val:
         return self.res
 
+
 def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
     func = NFunc(name)
     func.resType = rtype
     func.callFunc = fn
     ctx.addFunc(func)
 
+
+class BoundMethod(NFunc):
+    
+    def __init__(self, func:FuncCallExpr, fname, rtype = TypeAny()):
+        super().__init__(fname, rtype)
+        self.inst = None
+        self.callArgs:list[Expression] = []
+    
+    def setInstance(self, inst):
+        self.inst = inst
+
+
+def bindNativeMethod(ctx:Context, typeName, fn, fname, rtype:VType=None):
+    if rtype is None:
+        rtype = TypeAny
+    # print('BM fn name:', fname)
+    func = BoundMethod(fn, fname)
+    func.resType = rtype
+    func.callFunc = fn
+    ctx.bindTypeMethod(typeName, func)
