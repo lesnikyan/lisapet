@@ -47,7 +47,8 @@ Content:
 13. [Multiline expressions](#13-multiline-expressions-if-for-math-expr)
 14. Builtin (native) functions
     1. [Global functions: print, iter, etc.](#141-global-native-functions)
-    2. [Bind native function as a method of type](#142-binding-method-for-type)
+    2. [Bind native function as a method `[1,2].join(',')`](#142-binding-method-for-type)
+    3. [Methods are already bound](#143-methods--are-already-bound-to-types)
 
 15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
 16. Match-statement
@@ -1090,6 +1091,27 @@ nums = [1,2,3]
 res = nums.reverse() # >> [3,2,1]
 ```
 See `eval.py` for more examples.
+
+### 14.3 Methods  are already bound to types
+1. `list`:  
+    .reverse()  
+    .map(`function`)  
+    .join(`string`)  
+2. `dict`:
+    .keys()  
+    .items()  
+3. `tuple`:  
+    .map(`function`)  
+4. `string`:  
+    .split(`string`|`regexp`)  
+    .joinn(`list`|`tuple`)  
+    .map(`function`)  
+
+Example of usage: 
+```python
+res = 'Hello dear friend'.split(' ').map(w -> ~"<t>{w}</t>").join('^')
+>> '<t>Hello</t>^<t>dear</t>^<t>friend</t>'
+```
 
 
 ### 15. Lambda functions and high-order functions. Right-arrow `->`.

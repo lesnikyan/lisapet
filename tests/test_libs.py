@@ -57,12 +57,14 @@ class TestLibs(TestCase):
         rsplit = str1.split('-')
         res <- rsplit
         res <- "d,e,f".split(',')
+        res <- "here12many54hidden09words".split(re`[0-9]+`)
         
         # join
         ss = ['s1', 's2', 's3']
         res <- '-'.join(ss)
         res <- "_".join(['s4','s5','s6'])
         res <- "/".join(['s7','s8', 's9'])
+        res <- `"`.join((11,12,13))
         
         # map
         res <- [1,2,3,4,5].map(x -> x * 11)
@@ -90,6 +92,12 @@ class TestLibs(TestCase):
         
         res <- a2
         
+        # val from function
+        func foo(n)
+            [x ; x <- [0..n]]
+        
+        res <- foo(3).map(x -> 100 + x)
+        
         # print('res = ', res)
         '''
         code = norm(code[1:])
@@ -105,11 +113,11 @@ class TestLibs(TestCase):
         exv = [
             [3, 2, 1], '1^2^3', [1, 2, 'a', 'b', 'c'], 
             [(1, 11), (2, 22), ('a', 'aaa'), ('b', 'bbb'), ('c', 'ccc')], 
-            ['aa', 'bb', 'cc'], ['d', 'e', 'f'], 
-            's1-s2-s3', 's4_s5_s6', 's7/s8/s9', 
+            ['aa', 'bb', 'cc'], ['d', 'e', 'f'], ['here', 'many', 'hidden', 'words'],
+            's1-s2-s3', 's4_s5_s6', 's7/s8/s9', '11"12"13',
             [11, 22, 33, 44, 55], '(s)(t)(r)(i)(n)(g)(1)', 
             ['(l)', '(i)', '(s)', '(t)', '(2)'], (5, 10, 15), ['(t)', '(u)', '(p)', '(l)', '(e)', '(3)'],
-            '<t>Hello</t> <t>dear</t> <t>friend</t>', [11, 12, 13, 14, 15]]
+            '<t>Hello</t> <t>dear</t> <t>friend</t>', [11, 12, 13, 14, 15], [100, 101, 102, 103]]
         self.assertEqual(exv, rvar.vals())
 
 
