@@ -61,7 +61,7 @@ def str_split(_, inst:StringVal, sep):
     return libst.split(_, inst, sep)
 
 
-def str_join(_, inst:StringVal, data:ListVal):
+def str_join(_, inst:StringVal, data:ListVal|TupleVal):
     sep:str = inst.getVal()
     res = sep.join([str(var2val(n).get()) for n in data.rawVals()])
     return StringVal(res)
