@@ -231,14 +231,14 @@ class CaseFunCall(SubCase):
         exp = FuncCallExpr(elemStr(valExpr), src)
         # print('FCall.split1', valExpr, args)
         subs = [valExpr] + args
-        # print('FCall.split2', subs)
+        # print('FCall.split2', elemStr(valExpr), exp, subs)
         return exp, subs
 
     def setSub(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 
         ''' base - FuncCallExpr, subs - argVal expressions '''
         fexpr = subs[0]
         args = [n for n in subs[1:] if not isinstance(n, NothingExpr)]
-        # print('FCall.setSub1', subs)
+        # print('FCall.setSub1', base)
         # print('FCall.setSub2',fexpr, args)
         base.setFuncExpr(fexpr)
         for exp in args:

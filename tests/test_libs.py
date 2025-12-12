@@ -25,6 +25,94 @@ from tests.utils import *
 class TestLibs(TestCase):
 
 
+
+    def test_bound_native_methods(self):
+        ''' Bound method by native function.
+        bind : str_split(_, src, sep)
+        as a `stringVal.split(sep)`
+        >>
+        src = "a,b,c"
+        src.split(',') # > ['a', 'b', 'c']
+        '''
+        code = r'''
+        res = []
+        
+        # list methods
+        nums = [1,2,3]
+        rnums = nums.reverse()
+        res <- rnums
+        res <- [1,2,3].join('^')
+        
+        # dict methods
+        kc = 'c'
+        dk = {1:11, 2:22, 'a':'aaa', 'b':'bbb', kc: 'ccc'}
+        ks = dk.keys()
+        res <- ks
+        
+        res <- dk.items()
+        
+        
+        # split
+        str1 = 'aa-bb-cc'
+        rsplit = str1.split('-')
+        res <- rsplit
+        res <- "d,e,f".split(',')
+        
+        # join
+        ss = ['s1', 's2', 's3']
+        res <- '-'.join(ss)
+        res <- "_".join(['s4','s5','s6'])
+        res <- "/".join(['s7','s8', 's9'])
+        
+        # map
+        res <- [1,2,3,4,5].map(x -> x * 11)
+        func f1(x)
+            ~"({x})"
+        res <- "string1".map(f1)
+        res <- "l i s t 2".split(' ').map(f1)
+        res <- (1,2,3).map(x -> x * 5)
+        res <- 't u p l e 3'.split(' ').map(f1)
+        
+        # combo
+        wds = 'Hello dear friend'.split(' ').map(w -> ~"<t>{w}</t>").join(' ')
+        res <- wds
+        
+        struct A a:int
+        
+        func si:A add(x)
+            si.a += x
+        
+        aa = []
+        for i <- [1..5]
+            aa <- A(i)
+        
+        a2 = aa.map(val -> val.add(10))
+        
+        res <- a2
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        
+        rvar = ctx.get('res').get()
+        exv = [
+            [3, 2, 1], '1^2^3', [1, 2, 'a', 'b', 'c'], 
+            [(1, 11), (2, 22), ('a', 'aaa'), ('b', 'bbb'), ('c', 'ccc')], 
+            ['aa', 'bb', 'cc'], ['d', 'e', 'f'], 
+            's1-s2-s3', 's4_s5_s6', 's7/s8/s9', 
+            [11, 22, 33, 44, 55], '(s)(t)(r)(i)(n)(g)(1)', 
+            ['(l)', '(i)', '(s)', '(t)', '(2)'], (5, 10, 15), ['(t)', '(u)', '(p)', '(l)', '(e)', '(3)'],
+            '<t>Hello</t> <t>dear</t> <t>friend</t>', [11, 12, 13, 14, 15]]
+        self.assertEqual(exv, rvar.vals())
+
+
     def test_dict_func_ditems(self):
         ''' '''
         code = r'''

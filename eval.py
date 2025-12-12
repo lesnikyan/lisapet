@@ -5,10 +5,11 @@ Eval parsed lexems
 
 from vars import *
 from context import Context, RootContext
-from nodes.func_expr import setNativeFunc
+from nodes.func_expr import setNativeFunc, bindNativeMethod
 from nodes.builtins import *
 import libs.str as lstr
 import libs.dicts as dc
+from nodes.type_builtins import *
 
 
 def rootContext(ctx:Context = None)->RootContext:
@@ -16,6 +17,7 @@ def rootContext(ctx:Context = None)->RootContext:
     # if ctx is None:
     ctx = RootContext()
     setDefaultTypes(ctx)
+    # global funcs
     setNativeFunc(ctx, 'print', buit_print, TypeNull)
     setNativeFunc(ctx, 'len', built_len, TypeInt)
     setNativeFunc(ctx, 'iter', loop_iter, TypeIterator)
@@ -29,6 +31,18 @@ def rootContext(ctx:Context = None)->RootContext:
     setNativeFunc(ctx, 'replace', lstr.replace, TypeList)
     setNativeFunc(ctx, 'dkeys', dc.dict_keys, TypeList)
     setNativeFunc(ctx, 'ditems', dc.dict_items, TypeList)
+    
+    # bind methods
+    bindNativeMethod(ctx, 'list', list_join, 'join', TypeString)
+    bindNativeMethod(ctx, 'list', list_reverse, 'reverse', TypeList)
+    bindNativeMethod(ctx, 'dict', dict_keys, 'keys', TypeList)
+    bindNativeMethod(ctx, 'dict', dict_items, 'items', TypeList)
+    bindNativeMethod(ctx, 'string', str_split, 'split', TypeList)
+    bindNativeMethod(ctx, 'string', str_join, 'join', TypeString)
+    # map
+    bindNativeMethod(ctx, 'list', list_map, 'map', TypeList)
+    bindNativeMethod(ctx, 'tuple', tuple_map, 'map', TypeTuple)
+    bindNativeMethod(ctx, 'string', str_map, 'map', TypeString)
     
     constants = {
     'true': (TypeBool, Val(True, TypeBool())),

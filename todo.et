@@ -42,6 +42,10 @@ func A.foo(a, b)
     #  method-like syntax for base types
     func val:string encode(encoding='utf-8')
         ... # do something
+    1) bind builtin functions: dict:keys,items, intersect,diff; string:slice,join,split; list:merge,intersect,diff; 
+    2) call builtin method: 'aa bb cc'.split(' '); text.split(re`\s+`)
+    3) user-defined binding: func val:list foo(arg:int)
+    4) test user-defined 
 
 
 2.0 module math

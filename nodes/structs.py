@@ -13,7 +13,7 @@ AnonStructConstr *? : create instance of anonymous struct (json-like object)
 from nodes.expression import *
 from context import *
 from nodes.expression import ServPairExpr, defaultValOfType
-from nodes.func_expr import FuncDefExpr, FuncCallExpr, Function
+from nodes.func_expr import FuncDefExpr, FuncCallExpr, Function, BoundMethod
 
 
 
@@ -190,68 +190,19 @@ class StructInstance(ObjectInstance, NSContext):
 
     def initSuper(self):
         self.ifields = self.vtype.nfields[:]
-        # superTypes = self.vtype.getParents()
-        # for pname, st in superTypes.items():
-        #     # pname = st.getName()
-        #     self.supers[pname] = StructInstance(st)
 
-    # def initDefVals0(self, skip=None):
-    #     '''
-    #     ignore already filled in child instance (?)
-    #     '''
-    #     # set current
-    #     if skip is None:
-    #         skip = []
-    #     for fname in self.vtype.fields:
-    #         # print('def #1:', self.vtype.name, ' :: ', fname, skip)
-    #         if fname not in self.data and fname not in skip:
-    #             ftype = self.vtype.types[fname]
-    #             dv = defaultValOfType(ftype) # default by type: 0, null, false, "", [], {}, (,)
-    #             # print('def #2:', fname, ftype, '>>', dv)
-    #             self.data[fname] = dv
-    #     skip += self.vtype.fields
-    #     # set parents
-    #     if self.supers:
-    #         # print('def-supers')
-    #         for _, sup in self.supers.items():
-    #             skip = sup.initDefVals(skip)
-    #     return skip
 
-    def initDefVals(self, skip=None):
+    def initDefVals(self):
         '''
         ignore already filled in child instance (?)
         '''
-        # set current
-        # if skip is None:
-        #     skip = []
         for fname in self.vtype.nfields:
-            # print('def #1:', self.vtype.name, ' :: ', fname, skip)
             if fname not in self.data:
                 ftype = self.vtype.ntypes[fname]
                 dv = defaultValOfType(ftype) # default by type: 0, null, false, "", [], {}, (,)
                 # print('def #2:', fname, ftype, '>>', dv)
                 self.data[fname] = dv
-        # skip += self.vtype.nfields
-        # set parents
-        # if self.supers:
-        #     # print('def-supers')
-        #     for _, sup in self.supers.items():
-        #         skip = sup.initDefVals(skip)
-        # return skip
 
-    # def get(self, fname=None):
-    #     if fname is None:
-    #         # dprint('StructInstance.DEBUG::: getting enmpty fieldname')
-    #         return 'st@' + str(self) # debug
-    #     if fname in self.vtype.fields:
-    #         # print('\n  == Strc.get', self.data[fname], type(self.data[fname]))
-    #         return self.data[fname]
-    #     if self.supers:
-    #         for _, sup in self.supers.items():
-    #             if fname not in sup.vtype.fields:
-    #                 continue
-    #             return sup.get(fname)
-    #     raise EvalErr(f'Incorrect field `{fname}` of struct `{self.vtype.getName()}` ')
 
     def get(self, fname=None):
         if fname is None:
@@ -260,11 +211,6 @@ class StructInstance(ObjectInstance, NSContext):
         if fname in self.vtype.nfields:
             # print('\n  == Strc.get', self.data[fname], type(self.data[fname]))
             return self.data[fname]
-        # if self.supers:
-        #     for _, sup in self.supers.items():
-        #         if fname not in sup.vtype.fields:
-        #             continue
-        #         return sup.get(fname)
         raise EvalErr(f'Incorrect field `{fname}` of struct `{self.vtype.getName()}` ')
     
     def find(self, fname):
@@ -286,12 +232,6 @@ class StructInstance(ObjectInstance, NSContext):
             self.checkType(fname, val)
             self.data[fname] = val
             return
-        # TODO: Fix deeper inheritance than 2 lvls
-        # if self.supers:
-        #     for _, sup in self.supers.items():
-        #         if fname not in sup.vtype.fields:
-        #             continue
-        #         return sup.set(fname, val)
         raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
 
     def checkType(self, fname, val:Val):
@@ -346,6 +286,8 @@ class StructDefExpr(DefinitionExpr):
         strType = StructDef(self.typeName)
         # print('struct def:', expSrc(self.src))
         for fexp in self.fields:
+            fexp:ServPairExpr = fexp
+            # print('@1>', fexp)
             fexp.do(ctx)
             field = fexp.get()
             fname, ftype = '', TypeAny
@@ -427,17 +369,9 @@ class StructConstr(Expression):
             # if val only
             # if pair name:val
             expRes = fexp.get()
-            # print('StructConstr.do res:', expRes[0], expRes[1])
-            # fname, val = '', None
-            # if isinstance(expRes, Var):
-            #     val = expRes
-            #     vals.append(val)
-            #     continue
-                # fieldName by order
+
             if isinstance(expRes, tuple) and len(expRes) == 2:
                 fname, val = expRes
-                # fname = fn
-                # val = fv
                 # print('Strc.do >> ', expRes, fname, val)
                 var2val(val)
                 inst.set(fname, val)
@@ -499,29 +433,27 @@ class MethodCallExpr(FuncCallExpr):
         # self.func:Function = None
         self.argExpr:list[Expression] = func.argExpr
 
-    # def addArgExpr(self, exp:Expression):
-    #     self.argExpr.append(exp)
-
-    def setInstance(self, inst: StructInstance):
+    def setInstance(self, inst: StructInstance|Val):
         dprint('MethCall set inst', inst)
         # raise XDebug('MethodCallExpr')
         self.inst = inst
 
-    def do(self, ctx: Context):
-        if not isinstance(self.inst, StructInstance):
-            raise EvalErr('Incorrect instance of struct: %s ', self.inst)
-        dprint('MethodCallExpr.do 1', self.name, self.inst.getType())
+    def getFunc(self):
         stype = self.inst.getType()
-        # dprint('MethodCallExpr.do2', stype, stype.debug()) #
-        
         self.func = stype.getMethod(self.name)
+
+    def do(self, ctx: Context):
+        okCond = isinstance(self.inst, StructInstance)
+        # okCond = okCond or isinstance(self.func, BoundMethod)
+        if not okCond:
+            raise EvalErr('Incorrect instance of struct: %s ', self.inst)
+        # dprint('MethodCallExpr.do 1', self.name, self.inst.getType())
+
+        self.getFunc()
         # instVar = self.inst[0].get(), self.inst[1].get()
-        dprint('instVar', self.inst, self.func.argVars)
+        # print('instVar', self.inst, self.func.argVars)
         args:list[Var] = [self.inst]
-        dprint('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
-        # argInd = 0
-        # avs = self.func.argVars
-        # dprint('#1# meth-call do2 exp=: ', avs, self.argExpr)
+        # dprint('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
         for exp in self.argExpr:
             # dprint('#1# meth-call do20 exp=: ', exp)
             exp.do(ctx)
@@ -531,3 +463,24 @@ class MethodCallExpr(FuncCallExpr):
         # TODO: add usage of Definishion Context instead of None
         callCtx = Context(ctx)
         self.func.do(callCtx)
+
+class BoundMethodCall(MethodCallExpr):
+    def __init__(self, func:BoundMethod, callExpr:FuncCallExpr):
+        super().__init__(callExpr)
+        self.inst:Val = None
+        self.func:BoundMethod = func
+        self.argExpr:list[Expression] = callExpr.argExpr
+
+    def do(self, ctx: Context):
+        # print('instVar', self.inst, self.func.argVars)
+        args:list[Var] = [self.inst]
+        for exp in self.argExpr:
+            exp.do(ctx)
+            args.append(exp.get())
+        self.func.setArgVals(args)
+        callCtx = Context(ctx)
+        self.func.do(callCtx)
+
+    def get(self):
+        return self.func.get()
+

@@ -8,8 +8,8 @@ from lang import *
 from vars import *
 # from typex import *
 from nodes.expression import *
-from nodes.func_expr import FuncCallExpr
-from nodes.structs import StructInstance, MethodCallExpr, StructConstr, StructConstrBegin
+from nodes.func_expr import FuncCallExpr, BoundMethod
+from nodes.structs import StructInstance, MethodCallExpr, StructConstr, StructConstrBegin, BoundMethodCall
 from nodes.tnodes import MString
 
 # from formatter import  StrFormatter
@@ -580,7 +580,7 @@ class ObjectMember(ObjectElem):
 
     def get(self):
         ''' res = obj.member; foo(obj.member); obj.member() '''
-        dprint('self.member, get :: ',self.object, type(self.object), '::', self.member)
+        # print('self.member, get :: ',self.object, type(self.object), '::', self.member)
         val = self.object.get(self.member)
         
         # print('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
@@ -641,6 +641,44 @@ class OperDot(BinOper):
         self.membExpr = member
         dprint('   >> OperDot.set', self.objExp, self.membExpr)
 
+    def doMethod(self, ctx:NSContext, inst:StructInstance|Var|Val):
+        # print('OperDot.do-001 FuncCallExpr, inst:', inst, 'memExp:', self.membExpr)
+        fname = self.membExpr.name
+        fcall = self.membExpr
+        if isinstance(inst, StructInstance) :
+            self.membExpr = MethodCallExpr(self.membExpr)
+        else:
+            # try to find bound method
+            mctx:Context = ctx
+            ctype = mctx.find(inst.getType().name)
+            # print('ODt2. type:', inst.getType(), mctx, ctype, fname)
+            if isinstance(ctype, TypeProperty):
+                func = ctype.funcs.getMethod(fname)
+                # print('DotOper. type-func=', func)
+                self.membExpr = BoundMethodCall(func, fcall)
+    
+        if not isinstance(self.membExpr, (MethodCallExpr)):
+            raise EvalErr("Incorrect member in `inst.method()` call expression. ")
+
+        # print('OperDot.do3 method1 =', self.membExpr, type(self.membExpr), '; methodname:', self.membExpr.name)
+        # TODO: refactor to: 1. return func-member; 2. call method as usage of `()` operator
+        self.membExpr.setInstance(inst)
+        self.membExpr.do(ctx)
+        self.val = self.membExpr.get()
+        # print('OperDot.do4 method res =', self.val)
+
+
+    def doModuleMember(self, ctx:NSContext, base:ModuleBox):
+        # dprint('OperDot.do ModuleBox:', base, '; memb:', self.membExpr)
+        if isinstance(self.membExpr, FuncCallExpr):
+            self.membExpr.do(base)
+            self.val = self.membExpr.get()
+            # dprint('OperDot.do mod method res =', self.val)
+        if isinstance(self.membExpr, StructConstr):
+            self.membExpr.do(base)
+            self.val = self.membExpr.get()
+            # print('OperDot.do mod method res =', self.val)
+        
     def do(self, ctx:NSContext):
         # print('OperDot.do0', self.objExp, '; type=', type(self.objExp), ' :: ', self.membExpr)
         self.objExp.do(ctx)
@@ -648,40 +686,17 @@ class OperDot(BinOper):
         dprint('OperDot.do00', objVar, '; type=', type(objVar))
         if isinstance(objVar, ModuleBox):
             # process modules
-            dprint('OperDot.do ModuleBox:', objVar, '; memb:', self.membExpr)
-            # mod = ModuleMember(objVar)
-            # mod.setMember(self.membExpr.name)
-            # self.val = mod
-            if isinstance(self.membExpr, FuncCallExpr):
-                self.membExpr.do(objVar)
-                self.val = self.membExpr.get()
-                dprint('OperDot.do mod method res =', self.val)
-            if isinstance(self.membExpr, StructConstr):
-                self.membExpr.do(objVar)
-                self.val = self.membExpr.get()
-                # print('OperDot.do mod method res =', self.val)
-                
-            return
+            return self.doModuleMember(ctx, objVar)
             
+        objVal = objVar
         if isinstance(objVar, Var):
-            objVar = objVar.get()
-        inst:StructInstance = objVar
+            objVal = objVar.get()
+        # print('#2', objVal)
         
-        if isinstance(inst, StructInstance) and isinstance(self.membExpr, FuncCallExpr):
-            self.membExpr = MethodCallExpr(self.membExpr)
-        # print('OperDot.do-001 inst:', inst, 'memExp:', self.membExpr)
-        # self.membExpr.do(inst)
+        if isinstance(self.membExpr, FuncCallExpr):
+            return self.doMethod(ctx, objVal)
+        
         name = ''
-        
-        if isinstance(self.membExpr, MethodCallExpr):
-            dprint('OperDot.do3 method1 =', self.membExpr, type(self.membExpr), '; methodname:', self.membExpr.name)
-            # TODO: refactor to: 1. return func-member; 2. call method as usage of `()` operator
-            self.membExpr.setInstance(inst)
-            self.membExpr.do(ctx)
-            self.val = self.membExpr.get()
-            dprint('OperDot.do4 method res =', self.val)
-            return
-        
         if isinstance(self.membExpr, VarExpr):
             name = self.membExpr.name # just name for struct
         else:
@@ -690,6 +705,7 @@ class OperDot(BinOper):
             sub = self.membExpr.get()
             name = sub.get()
 
+        inst:StructInstance = objVal
         if isinstance(inst, ObjectMember):
             inst = inst.get()
 

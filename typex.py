@@ -153,6 +153,25 @@ class TypeFunc(VType):
     _defVal = None
 
 
+class FuncSpace:
+    
+    def __init__(self, btype:VType):
+        pass
+    
+    def addMethod(self, func:FuncInst):
+        pass
+    
+    def getMethod(self, name:str):
+        pass
+
+
+
+class TypeProperty:
+    def __init__(self, btype:VType, funcs:FuncSpace):
+        self.type = btype
+        self.funcs:FuncSpace = funcs
+
+
 class TypeAccess(VType):
     '''  '''
     name = 'handler'

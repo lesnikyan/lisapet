@@ -68,7 +68,7 @@ class VarExpr(Expression):
     def do(self, ctx:Context):
         # dprint('VarExpr.do ctx:', ctx, 'name=', self.name)
         newVal = ctx.get(self.name)
-        # print('VarExpr.do:', newVal)
+        # print('VarExpr.do:', self.name, newVal)
         self.val = newVal
     
     # def set(self, val:Var):
@@ -291,7 +291,6 @@ class ServPairExpr(Expression):
 
     def get(self):
         # ll, rr = self.left.get(), self.right.get()
-        # print('>', ll, ll.getType())
         return self.left.get(), self.right.get()
     
     def getTypedVar(self):

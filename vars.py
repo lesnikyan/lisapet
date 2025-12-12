@@ -423,6 +423,33 @@ class Regexp(Val):
         return ListVal(elems=rvals)
 
 
+class FuncBinder(FuncSpace):
+    '''
+    Binds functions to the type like method tu struct definition
+    '''
+    def __init__(self, btype:VType):
+        '''
+        Docstring for __init__
+        
+        :param btype: base type
+        '''
+        self.type = btype
+        self.name = btype.name
+        self.__funcs:dict[str, FuncInst] = {}
+    
+    def addMethod(self, func:FuncInst):
+        name = func.getName()
+        # dprint('struct.add Method:', name)
+        if name in self.__funcs:
+            raise EvalErr('Bound function `%s` already defined for type `%s`.' % (name, self.name))
+        self.__funcs[name] = func
+        
+    def getMethod(self, name):
+        # dprint('getMeth', name)
+        if not name in self.__funcs:
+            raise EvalErr('Method `%s` didn`t define in type `%s`.' % (name, self.name))
+        return self.__funcs[name]
+
 
 # not sure, maybe simple struct will be enough?
 
