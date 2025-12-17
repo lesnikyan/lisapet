@@ -44,7 +44,9 @@ func A.foo(a, b)
         ... # do something
     1) #DONE bind builtin functions: dict:keys,items, intersect,diff; string:slice,join,split; list:merge,intersect,diff; 
     2) #DONE call builtin method: 'aa bb cc'.split(' '); text.split(re`\s+`)
-    # Not sure we need next parts
+    # Not sure we need next parts because 2 classes of types already implemented:
+    # 1) builtin type: with type-bound methods
+    # 2) structs: with regular methods
     3) user-defined binding: func val:list foo(arg:int)
     4) test user-defined 
 
@@ -71,10 +73,11 @@ func A.foo(a, b)
 2.5 OpAssing:
         # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
         # TODO: thik about one way of assignment: (something) = (something)
+        # DONE: type reset in reassign
 
 NEED FIX:
 
-    -2. compatibility of struct var to null value: 
+    -2. #DONE compatibility of struct var to null value: 
         struct A x:int
         a:A = null
     -1. func foo(d:dict, nn:list)
@@ -87,17 +90,15 @@ NEED FIX:
     4. multiassign in: 
         # python-like immediate assign: not sure. 
         for var1, var2,.. <- src
-        # OK. works fine.
-        for k, v <- dict
-        # DONE. dkeys(dict) - make sense
-        # key-val pairs from dict
-        # DONE: ditems(dict)
-        for n <- [(1,2), (3,4), ] # could be resolved by next reassign: a, b = n 
+        # auto-unpack tuples, could be resolved by next reassign: a, b = n 
+        for n <- [(1,2), (3,4), ] # but easy to use
+
  
     loop over dict
-    - keys(): data.keys() or keys(data)
-    - for key <- iter(data) # for key <- dkeys(data) 
-    - for key, val <- data
+    - # OK. works fine.
+        for k, v <- dict
+    - #DONE data.keys() ; dkeys(data) # dict keys
+    - #DONE for item <- ditems(data) ; for item <- data.items()  # key-val pairs from dict
 
 
 3.2. Type auto-casting. Important for struct constructors, function args
