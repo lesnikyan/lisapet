@@ -191,15 +191,14 @@ class TestModule(TestCase):
 
     def test_import_module_func_arg_type(self):
         funMod = self.importFuncsAgrType()
-    
         code = '''
         
         import tfuncs > *
-        a, b, c = 1,2,3
+        
+        a, b, c = 1, 2, 3
         st = fill('abc', 3)
         b = sum(10, 200)
-        c = mult(20, 17)
-        # print('#1')
+        c = mult(20.0, 17.0)
         res = [st, b, c]
         # print('res:', res)
         '''

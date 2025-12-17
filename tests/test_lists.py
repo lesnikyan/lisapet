@@ -443,7 +443,6 @@ class TestLists(TestCase):
         nr = {}
         for i <- [0..2]
             nr <- (keys[i], nn[i])
-        # print('nr:', nr)
         rr = []
         rr <- 'preval'
         for key, val <- nr
