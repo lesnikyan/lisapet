@@ -242,8 +242,7 @@ class TestFunc(TestCase):
     def test_func_as_expr(self):
         ''' '''
         code = r'''
-        res = 0
-
+        
         func foo()
             'foo-result'
         
@@ -264,6 +263,7 @@ class TestFunc(TestCase):
         }
         
         res = []
+        
         res <- ffs[0]()
         res <- ffs[1]('bar-arg1')
 
@@ -500,25 +500,28 @@ class TestFunc(TestCase):
         ''' test in function. '''
         code = r'''
         func testLambdas()
-            
+            rr = []
             func foo(f, a, b)
-                # dprint('>>==', f, a, b)
+                # print('>>==', f, a, b)
                 a + f(b)
             
             f1 = x -> x * 10
             n1 = foo(f1, 2, 3)
-            
+            rr <- n1
             n2 = foo(x -> x * 100, 4, 5)
-            n2 = foo(x -> x * 100, 6, 7)
+            rr <- n2
+            n3 = foo(x -> x * 100, 6, 7)
+            rr <- n3
             
             # # TODO: 1) append val to list : nums <- 5
             nn = [0,0,0,0,0]
             for i <- [1..5]
                 nn[i-1] = foo(x -> x ** 2 , 1, i)
-            
+            rr <- nn
             # print('lambda test:', n1, n2, nn)
+            rr
             
-        testLambdas()
+        res = testLambdas()
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -526,6 +529,9 @@ class TestFunc(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [32, 504, 706, [2, 5, 10, 17, 26]]
+        self.assertEqual(exv, rvar.vals())
 
     def test_lambda_as_arg(self):
         ''' function object as argument of function. '''

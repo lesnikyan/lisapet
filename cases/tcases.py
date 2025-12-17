@@ -323,6 +323,12 @@ class CaseSeq(SubCase):
     def match(self, elems:list[Elem]) -> bool:
         # parents = []
         prels('CaseSeq.match %s'% self.delim, elems)
+        delimord = [':',',',';']
+        dmInds = {delimord[i] : i for i in range(len(delimord))}
+        baseDelInd = len(delimord)
+        if self.delim in delimord:
+            baseDelInd = delimord.index(self.delim)
+        inOrd = self.delim in delimord
         obr = 0 # bracket counter
         # check without control of nesting, just count open and close brackets
         for ee in elems:
@@ -337,6 +343,9 @@ class CaseSeq(SubCase):
             if obr > 0:
                 # in brackets, ignore internal elems
                 continue
+            if ee.text in dmInds and dmInds[ee.text] > baseDelInd:
+                # break if has delim in later pos
+                return False
             if ee.text == self.delim:
                 return True
         return False
@@ -360,7 +369,7 @@ class CaseSeq(SubCase):
                 continue
             if ee.type == Lt.oper and ee.text == self.delim:
                 sub = elems[start: i]
-                prels('# start= %d, i= %d sub:' % (start, i), sub)
+                # prels('# start= %d, i= %d sub:' % (start, i), sub)
                 start = i + 1
                 res.append(sub)
                 continue

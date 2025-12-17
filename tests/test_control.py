@@ -281,16 +281,6 @@ class TestControl(TestCase):
         self.assertEqual([10, 20, 9, 12], rvar.vals())  
 
     def test_if_else(self):
-        # code = '''
-        # res = 100
-        # if x >= 10 | x < 2 && x != 0
-        #     res = 2000 + x * -10 - 700
-        # else
-        #     x = x ** 2
-        #     res = 1000 + x - 500
-        #     # if res < 500
-        #     #     res = res + 10000
-        # '''
         code = '''
         res = 100
         # y = 0
@@ -302,30 +292,29 @@ class TestControl(TestCase):
             if res + x > 30
                 res = res + x
                 res = 33
-                @debug 1
+                # @debug 1
                 # y = 1
                 y = x + res
                 res = y
         '''
-        # code = ''.join([s[8:] for s in code.splitlines()])
         code = norm(code[1:])
-        data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
-        # data = [10, 20]
-        # lang.FullPrint = 1
+        data = [0, 1, 4, 5, 10, 20, 30, 40]
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
         ress = []
         for x in data:
             ctx =rootContext()
-            vv = Var('x', TypeInt)
-            vv.set(Val(x, TypeInt))
+            vv = Var('x', TypeInt())
+            vv.set(Val(x, TypeInt()))
             ctx.addSet({'x': vv})
             # print('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
-            ress.append(ctx.get('res').get())
+            ress.append(ctx.get('res').getVal())
         #     dprint('##################t-IF1:', ctx.get('res').get())
-        # dprint('all:', ress)
+        # print('all:', ress)
+        exv = [22, 11, 22, 22, 43, 53, 11, 11]
+        self.assertEqual(exv, ress)
 
     def test_for_iter(self):
         src = [

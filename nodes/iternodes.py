@@ -176,7 +176,6 @@ class SrcIterator(NIterator):
             case DictVal():
                 self.src = src.data
         # dprint('SrcIterator.__init:', src, self.src)
-        # raise EvalErr('@@')
         self._isDict = isinstance(src, DictVal)
         # self.iterFunc = self._iterList
         self._keys = None
@@ -316,7 +315,7 @@ class Append(Expression):
 
     def do(self, ctx:Context):
         # key, val for DictVal. src should be a tuple or dict
-        dprint('Append do:', self.target, self.src)
+        # print('Append do:', self.target, self.src)
         
         if isinstance(self.target, ListVal):
             v = self.src
@@ -348,7 +347,7 @@ class LeftArrowExpr(Expression):
         self.isIter = False
         
     def setArgs(self, left, right):
-        dprint('Arr <- setArgs1', left, right)
+        # print('Arr <- setArgs1', left, right)
         self.leftExpr = left
         self.rightExpr = right
     
@@ -366,7 +365,7 @@ class LeftArrowExpr(Expression):
         if isinstance(self.leftExpr, SequenceExpr):
             if self.leftExpr.getDelim() == ',':
                 # comma-separated sequence, can interpret as tuple
-                dprint('Arr <- init011', 'comma-separated sequence')
+                # print('Arr <- init011', 'comma-separated sequence')
                 # use 2 first vars for key-val of dict
                 # TODO: change to multival assignmens
                 ltVals = self.leftExpr.getVals(ctx)
@@ -378,10 +377,15 @@ class LeftArrowExpr(Expression):
         rtArg = self.rightExpr.get()
 
         # print('Arr <-2 init ltArg', ltArg)
-        # dprint('Arr <-3 init rtArg:', rtArg)
-        if not isinstance(ltArg, list) and isinstance(ltArg.get(), (ListVal, DictVal)):
+        # print('Arr <-3 init rtArg:', rtArg)
+        if isinstance(ltArg, Var) and isinstance(ltArg.getType(), (TypeList, TypeDict)):
+            # print('Arr <-2 init ltArg', ltArg.getType())
+            ltArg = var2val(ltArg)
+        if not isinstance(ltArg, list) and isinstance(ltArg, (ListVal, DictVal)):
             # append case
-            self.expr = Append(ltArg.get(), rtArg)
+            if rtArg :
+                rtArg = var2val(rtArg)
+            self.expr = Append(ltArg, rtArg)
             return
 
         if isinstance(rtArg, Var):
@@ -409,7 +413,7 @@ class LeftArrowExpr(Expression):
             self.expr = None
     
     def do(self, ctx:Context):
-        dprint('Exp<-do1:', self.expr)
+        # print('Exp<-do1:', self.expr)
         if self.expr is None:
             self.init(ctx)
         self.doCase(ctx)

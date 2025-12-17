@@ -30,7 +30,7 @@ class ListExpr(CollectionExpr):
 
     def do(self, ctx:Context):
         self.listObj = ListVal()
-        # dprint('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
+        # print('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
         for exp in self.valsExprList:
             exp.do(ctx)
             v = exp.get()
@@ -188,6 +188,7 @@ class TupleExpr(CollectionExpr):
 
     def add(self, exp:Expression):
         ''' add next elem of list'''
+        # print('TupExp.add', exp)
         self.valsExpr.append(exp)
 
     def do(self, ctx:Context):

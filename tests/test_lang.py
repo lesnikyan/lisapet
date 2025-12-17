@@ -86,7 +86,7 @@ class TestLang(TestCase):
         func foo()
             null
         
-        a:A = A{a:1}
+        a = A{a:1}
         a = null
         b = null
         c = b

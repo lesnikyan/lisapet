@@ -111,7 +111,7 @@ class Context(NSContext):
             var = Var(varName, vtype)
         else:
             name = var.name
-        dprint('x.addVar2: ', name, var)
+        # print('x.addVar2: ', name, var)
         self.vars[name] = var
         # self.addSet({name:var})
 
@@ -123,14 +123,15 @@ class Context(NSContext):
 
     def findIn(self, name):
         src = self
+        # print('## --- ', name,  src, '\n', src.vars)
         if name in src.vars:
             return src.vars[name]
         if name in src.types:
             return src.types[name]
         if name in src.funcs:
-            dprint('CTX.find func ?', name, src.funcs[name].__class__.__name__)
-            if src.funcs[name].__class__.__name__ != 'NFunc':
-                dprint('CTX.find func:`%s`' % name, '::', src.funcs[name])
+            # dprint('CTX.find func ?', name, src.funcs[name].__class__.__name__)
+            # if src.funcs[name].__class__.__name__ != 'NFunc':
+                # dprint('CTX.find func:`%s`' % name, '::', src.funcs[name])
             return src.funcs[name]
 
         return None
@@ -163,6 +164,8 @@ class Context(NSContext):
                 print('.' * ind, '  > ', ttt[iii])
                 iii += 1
                 for k, v in data.items():
+                    if isinstance(v, TypeProperty):
+                        v = v.type
                     vstr = v.get()
                     if isinstance(v, Collection):
                         vstr = v.vals()
@@ -231,16 +234,17 @@ class ModuleContext(Context):
          -- imported module: 'module.name' # Not applicable
         alias: 'name' -> `module.name`
         '''
-        dprint('mctx.findIn:', name)
+        # print('mctx.findIn:', name)
         if name in self.aliases:
             name = self.aliases[name]
         res = super().findIn(name)
-        # print('findIn ## 1:', res)
+        # print('MC.findIn ## 1:', name, res)
         if res is not None:
             return res
         # find module
-        dprint('#-imported', [k for k in self.imported.keys()])
+        # print('#-imported', [k for k in self.imported.keys()])
         if name in self.imported:
+            # print('MC findIn', name)
             return self.imported[name]
         # find in modules
         for k, mbox in self.imported.items():

@@ -139,17 +139,21 @@ class OpAssign(OperCommand):
 
         # prepare left
         left = self.leftSet()
+        # for n in left: print('#22', n)
         size = len(left)
 
         # prepare right
         resSet = self.doRight(ctx, size)
+        # ctx.print(forsed=1)
 
         # assign loop
         for  i in range(size):
             if isinstance(left[i], VarExpr_):
                 # skip _ var
                 continue
+            # print('L-1', left[i])
             left[i].do(ctx)
+            # print('L-2', left[i])
             val = resSet[i]
             
             val = self.readVal(val)
@@ -172,9 +176,10 @@ class OpAssign(OperCommand):
                 # new var for assignment
                 isNew = True
                 newVar = Var(dest.name, valType)
-                dprint('Assign new var', newVar, 'val-type:', valType)
+                # dprint('Assign new var', newVar, 'val-type:', valType)
                 ctx.addVar(newVar)
                 dest = newVar
+            # print('= OpAssign before set', dest, val, val.getType())
             dest.set(val)
                 
             # print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
@@ -186,15 +191,23 @@ class OpAssign(OperCommand):
                 return
 
             # single var
-            name = dest.name
+            self.fixType(ctx, dest, val)
 
             self.res = val
+            # name = dest.name
             # saved = ctx.get(name)
-            # dprint(' (a = b) saved ', saved)
+            # print(' (a = b) saved ', saved, saved.get().getType())
 
-        # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
-        # TODO: thik about one way of assignment: (something) = (something)
 
+    def fixType(self, ctx:Context, dest:Var, val:Val):
+            if isinstance(val.val, Null):
+                return
+            valTypeCl = val.getType().__class__
+            if not isinstance(dest.getType(), val.getType().__class__):
+                # print("!!!! nooo", dest.getType(), valTypeCl)
+                dest.setType(valTypeCl())
+            
+        
 
 class OpBinAssign(OpAssign):
     ''' += -= *= /= %= '''

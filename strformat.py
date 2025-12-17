@@ -6,6 +6,7 @@ from parser import ParseErr
 # from tree import line2expr
 from nodes.expression import ValExpr, Expression
 from base import Val
+from vars import StringVal
 from typex import TypeString
 from context import Context
 
@@ -270,7 +271,7 @@ class ExprFormat(Expression):
         val = self.expr.get().getVal()
         fmt = Formatter()
         fval = fmt.format(val, self.opt)
-        self.res = Val(fval, TypeString)
+        self.res = StringVal(fval)
     
     def get(self):
         return self.res
@@ -302,7 +303,7 @@ class StrJoinExpr(Expression):
             s = tres.getVal()
             ss.append(s)
         rval = ''.join(ss)
-        self.res = Val(rval, TypeString)
+        self.res = StringVal(rval)
 
     def get(self):
         return self.res

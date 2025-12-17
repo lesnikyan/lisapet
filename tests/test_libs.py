@@ -26,6 +26,107 @@ class TestLibs(TestCase):
 
 
 
+    def test_bound_methods_sequence(self):
+        ''' Bound method by native function.
+            Test methods of sequence: map, fold, reverse
+        '''
+        code = r'''
+        res = []
+        
+        # reverse
+        nums = [1,2,3]
+        rnums = nums.reverse()
+        res <- rnums
+        res <- [1,2,3].join('^')
+        
+        # map
+        res <- [1,2,3,4,5].map(x -> x * 11)
+        func f1(x)
+            ~"({x})"
+        res <- "string1".map(f1)
+        res <- "l i s t 2".split(' ').map(f1)
+        res <- (1,2,3).map(x -> x * 5)
+        res <- 't u p l e 3'.split(' ').map(f1)
+        
+        struct A a:int
+        
+        func si:A add(x)
+            si.a += x
+        
+        aa = []
+        for i <- [1..5]
+            aa <- A(i)
+        
+        a2 = aa.map(val -> val.add(10))
+        
+        res <- a2
+        
+        # val from function
+        func foo(n)
+            [x ; x <- [0..n]]
+        
+        res <- foo(3).map(x -> 100 + x)
+        
+        # fold
+        src11 = [1,2,3]
+        
+        func ff1(s, x)
+            s + x * 10
+        
+        res <- src11.fold(0, ff1)
+        
+        src12 = [4,5,6]
+        res <- src12.fold(1, (x, y) -> x * y)
+        
+        src13 = [7,8,9]
+        res <- [7,8,9].fold('!', (s,n)-> ~"{s} {n} !")
+        
+        src21 = (11,22,33)
+        res <- src21.fold(0, ff1)
+        
+        func tup22()
+            (21,22,23)
+        
+        res <- tup22().fold(1, (x, y) -> (x * y) % 100)
+        
+        res <- "a b c d e f g".split(re`\s+`).fold('', (s, n) -> ~'{s} [{len(s):03d}] {n}')
+        
+        dds = {'a':'1001', 'b':'2002', 'c':'3003'}
+        
+        func dplus(dd, app:tuple)
+            dd <- (app[0], toint(app[1]) - 500)
+            dd
+
+        res <- dds.items().fold([], (s, n) -> (s <- n[0]; s <- n[1]; s))
+        res <- dds.items().fold({}, (s, n) -> dplus(s, n))
+        res <- dds.items().fold({}, (s, n) -> ( v= n[1]+'_val' ; s <- (n[0], v) ;s))
+        
+        res <- dds.items().fold({}, (s, n) -> (s <- (n[1], n[0]) ; s))
+        dds['a'] = '7007'
+        res <- dds.items().fold({}, (s, n) -> (s <- n.reverse() ; s))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        
+        rvar = ctx.get('res').get()
+        exv = [
+            [3, 2, 1], '1^2^3', [11, 22, 33, 44, 55], '(s)(t)(r)(i)(n)(g)(1)', ['(l)', '(i)', '(s)', '(t)', '(2)'], 
+            (5, 10, 15), ['(t)', '(u)', '(p)', '(l)', '(e)', '(3)'], [11, 12, 13, 14, 15], 
+            [100, 101, 102, 103], 60, 120, '! 7 ! 8 ! 9 !', 660, 26, 
+            ' [000] a [008] b [016] c [024] d [032] e [040] f [048] g', ['a', '1001', 'b', '2002', 'c', '3003'], 
+            {'a': 501, 'b': 1502, 'c': 2503}, {'a': '1001_val', 'b': '2002_val', 'c': '3003_val'}, 
+            {'1001': 'a', '2002': 'b', '3003': 'c'}, {'7007': 'a', '2002': 'b', '3003': 'c'}]
+        # print('tt>',rvar.vals())
+        self.assertEqual(exv, rvar.vals())
+
     def test_bound_native_methods(self):
         ''' Bound method by native function.
         bind : str_split(_, src, sep)
@@ -51,7 +152,6 @@ class TestLibs(TestCase):
         
         res <- dk.items()
         
-        
         # split
         str1 = 'aa-bb-cc'
         rsplit = str1.split('-')
@@ -66,37 +166,9 @@ class TestLibs(TestCase):
         res <- "/".join(['s7','s8', 's9'])
         res <- `"`.join((11,12,13))
         
-        # map
-        res <- [1,2,3,4,5].map(x -> x * 11)
-        func f1(x)
-            ~"({x})"
-        res <- "string1".map(f1)
-        res <- "l i s t 2".split(' ').map(f1)
-        res <- (1,2,3).map(x -> x * 5)
-        res <- 't u p l e 3'.split(' ').map(f1)
-        
         # combo
         wds = 'Hello dear friend'.split(' ').map(w -> ~"<t>{w}</t>").join(' ')
         res <- wds
-        
-        struct A a:int
-        
-        func si:A add(x)
-            si.a += x
-        
-        aa = []
-        for i <- [1..5]
-            aa <- A(i)
-        
-        a2 = aa.map(val -> val.add(10))
-        
-        res <- a2
-        
-        # val from function
-        func foo(n)
-            [x ; x <- [0..n]]
-        
-        res <- foo(3).map(x -> 100 + x)
         
         # print('res = ', res)
         '''
@@ -113,11 +185,8 @@ class TestLibs(TestCase):
         exv = [
             [3, 2, 1], '1^2^3', [1, 2, 'a', 'b', 'c'], 
             [(1, 11), (2, 22), ('a', 'aaa'), ('b', 'bbb'), ('c', 'ccc')], 
-            ['aa', 'bb', 'cc'], ['d', 'e', 'f'], ['here', 'many', 'hidden', 'words'],
-            's1-s2-s3', 's4_s5_s6', 's7/s8/s9', '11"12"13',
-            [11, 22, 33, 44, 55], '(s)(t)(r)(i)(n)(g)(1)', 
-            ['(l)', '(i)', '(s)', '(t)', '(2)'], (5, 10, 15), ['(t)', '(u)', '(p)', '(l)', '(e)', '(3)'],
-            '<t>Hello</t> <t>dear</t> <t>friend</t>', [11, 12, 13, 14, 15], [100, 101, 102, 103]]
+            ['aa', 'bb', 'cc'], ['d', 'e', 'f'], ['here', 'many', 'hidden', 'words'], 
+            's1-s2-s3', 's4_s5_s6', 's7/s8/s9', '11"12"13', '<t>Hello</t> <t>dear</t> <t>friend</t>']
         self.assertEqual(exv, rvar.vals())
 
 

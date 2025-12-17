@@ -172,7 +172,7 @@ class TestOper(TestCase):
         ''' replace(src, rx, repl) '''
         code = r'''
         res = []
-        x:int = 1.5555
+        x:float = 1.5555
         
         res <- (1, 'int', (1 :: int))
         res <- (-1, 'int', 1 :: int)

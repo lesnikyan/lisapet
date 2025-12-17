@@ -218,7 +218,7 @@ def elems2expr(elems:list[Elem])->Expression:
             if isinstance(expr, CtrlSubExpr):
                 # print('#elems2expr/3 ', expr)
                 expr = expr.toControl()
-            # print('#EL2EX . expr:', expr)
+            # print('\n#EL2EX . expr:', expr, '', elemStr(elems))
             return expr
     # print('tree:DEBUG: No current ExprCase for `%s` ' % ''.join([n.text for n in elems]))
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
