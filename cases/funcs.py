@@ -168,30 +168,6 @@ class CaseFunCall(SubCase):
         # if elems[1].type != Lt.oper or elems[-1].type != Lt.oper or elems[1].text != '(' or elems[-1].text != ')':
         #     return False
     
-    # def split1(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-    #     ''' '''
-    #     # 1. func name, in next phase: method call: inst.foo() ? separated case for objects with members: obj.field, obj.method()
-    #     # 2. arg-expressions
-    #     src = elemStr(elems)
-    #     name = elems[0].text
-    #     # argSrc = elems[2:-1]
-    #     sub = elems[2:-1]
-    #     cs = CaseCommas()
-    #     subs = [sub] # one expression inside by default
-    #     if cs.match(sub):
-    #         _, subs = cs.split(sub)
-    #         # TODO: if function not just defined name: (lambda)(), funcs[key]()
-    #         # func should be an expression which returns function object
-    #     exp = FuncCallExpr(name, src)
-    #     return exp, subs
-
-    # def setSub1(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 
-    #     ''' base - FuncCallExpr, subs - argVal expressions '''
-    #     for exp in subs:
-    #         dprint('FN Call sub:', exp)
-    #         base.addArgExpr(exp)
-    #     return base
-    
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
         # 1. func name, in next phase: method call: inst.foo() ? separated case for objects with members: obj.field, obj.method()
