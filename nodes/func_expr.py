@@ -81,15 +81,18 @@ class Function(FuncInst):
         inCtx = Context(self.defCtx) # inner context, empty new for each call
         # inCtx.addVar(Var(1000001, 'debVal', TypeInt))
         for arg in self.callArgs:
-            dprint('Fu.do:', arg)
+            # print('Fu.do:', arg)
             inCtx.addVar(arg)
         # inCtx.get('debVal')
         # inCtx.upper = ctx
         self.block.do(inCtx)
         res = self.block.get()
+        # print('Func.do res=', res)
         if isinstance(res, FuncRes):
             res = res.get()
-        self.res = res
+        if res is None:
+            res = Val(Null(), TypeNull())
+        self.res = var2val(res)
 
     def get(self)->Var:
         return self.res
@@ -210,9 +213,11 @@ class FuncDefExpr(ObjDefExpr, Block):
         ''''''
         func = self.doFunc(ctx)
         # print('FuncDefExpr.do 1:', self.name, 'argExps:', self.argVars)
+        # here we need local context for correct init of arg types
+        argCtx = Context(ctx)
         for arg in self.argVars:
             if isinstance(arg, TypedVarExpr):
-                arg.do(ctx)
+                arg.do(argCtx)
             func.addArg(arg.get())
         func.block = Block()
         # build inner block of function
@@ -220,7 +225,7 @@ class FuncDefExpr(ObjDefExpr, Block):
             func.block.add(exp)
         func.setDefContext(ctx)
         self.res = func
-        dprint('FuncDefExpr.do 3:', func.getName())
+        # dprint('FuncDefExpr.do 3:', func.getName())
         if not func.isLambda:
             self.regFunc(ctx, func)
     

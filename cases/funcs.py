@@ -127,29 +127,6 @@ class CaseFunCall(SubCase):
     ''' foo(agrs)
         {expr}(args)'''
 
-    # def match1(self, elems:list[Elem]) -> bool:
-    #     ''' simple cases:
-    #         foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))
-    #         spec words  should not be here (for, if, func, match, return..)
-    #         TODO: complex cases:
-    #         (lambda-or-func)(), cont[key](), (any-expr)()
-    #     '''
-    #     if len(elems) < 3:
-    #         return False
-    #     if not isLex(elems[-1], Lt.oper, ')'):
-    #         return False
-    #     if elems[0].type != Lt.word: # incorrect for (function)()
-    #         return False
-    #     if not isLex(elems[1], Lt.oper, '('):
-    #         return False
-    #     if elems[0].type == Lt.word and elems[0].text in KEYWORDS:
-    #         return False
-    #     # TODO: use word(any-with-brackets) pattern
-    #     endInd = afterNameBr(elems)
-    #     if endInd != -1:
-    #         return False
-    #     return True
-
     def match(self, elems:list[Elem]) -> bool:
         ''' simple cases:
             foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))

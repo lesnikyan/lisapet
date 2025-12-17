@@ -34,13 +34,13 @@ def rx_replace(src:StringVal, rx:Regexp, repl:StringVal, count:Val=None):
     return rx.replace(src, repl, count)
 
 
-def replace(_, src:StringVal, olds:StringVal, repl:StringVal, count:Val=None):
-    olds = var2val(olds)
+def replace(_, src:StringVal, findptn:StringVal, repl:StringVal, count:Val=None):
+    findptn = var2val(findptn)
     src, repl = var2val(src), var2val(repl)
-    if isinstance(olds, Regexp):
-        return rx_replace(src, olds, repl, count)
+    if isinstance(findptn, Regexp):
+        return rx_replace(src, findptn, repl, count)
     sval:str = getVal(src)
-    oval = getVal(olds)
+    oval = getVal(findptn)
     nval = getVal(repl)
     cval = -1
     if count is not None:

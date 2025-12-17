@@ -120,9 +120,10 @@ def built_tostr(_, arg):
     return StringVal(rval)
     
 
-def buit_print(_,*args):
+def buit_print(ctx:Context,*args):
     pargs = []
     # print('b-print1:', args)
+    # ctx.print(forsed=1)
     for n in args:
         # print('b-print:::', n, n.__class__.__name__)
         if isinstance(n, (Function)):
@@ -186,7 +187,7 @@ def built_foldl(ctx:Context, start, elems, fun:Function):
     r = start
     elems = built_list(0, elems).rawVals()
     for n in elems:
-        fun.setArgVals([r, n])
+        fun.setArgVals([var2val(r), var2val(n)])
         fun.do(ctx)
         r = fun.get()
     return r

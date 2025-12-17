@@ -12,11 +12,7 @@ import libs.dicts as dc
 from nodes.type_builtins import *
 
 
-def rootContext(ctx:Context = None)->RootContext:
-    ''' Make root context with builtin functions. '''
-    # if ctx is None:
-    ctx = RootContext()
-    setDefaultTypes(ctx)
+def initFuncs(ctx:Context):
     # global funcs
     setNativeFunc(ctx, 'print', buit_print, TypeNull)
     setNativeFunc(ctx, 'len', built_len, TypeInt)
@@ -35,14 +31,33 @@ def rootContext(ctx:Context = None)->RootContext:
     # bind methods
     bindNativeMethod(ctx, 'list', list_join, 'join', TypeString)
     bindNativeMethod(ctx, 'list', list_reverse, 'reverse', TypeList)
+    bindNativeMethod(ctx, 'tuple', tuple_reverse, 'reverse', TypeTuple)
     bindNativeMethod(ctx, 'dict', dict_keys, 'keys', TypeList)
     bindNativeMethod(ctx, 'dict', dict_items, 'items', TypeList)
     bindNativeMethod(ctx, 'string', str_split, 'split', TypeList)
+    bindNativeMethod(ctx, 'string', str_replace, 'replace', TypeString)
     bindNativeMethod(ctx, 'string', str_join, 'join', TypeString)
     # map
     bindNativeMethod(ctx, 'list', list_map, 'map', TypeList)
     bindNativeMethod(ctx, 'tuple', tuple_map, 'map', TypeTuple)
     bindNativeMethod(ctx, 'string', str_map, 'map', TypeString)
+    # fold
+    bindNativeMethod(ctx, 'list', list_fold, 'fold', TypeList)
+    bindNativeMethod(ctx, 'tuple', tuple_fold, 'fold', TypeTuple)
+
+
+def setDefaultTypes(ctx:Context):
+    types = builtinTypes()
+    for tt in types:
+        ctx.addType(tt())
+
+
+def rootContext(ctx:Context = None)->RootContext:
+    ''' Make root context with builtin functions. '''
+    # if ctx is None:
+    ctx = RootContext()
+    setDefaultTypes(ctx)
+    initFuncs(ctx)
     
     constants = {
     'true': (TypeBool, Val(True, TypeBool())),
@@ -59,8 +74,3 @@ def rootContext(ctx:Context = None)->RootContext:
 def moduleContext(root:Context)->ModuleContext:
     mctx = ModuleContext(root)
     return mctx
-
-def setDefaultTypes(ctx:Context):
-    types = builtinTypes()
-    for tt in types:
-        ctx.addType(tt())

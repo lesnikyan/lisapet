@@ -67,6 +67,7 @@ class VarExpr(Expression):
     
     def do(self, ctx:Context):
         # dprint('VarExpr.do ctx:', ctx, 'name=', self.name)
+        # ctx.print(forsed=1)
         newVal = ctx.get(self.name)
         # print('VarExpr.do:', self.name, newVal)
         self.val = newVal
