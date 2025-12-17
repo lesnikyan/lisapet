@@ -1707,12 +1707,23 @@ See more examples in `tests/test_format.py`.
 split("1,2,3", ',')
 >> ['1','2','3']
 ```
+Method-like:
+```python
+"1,2,3".split(',')
+```
 
 2. Join.
 
 ```python
 join(['a','b','c'], '_')
 >> 'a_b_c'
+```
+Method-like:
+```python
+# list method
+['a','b','c'].join('_')
+# string methos 
+'_'.join(['a','b','c'])
 ```
 
 3. Replace.
@@ -1722,6 +1733,14 @@ src = "<div> Hello </div>"
 replace(src, 'div', 'span')
 >> '<span> Hello </span>'
 ```
+Method-like:
+```golang
+# string pattern
+"a b c".replace(' ', '--')
+# regexp pattern
+"a b\tc   d".replace(re`\s+`, '--')
+>> 'a--b--c'
+```
 
 4. tostr
 ```python
@@ -1730,6 +1749,13 @@ tostr(1 == 1)     # 'true'
 tostr([1,2, (3, 4)])  # '[1,2,(3,4)]'
 tostr({'a': 123}) # "{'a':123}"
 ```
+
+5. map
+```python
+r = 'abc'.map(s -> ~'<{s}>')
+>> '<a><b><c>'
+```
+
 
 
 ### 22. Import modules.  
