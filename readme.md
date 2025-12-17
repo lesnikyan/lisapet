@@ -1095,15 +1095,19 @@ See `eval.py` for more examples.
 ### 14.3 Methods  are already bound to types
 1. `list`:  
     .reverse()  
-    .map(`function`)  
     .join(`string`)  
+    .map(`function`)  
+    .fold(any, `function`)
 2. `dict`:
     .keys()  
     .items()  
 3. `tuple`:  
     .map(`function`)  
+    .fold(any, `function`)
+    .reverse()  
 4. `string`:  
     .split(`string`|`regexp`)  
+    .replace(`string`|`regexr`, `string`)
     .joinn(`list`|`tuple`)  
     .map(`function`)  
 
