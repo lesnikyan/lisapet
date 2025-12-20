@@ -218,8 +218,9 @@ class OpAssign(OperCommand):
 
     def isCompatible(self, destT, srcT):
         if isinstance(destT, TypeStruct):
-            # print('?::', destT, srcT, structTypeCompat(destT, srcT))
+            # print('st?::', destT, srcT, structTypeCompat(destT, srcT))
             return structTypeCompat(destT, srcT)
+        # print('0?::', destT, srcT, typeCompat(destT, srcT))
         return typeCompat(destT, srcT)
 
     def resolveVal(self, desT:VType, val:Val):

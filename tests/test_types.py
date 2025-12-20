@@ -28,6 +28,61 @@ from libs.regexp import *
 
 class TestTypes(TestCase):
 
+        
+    def test_assign_compatible_types(self):
+        '''
+        convert val to destination var type in case with compatible types
+        a:int = bool, null
+        b:float = int, bool, null
+        d:bool = null
+        # next
+        c:list|dict|tuple = null
+        '''
+
+        code = r'''
+        res = []
+        # single vars
+        xIntF:int = false
+        xIntT:int = true
+        xIntN:int = null
+        
+        xFloatI:float = 11
+        xFloatF:float = false
+        xFloatT:float = true
+        xFloatN:float = null
+        
+        xBoolN:bool = null
+        
+        
+        # print('res = ', 1)
+        '''
+        code = norm(code[1:])
+        ctx:Context = doCode(code)
+
+        tdata = [
+            ('xIntF', 0, TypeInt), 
+            ('xIntT', 1, TypeInt), 
+            ('xIntN', 0, TypeInt), 
+            
+            ('xFloatI', 11.0, TypeFloat),
+            ('xFloatF', 0.0, TypeFloat),
+            ('xFloatT', 1.0, TypeFloat),
+            ('xFloatN', 0.0, TypeFloat),
+            
+            ('xBoolN', False, TypeBool),
+        ]
+        for tcase in tdata:
+            name, xval, xtype = tcase
+            
+            var = ctx.get(name)
+            # print('tt>', f'{name}, {xval}, {xtype}', var)
+            varT = var.getType()
+            valT = var2val(var).getType()
+            rval = var2val(var).getVal()
+            self.assertIsInstance(varT, xtype)
+            self.assertIsInstance(valT, xtype)
+            self.assertEqual(xval, rval)
+        
 
     def test_resolveVal(self):
         ''' resolving of value for autocasting during assignment '''

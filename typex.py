@@ -208,16 +208,17 @@ def typeCompat(dest:VType, stype:VType):
     # stype = src
     if stype == dest:
         return True
-    # print('dest name:', dest.name)
+    sclass = stype.__class__
+    # print('dest name:', dest.name, stype)
     match dest.name:
         case 'any': return True
-        case 'bool': return stype in [TypeBool, TypeNull]
-        case 'string': return stype == TypeString
-        case 'num': return stype in [TypeComplex, TypeBool, TypeInt, TypeFloat, TypeNull]
-        case 'complex': return stype in [TypeBool, TypeInt, TypeFloat, TypeNull]
-        case 'float': return stype in [TypeBool, TypeInt, TypeNull]
-        case 'int': return stype in [TypeBool, TypeNull]
-        case 'list'|'dict'|'struct': return stype in [TypeNull]
+        case 'bool': return sclass in [TypeBool, TypeNull]
+        case 'string': return sclass == TypeString
+        case 'num': return sclass in [TypeComplex, TypeBool, TypeInt, TypeFloat, TypeNull]
+        case 'complex': return sclass in [TypeBool, TypeInt, TypeFloat, TypeNull]
+        case 'float': return sclass in [TypeBool, TypeInt, TypeNull]
+        case 'int': return sclass in [TypeBool, TypeNull]
+        case 'list'|'dict'|'struct': return sclass in [TypeNull]
         case _: return False
 
 
