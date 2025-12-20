@@ -263,7 +263,3 @@ def valType(val):
         return tps[tp]
     return Undefined()
 
-
-def typeCast(val:Var, type:VType):
-    ''' cast val ty type'''
-    

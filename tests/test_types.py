@@ -30,6 +30,120 @@ class TestTypes(TestCase):
 
 
 
+    def test_assign_compatible_struct_fields(self):
+        ''' assign compatible vals to struct fields '''
+
+        code = r'''
+        res = []
+        
+        struct D d:int, dd:string
+        struct E(D) e:string
+        
+        struct A
+            a:int
+            b:float
+            c:bool
+            d:D
+        
+        a1 = A{}
+        # A.a
+        a1.a = true
+        stAbool1 = a1.a
+        
+        a1.a = false
+        stAbool0 = a1.a
+        
+        a1.a = null
+        stAnull = a1.a
+        
+        # A.b
+        a1.b = 22
+        stBint = a1.b
+        
+        a1.b = false
+        stBbool0 = a1.b
+        
+        a1.b = true
+        stBbool1 = a1.b
+        
+        a1.b = null
+        stBnull = a1.b
+        
+        # # A.c
+        a1.c = null
+        stCnull = a1.c
+        
+        a1.d = null
+        stDnull = a1.d
+        
+        a2 = A{}
+        d2 = D(12345, "D2string")
+        a2.d = d2
+        st2DD = a2.d
+        
+        a3 = A{}
+        e3 = E(34567, "D3string", "E3string")
+        a3.d = e3
+        st3DE = a3.d
+        
+        # print('res = ', 1)
+        '''
+        
+        code = norm(code[1:])
+        ctx:Context = doCode(code)
+        
+        tdata = [
+            ('stAbool1', 1, TypeInt), 
+            ('stAbool0', 0, TypeInt), 
+            ('stAnull', 0, TypeInt), 
+            
+            ('stBint', 22.0, TypeFloat), 
+            ('stBbool1', 1.0, TypeFloat), 
+            ('stBbool0', 0.0, TypeFloat), 
+            ('stBnull', 0.0, TypeFloat), 
+            
+            ('stCnull', 0.0, TypeBool), 
+            
+            ('stDnull', Null(), TypeNull), 
+            ('st2DD', ('struct',{'d':12345, 'dd':'D2string'}, 'D'), StructDef), 
+            ('st3DE', ('struct',{'d':34567, 'dd':'D3string', 'e':'E3string'}, 'E'), StructDef), 
+        ]
+        
+        types= ['A', 'D', 'E']
+        tvals = {}
+        for tname in types:
+            tval = ctx.getType(tname)
+            # print('ttv:', tval.get(), type(tval.get()))
+            tvals[tname] = tval.get()
+        
+        for tcase in tdata:
+            name, xval, xtype = tcase
+            
+            var = ctx.get(name)
+            # print('tt>', f'{name}, {xval}, {xtype}', var)
+            varT = var.getType()
+            valT = var2val(var).getType()
+            rval = var2val(var).getVal()
+            self.assertIsInstance(varT, xtype)
+            self.assertIsInstance(valT, xtype)
+            if not (isinstance(xval, tuple)):
+                self.assertEqual(xval, rval)
+            else:
+                # print('3>>', rval)
+                obj = var.get()
+                xtype = tvals[xval[2]]
+                # print('tp>', xtype, obj.getType())
+                self.assertTrue(xtype == obj.getType())
+                for skey, xfval in xval[1].items():
+                    fval = obj.get(skey).get()
+                    # print('4>>', fval)
+                    self.assertEqual(xfval, fval)
+        
+        a1 = ctx.get('a1').get()
+        typeD = ctx.getType('D').get()
+        self.assertTrue(a1.vtype.ntypes['d'] == typeD)
+        
+
     def test_assign_compatible_struct(self):
         '''
         test assign structs:

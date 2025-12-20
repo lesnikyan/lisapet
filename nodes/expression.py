@@ -432,8 +432,10 @@ def expSrc(expr:Expression|ParseErr|InterpretErr):
 
 def defaultValOfType(tp: VType):
     match tp:
+        case TypeStruct():
+            return Val(Null(), TypeNull())
         case TypeAny() | TypeNull():
-            return Null()
+            return Val(Null(), TypeNull())
         case TypeBool():
             return Val(False, TypeBool())
         case TypeInt() | TypeFloat() | TypeComplex():
@@ -447,8 +449,8 @@ def defaultValOfType(tp: VType):
         case TypeTuple():
             return TupleVal()
         case TypeStruct():
-            return Null() # TODO: resolve defined struct type: TypeName{}
+            return StringVal('') # TODO: resolve defined struct type: TypeName{}
         case TypeFunc():
-            return Null()
+            return Val(Null(), TypeNull())
     return tp.defVal()
 

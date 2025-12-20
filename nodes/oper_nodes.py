@@ -169,6 +169,7 @@ class OpAssign(OperCommand):
             
             #get destination var
             dest = left[i].get()
+            
             # print('oper:', self.oper, 'dest:', left[i])
             # print('Assign dest1 =', dest, '; val=', val)
 
@@ -181,19 +182,25 @@ class OpAssign(OperCommand):
                 # dprint('Assign new var', newVar, 'val-type:', valType)
                 ctx.addVar(newVar)
                 dest = newVar
-            # print('= OpAssign before set', dest, val, val.getType())
-                
+            
+            # print('= OpAssign before set', dest, val, expSrc(self.src))
             # print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
             # print(' (a = b) dest =', dest, ' val = ', val, val.getType().__class__, 'isNew:', isNew)
-                
+            
+            destStrict = False
+            
             if isinstance(dest, ObjectMember):
                 # struct field as left operand
-                dest.set(val)
-                return
+                # dest.getType()
+                destStrict = True
+                # dest.set(val)
+                # return
+            else:
+                destStrict = dest.strictType()
 
             # single var
-            # print('OpAssig: single var')
-            if dest.strictType():
+            # print('OpAssig: single var', dest, destStrict)
+            if destStrict:
                 dt, st = dest.getType(), val.getType()
                 if dt != st:
                     # print('!::!')
@@ -202,13 +209,16 @@ class OpAssign(OperCommand):
                         # convert val
                         val = self.resolveVal(dt, val)
                     else:
-                        # print(f'\n--!-- Trying assign val to strictly typed variable (:{dt} = {st})', dest, val)
+                        print(f'\n--!-- Trying assign val to strictly typed variable (:{dt} = {st})', dest, val)
                         raise EvalErr(f'Trying assign val with different type to strictly typed variable (:{dt} =/= {st})')
             else:
                 # if not strict type
                 self.fixType(dest, val)
                 
             dest.set(val)
+            
+            if isinstance(dest, ObjectMember):
+                return
 
             self.res = val
             # name = dest.name
@@ -618,7 +628,7 @@ class ObjectMember(ObjectElem):
         self.setArgs(obj, member)
 
     def setArgs(self, obj, member):
-        dprint('ObjectMember.setArgs (', obj, ' -> ', member, ')')
+        # print('ObjectMember.setArgs (', obj, ' -> ', member, ')')
         self.object = obj
         self.member = member
 
@@ -637,8 +647,9 @@ class ObjectMember(ObjectElem):
         return val.get()
     
     def getType(self):
-        val = self.object.get(self.member)
-        return val.getType()
+        # print('self.member', self.member)
+        strType = self.object.getFieldType(self.member)
+        return strType
     
     def set(self, val:Val):
         ''' obj.member = expr; obj.member[key] = expr (looks like a.b[c] is an subcase of a.b) '''

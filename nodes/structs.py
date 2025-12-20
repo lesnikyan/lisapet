@@ -220,6 +220,9 @@ class StructInstance(ObjectInstance, NSContext):
     def getType(self):
         return self.vtype
 
+    def getFieldType(self, fname):
+        return self.vtype.ntypes[fname]
+
     def get(self, fname=None):
         if fname is None:
             # dprint('StructInstance.DEBUG::: getting enmpty fieldname')
@@ -267,8 +270,9 @@ class StructInstance(ObjectInstance, NSContext):
             return
         # if struct
         # print('@ check type ', valType.name, '!=', self.vtype.name , valType.name != self.vtype.name)
-        if valType.name != ftype.name:
-            raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
+        if valType != ftype:
+            if not structTypeCompat(ftype, valType):
+                raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
         
     def istr(self):
         fns = self.vtype.nfields
