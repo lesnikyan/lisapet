@@ -3,13 +3,15 @@
 Eval tree nodes: operators.
 
 '''
+import copy
+
 
 from lang import *
 from vars import *
 # from typex import *
 from nodes.expression import *
 from nodes.func_expr import FuncCallExpr, BoundMethod
-from nodes.structs import StructInstance, MethodCallExpr, StructConstr, StructConstrBegin, BoundMethodCall
+from nodes.structs import StructInstance, MethodCallExpr, StructConstr, StructConstrBegin, BoundMethodCall, structTypeCompat
 from nodes.tnodes import MString
 
 # from formatter import  StrFormatter
@@ -180,7 +182,6 @@ class OpAssign(OperCommand):
                 ctx.addVar(newVar)
                 dest = newVar
             # print('= OpAssign before set', dest, val, val.getType())
-            dest.set(val)
                 
             # print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
             # print(' (a = b) dest =', dest, ' val = ', val, 'isNew:', isNew)
@@ -191,7 +192,23 @@ class OpAssign(OperCommand):
                 return
 
             # single var
-            self.fixType(ctx, dest, val)
+            # print('OpAssig: single var')
+            if dest.strictType():
+                dt, st = dest.getType(), val.getType()
+                if dt != st:
+                    # print('!::!')
+                    # check compatibility
+                    if self.isCompatible(dt, st):
+                        # convert val
+                        val = self.resolveVal(dt, val)
+                    else:
+                        print(f'\n--!-- Trying assign val to strictly typed variable (:{dt} = {st})', dest, val)
+                        raise EvalErr(f'Trying assign val with different type to strictly typed variable (:{dt} =/= {st})')
+            else:
+                # if not strict type
+                self.fixType(dest, val)
+                
+            dest.set(val)
 
             self.res = val
             # name = dest.name
@@ -199,13 +216,29 @@ class OpAssign(OperCommand):
             # print(' (a = b) saved ', saved, saved.get().getType())
 
 
-    def fixType(self, ctx:Context, dest:Var, val:Val):
-            if isinstance(val.val, Null):
-                return
-            valTypeCl = val.getType().__class__
-            if not isinstance(dest.getType(), val.getType().__class__):
-                # print("!!!! nooo", dest.getType(), valTypeCl)
-                dest.setType(valTypeCl())
+    def isCompatible(self, destT, srcT):
+        if isinstance(destT, TypeStruct):
+            # print('?::', destT, srcT, structTypeCompat(destT, srcT))
+            return structTypeCompat(destT, srcT)
+        return typeCompat(destT, srcT)
+
+    def resolveVal(self, desT:VType, val:Val):
+        if not isinstance(desT, TypeStruct):
+            val = converVal(desT, val)
+        return val
+        
+
+    def fixType(self, dest:Var, val:Val):
+        ''' not for dest._strict '''
+        if isinstance(val.val, Null):
+            return
+        valType = val.getType()
+        if not isinstance(valType, TypeStruct):
+            valType = copy.copy(valType)
+        # if not isinstance(dest.getType(), val.getType().__class__):
+        if dest.getType() != val.getType():
+            # print("!!!! nooo", dest, dest.getType(), valType)
+            dest.setType(valType)
             
         
 

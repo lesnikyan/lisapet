@@ -200,16 +200,18 @@ def builtinTypes()->list[VType]:
             TypeString, TypeList, TypeDict, TypeStruct, TypeTuple, TypeFunc]
 
 
-def typeCompat(dest:VType, src:VType):
+def typeCompat(dest:VType, stype:VType):
     '''Check if types compatible.
-    src can be converted to dest.
+    criterion: src can be converted to dest.
     '''
     # compatList:list[VType] = []
-    stype = src.type
+    # stype = src
     if stype == dest:
         return True
+    # print('dest name:', dest.name)
     match dest.name:
         case 'any': return True
+        case 'bool': return stype in [TypeBool, TypeNull]
         case 'string': return stype == TypeString
         case 'num': return stype in [TypeComplex, TypeBool, TypeInt, TypeFloat, TypeNull]
         case 'complex': return stype in [TypeBool, TypeInt, TypeFloat, TypeNull]
@@ -218,6 +220,28 @@ def typeCompat(dest:VType, src:VType):
         case 'list'|'dict'|'struct': return stype in [TypeNull]
         case _: return False
 
+
+def converVal(dest:VType, val:Val):
+    ''' applicable for compatible types only '''
+    vval = val.getVal()
+    vtype = val.getType()
+    if vval is None or isinstance(vtype, TypeNull):
+        # null to numeric
+        if isinstance(dest, (TypeComplex, TypeInt, TypeFloat)):
+            vval = 0
+        if isinstance(dest, (TypeBool)):
+            vval = False
+    match dest.name:
+        case 'any': return val
+        case 'bool': return Val(bool(vval), TypeBool())
+        # case 'string': return stype == TypeString
+        case 'num': val
+        case 'complex': val
+        case 'float': return Val(float(vval), TypeFloat())
+        case 'int': return Val(int(vval), TypeInt())
+        # case 'list'|'dict'|'struct': return stype in [TypeNull]
+        case _: raise EvalErr(f'Value conversion of unknown or incompatible dest type ({dest} << {vtype})')
+    
 
 
 def valType(val):
