@@ -28,6 +28,77 @@ from libs.regexp import *
 
 class TestTypes(TestCase):
 
+
+
+    def test_assign_compatible_struct(self):
+        '''
+        test assign structs:
+        base:Super = Child{}
+        '''
+        code = r'''
+        
+        struct A a:int
+        struct B(A) b:float
+        struct C(B) c:string
+        struct D d:int
+        struct E(C, D) e:bool
+        
+        aa:A = A(1)
+        bb:B = B(11, 1.1)
+        cc:C = C(111, 1.11, 'c1')
+        dd:D = D(3)
+        
+        ab:A = B{}
+        ac:A = C{}
+        bc:B = C{}
+        de:D = E{}
+        ae:A = E{}
+        be:B = E{}
+        ce:C = E{}
+        de:D = E{}
+        
+        an:A = null
+        # an = A{}
+        
+        '''
+        code = norm(code[1:])
+        ctx:Context = doCode(code)
+
+        tdata = [
+            # varName, varType, valType 
+            ('ab', 'A', 'B'), 
+            ('bb', 'B', 'B'), 
+            ('ac', 'A', 'C'), 
+            ('bc', 'B', 'C'), 
+            ('de', 'D', 'E'), 
+            ('ae', 'A', 'E'), 
+            ('be', 'B', 'E'), 
+            ('ce', 'C', 'E'), 
+            ('de', 'D', 'E'), 
+            ('an', 'A', TypeNull()), 
+            
+        ]
+        types= ['A', 'B', 'C', 'D', 'E']
+        tvals = {}
+        for tname in types:
+            tval = ctx.getType(tname)
+            # print('ttv:', tval.get(), type(tval.get()))
+            tvals[tname] = tval.get()
+        
+        for tcase in tdata:
+            name, xVarT, xValT = tcase
+            var = ctx.get(name)
+            val = var.get()
+            vrtype = tvals.get(xVarT)
+            vltype = xValT
+            if isinstance(xValT, str): 
+                vltype = tvals.get(xValT)
+            # print('tt>', name, var, val, vrtype, vltype)
+            
+            # check if variable type wasn't changed
+            self.assertTrue(vrtype == var.getType(), f'{vrtype} == {var.getType()}')
+            # check type of val
+            self.assertTrue(vltype == val.getType(), f'{vltype} == {val.getType()}')
         
     def test_assign_compatible_types(self):
         '''
@@ -219,9 +290,9 @@ class TestTypes(TestCase):
         for dest, ok_types in tmap.items():
             for ntype in btypes:
                 exp = ntype in ok_types # ok in type in map
-                res = typeCompat(dest, ntype)
+                res = typeCompat(dest(), ntype())
                 # if exp != res:
-                    # print('tt!>', f"dest:{dest} != src: {ntype}", exp, res)
+                #     print('tt!>', f"dest:{dest} != src: {ntype}", exp, res)
                 self.assertEqual(exp, res, f"dest:{dest} != src: {ntype}")
     
     def test_structTypeEqual(self):

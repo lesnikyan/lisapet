@@ -209,7 +209,7 @@ def typeCompat(dest:VType, stype:VType):
     if stype == dest:
         return True
     sclass = stype.__class__
-    # print('dest name:', dest.name, stype)
+    # print('dest name:', dest.name, 'stype:', stype, sclass)
     match dest.name:
         case 'any': return True
         case 'bool': return sclass in [TypeBool, TypeNull]

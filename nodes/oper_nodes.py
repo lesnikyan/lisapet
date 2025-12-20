@@ -184,7 +184,7 @@ class OpAssign(OperCommand):
             # print('= OpAssign before set', dest, val, val.getType())
                 
             # print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
-            # print(' (a = b) dest =', dest, ' val = ', val, 'isNew:', isNew)
+            # print(' (a = b) dest =', dest, ' val = ', val, val.getType().__class__, 'isNew:', isNew)
                 
             if isinstance(dest, ObjectMember):
                 # struct field as left operand
@@ -202,7 +202,7 @@ class OpAssign(OperCommand):
                         # convert val
                         val = self.resolveVal(dt, val)
                     else:
-                        print(f'\n--!-- Trying assign val to strictly typed variable (:{dt} = {st})', dest, val)
+                        # print(f'\n--!-- Trying assign val to strictly typed variable (:{dt} = {st})', dest, val)
                         raise EvalErr(f'Trying assign val with different type to strictly typed variable (:{dt} =/= {st})')
             else:
                 # if not strict type
