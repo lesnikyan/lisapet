@@ -13,6 +13,7 @@ AnonStructConstr *? : create instance of anonymous struct (json-like object)
 from nodes.expression import *
 from context import *
 from nodes.expression import ServPairExpr, defaultValOfType
+from nodes.ntype import structTypeCompat
 from nodes.func_expr import FuncDefExpr, FuncCallExpr, Function, BoundMethod
 
 
@@ -505,28 +506,28 @@ class BoundMethodCall(MethodCallExpr):
         return self.func.get()
 
 
-def structTypeCompat(dtype:StructInstance, stype:VType):
-    ''' criterion: src should 
-        have the same type the dest have,
-        be child of dest type, 
-        or null
-        dtype - dest type
-        stype = src type
-    '''
-    # stype = src.getType()
-    # print('tcopmt1', stype)
-    if isinstance(stype, TypeNull):
-        return True
-    # TODO: possible interface check for future
+# def structTypeCompat(dtype:StructInstance, stype:VType):
+#     ''' criterion: src should 
+#         have the same type the dest have,
+#         be child of dest type, 
+#         or null
+#         dtype - dest type
+#         stype = src type
+#     '''
+#     # stype = src.getType()
+#     # print('tcopmt1', stype)
+#     if isinstance(stype, TypeNull):
+#         return True
+#     # TODO: possible interface check for future
     
-    # nest - for structs only
-    if not isinstance(stype, StructDef):
-        # not a struct
-        return False
-    if dtype == stype:
-        return True
-    if stype.hasParent(dtype):
-        return True
-    return False
+#     # nest - for structs only
+#     if not isinstance(stype, StructDef):
+#         # not a struct
+#         return False
+#     if dtype == stype:
+#         return True
+#     if stype.hasParent(dtype):
+#         return True
+#     return False
     
 

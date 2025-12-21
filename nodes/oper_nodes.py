@@ -3,7 +3,6 @@
 Eval tree nodes: operators.
 
 '''
-import copy
 
 
 from lang import *
@@ -11,8 +10,9 @@ from vars import *
 # from typex import *
 from nodes.expression import *
 from nodes.func_expr import FuncCallExpr, BoundMethod
-from nodes.structs import StructInstance, MethodCallExpr, StructConstr, StructConstrBegin, BoundMethodCall, structTypeCompat
-from nodes.tnodes import MString
+from nodes.structs import StructInstance, MethodCallExpr, StructConstr, StructConstrBegin, BoundMethodCall
+# from nodes.tnodes import MString
+from nodes.ntype import *
 
 # from formatter import  StrFormatter
 
@@ -205,15 +205,15 @@ class OpAssign(OperCommand):
                 if dt != st:
                     # print('!::!')
                     # check compatibility
-                    if self.isCompatible(dt, st):
+                    if isCompatible(dt, st):
                         # convert val
-                        val = self.resolveVal(dt, val)
+                        val = resolveVal(dt, val)
                     else:
-                        print(f'\n--!-- Trying assign val to strictly typed variable (:{dt} = {st})', dest, val)
+                        # print(f'\n--!-- Trying assign val to strictly typed variable (:{dt} = {st})', dest, val)
                         raise EvalErr(f'Trying assign val with different type to strictly typed variable (:{dt} =/= {st})')
             else:
                 # if not strict type
-                self.fixType(dest, val)
+                fixType(dest, val)
                 
             dest.set(val)
             
@@ -225,33 +225,6 @@ class OpAssign(OperCommand):
             # saved = ctx.get(name)
             # print(' (a = b) saved ', saved, saved.get().getType())
 
-
-    def isCompatible(self, destT, srcT):
-        if isinstance(destT, TypeStruct):
-            # print('st?::', destT, srcT, structTypeCompat(destT, srcT))
-            return structTypeCompat(destT, srcT)
-        # print('0?::', destT, srcT, typeCompat(destT, srcT))
-        return typeCompat(destT, srcT)
-
-    def resolveVal(self, desT:VType, val:Val):
-        if not isinstance(desT, TypeStruct):
-            val = converVal(desT, val)
-        return val
-        
-
-    def fixType(self, dest:Var, val:Val):
-        ''' not for dest._strict '''
-        if isinstance(val.val, Null):
-            return
-        valType = val.getType()
-        if not isinstance(valType, TypeStruct):
-            valType = copy.copy(valType)
-        # if not isinstance(dest.getType(), val.getType().__class__):
-        if dest.getType() != val.getType():
-            # print("!!!! nooo", dest, dest.getType(), valType)
-            dest.setType(valType)
-            
-        
 
 class OpBinAssign(OpAssign):
     ''' += -= *= /= %= '''

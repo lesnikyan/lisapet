@@ -10,6 +10,9 @@ class LangError(Exception):
         # super().__init__(*args)
         self.msg = msg
         self.args = args
+    
+    def getMessage(self):
+        return self.msg
 
 class XDebug(LangError):
     def __init__(self, *args):

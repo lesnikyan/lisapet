@@ -4,6 +4,7 @@ from collections.abc import  Callable
 from vars import *
 from nodes.expression import *
 from nodes.keywords import *
+from nodes.ntype import *
 
 
 class Function(FuncInst):
@@ -56,24 +57,37 @@ class Function(FuncInst):
             raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
         for i in range(nn):
-            arg = args[i]
+            val = args[i]
             aname = self.argVars[i].getName()
-            self.checkArgType(aname, arg)
-            # print('FN (%s), self.argVars[i]: ' % self._name, self.argVars[i], ' /:/', arg)
             atype = self.argVars[i].getType()
+            valType = val.getType()
+            if atype != valType:
+                if isCompatible(atype, valType):
+                    # convert val
+                    try:
+                        val = resolveVal(atype, val)
+                    except EvalErr as ex:
+                        # print('err.farg>', self.getName(), atype, valType)
+                        # print(ex.getMessage())
+                        raise ex
+                else:
+                    raise EvalErr('Uncompatible val %s for func arg %s' % valType, atype)
+            
+            # print('FN (%s), self.argVars[i]: ' % self._name, self.argVars[i], ' /:/', arg)
             argVar = Var(aname, atype)
-            argVar.set(arg)
+            argVar.set(val)
             # dprint('FN setArgVals-4: ', atype, aname)
             if isinstance(atype, TypeAny):
-                argVar.setType(arg.getType())
-            # print('set arg8  >> ', self.argVars[i], 'val:', arg)
+                argVar.setType(valType)
+            # print('set arg8  >> ', self.argVars[i], 'val:', val)
             # arg.name = self.argVars[i].name
             self.callArgs.append(argVar)
             # self.argVars[i].set(arg.get())
 
-    def checkArgType(self, name, val):
-        '''Use val.getType() and types compatibility '''
-        return True
+    # def checkArgType(self, arg, val):
+    #     '''Use val.getType() and types compatibility '''
+    #     return typeCompat(arg, val)
+    #     # return True
 
     def do(self, ctx: Context):
         self.res = None

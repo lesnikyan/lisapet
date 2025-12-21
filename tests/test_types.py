@@ -29,6 +29,78 @@ from libs.regexp import *
 class TestTypes(TestCase):
 
 
+    def test_compatible_value_func_args(self):
+        ''' assign compatible args of function '''
+
+        code = r'''
+        res = []
+        
+        # 1 arg
+        func fill3(val:float)
+            res <- val
+            tolist([val ; _ <- [1..3]])
+        
+        res <- 'fill3-1'
+        fill3(1.5)
+        res <- 'fill3-2'
+        fill3(2)
+        res <- 'fill3-3'
+        fill3(true)
+        res <- 'fill3-4'
+        fill3(false)
+        res <- 'fill3-5'
+        fill3(null)
+        
+        # 2 args
+        func sum(x:float, y:float)
+            res <- (x, y)
+            x + y
+        
+        res <- 'summ-1'
+        sum(1.01, 2.02)
+        res <- 'summ-2'
+        sum(2, 3)
+        res <- 'summ-3'
+        sum(true, false)
+        res <- 'summ-4'
+        sum(false, true)
+        res <- 'summ-5'
+        sum(null, null)
+        res <- 'summ-6'
+        sum(true, null)
+        res <- 'summ-7'
+        sum(20, null)
+        
+        # struct methos
+        struct A a:int
+        
+        func a:A add(v:int)
+            a.a += v
+        
+        a = A(1)
+        a.add(2)
+        res <- 'a.add1'
+        res <- a.a
+        a.add(true)
+        res <- 'a.add2'
+        res <- a.a
+        a.add(null)
+        res <- 'a.add3'
+        res <- a.a
+        
+        # print('', res)
+        '''
+        
+        code = norm(code[1:])
+        ctx:Context = doCode(code)
+        
+        rvar = ctx.get('res').get()
+        exv =[
+            'fill3-1', 1.5, 'fill3-2', 2.0, 'fill3-3', 1.0, 'fill3-4', 0.0, 'fill3-5', 0.0, 
+            'summ-1', (1.01, 2.02), 'summ-2', (2.0, 3.0), 'summ-3', (1.0, 0.0), 
+            'summ-4', (0.0, 1.0), 'summ-5', (0.0, 0.0), 'summ-6', (1.0, 0.0), 'summ-7', (20.0, 0.0), 
+            'a.add1', 3, 'a.add2', 4, 'a.add3', 4]
+        self.assertEqual(exv, rvar.vals())
 
     def test_assign_compatible_struct_fields(self):
         ''' assign compatible vals to struct fields '''
