@@ -28,6 +28,7 @@ class TestEvalFile(TestCase):
             clines:CLine = elemStream(tlines)
             exp = lex2tree(clines)
             ctx = rootContext()
+            # TODO: replace `print` for such tests to avoid trash output
             ctx.get('len')
             # return
             # dprint('$$ run test ------------------')

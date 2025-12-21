@@ -29,6 +29,76 @@ from libs.regexp import *
 class TestTypes(TestCase):
 
 
+    def test_assign_incompatible_error(self):
+        '''
+        '''
+        # basic declaration
+        code = r'''
+        
+        struct A a:int
+        struct B(A) b:int
+        struct C(B) c:int
+        struct D d:int
+        
+        a:A = null
+        b:B = null
+        c:C = null
+        d:D = null
+        
+        ni:int = 0
+        nf:float = 0
+        bb:bool = false
+        
+        s:string = ''
+        
+        '''
+        
+        # assignment test cases
+        data = [
+            r'''b = A{}''',
+            r'''c = A{}''',
+            r'''d = A{}''',
+            r'''a = D{}''',
+            r'''c = B{}''',
+            r'''c = D{}''',
+            r'''d = B{}''',
+            r'''d = C{}''',
+            r'''d = 1''',
+            r'''d = 2.5''',
+            r'''d = [1]''',
+            r'''d = {}''',
+            r'''d = (1,2)''',
+            
+            r'''ni = 2.1''',
+            r'''ni = "s-int"''',
+            r'''ni = [2]''',
+            r'''nf = "2.2"''',
+            r'''nf = [3]''',
+            r'''nf = {}''',
+            r'''nf = A{}''',
+            
+            r'''bb = 11''',
+            r'''bb = 2.3''',
+            r'''bb = {2:22}''',
+            r'''bb = B{}''',
+            
+            r'''s = 1''',
+            r'''s = 2.4''',
+            r'''s = true''',
+            r'''s = [5]''',
+            r'''s = C{}''',
+            r'''s = re`123`''',
+        ]
+        
+        baseCode = norm(code[1:])
+        for tcase in data:
+            
+            tcode = baseCode + '\n' + tcase
+            # print('\n', tcase)
+            
+            with self.assertRaises(EvalErr, msg="Not raised expression: %s" % tcase):
+                ctx:Context = doCode(tcode)
+
     def test_compatible_value_func_args(self):
         ''' assign compatible args of function '''
 

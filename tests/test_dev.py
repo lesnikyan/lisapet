@@ -42,14 +42,12 @@ class TestDev(TestCase):
         # print((""" a s d""").split(' '))
         
         TODO?: Null() -> Null(Val)
+        
+        TODO: declaration of var:type without assignment: check and fix.
     '''
 
 
 
-    def _test_assign_incompatible_error(self):
-        '''
-        '''
-        
 
 
     def _test_code(self):

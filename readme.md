@@ -298,7 +298,9 @@ Formatting operators see in [](#211-string-formatting)
 
 3. Data type.  
 Type of variable is defined by `:` operator.  
-`varName : typeName`
+`varName : typeName`  
+This syntax means strict typing of variable (or functions arg)
+instead of definition without `:` .  
 ```python
 name:string = "Vasya"
 age:int = 25
@@ -307,12 +309,13 @@ weight:float = 70
 yes:bool = true
 no:bool = false
 ```
-Types such as a collections, structs, functions, etc will be explaned next sections.
+Types such as collections, structs, functions, etc will be explaned next sections.
 
 4. Type compatibility.  
 Variable defined by `:` operator has strict type.  
-It prevents setting of new value with another type (and if type of value can't be correctly converted to the type of variable).  
-Compatible types does convert automatically.  
+It prevents setting of new value with an inappropriate type.  
+Compatible types are converted automatically.  
+In common case value will be compatible if type of variable is more general, like `float` var and `int` value.  
 ```python
 a:float = 0
 a = 12 # 12.0
@@ -320,7 +323,8 @@ a = 12 # 12.0
 b:int = 0
 b = true # 1
 ```
-The same is correct for fields of structs instance and functions agrument.
+The same is correct for field of struct instance and functions agrument.  
+For a structures, type of value can be a child of type of variable, but not vice versa.  
 
 
 ### 2. Sub-blocks, code-formatting.
