@@ -40,35 +40,16 @@ class TestDev(TestCase):
         TODO: check TypeMString if need. If not then Convert to TypeString
         # print(type(""" """))
         # print((""" a s d""").split(' '))
+        
+        TODO?: Null() -> Null(Val)
     '''
 
 
 
-    def test_dict_arrow_addset(self):
-        ''' '''
-        code = r'''
-        
-        res = []
-        
-        dd1 = {}
-        src1 = []
-        # for n <- src1
-        #     dd1 <- 
-        
-        # print('res = ', 1)
+    def _test_assign_incompatible_error(self):
         '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        # print('>>', dd.values())
-        # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # self.assertEqual([], rvar.vals())
+        '''
+        
 
 
     def _test_code(self):

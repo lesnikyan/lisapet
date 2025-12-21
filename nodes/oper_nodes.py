@@ -4,13 +4,15 @@ Eval tree nodes: operators.
 
 '''
 
+
 from lang import *
 from vars import *
 # from typex import *
 from nodes.expression import *
 from nodes.func_expr import FuncCallExpr, BoundMethod
 from nodes.structs import StructInstance, MethodCallExpr, StructConstr, StructConstrBegin, BoundMethodCall
-from nodes.tnodes import MString
+# from nodes.tnodes import MString
+from nodes.ntype import *
 
 # from formatter import  StrFormatter
 
@@ -167,6 +169,7 @@ class OpAssign(OperCommand):
             
             #get destination var
             dest = left[i].get()
+            
             # print('oper:', self.oper, 'dest:', left[i])
             # print('Assign dest1 =', dest, '; val=', val)
 
@@ -179,35 +182,49 @@ class OpAssign(OperCommand):
                 # dprint('Assign new var', newVar, 'val-type:', valType)
                 ctx.addVar(newVar)
                 dest = newVar
-            # print('= OpAssign before set', dest, val, val.getType())
-            dest.set(val)
-                
+            
+            # print('= OpAssign before set', dest, val, expSrc(self.src))
             # print('# op-assign set2, var-type:', dest, ' dest.class=', dest.getType().__class__)
-            # print(' (a = b) dest =', dest, ' val = ', val, 'isNew:', isNew)
-                
+            # print(' (a = b) dest =', dest, ' val = ', val, val.getType().__class__, 'isNew:', isNew)
+            
+            destStrict = False
+            
             if isinstance(dest, ObjectMember):
                 # struct field as left operand
-                dest.set(val)
-                return
+                # dest.getType()
+                destStrict = True
+                # dest.set(val)
+                # return
+            else:
+                destStrict = dest.strictType()
 
             # single var
-            self.fixType(ctx, dest, val)
+            # print('OpAssig: single var', dest, destStrict)
+            if destStrict:
+                dt, st = dest.getType(), val.getType()
+                if dt != st:
+                    # print('!::!')
+                    # check compatibility
+                    if isCompatible(dt, st):
+                        # convert val
+                        val = resolveVal(dt, val)
+                    else:
+                        # print(f'\n--!-- Trying assign val to strictly typed variable (:{dt} = {st})', dest, val)
+                        raise EvalErr(f'Trying assign val with different type to strictly typed variable (:{dt} =/= {st})')
+            else:
+                # if not strict type
+                fixType(dest, val)
+                
+            dest.set(val)
+            
+            if isinstance(dest, ObjectMember):
+                return
 
             self.res = val
             # name = dest.name
             # saved = ctx.get(name)
             # print(' (a = b) saved ', saved, saved.get().getType())
 
-
-    def fixType(self, ctx:Context, dest:Var, val:Val):
-            if isinstance(val.val, Null):
-                return
-            valTypeCl = val.getType().__class__
-            if not isinstance(dest.getType(), val.getType().__class__):
-                # print("!!!! nooo", dest.getType(), valTypeCl)
-                dest.setType(valTypeCl())
-            
-        
 
 class OpBinAssign(OpAssign):
     ''' += -= *= /= %= '''
@@ -584,7 +601,7 @@ class ObjectMember(ObjectElem):
         self.setArgs(obj, member)
 
     def setArgs(self, obj, member):
-        dprint('ObjectMember.setArgs (', obj, ' -> ', member, ')')
+        # print('ObjectMember.setArgs (', obj, ' -> ', member, ')')
         self.object = obj
         self.member = member
 
@@ -603,8 +620,9 @@ class ObjectMember(ObjectElem):
         return val.get()
     
     def getType(self):
-        val = self.object.get(self.member)
-        return val.getType()
+        # print('self.member', self.member)
+        strType = self.object.getFieldType(self.member)
+        return strType
     
     def set(self, val:Val):
         ''' obj.member = expr; obj.member[key] = expr (looks like a.b[c] is an subcase of a.b) '''

@@ -57,7 +57,7 @@ class CaseAssign(SubCase):
 
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         # waiting: OpAssign, [right]
-        dprint('CaseAssign setSub:',base,  subs)
+        # print('CaseAssign setSub:',base,  subs)
         lsub = len(subs)
         if lsub % 2 > 0:
             # can be changed after tuple case implementation

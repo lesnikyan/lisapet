@@ -10,6 +10,9 @@ class LangError(Exception):
         # super().__init__(*args)
         self.msg = msg
         self.args = args
+    
+    def getMessage(self):
+        return self.msg
 
 class XDebug(LangError):
     def __init__(self, *args):
@@ -61,14 +64,17 @@ class VType(Base):
     @classmethod
     def defVal(cls):
         cls._defVal
+    
+    def __eq__(self, value):
+        return self.__class__ == value.__class__
 
 
 class TypeAny(VType):
-    name = 'Any'
+    name = 'any'
 
 class TypeNoval(VType):
     ''' No value, just technical object '''
-    name = 'Noval'
+    name = 'noval'
 
 
 class Val(Base):
@@ -129,6 +135,9 @@ class Var(Base):
         self._mutable = mutable # makes Var const
         self._strict = strict # makes Var strict typed
 
+    def strictType(self):
+        return self._strict
+
     def set(self, val):
         if self.val is not None and not self._mutable:
             raise EvalErr('Attemps to change immutable variable %s ' % self.name)
@@ -163,5 +172,6 @@ class Var(Base):
         tt = '#notype'
         if self.vtype is not None:
             tt = self.vtype.name
-        return '%s(%s, %s: %s)' % (self.__class__.__name__, n, self.val, tt)
+        strict = '' if not self._strict else ' :strict'
+        return '%s(%s, %s: %s%s)' % (self.__class__.__name__, n, self.val, tt, strict)
 

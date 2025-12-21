@@ -309,6 +309,20 @@ no:bool = false
 ```
 Types such as a collections, structs, functions, etc will be explaned next sections.
 
+4. Type compatibility.  
+Variable defined by `:` operator has strict type.  
+It prevents setting of new value with another type (and if type of value can't be correctly converted to the type of variable).  
+Compatible types does convert automatically.  
+```python
+a:float = 0
+a = 12 # 12.0
+
+b:int = 0
+b = true # 1
+```
+The same is correct for fields of structs instance and functions agrument.
+
+
 ### 2. Sub-blocks, code-formatting.
 Control structures, data-structures, functions, etc. have inner place with internal lines (expressions), here we call it as an expression block, child or sub-block.  
 Sub block is separated by indent with one or more whitespaces related to parent.  
@@ -1707,12 +1721,23 @@ See more examples in `tests/test_format.py`.
 split("1,2,3", ',')
 >> ['1','2','3']
 ```
+Method-like:
+```python
+"1,2,3".split(',')
+```
 
 2. Join.
 
 ```python
 join(['a','b','c'], '_')
 >> 'a_b_c'
+```
+Method-like:
+```python
+# list method
+['a','b','c'].join('_')
+# string methos 
+'_'.join(['a','b','c'])
 ```
 
 3. Replace.
@@ -1722,6 +1747,14 @@ src = "<div> Hello </div>"
 replace(src, 'div', 'span')
 >> '<span> Hello </span>'
 ```
+Method-like:
+```golang
+# string pattern
+"a b c".replace(' ', '--')
+# regexp pattern
+"a b\tc   d".replace(re`\s+`, '--')
+>> 'a--b--c'
+```
 
 4. tostr
 ```python
@@ -1730,6 +1763,13 @@ tostr(1 == 1)     # 'true'
 tostr([1,2, (3, 4)])  # '[1,2,(3,4)]'
 tostr({'a': 123}) # "{'a':123}"
 ```
+
+5. map
+```python
+r = 'abc'.map(s -> ~'<{s}>')
+>> '<a><b><c>'
+```
+
 
 
 ### 22. Import modules.  

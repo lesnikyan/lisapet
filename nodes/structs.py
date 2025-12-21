@@ -13,6 +13,7 @@ AnonStructConstr *? : create instance of anonymous struct (json-like object)
 from nodes.expression import *
 from context import *
 from nodes.expression import ServPairExpr, defaultValOfType
+from nodes.ntype import structTypeCompat
 from nodes.func_expr import FuncDefExpr, FuncCallExpr, Function, BoundMethod
 
 
@@ -53,6 +54,14 @@ class StructDef(TypeStruct):
         
     def getParents(self):
         return self.__parents
+    
+    def hasParent(self, vtype:'StructDef'):
+        if vtype.name in self.__parents:
+            return vtype == self.__parents[vtype.name]
+        for _, pp in self.__parents.items():
+            if pp.hasParent(vtype):
+                return True
+        return False
 
     def addMethod(self, func:FuncInst):
         name = func.getName()
@@ -126,8 +135,14 @@ class StructDef(TypeStruct):
                 return True
         return False
 
-    # def __str__(self):
-    #     return 'type struct %s{}' % self.name
+    def __eq__(self, value):
+        if not isinstance(value, StructDef):
+            return False
+        return id(self) == id(value)
+
+    def __str__(self):
+        return 'type struct %s{}' % self.name
+
 
 
 class StructDefConstrFunc(Function):
@@ -203,6 +218,11 @@ class StructInstance(ObjectInstance, NSContext):
                 # print('def #2:', fname, ftype, '>>', dv)
                 self.data[fname] = dv
 
+    def getType(self):
+        return self.vtype
+
+    def getFieldType(self, fname):
+        return self.vtype.ntypes[fname]
 
     def get(self, fname=None):
         if fname is None:
@@ -251,8 +271,9 @@ class StructInstance(ObjectInstance, NSContext):
             return
         # if struct
         # print('@ check type ', valType.name, '!=', self.vtype.name , valType.name != self.vtype.name)
-        if valType.name != ftype.name:
-            raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
+        if valType != ftype:
+            if not structTypeCompat(ftype, valType):
+                raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
         
     def istr(self):
         fns = self.vtype.nfields
@@ -483,4 +504,30 @@ class BoundMethodCall(MethodCallExpr):
 
     def get(self):
         return self.func.get()
+
+
+# def structTypeCompat(dtype:StructInstance, stype:VType):
+#     ''' criterion: src should 
+#         have the same type the dest have,
+#         be child of dest type, 
+#         or null
+#         dtype - dest type
+#         stype = src type
+#     '''
+#     # stype = src.getType()
+#     # print('tcopmt1', stype)
+#     if isinstance(stype, TypeNull):
+#         return True
+#     # TODO: possible interface check for future
+    
+#     # nest - for structs only
+#     if not isinstance(stype, StructDef):
+#         # not a struct
+#         return False
+#     if dtype == stype:
+#         return True
+#     if stype.hasParent(dtype):
+#         return True
+#     return False
+    
 
