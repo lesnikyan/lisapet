@@ -52,4 +52,4 @@ r4 = ( (a + b) / 11 - c / 3
 # print(r4)
 
 res = [r1, r2, r3, r4]
-print(res)
+# print(res)
