@@ -733,7 +733,7 @@ class TestFunc(TestCase):
         exp.do(ctx)
         fn:Function = ctx.get('foo')
         # dprint('#tt1>>> ', fn, type(fn))
-        args = [value(2, TypeInt),value(3, TypeInt),value(4, TypeInt)]
+        args = [value(2, TypeInt()),value(3, TypeInt()),value(4, TypeInt())]
         fn.setArgVals(args)
         ctxCall = Context(None)
         fn.do(ctxCall)

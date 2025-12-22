@@ -261,6 +261,12 @@ class OpMath(BinOper):
             '<<': self.lshift,
             '>>': self.rshift
         }
+        
+        # Some operations can return another type
+        postType = {
+            '/': TypeFloat
+        }
+        
         # eval expressions
         # dprint('#oper-left:', self.left)
         # dprint('#oper-right:', self.right)
@@ -278,23 +284,41 @@ class OpMath(BinOper):
             self.res = res
             return
         
-        # dprint(' ( %s )' % self.oper, a.getVal(), b.getVal())
-        # dprint('>types (%s %s %s)' % (a.getType(), self.oper, b.getType()))
-        vtype = a.getType()
-        if vtype != b.getType():
-            # TODO fix different types
-            pass
+        # NEXT shuld be numeric operations
+        
+        # print(' ( %s )' % self.oper, a.getVal(), b.getVal())
+        # print('>types (%s %s %s)' % (a.getType(), self.oper, b.getType()))
+        atype = a.getType()
+        btype = b.getType()
+        
+        # convert b-operand to correct numeric type
+        numTs = (TypeNull, TypeBool, TypeInt, TypeFloat)
+        if not isinstance(atype, numTs) or not isinstance(btype, numTs):
+            # incorrect operand for math operator!
+            # print(f'Incorrect types {atype.name} , {btype.name} for math operator {self.oper}')
+            raise EvalErr(f'Incorrect types {atype.name} , {btype.name} for math operator {self.oper}')
+        
+        rtype = atype
+        if isinstance(atype, (TypeNull, TypeBool)):
+            atype = TypeInt()
+            a = resolveVal(atype, valFrom(a))
+        if isinstance(btype, (TypeNull, TypeBool)):
+            btype = TypeInt()
+            b = resolveVal(btype, valFrom(b))
+        if atype != btype:
+            if isinstance(atype, TypeFloat) or isinstance(btype, TypeFloat):
+                rtype = TypeFloat()
         # get numeric values and call math function 
         val = ff[self.oper](valFrom(a).getVal(), valFrom(b).getVal())
-        # rounding to int
-        if isinstance(val, (int, float)):
-            if val % 1 == 0:
-                # print(type(val))
-                val = int(val)
-                if isinstance(a.getType(), TypeInt):
-                    vtype = TypeInt()
-        self.res = Val(val, vtype)
         
+        # resolve result type for specific cases
+        resType = rtype
+        if self.oper in postType:
+            target = postType[self.oper]
+            resType = target()
+        
+        self.res = Val(val, resType)
+    
     def plus(self, a, b):
         return a + b
 
@@ -351,6 +375,9 @@ class OpMath(BinOper):
     def normalize(self, val:Val):
         if isinstance(val, Val) and isinstance(val.getVal(), SequenceGen):
             return val.val.allVals()
+        if isinstance(val, ObjectMember):
+            # print('OMb:', val, val.get())
+            return val.get()
         return val
 
     def overs(self, a, b):
@@ -373,8 +400,8 @@ class OpMath(BinOper):
         return (False, 0)
 
 
-class OpMathAssign(OperCommand):
-    ''' a += 5; a += b; a += foo(b); a += foo(b) - 5/c '''
+# class OpMathAssign(OperCommand):
+#     ''' a += 5; a += b; a += foo(b); a += foo(b) - 5/c '''
 
 
 class OpBinBool(BinOper):
@@ -401,7 +428,7 @@ class OpBinBool(BinOper):
         #     # naive impl: different types are not equal
         #     dprint('break comarison because types not equal %s <> %s' % (a.getType(), b.getType()) )
         #     return False
-        res = ff[self.oper](a.getVal(), b.getVal())
+        res = ff[self.oper](bool(a.getVal()), bool(b.getVal()))
         dprint('# == == OpCompare.do ', res)
         self.res = Val(res, TypeBool())
     
@@ -522,8 +549,8 @@ class BoolNot(UnarOper):
     def do(self, ctx:Context):
         self.inner.do(ctx)
         inVal = self.inner.get()
-        # dprint(' !x', self.inner, inVal)
-        res = not inVal.getVal()
+        # print(' !x', self.inner, inVal)
+        res = not bool(inVal.getVal())
         self.res = Val(res, inVal.getType())
 
 

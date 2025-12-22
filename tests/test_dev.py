@@ -44,6 +44,8 @@ class TestDev(TestCase):
         TODO?: Null() -> Null(Val)
         
         TODO: declaration of var:type without assignment: check and fix.
+        
+        TODO: check type of operand for all operators
     '''
 
 

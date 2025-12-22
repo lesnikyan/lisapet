@@ -19,14 +19,12 @@
     tostr([a..b]) # gen obj
     
     decode(from bytes) / encode (to bytes) 
-    # think about type.related methods: 
-        'abc'.encode('utf-8')
-        nums = []; nums.len()
+    
 
 1.01 import python-implemented modules from /libs
 
 1.02 container of functions aka namespace or static methods. 
-#call
+# call
 A.foo(a, b)
 # def
 A func foo(a, b)
@@ -37,6 +35,7 @@ func A foo(a, b)
 group A
 func A.foo(a, b)
     ..
+
 
 1.2 method sugar
     #  method-like syntax for base types
@@ -101,7 +100,12 @@ NEED FIX:
     - #DONE for item <- ditems(data) ; for item <- data.items()  # key-val pairs from dict
 
 
-3.2. Type auto-casting. Important for struct constructors, function args
+3.2. # DONE Type auto-casting. Important for struct constructors, function args
+
+3.2.1 type auto-conversion in math operators.
+int + float
+int / int (if result is not int)
+
 
 
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
@@ -365,6 +369,10 @@ Fixes:
         B(a, b) 
     3. # DONE fix case with comprehensions [1..3] + [5..8]
 
+# DONE think about type.related methods: 
+    'abc'.encode('utf-8')
+    nums = []; nums.len()
+    
 2.3 # DONE Check type operator 
     var :: type
 
