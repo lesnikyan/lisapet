@@ -5,8 +5,8 @@ Linear Interpreter of Scripting And Processing Expression Tree.
 
 ico: Fox pet on the bicycle
 
-LISAPET is an interpretable language like python, written with python, but not a python :D  
-It was started as a pet-project - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run for the python project but without direct execution of scripts on the python interpreter (bad and unsafe way).  
+LISAPET is an interpretable language like python, written with python, but not a python :)  
+It was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run for the python project but without direct execution of scripts on the python interpreter (bad and unsafe way).  
 Instead of line-by-line execution, interpreter builds executable object, actually - tree of actions (expressions).  
 Than this object can be executed with some data. One or many times if need.  
 Executable tree uses context-container with working data (variables, values, types, etc).  
@@ -293,7 +293,8 @@ in b\acktick\s
 String operators:  
 Concatenation: `string + string`  
 Get sub element (like list): `string[index]`  
-Formatting operators see in [](#211-string-formatting)
+Formatting operators see in [`"%s"<<` ](#211-percent-formatting) and 
+[`"~{s}"`](#212-format-by-including-expressions) formatting.
 
 
 3. Data type.  
@@ -1112,17 +1113,19 @@ See `eval.py` for more examples.
 
 ### 14.3 Methods  are already bound to types
 1. `list`:  
+    .map(`function`)  
+    .fold(any, `function`)
     .reverse()  
     .join(`string`)  
-    .map(`function`)  
-    .fold(any, `function`)
-2. `dict`:
-    .keys()  
-    .items()  
-3. `tuple`:  
+    .each(`function`)  
+2. `tuple`:  
     .map(`function`)  
     .fold(any, `function`)
     .reverse()  
+    .each(`function`)  
+3. `dict`:  
+    .keys()  
+    .items()  
 4. `string`:  
     .split(`string`|`regexp`)  
     .replace(`string`|`regexr`, `string`)

@@ -51,7 +51,7 @@ class CaseTuple(SubCase):
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        dprint('CaseTuple.setSub: ', base, subs)
+        # dprint('CaseTuple.setSub: ', base, subs)
         for exp in subs:
             if isinstance(exp, NothingExpr):
                 # empty position after comma

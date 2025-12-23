@@ -26,6 +26,56 @@ class TestLibs(TestCase):
 
 
 
+    def test_bound_each(self):
+        '''
+            Test method seq.each()
+        '''
+        code = r'''
+        res = []
+        
+        # collect results
+        func rcoll(val)
+            res <- val
+        
+        nums1 = [1,2,3,4,5]
+        res <- 'nums1'
+        nums1.each(x-> rcoll(x + 100))
+        
+        nums2 = (11, 22, 33, 44)
+        res <- 'nums2'
+        nums2.each(x -> rcoll(x + 1000))
+        
+        dd1 = {1:11, 2:22, 3:33}
+        res <- 'dd1'
+        dd1.items().each(x -> (k, v = x; rcoll([k, ':', v])))
+        
+        res <- 'str-gen'
+        [x; x <- tolist("qwerty")].each(s -> rcoll(~'<{s}>'))
+        
+        res <- 'str-split'
+        'I am a big bug (:'.split(' ').each(s -> rcoll('%s?' << s))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        
+        rvar = ctx.get('res').get()
+        exv = [
+            'nums1', 101, 102, 103, 104, 105, 
+            'nums2', 1011, 1022, 1033, 1044, 
+            'dd1', [1, ':', 11], [2, ':', 22], [3, ':', 33], 
+            'str-gen', '<q>', '<w>', '<e>', '<r>', '<t>', '<y>', 
+            'str-split', 'I?', 'am?', 'a?', 'big?', 'bug?', '(:?']
+        # print('tt>',rvar.vals())
+        self.assertEqual(exv, rvar.vals())
+
     def test_bound_methods_sequence(self):
         ''' Bound method by native function.
             Test methods of sequence: map, fold, reverse

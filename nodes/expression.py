@@ -156,7 +156,7 @@ class Block(Expression):
             lineRes = expr.get()
             if isinstance(lineRes, FuncRes):
                 # return expr
-                dprint(' - return::', lineRes)
+                # dprint(' - return::', lineRes)
                 self.lastVal = lineRes
                 return
             if isinstance(lineRes, (PopupBreak, PopupContinue)):
