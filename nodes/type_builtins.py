@@ -24,7 +24,6 @@ def seq_map(ctx:Context, inst:Collection|SequenceGen, fun:Function):
 
 def seq_each(ctx:Context, inst:Collection|SequenceGen, fun:Function):
     elems = built_list(0, inst).rawVals()
-    res = []
     for n in elems:
         # print('built', n)
         fun.setArgVals([n])
