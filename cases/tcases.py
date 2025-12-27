@@ -321,14 +321,12 @@ class CaseSeq(SubCase):
         self.closs = self.brs.values()
 
     def match(self, elems:list[Elem]) -> bool:
-        # parents = []
-        prels('CaseSeq.match %s'% self.delim, elems)
+        # prels('CaseSeq.match %s'% self.delim, elems, show=1)
         delimord = [':',',',';']
         dmInds = {delimord[i] : i for i in range(len(delimord))}
         baseDelInd = len(delimord)
         if self.delim in delimord:
             baseDelInd = delimord.index(self.delim)
-        inOrd = self.delim in delimord
         obr = 0 # bracket counter
         # check without control of nesting, just count open and close brackets
         found = False
@@ -345,7 +343,7 @@ class CaseSeq(SubCase):
                 # in brackets, ignore internal elems
                 continue
             # if ee.text in dmInds and dmInds[ee.text]:
-                # print('CS.>', ee.text, dmInds[ee.text], '>' , baseDelInd)
+            #     print('CS.>', ee.text, dmInds[ee.text], '>' , baseDelInd)
             if ee.text in dmInds and dmInds[ee.text] > baseDelInd:
                 # break if has delim in later pos
                 return False

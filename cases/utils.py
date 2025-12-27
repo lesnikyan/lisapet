@@ -68,6 +68,9 @@ def el_text(elems:list[Elem]):
 def prels(pref, elems:list[Elem], *args, **kwargs):
     if not (FullPrint or ('show' in kwargs and kwargs['show'])):
         return
+    if not elems:
+        print(pref, '-empty-')
+        return
     
     # list[list[Elem]]
     if isinstance(elems[0], (list, tuple)):
