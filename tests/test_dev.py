@@ -12,7 +12,7 @@ from vals import numLex
 import context
 from context import Context
 from strformat import *
-from nodes.structs import *
+# from nodes.structs import *
 from tree import *
 from eval import rootContext, moduleContext
 
@@ -51,17 +51,157 @@ class TestDev(TestCase):
 
 
 
+    def _test_func_variadic_named_args(self):
+        ''' '''
+        code = r'''
+        
+        func f3({dd})
+            dd
+        
+        
+        func f4(a, b, {dd})
+            dd
+        
+        
+        func f5([nn], {dd})
+            (nn, dd)
+        
+        func f6(a, b, c, d, [nn], {dd})
+            5
+        
+        # print('res = ', 1)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        # self.assertEqual([], rvar.vals())
+
+    def _test_func_variadic_args(self):
+        ''' '''
+        code = r'''
+        
+        func f1([nn])
+            nn.map(x -> x * 10)
+        
+        # func f1()
+        # func f1(1)
+        # func f1(1,2)
+        # func f1(1,2,3)
+        # func f1(1,2,3,4,5,6,7,8,7,9) 
+        
+        # func f2(x, y, [nn])
+        #     nn.map(n -> x * y + n)
+        
+        # f2(3, 7)
+        # f2(3, 7, 2)
+        # f2(3, 7, 2,3)
+        # f2(3, 7, 2,3,4,5,6,7,8,9)
+        
+        # print('res = ', 1)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        # self.assertEqual([], rvar.vals())
+
+    def _test_func_named_args(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func f1(aaa, bbb)
+            (aaa, bbb)
+        
+        f1('a1', 'b1')
+        f1(aaa='a2', bbb='b2')
+        f1(bbb='b3', aaa='a3')
+        
+        # arguments of call time
+        func f2(a, b, act...)
+            act.all() # [1,2,3]
+            act.pos() # [1,2]
+            act.named() # {'n':3}
+        
+        func f3(a, b, ..., name='', age=0, option=null)
+        func f3(a, b / name='', age=0, option=null)
+        
+        # print('res = ', 1)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        # self.assertEqual([], rvar.vals())
+
+
+
+
+    def _test_new_collection_constr(self):
+        ''' constr-like brackets with colon - []:, {}:, (): '''
+        code = r'''
+        res = []
+        
+        varList = []:
+            111,
+            222,
+            333
+        
+        varDict = {}:
+            1:1111
+            2:2222
+            3:3333
+        
+        Vd2= {}:
+            'a': 'AAAAAAAAAAAAAAAAAAAA'
+            'b': 'BBBBBBBBBBBBBBBBBBB'
+            'c': 'CCCCCCCCCCCCCCCCCC'
+        
+        # varTuple = ():
+        #     'aaaaa'
+        #     'bbbbb'
+        
+        print(f1(200))
+        # print('res = ', 1)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        # print('>>', dd.values())
+        # self.assertEqual(0, rvar.getVal())
+        # rvar = ctx.get('res').get()
+        # self.assertEqual([], rvar.vals())
+
 
     def _test_code(self):
         ''' '''
         code = r'''
-        
-        struct A a:int
-        struct B(A) b:float
-        struct C(B) c:string
-        
-        c = C(11, 20.05, "Hello!")
-        print(c)
+        res = []
+        func f1(x)
+            if x <0 /: return -1000
+            return f1(x-1)
+        print(f1(200))
         # print('res = ', 1)
         '''
         code = norm(code[1:])

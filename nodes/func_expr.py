@@ -5,6 +5,7 @@ from vars import *
 from nodes.expression import *
 from nodes.keywords import *
 from nodes.ntype import *
+from nodes.base_oper import AssignExpr
 
 
 class Function(FuncInst):
@@ -31,6 +32,7 @@ class Function(FuncInst):
         self.argVars:list[Var] = []
         self.argTypes:dict[str, VType] = {}
         self.callArgs = []
+        self.defArgs = {}
         self.block:Block = None
         self.defCtx:Context = None # for future: definition context (closure - ctx of module or upper block if function is local or lambda)
         self.res = None
@@ -42,9 +44,12 @@ class Function(FuncInst):
     def getName(self):
         return self._name
 
-    def addArg(self, arg:Var):
+    def addArg(self, arg:Var|AssignExpr, defVal=None):
         self.argVars.append(arg)
-        self.argTypes[arg.getName()] = arg.getType()
+        arname = arg.getName()
+        self.argTypes[arname] = arg.getType()
+        if defVal is not None:
+            self.defArgs[arname] = defVal
         self.argNum += 1
 
     # TODO: flow-number arguments
@@ -52,14 +57,21 @@ class Function(FuncInst):
         nn = len(args)
         # print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
         # print('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
-        if self.argNum != len(args):
-            # print('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
+        defValCount = len(self.defArgs)
+        if self.argNum > len(args) + defValCount:
+            # print('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. defVals: %d ' % (self._name, self.argNum, len(args), defValCount))
             raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
-        for i in range(nn):
-            val = args[i]
+        inCtx = Context(self.defCtx)
+        for i in range(self.argNum):
             aname = self.argVars[i].getName()
             atype = self.argVars[i].getType()
+            if i < nn:
+                val = args[i]
+            else:
+                valExpr:ValExpr = self.defArgs[aname]
+                valExpr.do(inCtx)
+                val = valExpr.get()
             valType = val.getType()
             if atype != valType:
                 if isCompatible(atype, valType):
@@ -122,7 +134,7 @@ class Function(FuncInst):
         return 'func %s(%s)' % (self._name, ', '.join(args))
 
 
-class FuncCallExpr(Expression):
+class FuncCallExpr(CallExpr):
     ''' foo(agr1, 2, foo(3))  '''
 
     def __init__(self, strName = 'func', src:str=''):
@@ -191,15 +203,31 @@ class FuncDefExpr(ObjDefExpr, Block):
         self.res:Function
         self.blockLines:list[Expression] = []
         self.argVars:list[Var] = []
+        self.defValCount = 0
         # self.signExp:Expression = None # func signature : name (arg set) ???
 
     def addArg(self, arg:VarExpr):
         ''' arg Var(name, type)'''
-        # dprint('addArg1 :', arg, type(arg))
+        # print('addArg1 :', arg, type(arg))
+        defVal = None
+        
+        # x:int = 1
+        if isinstance(arg, AssignExpr):
+            # print('Fdef3:', arg.left, arg.right)
+            defVal = arg.right
+            arg = arg.left
+            # print('FDef.addArg2 :', arg, type(arg))
+        # x : int
         if isinstance(arg, ServPairExpr):
-            arg = arg.getTypedVar()
-            # print('FDef.addArg11 :', arg, arg.right)
-        # print('FDef.addArg2 :', arg, type(arg))
+            arg = arg.getTypedArg()
+            # print('FDef.addArg11 :', arg, arg.left, ':', arg.right)
+        # x
+        if not isinstance(arg, TypedArgExpr):
+            # print('FDef.addArg#4', arg)
+            arg = ArgExpr(arg.val)
+        # if defVal is not None:
+        arg.defVal = defVal
+        
         self.argVars.append(arg)
 
     def add(self, exp:Expression):
@@ -230,9 +258,9 @@ class FuncDefExpr(ObjDefExpr, Block):
         # here we need local context for correct init of arg types
         argCtx = Context(ctx)
         for arg in self.argVars:
-            if isinstance(arg, TypedVarExpr):
+            if isinstance(arg, TypedArgExpr):
                 arg.do(argCtx)
-            func.addArg(arg.get())
+            func.addArg(arg.get(), arg.defVal)
         func.block = Block()
         # build inner block of function
         for exp in self.blockLines:

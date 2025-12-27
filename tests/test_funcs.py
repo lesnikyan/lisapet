@@ -5,6 +5,7 @@ definition, call, args, results, etc.
 
 from unittest import TestCase, main
 from tests.utils import *
+import sys
 
 from lang import Lt, Mk, CLine
 from parser import splitLine, splitLexems, charType, splitOper, elemStream
@@ -21,6 +22,117 @@ from eval import *
 
 class TestFunc(TestCase):
 
+
+
+    def test_func_default_arg_vals(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func foo(x:int = 0)
+            x * 10
+        
+        res <- ('foo(1)', foo(1))
+        res <- ('foo(-1)', foo(-1))
+        res <- ('foo(15)', foo(15))
+        
+        r = foo()
+        
+        res <- ('foo()', foo())
+        
+        func strfill(count, str=' ')
+            [str ; x <- iter(count)]
+        
+        res <- (`strfill(3, '=')`, strfill(3, '='))
+        res <-  (`strfill(4)`, strfill(4))
+        # print('>>', r)
+        
+        func foo3(a=1, b=10, c=100)
+            a + b + c
+            
+        res <- ('foo3()', foo3())
+        res <- ('foo3(2)', foo3(2))
+        res <- ('foo3(3, 30)', foo3(3, 30))
+        res <- ('foo3(4, 40, 400)', foo3(4, 40, 400))
+        
+        func fstr3(a="A", b="B", c="C")
+            ~"*{a}{b}{c}*"
+        
+        res <- ('fstr3()', fstr3())
+        res <- (`fstr3('Q')`, fstr3('Q'))
+        res <- (`fstr3('W', 'E')`, fstr3('W', 'E'))
+        res <- (`fstr3('R', 'T', 'Y')`, fstr3('R', 'T', 'Y'))
+        
+        func fstr3T(a:string="A", b:string="B", c:string="C")
+            ~"<{a}{b}{c}>"
+        
+        res <- ('fstr3T()', fstr3T())
+        res <- (`fstr3T('Q')`, fstr3T('Q'))
+        res <- (`fstr3T('W', 'E')`, fstr3T('W', 'E'))
+        res <- (`fstr3T('R', 'T', 'Y')`, fstr3T('R', 'T', 'Y'))
+        
+        func defList(x:int, nums=[0])
+            [n + x; n <- nums]
+        
+        res <- ('defList(1)', defList(1))
+        res <- ('defList(2, [1,2,3])', defList(2, [1,2,3]))
+        
+        func defDict(pref:string, options = {'count':0})
+            [ ~'{pref}{k}'; k <- options.keys()]
+        
+        res <- ('defDict:3K', defDict('k_', {'abba':1,'buba':2,'cuba':3,}))
+        res <- ('defDict:3K', defDict('!', {}))
+        res <- ('defDict:3K', defDict('0_'))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('foo(1)', 10), ('foo(-1)', -10), ('foo(15)', 150), ('foo()', 0), 
+            ("strfill(3, '=')", ['=', '=', '=']), ('strfill(4)', [' ', ' ', ' ', ' ']), 
+            ('foo3()', 111), ('foo3(2)', 112), ('foo3(3, 30)', 133), ('foo3(4, 40, 400)', 444), 
+            ('fstr3()', '*ABC*'), ("fstr3('Q')", '*QBC*'), ("fstr3('W', 'E')", '*WEC*'), ("fstr3('R', 'T', 'Y')", '*RTY*'), 
+            ('fstr3T()', '<ABC>'), ("fstr3T('Q')", '<QBC>'), ("fstr3T('W', 'E')", '<WEC>'), ("fstr3T('R', 'T', 'Y')", '<RTY>'), 
+            ('defList(1)', [1]), ('defList(2, [1,2,3])', [3, 4, 5]), 
+            ('defDict:3K', ['k_abba', 'k_buba', 'k_cuba']), ('defDict:3K', []), ('defDict:3K', ['0_count'])]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_naive_extension_of_recursion_limit(self):
+        ''' 
+        recursion without tail-recursion optimisation.
+        pythons recursion limit matters
+        '''
+        code = r'''
+        res = 0
+        func f1(x)
+            if x <= 0 /: return 7000000
+            res += 1
+            return 3 + f1(x-1)
+        fres = f1(2000)
+        # print('res = ', res, fres)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        sys.setrecursionlimit(100000)
+        ex.do(ctx)
+        sys.setrecursionlimit(1000)
+        rvar = ctx.get('res').get()
+        fvar = ctx.get('fres').get()
+        self.assertEqual(2000, rvar.getVal())
+        self.assertEqual(7006000, fvar.getVal())
 
     def test_builtin_len_fo_string(self):
         ''' test implementation of builtin function len for string type '''
