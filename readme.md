@@ -635,10 +635,8 @@ func foo(a, b, c)
 # function call
 res = foo(1,2,3)
 
-# arg type (optional)
-func bar(a:int, b:int)
-    a + b
 ```
+2. Definition context.  
 Function can use nearest declaration context (actually all top-level things in module where func was declared).
 ```python
 callIndex = 0
@@ -647,14 +645,44 @@ func foo(x, y)
     res = [x, y, callIndex]
     callIndex += 1
     res
+```
+3. Argument type.  
+By default arguments have most general type `any`.  
+But we can specify more strict type.  
+According to type compatibility, we can pass value with more strict type to argument with wider type, like typed vars. 
+For example `int` value to `float` argument, or `bool` to `int`.  
+```golang
+
+#// arg type (optional)
+func bar(a:float, b:float)
+    a + b
+
+bar(1.5, 2.8) #// ok
+bar(2, 3) #// ok too
+bar('a', 'b') #// error
+```
+4. Default value of arguments.  
+Arguments of functions can have default value.  
+Default values is used if function was called without arguments that have default value.  
+Default values are possible in the end of arg list in func definition only, they should fill missing args. So it doen't make sense to declare argument without default value after at least one arg with default value.  
+```golang
+
+func foo(a:int, b:int=1)
+    a * b
+
+foo(3, 4) #// >> 7
+
+foo(5) #// >> 5
 
 ```
+
 See more about functions in sections:
 [14 builtins](#14-builtin-functions), 
 [15 lambdas](#15-lambda-functions-and-high-order-functions-right-arrow--),
 [23 func-object](#23-function-as-an-object), 
 [24 closures](#24-closures).
 
+## 9 Collections features.  
 ### 9.1 arrow-append/set operator `<-`
 Left-arrow with list or dict in the right operand  puts value into collection.  
 (not in `for` statement or sequence generator)  
