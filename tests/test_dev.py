@@ -172,11 +172,13 @@ class TestDev(TestCase):
         ''' '''
         code = r'''
         res = []
-        func f1(x)
-            if x <0 /: return -1000
-            return f1(x-1)
-        print(f1(200))
-        # print('res = ', 1)
+        func foo(a, b)
+            a - b
+
+        res <- foo(a=1, b=2) #// -1
+        res <- foo(b=1, a=2) #// 1
+        res <- foo(a=10, b = foo(3,2)) #// 9
+        print('res = ', res)
         '''
         code = norm(code[1:])
 

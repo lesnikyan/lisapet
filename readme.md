@@ -676,7 +676,23 @@ foo(5) #// >> 5
 
 ```
 
-See more about functions in sections:
+5. Named arguments.  
+In function call expression named args are allowed.  
+Named argument is passed like assignment expression on the argument position in function call, name of argument as a left operand of assignment:  
+`foo(name='Bob')`  
+If redundant named arg will be passed after the same arg was passed in base order, it will be ignored (now).  
+```golang
+
+func foo(a, b)
+    a - b
+
+foo(a=1, b=2) #// -1
+foo(b=1, a=2) #// 1
+foo(a=10, b = foo(3,2)) #// 9
+foo(5, 2, a=10) #// 3; 10 is ignored
+```
+
+See more about functions in next sections:
 [14 builtins](#14-builtin-functions), 
 [15 lambdas](#15-lambda-functions-and-high-order-functions-right-arrow--),
 [23 func-object](#23-function-as-an-object), 
