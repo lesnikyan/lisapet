@@ -61,6 +61,39 @@ class TestFunc(TestCase):
         # pass redundant arg by name: no effect here
         res <- ('f3-6', f3(51,52,53,54,55, f=560, g=570, h=580, i=590, m=512, a=1000, b=1001))
         
+        # use vars and expressions in named arg
+        a = 1
+        b = 2
+        
+        func foo(x)
+            10 * x
+        
+        res <- ('f1-11', f1(aaa=a, bbb=b))
+        res <- ('f1-12', f1(bbb=b, aaa=a))
+        res <- ('f1-13', f1(aaa=1, bbb=foo(5)))
+        res <- ('f1-14', f1(aaa=foo(6), bbb=foo(7)))
+        
+        # use element of collection as a 
+        nn = [1,2,3]
+        dd = {'a':11, 'b':22}
+        
+        res <- ('f1-15', f1(nn[1], bbb=nn[0]))
+        res <- ('f1-16', f1(dd['a'], bbb=dd['b']))
+        
+        # use struct fields and methods
+        struct A a:int, b:int
+        
+        func a:A sum()
+            a.a + a.b
+        
+        aa1 = A(12, 13)
+        aa2 = A(22,23)
+
+        res <- ('f1-17', f1(aaa=aa1.a, bbb=aa1.b))
+        res <- ('f1-18', f1(bbb=aa1.sum(), aaa=aa2.sum()))
+        res <- ('f1-19', f1(bbb=aa1.b + b, aaa=aa2.sum() + aa1.sum()))
+        
+        
         # print('res = ', res)
         '''
         code = norm(code[1:])
@@ -80,7 +113,9 @@ class TestFunc(TestCase):
             ('f3-3', [21, 22, 23, 24, 25, 26, 27, 28, 29, 210, 211, 212]), 
             ('f3-4', [1, 2, 3, 4, 5, 36, 37, 38, 39, 310, 311, 312]), 
             ('f3-5', [41, 42, 43, 44, 45, 46, 47, 48, 9, 10, 411, 412]), 
-            ('f3-6', [51, 52, 53, 54, 55, 560, 570, 580, 590, 10, 11, 512])]
+            ('f3-6', [51, 52, 53, 54, 55, 560, 570, 580, 590, 10, 11, 512]), 
+            ('f1-11', (1, 2)), ('f1-12', (1, 2)), ('f1-13', (1, 50)), ('f1-14', (70, 70)), 
+            ('f1-15', (2, 1)), ('f1-16', (11, 22)), ('f1-17', (12, 13)), ('f1-18', (45, 25)), ('f1-19', (70, 15))]
         self.assertEqual(exv, rvar.vals())
 
     def test_func_default_arg_vals(self):
