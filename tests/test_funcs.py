@@ -24,6 +24,65 @@ class TestFunc(TestCase):
 
 
 
+    def test_func_named_args(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func f1(aaa, bbb)
+            (aaa, bbb)
+        
+        # f1('a1', 'b1')
+        # all args passed by name
+        res <- ('f1-1', f1('a1', 'b1'))
+        res <- ('f1-2', f1(aaa='a2', bbb='b2'))
+        res <- ('f1-3', f1(bbb='b3', aaa='a3'))
+        
+        func f2(a, b, c=1, d=0)
+            (a + b) * c + d
+        
+        res <- ('f2-1', f2(1,2,3,100))
+        # def-val args
+        res <- ('f2-2', f2(2,3))
+        # named args in the end of list
+        res <- ('f2-3', f2(3,4,c=5))
+        res <- ('f2-4', f2(5,6,c=7, d=400)) 
+        res <- ('f2-4', f2(5,6, d=500,c=8)) 
+        
+        func f3(a=1, b=2, c=3, d=4, e=5, f=6, g=7, h=8, i=9, j=10, k=11, m=12)
+            [a, b, c, d, e, f, g, h, i, j, k, m]
+        
+        res <- ('f3-1', f3())
+        res <- ('f3-2', f3(11,22,33,44,55,66,77,88,99,100,110,120))
+        res <- ('f3-3', f3(a=21, b=22, c=23, d=24, e=25, f=26, g=27, h=28, i=29, j=210, k=211, m=212))
+        # skipping sonething
+        res <- ('f3-4', f3(f=36, g=37, h=38, i=39, j=310, k=311, m=312))
+        res <- ('f3-5', f3(41,42,43,44,45, f=46, g=47, h=48, k=411, m=412, a=1000))
+        # pass redundant arg by name: no effect here
+        res <- ('f3-6', f3(51,52,53,54,55, f=560, g=570, h=580, i=590, m=512, a=1000, b=1001))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('f1-1', ('a1', 'b1')), ('f1-2', ('a2', 'b2')), ('f1-3', ('a3', 'b3')), 
+            ('f2-1', 109), ('f2-2', 5), ('f2-3', 35), ('f2-4', 477), ('f2-4', 588), 
+            ('f3-1', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]), 
+            ('f3-2', [11, 22, 33, 44, 55, 66, 77, 88, 99, 100, 110, 120]), 
+            ('f3-3', [21, 22, 23, 24, 25, 26, 27, 28, 29, 210, 211, 212]), 
+            ('f3-4', [1, 2, 3, 4, 5, 36, 37, 38, 39, 310, 311, 312]), 
+            ('f3-5', [41, 42, 43, 44, 45, 46, 47, 48, 9, 10, 411, 412]), 
+            ('f3-6', [51, 52, 53, 54, 55, 560, 570, 580, 590, 10, 11, 512])]
+        self.assertEqual(exv, rvar.vals())
+
     def test_func_default_arg_vals(self):
         ''' '''
         code = r'''

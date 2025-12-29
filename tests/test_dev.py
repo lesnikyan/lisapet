@@ -103,39 +103,12 @@ class TestDev(TestCase):
         # f2(3, 7, 2,3)
         # f2(3, 7, 2,3,4,5,6,7,8,9)
         
-        # print('res = ', 1)
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        rvar = ctx.get('res').get()
-        # self.assertEqual([], rvar.vals())
-
-    def _test_func_named_args(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        func f1(aaa, bbb)
-            (aaa, bbb)
-        
-        f1('a1', 'b1')
-        f1(aaa='a2', bbb='b2')
-        f1(bbb='b3', aaa='a3')
-        
         # arguments of call time
         func f2(a, b, act...)
             act.all() # [1,2,3]
             act.pos() # [1,2]
             act.named() # {'n':3}
         
-        func f3(a, b, ..., name='', age=0, option=null)
-        func f3(a, b / name='', age=0, option=null)
         
         # print('res = ', 1)
         '''
@@ -150,7 +123,8 @@ class TestDev(TestCase):
         rvar = ctx.get('res').get()
         # self.assertEqual([], rvar.vals())
 
-
+    def _test_1(self):
+        ''''''
 
 
     def _test_new_collection_constr(self):

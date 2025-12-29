@@ -36,6 +36,6 @@ class BinOper(OperCommand):
         self.right = right
 
 
-class AssignExpr(OperCommand):
+class AssignExpr(BinOper):
     ''' a = x'''
 

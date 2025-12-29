@@ -53,24 +53,30 @@ class Function(FuncInst):
         self.argNum += 1
 
     # TODO: flow-number arguments
-    def setArgVals(self, args:list[Val]):
+    def setArgVals(self, args:list[Val], named:dict={}):
         nn = len(args)
         # print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
         # print('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
-        defValCount = len(self.defArgs)
-        if self.argNum > len(args) + defValCount:
-            # print('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. defVals: %d ' % (self._name, self.argNum, len(args), defValCount))
+        argNames = [n.getName() for n in self.argVars]
+        namePassed = {k:v for k, v in named.items() if k in argNames} # filtering extra args
+        defNamedCount = len([k for k in self.defArgs.keys() if k not in namePassed]) + len(namePassed)
+        if self.argNum > len(args) + defNamedCount:
+            print('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. defVals: %d ' % (self._name, self.argNum, len(args), defNamedCount))
             raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
         inCtx = Context(self.defCtx)
         for i in range(self.argNum):
+            val = None
             aname = self.argVars[i].getName()
             atype = self.argVars[i].getType()
             if i < nn:
                 val = args[i]
             else:
-                valExpr:ValExpr = self.defArgs[aname]
-                valExpr.do(inCtx)
+                if aname in namePassed:
+                    valExpr:Expression = namePassed[aname]
+                elif aname in self.defArgs:
+                    valExpr:ValExpr = self.defArgs[aname]
+                    valExpr.do(inCtx)
                 val = valExpr.get()
             valType = val.getType()
             if atype != valType:
@@ -148,6 +154,9 @@ class FuncCallExpr(CallExpr):
         self.funcExpr = fexp
 
     def addArgExpr(self, exp:Expression):
+        # if isinstance(exp, AssignExpr):
+        #     # prepare arg by name
+        #     1
         self.argExpr.append(exp)
 
     def do(self, ctx: Context):
@@ -169,16 +178,30 @@ class FuncCallExpr(CallExpr):
         if isinstance(self.func, VarUndefined):
             raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
+        named = {}
         for exp in self.argExpr:
             # dprint('#1# func-call do2 exp=: ', exp)
-            exp.do(ctx)
-            # print('func-call do2:', exp, exp.get())
-            arg = exp.get()
+            if isinstance(exp, AssignExpr):
+                varExp = exp.left # arg name
+                if not isinstance(varExp, VarExpr):
+                    raise EvalErr("Func named arg has incorrect type of name")
+                argName = varExp.name
+                valExp = exp.right
+                valExp.do(ctx)
+                named[argName] = valExp
+                continue
+            if len(named) != 0:
+                raise EvalErr("Attempt to use ordered agr after named")
+            valExp = exp
+                
+            valExp.do(ctx) # val or vaiable
+            # print('func-call do2:', valExp, valExp.get())
+            arg = valExp.get()
             if isinstance(arg, Var):
                 arg = arg.get()
             args.append(arg)
         # print('FCall.do.args:', self.name, args)
-        self.func.setArgVals(args)
+        self.func.setArgVals(args, named)
         callCtx = Context(None)
         self.func.do(callCtx)
 
@@ -284,7 +307,7 @@ class NFunc(Function):
         self.res:Val = None
         self.resType:VType = rtype
 
-    def setArgVals(self, args:list[Var]):
+    def setArgVals(self, args:list[Var], named:dict={}):
         self.argVars = []
         for arg in (args):
             # print('~NFsetA', self.getName(), arg)
