@@ -24,6 +24,49 @@ class TestFunc(TestCase):
 
 
 
+    def test_func_named_and_default_for_methods(self):
+        ''' obj.foo(1, b=2)  '''
+        code = r'''
+        res = []
+        
+        struct A a:int, b:string
+        
+        func inst:A f1(aaa:int=-1, bbb:string=null)
+            n = aaa
+            if n < 0
+                n = inst.a
+            s = inst.b
+            if bbb::string
+                s = bbb
+            [s ; n <- iter(n)]
+        
+        
+        a = A(1, 'A')
+        res <- ('a.f1-0', a.f1())
+        res <- ('a.f1-1', a.f1(2, 'bb'))
+        # all args passed by name
+        res <- ('a.f1-1', a.f1(3, bbb='cc'))
+        res <- ('f1-2', a.f1(aaa=2, bbb='dd'))
+        res <- ('f1-3', a.f1(bbb=4, aaa='E'))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('a.f1-0', ['A']), ('a.f1-1', ['bb', 'bb']), 
+            ('a.f1-1', ['cc', 'cc', 'cc']), ('f1-2', ['dd', 'dd']), 
+            ('f1-3', ['E', 'E', 'E', 'E'])]
+        self.assertEqual(exv, rvar.vals())
+        
+
     def test_func_named_args(self):
         ''' '''
         code = r'''
