@@ -36,6 +36,8 @@ class Function(FuncInst):
         self.block:Block = None
         self.defCtx:Context = None # for future: definition context (closure - ctx of module or upper block if function is local or lambda)
         self.res = None
+        self.argNames = []
+        self.extOrdered = None
         # print('Fuu.init', self)
 
     def setDefContext(self, ctx:Context):
@@ -45,8 +47,14 @@ class Function(FuncInst):
         return self._name
 
     def addArg(self, arg:Var|AssignExpr, defVal=None):
+        # print('F.AddArg:', arg, defVal)
         self.argVars.append(arg)
         arname = arg.getName()
+        if isinstance(arg, ArgSetOrd):
+            # only 1 per function
+            self.extOrdered = arname
+            
+        self.argNames.append(arname)
         self.argTypes[arname] = arg.getType()
         if defVal is not None:
             self.defArgs[arname] = defVal
@@ -54,30 +62,53 @@ class Function(FuncInst):
 
     # TODO: flow-number arguments
     def setArgVals(self, args:list[Val], named:dict={}):
-        nn = len(args)
+        passedCount = len(args)
         # print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
-        # print('! setArgVals', ['%s'%ag for ag in args ], 'len=', nn)
-        argNames = [n.getName() for n in self.argVars]
-        namePassed = {k:v for k, v in named.items() if k in argNames} # filtering extra args
+        # print('! setArgVals', ['%s'%ag for ag in args ], 'len=', passedCount)
+        # argNames = [n.getName() for n in self.argVars]
+        namePassed = {k:v for k, v in named.items() if k in self.argNames} # filtering extra args
         defNamedCount = len([k for k in self.defArgs.keys() if k not in namePassed]) + len(namePassed)
-        if self.argNum > len(args) + defNamedCount:
-            print('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. defVals: %d ' % (self._name, self.argNum, len(args), defNamedCount))
-            raise EvalErr('Number od args of fuction `%s` not correct. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
+        skipCount = int(self.extOrdered is not None)
+        if self.argNum - skipCount > len(args) + defNamedCount:
+            # print('Not enough args in call of fuction `%s`. Exppected: %d, got: %d. defVals+named: %d ; skip:%d' % (
+            #     self._name, self.argNum, len(args), defNamedCount, skipCount))
+            raise EvalErr('Not enough args in call of fuction `%s`. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
         inCtx = Context(self.defCtx)
+        # ordCollector = []
+        noMoreOrds = False
+        # func foo(a, b, nn..., c=1, d='', dd$$)
+        #      foo(1, 2, 33, 44, 55, d='qwe', xx=77, yy='FF')
+        
+        # loop over defined arguments
         for i in range(self.argNum):
             val = None
+            valExpr = None
             aname = self.argVars[i].getName()
             atype = self.argVars[i].getType()
-            if i < nn:
+            # print('F.setArgVals#1', self.argVars[i])
+            if isinstance(self.argVars[i], ArgSetOrd):
+                # variadic args: func foo(vargs...)
+                noMoreOrds = True
+                # all args from current - put into -> vargs...
+                # ordCollector = args[i:]
+                val = ListVal(elems=args[i:])
+            if not noMoreOrds and i < passedCount:
+                # Regulat args: func foo(a, b)
                 val = args[i]
             else:
                 if aname in namePassed:
+                    # Named args: foo(name='Bob')
                     valExpr:Expression = namePassed[aname]
                 elif aname in self.defArgs:
+                    # Default val: func foo(x=1, y=2)
                     valExpr:ValExpr = self.defArgs[aname]
                     valExpr.do(inCtx)
-                val = valExpr.get()
+                if valExpr:
+                    val = valExpr.get()
+            if not val:
+                # print(f'Func addVals: No val for argument {self.argVars[i].getName()}')
+                raise EvalErr(f'Func addVals: No val for argument {self.argVars[i].getName()}')
             valType = val.getType()
             if atype != valType:
                 if isCompatible(atype, valType):
@@ -164,7 +195,8 @@ class FuncCallExpr(CallExpr):
         args:list[Var] = []
         # print(f'Function `{self.name}`:', self.func)
         self.funcExpr.do(ctx)
-        func = self.funcExpr.get()
+        func:Function = self.funcExpr.get()
+        
         # unpack function from var
         # print('#1# func-call do00: ', self.name, 'F:', func)
         if isinstance(func, Var):
@@ -180,7 +212,7 @@ class FuncCallExpr(CallExpr):
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
         named = {}
         for exp in self.argExpr:
-            # dprint('#1# func-call do2 exp=: ', exp)
+            # print('#1# func-call do2 exp=: ', exp)
             if isinstance(exp, AssignExpr):
                 varExp = exp.left # arg name
                 if not isinstance(varExp, VarExpr):
@@ -191,6 +223,8 @@ class FuncCallExpr(CallExpr):
                 named[argName] = valExp
                 continue
             if len(named) != 0:
+                # if not variadic args part:
+                # if len(args) >= func.argNum and not func.extOrdered:
                 raise EvalErr("Attempt to use ordered agr after named")
             valExp = exp
                 
@@ -221,7 +255,7 @@ class FuncDefExpr(ObjDefExpr, Block):
     '''
 
     def __init__(self, name):
-        # dprint('FuncDefExpr.__inint 1:', name)
+        # print('FuncDefExpr.__inint 1:', name)
         self.name = name
         self.res:Function
         self.blockLines:list[Expression] = []
@@ -231,7 +265,7 @@ class FuncDefExpr(ObjDefExpr, Block):
 
     def addArg(self, arg:VarExpr):
         ''' arg Var(name, type)'''
-        # print('addArg1 :', arg, type(arg))
+        # print('FDef.addArg1 :', arg, type(arg))
         defVal = None
         
         # x:int = 1
@@ -245,9 +279,10 @@ class FuncDefExpr(ObjDefExpr, Block):
             arg = arg.getTypedArg()
             # print('FDef.addArg11 :', arg, arg.left, ':', arg.right)
         # x
-        if not isinstance(arg, TypedArgExpr):
+        if not isinstance(arg, (TypedArgExpr, ArgExtList, ArgExtDict)):
             # print('FDef.addArg#4', arg)
             arg = ArgExpr(arg.val)
+            
         # if defVal is not None:
         arg.defVal = defVal
         
@@ -281,8 +316,12 @@ class FuncDefExpr(ObjDefExpr, Block):
         # here we need local context for correct init of arg types
         argCtx = Context(ctx)
         for arg in self.argVars:
+            # print('FDef.do#1', arg)
             if isinstance(arg, TypedArgExpr):
                 arg.do(argCtx)
+            # if isinstance(arg, ArgExtList):
+            #     print('##2')
+                
             func.addArg(arg.get(), arg.defVal)
         func.block = Block()
         # build inner block of function

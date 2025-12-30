@@ -24,6 +24,67 @@ class TestFunc(TestCase):
 
 
 
+    def test_func_variadic_args(self):
+        ''' def foo(args...) '''
+        code = r'''
+        res = []
+        
+        func f1(nn...)
+            [100 + n; n <- nn]
+        
+        res <- ('f1-0', f1())
+        res <- ('f1-0', f1(1))
+        res <- ('f1-0', f1(1,2))
+        res <- ('f1-0', f1(1,2,3))
+        res <- ('f1-0', f1(1,2,3,4,5,6,7,8,7,9))
+        
+        func f2(x, y, nn...)
+            nn.map(n -> x * y + n)
+        
+        res <- ('f2-2', f2(3, 7))
+        res <- ('f2-2', f2(3, 7, 2))
+        res <- ('f2-2', f2(3, 7, 2,3))
+        res <- ('f2-2', f2(3, 7, 2,3,4,5,6,7,8,9))
+        
+        func f3(a, b=2, nn...)
+            snn = nn.fold(0, (x, y) -> x+y)
+            if snn == 0
+                snn = 1
+            (a + b) * snn
+        
+        res <- ('f3-1', f3(1)) # 3
+        res <- ('f3-2', f3(1,1)) # 2
+        res <- ('f3-2b', f3(1,b=2)) # 3
+        res <- ('f3-3', f3(1,1,2)) # 4
+        b = 2
+        res <- ('f3-3b', f3(1,b,2)) # 6
+        res <- ('f3-6', f3(1,1, 1,1,1,1,1)) # 10
+        
+        # # default-args after collector... never will passed by order, only by name
+        func f4(x, nn..., pref='', post='')
+            [~"{pref}{x}{n}{post}" ; n <- nn]
+        
+        res <- ('f4-1', f4('A-', 'a'))
+        res <- ('f4-2', f4('B-', 'b', 'c'))
+        res <- ('f4-3', f4('C-', 'c', 'd', 'e', pref='<', post='>'))
+        res <- ('f4-4', f4('D-', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', pref='(=', post='=)'))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('f1-0', []), ('f1-0', [101]), ('f1-0', [101, 102]), ('f1-0', [101, 102, 103]), ('f1-0', [101, 102, 103, 104, 105, 106, 107, 108, 107, 109]),
+            ('f2-2', []), ('f2-2', [23]), ('f2-2', [23, 24]), ('f2-2', [23, 24, 25, 26, 27, 28, 29, 30]), ('f3-1', 3), ('f3-2', 2), ('f3-2b', 3), ('f3-3', 4), ('f3-3b', 6), ('f3-6', 10), ('f4-1', ['A-a']), ('f4-2', ['B-b', 'B-c']), ('f4-3', ['<C-c>', '<C-d>', '<C-e>']), ('f4-4', ['(=D-d=)', '(=D-e=)', '(=D-f=)', '(=D-g=)', '(=D-h=)', '(=D-i=)', '(=D-j=)', '(=D-k=)'])]
+        self.assertEqual(exv, rvar.vals())
+
     def test_func_named_and_default_for_methods(self):
         ''' obj.foo(1, b=2)  '''
         code = r'''

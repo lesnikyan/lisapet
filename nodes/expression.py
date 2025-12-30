@@ -80,14 +80,40 @@ class VarExpr(Expression):
 
     def __str__(self):
         # dprint('VVV', self)
-        return 'VarExpr(%s, %s)' % (self.name, self.val)
+        return '%s(%s, %s)' % (self.__class__.__name__, self.name, self.val)
 
 
 class ArgExpr(VarExpr):
     def __init__(self, var:Var):
         super().__init__(var)
         self.defVal = None
+
+class ArgSetOrd(Var):
+    def __init__(self, name):
+        super().__init__(name, TypeList())
+        self.vals = []
     
+    def add(self, elem:Val):
+        self.vals.append(elem)
+
+
+class ArgSetNamed:
+    def __init__(self):
+        # super().__init__(val, vtype)
+        self.elems = {}
+    
+    def add(self, name:str, elem:Val):
+        self.elems[name] = elem
+
+
+class ArgExtList(ArgExpr):
+    def __init__(self, var:Var):
+        super().__init__(var)
+
+
+class ArgExtDict(ArgExpr):
+    def __init__(self, var:Var):
+        super().__init__(var)
 
 
 class VarExpr_(VarExpr):

@@ -53,62 +53,23 @@ class TestDev(TestCase):
 
     def _test_func_variadic_named_args(self):
         ''' '''
+        print
         code = r'''
         
-        func f3({dd})
+        func f3(dd$$)
             dd
         
         
-        func f4(a, b, {dd})
+        func f4(a, b, dd$$)
             dd
         
-        
-        func f5([nn], {dd})
+        func f5(nn..., dd$$)
             (nn, dd)
         
-        func f6(a, b, c, d, [nn], {dd})
+        func f6(a, b, c, d, nn..., dd$$)
             5
         
-        # print('res = ', 1)
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        rvar = ctx.get('res').get()
-        # self.assertEqual([], rvar.vals())
-
-    def _test_func_variadic_args(self):
-        ''' '''
-        code = r'''
-        
-        func f1([nn])
-            nn.map(x -> x * 10)
-        
-        # func f1()
-        # func f1(1)
-        # func f1(1,2)
-        # func f1(1,2,3)
-        # func f1(1,2,3,4,5,6,7,8,7,9) 
-        
-        # func f2(x, y, [nn])
-        #     nn.map(n -> x * y + n)
-        
-        # f2(3, 7)
-        # f2(3, 7, 2)
-        # f2(3, 7, 2,3)
-        # f2(3, 7, 2,3,4,5,6,7,8,9)
-        
-        # arguments of call time
-        func f2(a, b, act...)
-            act.all() # [1,2,3]
-            act.pos() # [1,2]
-            act.named() # {'n':3}
-        
+        # func f7(a, b, c..., d$$(e=11, f=22))
         
         # print('res = ', 1)
         '''
@@ -122,10 +83,10 @@ class TestDev(TestCase):
         ex.do(ctx)
         rvar = ctx.get('res').get()
         # self.assertEqual([], rvar.vals())
+
 
     def _test_1(self):
         ''''''
-
 
     def _test_new_collection_constr(self):
         ''' constr-like brackets with colon - []:, {}:, (): '''
