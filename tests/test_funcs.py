@@ -24,6 +24,78 @@ class TestFunc(TestCase):
 
 
 
+    def test_func_variadic_args_in_methods(self):
+        ''' def foo(args...) '''
+        code = r'''
+        res = []
+        
+        struct A a: int, b: string
+        
+        func a:A f1(nn...)
+            a.a = nn.fold(0, (a, b) -> a + b)
+        
+        a1 = A{}
+        a1.f1()
+        res <- ('f1-0', a1.a)
+        a1.f1(1)
+        res <- ('f1-0', a1.a)
+        a1.f1(1,2)
+        res <- ('f1-0', a1.a)
+        a1.f1(1,2,3)
+        res <- ('f1-0', a1.a)
+        a1.f1(1,2,3,4,5,6,7,8,7,9)
+        res <- ('f1-0', a1.a)
+        
+        func a:A f2(x, y, nn...)
+            k = x + y
+            a.a = k * nn.fold(0, (a, b) -> a + b)
+        
+        a2 = A{}
+        a2.f2(3, 7)
+        res <- ('f2-2', a2.a)
+        a2.f2(3, 7, 2)
+        res <- ('f2-2', a2.a)
+        a2.f2(3, 7, 2,3)
+        res <- ('f2-2', a2.a)
+        a2.f2(3, 7, 2,3,4,5,6,7,8,9)
+        res <- ('f2-2', a2.a)
+        
+        # # # default-args after collector... never will passed by order, only by name
+        func a:A f4(x, nn..., pref='', post='')
+            tt = [~"{pref}{x}{n}{post}" ; n <- nn]
+            n = len(tt)
+            a.b = tt.join(' ')
+            n
+        
+        a3 = A{}
+        n = a3.f4('A-', 'a')
+        res <- (~'f4-1 n={n}', a3.b)
+        n = a3.f4('B-', 'b', 'c')
+        res <- (~'f4-2 n={n}', a3.b)
+        n = a3.f4('C-', 'c', 'd', 'e', pref='<?', post='?>')
+        res <- (~'f4-3 n={n}', a3.b)
+        n = a3.f4('D-', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', pref='[=', post='=]')
+        res <- (~'f4-4 n={n}', a3.b)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('f1-0', 0), ('f1-0', 1), ('f1-0', 3), ('f1-0', 6), ('f1-0', 52),
+            ('f2-2', 0), ('f2-2', 20), ('f2-2', 50), ('f2-2', 440),
+            ('f4-1 n=1', 'A-a'), ('f4-2 n=2', 'B-b B-c'), ('f4-3 n=5', 'C-c C-d C-e C-<? C-?>'),
+            ('f4-4 n=10', 'D-d D-e D-f D-g D-h D-i D-j D-k D-[= D-=]')
+        ]
+        self.assertEqual(exv, rvar.vals())
+
     def test_func_variadic_args(self):
         ''' def foo(args...) '''
         code = r'''
@@ -42,9 +114,9 @@ class TestFunc(TestCase):
             nn.map(n -> x * y + n)
         
         res <- ('f2-2', f2(3, 7))
-        res <- ('f2-2', f2(3, 7, 2))
-        res <- ('f2-2', f2(3, 7, 2,3))
-        res <- ('f2-2', f2(3, 7, 2,3,4,5,6,7,8,9))
+        res <- ('f2-3', f2(3, 7, 2))
+        res <- ('f2-4', f2(3, 7, 2,3))
+        res <- ('f2-10', f2(3, 7, 2,3,4,5,6,7,8,9))
         
         func f3(a, b=2, nn...)
             snn = nn.fold(0, (x, y) -> x+y)
@@ -82,7 +154,10 @@ class TestFunc(TestCase):
         rvar = ctx.get('res').get()
         exv = [
             ('f1-0', []), ('f1-0', [101]), ('f1-0', [101, 102]), ('f1-0', [101, 102, 103]), ('f1-0', [101, 102, 103, 104, 105, 106, 107, 108, 107, 109]),
-            ('f2-2', []), ('f2-2', [23]), ('f2-2', [23, 24]), ('f2-2', [23, 24, 25, 26, 27, 28, 29, 30]), ('f3-1', 3), ('f3-2', 2), ('f3-2b', 3), ('f3-3', 4), ('f3-3b', 6), ('f3-6', 10), ('f4-1', ['A-a']), ('f4-2', ['B-b', 'B-c']), ('f4-3', ['<C-c>', '<C-d>', '<C-e>']), ('f4-4', ['(=D-d=)', '(=D-e=)', '(=D-f=)', '(=D-g=)', '(=D-h=)', '(=D-i=)', '(=D-j=)', '(=D-k=)'])]
+            ('f2-2', []), ('f2-3', [23]), ('f2-4', [23, 24]), ('f2-10', [23, 24, 25, 26, 27, 28, 29, 30]), 
+            ('f3-1', 3), ('f3-2', 2), ('f3-2b', 3), ('f3-3', 4), ('f3-3b', 6), ('f3-6', 10), 
+            ('f4-1', ['A-a']), ('f4-2', ['B-b', 'B-c']), ('f4-3', ['<C-c>', '<C-d>', '<C-e>']), 
+            ('f4-4', ['(=D-d=)', '(=D-e=)', '(=D-f=)', '(=D-g=)', '(=D-h=)', '(=D-i=)', '(=D-j=)', '(=D-k=)'])]
         self.assertEqual(exv, rvar.vals())
 
     def test_func_named_and_default_for_methods(self):

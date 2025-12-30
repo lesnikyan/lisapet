@@ -692,11 +692,46 @@ foo(a=10, b = foo(3,2)) #// 9
 foo(5, 2, a=10) #// 3; 10 is ignored
 ```
 
-See more about functions in next sections:
+6. Variadic arguments.  
+Variadic arguments is a feature of function that allow pass into function different number of params, but take them in function body as a one list.  
+Most used example is a `print()` function from builtins.  
+```golang
+print(1)
+print(1,2,3,4,5)
+print('Hello', 'Somebody')
+```
+In definition of function such argument has special syntax, it's a trple-dots suffix of arg name.  
+```golang
+func foo(args...)
+    for val <- args
+        process(val)
+```
+The main way for usage variadic args is put such argument in definition after necessary arguments in definition and pass as many params in call as we need.  
+```golang
+func f2(x, y, nn...)
+    nn.map(n -> x * y + n)
+
+f2(3, 7, 2) #// [23]
+f2(3, 7, 2,3,4,5,6,7,8,9) #// [23, 24, 25, 26, 27, 28, 29, 30]
+```
+Next, we can use default value in args after variadic arg (in the definition) and pass named args after ordered args in the call.  
+```golang
+func f4(x, nn..., pref='', post='')
+    [~"{pref}{x}{n}{post}" ; n <- nn]
+
+f4('A-', 'a') #// ['A-a']
+f4('c=', '1', '2', '3', pref='<', post='>') #// ['<C=1>', '<C=2>', '<C=3>']
+```
+The same works for methods.  
+
+
+See more about functions in next sections:  
 [14 builtins](#14-builtin-functions), 
 [15 lambdas](#15-lambda-functions-and-high-order-functions-right-arrow--),
 [23 func-object](#23-function-as-an-object), 
-[24 closures](#24-closures).
+[24 closures](#24-closures),  
+[11.1 struct methods](#111-struct-method),
+[10.2 callable constructor for structs](#102-constructor-function-typename).
 
 ## 9 Collections features.  
 ### 9.1 arrow-append/set operator `<-`
