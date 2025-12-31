@@ -15,6 +15,36 @@ from cases.structs import MethodDefExpr, MethodCallExpr
 from cases.utils import OperSplitter
 
 
+class CaseArgExtraList(ExpCase):
+    ''' varname... '''
+    def match(self, elems:list[Elem]) -> bool:
+        if len(elems) != 2:
+            return False
+        if elems[0].type == Lt.word and isLex(elems[1], Lt.oper, '...'):
+            return True
+        return False
+    
+    def expr(self, elems:list[Elem])-> Expression:
+        ''' Value from context by var name'''
+        expr = ArgExtList(ArgSetOrd(elems[0].text))
+        return expr
+
+
+class CaseArgExtraDict(ExpCase):
+    ''' ${varname} varname{...}  varname^ varname..> varname..~ dd^^ dd?.. <dd> dd$$ dd~~            ''' 
+    def match(self, elems:list[Elem]) -> bool:
+        if len(elems) != 2:
+            return False
+        if elems[0].type == Lt.word and isLex(elems[1], Lt.oper, '$$'):
+            return True
+        return False
+    
+    def expr(self, elems:list[Elem])-> Expression:
+        ''' Value from context by var name'''
+        # expr = VarExpr(Var(elems[0].text, TypeAny()))
+        # return expr
+
+
 class CaseFuncDef(BlockCase, SubCase):
     ''' func foo(arg-expressions over comma) '''
     def match(self, elems:list[Elem]) -> bool:
@@ -26,6 +56,8 @@ class CaseFuncDef(BlockCase, SubCase):
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' func name (arg, arg, arg, ..) 
+            args:
+                x, x:int, x=1, x:int=1, nn..., 
         method:
             func u:User setName(name:string)
         '''
@@ -49,6 +81,7 @@ class CaseFuncDef(BlockCase, SubCase):
     def setSub(self, base:FuncDefExpr, subs:Expression|list[Expression])->Expression:
         for exp in subs:
             base.addArg(exp)
+
 
 class CaseLambda(CaseFuncDef):
     ''' args -> expr '''

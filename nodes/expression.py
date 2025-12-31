@@ -80,7 +80,41 @@ class VarExpr(Expression):
 
     def __str__(self):
         # dprint('VVV', self)
-        return 'VarExpr(%s, %s)' % (self.name, self.val)
+        return '%s(%s, %s)' % (self.__class__.__name__, self.name, self.val)
+
+
+class ArgExpr(VarExpr):
+    def __init__(self, var:Var):
+        super().__init__(var)
+        self.defVal = None
+
+class ArgSetOrd(Var):
+    def __init__(self, name):
+        super().__init__(name, TypeList())
+        self.vals = []
+    
+    def add(self, elem:Val):
+        self.vals.append(elem)
+
+
+class ArgSetNamed:
+    def __init__(self):
+        # super().__init__(val, vtype)
+        self.elems = {}
+    
+    def add(self, name:str, elem:Val):
+        self.elems[name] = elem
+
+
+class ArgExtList(ArgExpr):
+    def __init__(self, var:Var):
+        super().__init__(var)
+
+
+class ArgExtDict(ArgExpr):
+    def __init__(self, var:Var):
+        super().__init__(var)
+
 
 class VarExpr_(VarExpr):
     def __init__(self, var:Var=None):
@@ -296,6 +330,9 @@ class ServPairExpr(Expression):
     
     def getTypedVar(self):
         return TypedVarExpr(self.left, self.right)
+    
+    def getTypedArg(self):
+        return TypedArgExpr(self.left, self.right)
 
     def setArgs(self, left:Expression|list[Expression], right:Expression|list[Expression]):
         # print('ServPairExpr.setArgs', left, right)
@@ -340,6 +377,15 @@ class TypedVarExpr(VarExpr):
         
         self.val = Var(name, tpVal, strict=True)
         ctx.addVar(self.val)
+
+
+class TypedArgExpr(TypedVarExpr):
+    '''  foo(x:int = 1) '''
+    
+    def __init__(self, left, right):
+        # var:Var = None
+        super().__init__(left, right)
+        self.defVal = None
 
 
 class InterpretContext:
@@ -389,6 +435,10 @@ class SequenceExpr(Expression):
             sub.do(ctx)
             res.append(sub.get())
         return res
+
+
+class CallExpr(Expression):
+    ''' expr() '''
 
 
 class StringExpr(ValExpr):

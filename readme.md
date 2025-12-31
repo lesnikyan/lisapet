@@ -635,10 +635,8 @@ func foo(a, b, c)
 # function call
 res = foo(1,2,3)
 
-# arg type (optional)
-func bar(a:int, b:int)
-    a + b
 ```
+2. Definition context.  
 Function can use nearest declaration context (actually all top-level things in module where func was declared).
 ```python
 callIndex = 0
@@ -647,14 +645,95 @@ func foo(x, y)
     res = [x, y, callIndex]
     callIndex += 1
     res
+```
+3. Argument type.  
+By default arguments have most general type `any`.  
+But we can specify more strict type.  
+According to type compatibility, we can pass value with more strict type to argument with wider type, like typed vars. 
+For example `int` value to `float` argument, or `bool` to `int`.  
+```golang
+
+#// arg type (optional)
+func bar(a:float, b:float)
+    a + b
+
+bar(1.5, 2.8) #// ok
+bar(2, 3) #// ok too
+bar('a', 'b') #// error
+```
+4. Default value of arguments.  
+Arguments of functions can have default value.  
+Default values is used if function was called without arguments that have default value.  
+Default values are possible in the end of arg list in func definition only, they should fill missing args. So it doen't make sense to declare argument without default value after at least one arg with default value.  
+```golang
+
+func foo(a:int, b:int=1)
+    a * b
+
+foo(3, 4) #// >> 7
+
+foo(5) #// >> 5
 
 ```
-See more about functions in sections:
+
+5. Named arguments.  
+In function call expression named args are allowed.  
+Named argument is passed like assignment expression on the argument position in function call, name of argument as a left operand of assignment:  
+`foo(name='Bob')`  
+If redundant named arg will be passed after the same arg was passed in base order, it will be ignored (now).  
+```golang
+
+func foo(a, b)
+    a - b
+
+foo(a=1, b=2) #// -1
+foo(b=1, a=2) #// 1
+foo(a=10, b = foo(3,2)) #// 9
+foo(5, 2, a=10) #// 3; 10 is ignored
+```
+
+6. Variadic arguments.  
+Variadic arguments is a feature of function that allow pass into function different number of params, but take them in function body as a one list.  
+Most used example is a `print()` function from builtins.  
+```golang
+print(1)
+print(1,2,3,4,5)
+print('Hello', 'Somebody')
+```
+In definition of function such argument has special syntax, it's a trple-dots suffix of arg name.  
+```golang
+func foo(args...)
+    for val <- args
+        process(val)
+```
+The main way for usage variadic args is put such argument in definition after necessary arguments in definition and pass as many params in call as we need.  
+```golang
+func f2(x, y, nn...)
+    nn.map(n -> x * y + n)
+
+f2(3, 7, 2) #// [23]
+f2(3, 7, 2,3,4,5,6,7,8,9) #// [23, 24, 25, 26, 27, 28, 29, 30]
+```
+Next, we can use default value in args after variadic arg (in the definition) and pass named args after ordered args in the call.  
+```golang
+func f4(x, nn..., pref='', post='')
+    [~"{pref}{x}{n}{post}" ; n <- nn]
+
+f4('A-', 'a') #// ['A-a']
+f4('c=', '1', '2', '3', pref='<', post='>') #// ['<C=1>', '<C=2>', '<C=3>']
+```
+The same works for methods.  
+
+
+See more about functions in next sections:  
 [14 builtins](#14-builtin-functions), 
 [15 lambdas](#15-lambda-functions-and-high-order-functions-right-arrow--),
 [23 func-object](#23-function-as-an-object), 
-[24 closures](#24-closures).
+[24 closures](#24-closures),  
+[11.1 struct methods](#111-struct-method),
+[10.2 callable constructor for structs](#102-constructor-function-typename).
 
+## 9 Collections features.  
 ### 9.1 arrow-append/set operator `<-`
 Left-arrow with list or dict in the right operand  puts value into collection.  
 (not in `for` statement or sequence generator)  

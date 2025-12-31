@@ -119,6 +119,7 @@ expCaseList = [
     CaseBreak(), CaseContinue(), CaseRegexp(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), 
     CaseLambda(), CaseMatchCase(),
+    CaseArgExtraList(), CaseArgExtraDict(),
     CaseStructBlockDef(), CaseStructDef(),
     CaseSemic(), CaseBinOper(), CaseCommas(),
     CaseTuple(),
