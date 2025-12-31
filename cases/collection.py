@@ -51,7 +51,7 @@ class CaseTuple(SubCase):
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        dprint('CaseTuple.setSub: ', base, subs)
+        # dprint('CaseTuple.setSub: ', base, subs)
         for exp in subs:
             if isinstance(exp, NothingExpr):
                 # empty position after comma
@@ -243,6 +243,7 @@ class CaseDictLine(SubCase):
             # guess 1 item, check colon-separeted seq
             return self.checkValidSub(subel, cc)
         _, parts = cs.split(subel)
+        parts = [n for n in parts if n]
         for pp in parts:
             if not self.checkValidSub(pp, cc):
                 return False

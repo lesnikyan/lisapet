@@ -10,12 +10,7 @@ from nodes.builtins import built_list, built_foldl
 import libs.str as libst
 
 
-# List
-
-def list_reverse(_, inst:ListVal):
-    src = inst.rawVals().copy()
-    src.reverse()
-    return ListVal(elems=src)
+# General
 
 def seq_map(ctx:Context, inst:Collection|SequenceGen, fun:Function):
     elems = built_list(0, inst).rawVals()
@@ -26,6 +21,20 @@ def seq_map(ctx:Context, inst:Collection|SequenceGen, fun:Function):
         r = fun.get()
         res.append(r)
     return res
+
+def seq_each(ctx:Context, inst:Collection|SequenceGen, fun:Function):
+    elems = built_list(0, inst).rawVals()
+    for n in elems:
+        # print('built', n)
+        fun.setArgVals([n])
+        fun.do(ctx)
+
+# List
+
+def list_reverse(_, inst:ListVal):
+    src = inst.rawVals().copy()
+    src.reverse()
+    return ListVal(elems=src)
 
 def list_map(ctx:Context, inst:ListVal|SequenceGen, fun:Function):
     res = seq_map(ctx, inst, fun)

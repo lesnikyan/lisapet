@@ -213,7 +213,7 @@ def typeCompat(dest:VType, stype:VType):
     match dest.name:
         case 'any': return True
         case 'bool': return sclass in [TypeBool, TypeNull]
-        case 'string': return sclass == TypeString
+        case 'string': return sclass in [TypeString, TypeNull]
         case 'num': return sclass in [TypeComplex, TypeBool, TypeInt, TypeFloat, TypeNull]
         case 'complex': return sclass in [TypeBool, TypeInt, TypeFloat, TypeNull]
         case 'float': return sclass in [TypeBool, TypeInt, TypeNull]
@@ -235,13 +235,17 @@ def converVal(dest:VType, val:Val):
     match dest.name:
         case 'any': return val
         case 'bool': return Val(bool(vval), TypeBool())
-        # case 'string': return stype == TypeString
-        case 'num': val
-        case 'complex': val
+        case 'string':
+            if isinstance(vtype, TypeNull):
+                return val
+        case 'num': return val
+        case 'complex': return val
         case 'float': return Val(float(vval), TypeFloat())
         case 'int': return Val(int(vval), TypeInt())
         # case 'list'|'dict'|'struct': return stype in [TypeNull]
-        case _: raise EvalErr(f'Value conversion of unknown or incompatible dest type ({dest} << {vtype})')
+        # case _:
+    # print(f'Value conversion of unknown or incompatible dest type ({dest} << {vtype})')
+    raise EvalErr(f'Value conversion of unknown or incompatible dest type ({dest} << {vtype})')
     
 
 

@@ -29,6 +29,48 @@ from libs.regexp import *
 class TestTypes(TestCase):
 
 
+
+    def test_oper_type_autocasting(self):
+        ''' a / b '''
+        code = r'''
+        res = []
+        
+        a:int = 0
+        b:float = 0
+        c:bool = false
+        
+        a = 1 + true
+        res <- ('a1', a, a :: int)
+        
+        a = 10 + null
+        res <- ('a2', a, a :: int)
+        
+        b = 5 / 2
+        res <- ('b1', b, b :: float)
+        
+        b = 5 / true
+        res <- ('b2', b, b :: float)
+        
+        b = 5 * (! null)
+        res <- ('b3', b, b :: float)
+        
+        c = true && null
+        res <- ('c1', c, c :: bool)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [('a1', 2, True), ('a2', 10, True), ('b1', 2.5, True), ('b2', 5.0, True), ('b3', 0.0, True), ('c1', True, True)]
+        self.assertEqual(exv, rvar.vals())
+
     def test_assign_incompatible_error(self):
         '''
         '''

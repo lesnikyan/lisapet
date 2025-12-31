@@ -19,14 +19,12 @@
     tostr([a..b]) # gen obj
     
     decode(from bytes) / encode (to bytes) 
-    # think about type.related methods: 
-        'abc'.encode('utf-8')
-        nums = []; nums.len()
+    
 
 1.01 import python-implemented modules from /libs
 
 1.02 container of functions aka namespace or static methods. 
-#call
+# call
 A.foo(a, b)
 # def
 A func foo(a, b)
@@ -37,6 +35,7 @@ func A foo(a, b)
 group A
 func A.foo(a, b)
     ..
+
 
 1.2 method sugar
     #  method-like syntax for base types
@@ -70,6 +69,7 @@ func A.foo(a, b)
     common struct, implemented struct
     Maybe (Some, Nothing).
 
+
 2.5 OpAssing:
         # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
         # TODO: thik about one way of assignment: (something) = (something)
@@ -92,16 +92,6 @@ NEED FIX:
         for var1, var2,.. <- src
         # auto-unpack tuples, could be resolved by next reassign: a, b = n 
         for n <- [(1,2), (3,4), ] # but easy to use
-
- 
-    loop over dict
-    - # OK. works fine.
-        for k, v <- dict
-    - #DONE data.keys() ; dkeys(data) # dict keys
-    - #DONE for item <- ditems(data) ; for item <- data.items()  # key-val pairs from dict
-
-
-3.2. Type auto-casting. Important for struct constructors, function args
 
 
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
@@ -146,9 +136,9 @@ catch crit
     2) executive tree (prepared exec file)
 
 12 Functions: 
-12.1 named args for function: func foo(name:string) # call: foo(name:'Abc')
+12.1 named args for function: func foo(name:string) # call: foo(name='Abc')
 12.2 other args in `func(a, b, other...) : foo(1, 2, 33, 44, 55, 66, 77) other = [33, 44, 55, 66, 77]
-12.3 default values of args func foo(x, y=3) :: needed
+12.3 #DONE default values of args func foo(x, y=3) :: needed
 12.xx other possible extensions of basic scheme of function:
     - undeclared args passed by name (like kwargs in python):: thinkable
     - function / method overload: totally not applicable to strategy of floating number of args like default-val and named-args / No.
@@ -157,9 +147,6 @@ catch crit
 
     # type-groups: 
         numeric, bool, string, list, tuple, dict, struct, function, regexp, [set, maybe, tree, ...]
-
-func foo(a, b, [c=0, d=''])
-    ..
 
 func bar(a, b, [c...])
     for n <- c /: ..
@@ -267,8 +254,6 @@ overload('>>', TypeAny, TypeList, handler)
 2. new operators by python (not sure) 
 
 
-
-
 21.1 reading iterator. read values from sequence in the loop iteration like 
     val = iter(src) # src is collection or generator
         it should init iterator and save instance in first call, then call next() method in each iteration
@@ -317,9 +302,10 @@ match color
 struct {name: 'Bob', age: 25}
 
 #shortened sugar:
-${name: 'Bob', age: 25}
-~{ name: 'Bob', age: 25}
-{s name: 'Bob', age: 25}
+# ${name: 'Bob', age: 25}
+# ~{ name: 'Bob', age: 25}
+# {s name: 'Bob', age: 25}
+_{s name: 'Bob', age: 25}
 
 27. parents method and direct parent
 # thoughts about OOP
@@ -364,7 +350,24 @@ Fixes:
         B b : int
         B(a, b) 
     3. # DONE fix case with comprehensions [1..3] + [5..8]
+ 
+    loop over dict
+    - # OK. works fine.
+        for k, v <- dict
+    - #DONE data.keys() ; dkeys(data) # dict keys
+    - #DONE for item <- ditems(data) ; for item <- data.items()  # key-val pairs from dict
 
+
+3.2. # DONE Type auto-casting. Important for struct constructors, function args
+
+3.2.1 #DONE type auto-conversion in math operators.
+    int + float -> float
+    int / int -> float
+
+# DONE think about type.related methods: 
+    'abc'.encode('utf-8')
+    nums = []; nums.len()
+    
 2.3 # DONE Check type operator 
     var :: type
 

@@ -5,6 +5,7 @@ definition, call, args, results, etc.
 
 from unittest import TestCase, main
 from tests.utils import *
+import sys
 
 from lang import Lt, Mk, CLine
 from parser import splitLine, splitLexems, charType, splitOper, elemStream
@@ -21,6 +22,390 @@ from eval import *
 
 class TestFunc(TestCase):
 
+
+
+    def test_func_variadic_args_in_methods(self):
+        ''' def foo(args...) '''
+        code = r'''
+        res = []
+        
+        struct A a: int, b: string
+        
+        func a:A f1(nn...)
+            a.a = nn.fold(0, (a, b) -> a + b)
+        
+        a1 = A{}
+        a1.f1()
+        res <- ('f1-0', a1.a)
+        a1.f1(1)
+        res <- ('f1-0', a1.a)
+        a1.f1(1,2)
+        res <- ('f1-0', a1.a)
+        a1.f1(1,2,3)
+        res <- ('f1-0', a1.a)
+        a1.f1(1,2,3,4,5,6,7,8,7,9)
+        res <- ('f1-0', a1.a)
+        
+        func a:A f2(x, y, nn...)
+            k = x + y
+            a.a = k * nn.fold(0, (a, b) -> a + b)
+        
+        a2 = A{}
+        a2.f2(3, 7)
+        res <- ('f2-2', a2.a)
+        a2.f2(3, 7, 2)
+        res <- ('f2-2', a2.a)
+        a2.f2(3, 7, 2,3)
+        res <- ('f2-2', a2.a)
+        a2.f2(3, 7, 2,3,4,5,6,7,8,9)
+        res <- ('f2-2', a2.a)
+        
+        # # # default-args after collector... never will passed by order, only by name
+        func a:A f4(x, nn..., pref='', post='')
+            tt = [~"{pref}{x}{n}{post}" ; n <- nn]
+            n = len(tt)
+            a.b = tt.join(' ')
+            n
+        
+        a3 = A{}
+        n = a3.f4('A-', 'a')
+        res <- (~'f4-1 n={n}', a3.b)
+        n = a3.f4('B-', 'b', 'c')
+        res <- (~'f4-2 n={n}', a3.b)
+        n = a3.f4('C-', 'c', 'd', 'e', pref='<?', post='?>')
+        res <- (~'f4-3 n={n}', a3.b)
+        n = a3.f4('D-', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', pref='[=', post='=]')
+        res <- (~'f4-4 n={n}', a3.b)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('f1-0', 0), ('f1-0', 1), ('f1-0', 3), ('f1-0', 6), ('f1-0', 52),
+            ('f2-2', 0), ('f2-2', 20), ('f2-2', 50), ('f2-2', 440),
+            ('f4-1 n=1', 'A-a'), ('f4-2 n=2', 'B-b B-c'), ('f4-3 n=5', 'C-c C-d C-e C-<? C-?>'),
+            ('f4-4 n=10', 'D-d D-e D-f D-g D-h D-i D-j D-k D-[= D-=]')
+        ]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_func_variadic_args(self):
+        ''' def foo(args...) '''
+        code = r'''
+        res = []
+        
+        func f1(nn...)
+            [100 + n; n <- nn]
+        
+        res <- ('f1-0', f1())
+        res <- ('f1-0', f1(1))
+        res <- ('f1-0', f1(1,2))
+        res <- ('f1-0', f1(1,2,3))
+        res <- ('f1-0', f1(1,2,3,4,5,6,7,8,7,9))
+        
+        func f2(x, y, nn...)
+            nn.map(n -> x * y + n)
+        
+        res <- ('f2-2', f2(3, 7))
+        res <- ('f2-3', f2(3, 7, 2))
+        res <- ('f2-4', f2(3, 7, 2,3))
+        res <- ('f2-10', f2(3, 7, 2,3,4,5,6,7,8,9))
+        
+        func f3(a, b=2, nn...)
+            snn = nn.fold(0, (x, y) -> x+y)
+            if snn == 0
+                snn = 1
+            (a + b) * snn
+        
+        res <- ('f3-1', f3(1)) # 3
+        res <- ('f3-2', f3(1,1)) # 2
+        res <- ('f3-2b', f3(1,b=2)) # 3
+        res <- ('f3-3', f3(1,1,2)) # 4
+        b = 2
+        res <- ('f3-3b', f3(1,b,2)) # 6
+        res <- ('f3-6', f3(1,1, 1,1,1,1,1)) # 10
+        
+        # # default-args after collector... never will passed by order, only by name
+        func f4(x, nn..., pref='', post='')
+            [~"{pref}{x}{n}{post}" ; n <- nn]
+        
+        res <- ('f4-1', f4('A-', 'a'))
+        res <- ('f4-2', f4('B-', 'b', 'c'))
+        res <- ('f4-3', f4('C-', 'c', 'd', 'e', pref='<', post='>'))
+        res <- ('f4-4', f4('D-', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', pref='(=', post='=)'))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('f1-0', []), ('f1-0', [101]), ('f1-0', [101, 102]), ('f1-0', [101, 102, 103]), ('f1-0', [101, 102, 103, 104, 105, 106, 107, 108, 107, 109]),
+            ('f2-2', []), ('f2-3', [23]), ('f2-4', [23, 24]), ('f2-10', [23, 24, 25, 26, 27, 28, 29, 30]), 
+            ('f3-1', 3), ('f3-2', 2), ('f3-2b', 3), ('f3-3', 4), ('f3-3b', 6), ('f3-6', 10), 
+            ('f4-1', ['A-a']), ('f4-2', ['B-b', 'B-c']), ('f4-3', ['<C-c>', '<C-d>', '<C-e>']), 
+            ('f4-4', ['(=D-d=)', '(=D-e=)', '(=D-f=)', '(=D-g=)', '(=D-h=)', '(=D-i=)', '(=D-j=)', '(=D-k=)'])]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_func_named_and_default_for_methods(self):
+        ''' obj.foo(1, b=2)  '''
+        code = r'''
+        res = []
+        
+        struct A a:int, b:string
+        
+        func inst:A f1(aaa:int=-1, bbb:string=null)
+            n = aaa
+            if n < 0
+                n = inst.a
+            s = inst.b
+            if bbb::string
+                s = bbb
+            [s ; n <- iter(n)]
+        
+        
+        a = A(1, 'A')
+        res <- ('a.f1-0', a.f1())
+        res <- ('a.f1-1', a.f1(2, 'bb'))
+        # all args passed by name
+        res <- ('a.f1-1', a.f1(3, bbb='cc'))
+        res <- ('f1-2', a.f1(aaa=2, bbb='dd'))
+        res <- ('f1-3', a.f1(bbb=4, aaa='E'))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('a.f1-0', ['A']), ('a.f1-1', ['bb', 'bb']), 
+            ('a.f1-1', ['cc', 'cc', 'cc']), ('f1-2', ['dd', 'dd']), 
+            ('f1-3', ['E', 'E', 'E', 'E'])]
+        self.assertEqual(exv, rvar.vals())
+        
+
+    def test_func_named_args(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func f1(aaa, bbb)
+            (aaa, bbb)
+        
+        # f1('a1', 'b1')
+        # all args passed by name
+        res <- ('f1-1', f1('a1', 'b1'))
+        res <- ('f1-2', f1(aaa='a2', bbb='b2'))
+        res <- ('f1-3', f1(bbb='b3', aaa='a3'))
+        
+        func f2(a, b, c=1, d=0)
+            (a + b) * c + d
+        
+        res <- ('f2-1', f2(1,2,3,100))
+        # def-val args
+        res <- ('f2-2', f2(2,3))
+        # named args in the end of list
+        res <- ('f2-3', f2(3,4,c=5))
+        res <- ('f2-4', f2(5,6,c=7, d=400)) 
+        res <- ('f2-4', f2(5,6, d=500,c=8)) 
+        
+        func f3(a=1, b=2, c=3, d=4, e=5, f=6, g=7, h=8, i=9, j=10, k=11, m=12)
+            [a, b, c, d, e, f, g, h, i, j, k, m]
+        
+        res <- ('f3-1', f3())
+        res <- ('f3-2', f3(11,22,33,44,55,66,77,88,99,100,110,120))
+        res <- ('f3-3', f3(a=21, b=22, c=23, d=24, e=25, f=26, g=27, h=28, i=29, j=210, k=211, m=212))
+        # skipping sonething
+        res <- ('f3-4', f3(f=36, g=37, h=38, i=39, j=310, k=311, m=312))
+        res <- ('f3-5', f3(41,42,43,44,45, f=46, g=47, h=48, k=411, m=412, a=1000))
+        # pass redundant arg by name: no effect here
+        res <- ('f3-6', f3(51,52,53,54,55, f=560, g=570, h=580, i=590, m=512, a=1000, b=1001))
+        
+        # use vars and expressions in named arg
+        a = 1
+        b = 2
+        
+        func foo(x)
+            10 * x
+        
+        res <- ('f1-11', f1(aaa=a, bbb=b))
+        res <- ('f1-12', f1(bbb=b, aaa=a))
+        res <- ('f1-13', f1(aaa=1, bbb=foo(5)))
+        res <- ('f1-14', f1(aaa=foo(6), bbb=foo(7)))
+        
+        # use element of collection as a 
+        nn = [1,2,3]
+        dd = {'a':11, 'b':22}
+        
+        res <- ('f1-15', f1(nn[1], bbb=nn[0]))
+        res <- ('f1-16', f1(dd['a'], bbb=dd['b']))
+        
+        # use struct fields and methods
+        struct A a:int, b:int
+        
+        func a:A sum()
+            a.a + a.b
+        
+        aa1 = A(12, 13)
+        aa2 = A(22,23)
+
+        res <- ('f1-17', f1(aaa=aa1.a, bbb=aa1.b))
+        res <- ('f1-18', f1(bbb=aa1.sum(), aaa=aa2.sum()))
+        res <- ('f1-19', f1(bbb=aa1.b + b, aaa=aa2.sum() + aa1.sum()))
+        
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('f1-1', ('a1', 'b1')), ('f1-2', ('a2', 'b2')), ('f1-3', ('a3', 'b3')), 
+            ('f2-1', 109), ('f2-2', 5), ('f2-3', 35), ('f2-4', 477), ('f2-4', 588), 
+            ('f3-1', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]), 
+            ('f3-2', [11, 22, 33, 44, 55, 66, 77, 88, 99, 100, 110, 120]), 
+            ('f3-3', [21, 22, 23, 24, 25, 26, 27, 28, 29, 210, 211, 212]), 
+            ('f3-4', [1, 2, 3, 4, 5, 36, 37, 38, 39, 310, 311, 312]), 
+            ('f3-5', [41, 42, 43, 44, 45, 46, 47, 48, 9, 10, 411, 412]), 
+            ('f3-6', [51, 52, 53, 54, 55, 560, 570, 580, 590, 10, 11, 512]), 
+            ('f1-11', (1, 2)), ('f1-12', (1, 2)), ('f1-13', (1, 50)), ('f1-14', (70, 70)), 
+            ('f1-15', (2, 1)), ('f1-16', (11, 22)), ('f1-17', (12, 13)), ('f1-18', (45, 25)), ('f1-19', (70, 15))]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_func_default_arg_vals(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func foo(x:int = 0)
+            x * 10
+        
+        res <- ('foo(1)', foo(1))
+        res <- ('foo(-1)', foo(-1))
+        res <- ('foo(15)', foo(15))
+        
+        r = foo()
+        
+        res <- ('foo()', foo())
+        
+        func strfill(count, str=' ')
+            [str ; x <- iter(count)]
+        
+        res <- (`strfill(3, '=')`, strfill(3, '='))
+        res <-  (`strfill(4)`, strfill(4))
+        # print('>>', r)
+        
+        func foo3(a=1, b=10, c=100)
+            a + b + c
+            
+        res <- ('foo3()', foo3())
+        res <- ('foo3(2)', foo3(2))
+        res <- ('foo3(3, 30)', foo3(3, 30))
+        res <- ('foo3(4, 40, 400)', foo3(4, 40, 400))
+        
+        func fstr3(a="A", b="B", c="C")
+            ~"*{a}{b}{c}*"
+        
+        res <- ('fstr3()', fstr3())
+        res <- (`fstr3('Q')`, fstr3('Q'))
+        res <- (`fstr3('W', 'E')`, fstr3('W', 'E'))
+        res <- (`fstr3('R', 'T', 'Y')`, fstr3('R', 'T', 'Y'))
+        
+        func fstr3T(a:string="A", b:string="B", c:string="C")
+            ~"<{a}{b}{c}>"
+        
+        res <- ('fstr3T()', fstr3T())
+        res <- (`fstr3T('Q')`, fstr3T('Q'))
+        res <- (`fstr3T('W', 'E')`, fstr3T('W', 'E'))
+        res <- (`fstr3T('R', 'T', 'Y')`, fstr3T('R', 'T', 'Y'))
+        
+        func defList(x:int, nums=[0])
+            [n + x; n <- nums]
+        
+        res <- ('defList(1)', defList(1))
+        res <- ('defList(2, [1,2,3])', defList(2, [1,2,3]))
+        
+        func defDict(pref:string, options = {'count':0})
+            [ ~'{pref}{k}'; k <- options.keys()]
+        
+        res <- ('defDict:3K', defDict('k_', {'abba':1,'buba':2,'cuba':3,}))
+        res <- ('defDict:3K', defDict('!', {}))
+        res <- ('defDict:3K', defDict('0_'))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('foo(1)', 10), ('foo(-1)', -10), ('foo(15)', 150), ('foo()', 0), 
+            ("strfill(3, '=')", ['=', '=', '=']), ('strfill(4)', [' ', ' ', ' ', ' ']), 
+            ('foo3()', 111), ('foo3(2)', 112), ('foo3(3, 30)', 133), ('foo3(4, 40, 400)', 444), 
+            ('fstr3()', '*ABC*'), ("fstr3('Q')", '*QBC*'), ("fstr3('W', 'E')", '*WEC*'), ("fstr3('R', 'T', 'Y')", '*RTY*'), 
+            ('fstr3T()', '<ABC>'), ("fstr3T('Q')", '<QBC>'), ("fstr3T('W', 'E')", '<WEC>'), ("fstr3T('R', 'T', 'Y')", '<RTY>'), 
+            ('defList(1)', [1]), ('defList(2, [1,2,3])', [3, 4, 5]), 
+            ('defDict:3K', ['k_abba', 'k_buba', 'k_cuba']), ('defDict:3K', []), ('defDict:3K', ['0_count'])]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_naive_extension_of_recursion_limit(self):
+        ''' 
+        recursion without tail-recursion optimisation.
+        pythons recursion limit matters
+        '''
+        code = r'''
+        res = 0
+        func f1(x)
+            if x <= 0 /: return 7000000
+            res += 1
+            return 3 + f1(x-1)
+        fres = f1(2000)
+        # print('res = ', res, fres)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        sys.setrecursionlimit(100000)
+        ex.do(ctx)
+        sys.setrecursionlimit(1000)
+        rvar = ctx.get('res').get()
+        fvar = ctx.get('fres').get()
+        self.assertEqual(2000, rvar.getVal())
+        self.assertEqual(7006000, fvar.getVal())
 
     def test_builtin_len_fo_string(self):
         ''' test implementation of builtin function len for string type '''
@@ -733,7 +1118,7 @@ class TestFunc(TestCase):
         exp.do(ctx)
         fn:Function = ctx.get('foo')
         # dprint('#tt1>>> ', fn, type(fn))
-        args = [value(2, TypeInt),value(3, TypeInt),value(4, TypeInt)]
+        args = [value(2, TypeInt()),value(3, TypeInt()),value(4, TypeInt())]
         fn.setArgVals(args)
         ctxCall = Context(None)
         fn.do(ctxCall)

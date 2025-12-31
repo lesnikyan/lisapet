@@ -44,6 +44,10 @@ def initFuncs(ctx:Context):
     # fold
     bindNativeMethod(ctx, 'list', list_fold, 'fold', TypeList)
     bindNativeMethod(ctx, 'tuple', tuple_fold, 'fold', TypeTuple)
+    # each
+    bindNativeMethod(ctx, 'list', seq_each, 'each', None)
+    bindNativeMethod(ctx, 'tuple', seq_each, 'each', None)
+    
 
 
 def setDefaultTypes(ctx:Context):

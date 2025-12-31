@@ -698,21 +698,18 @@ class TestOper(TestCase):
             tlines = splitLexems(mc[0])
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
-            # ex, subs = cs.split(elems)
-            # dprint('#tt1:', mc[0])
             ex = elems2expr(elems)
             ctx = Context(None)
             
             def tvar(k, v):
-                # dprint('## tvar:', k, v)
-                vv = Var(k, TypeAny)
-                vv.set(Val(v, TypeAny))
+                # print('## tvar:', k, v)
+                vv = Var(k, TypeInt())
+                vv.set(Val(v, TypeInt()))
                 return vv
             
             ctx.addSet({k: tvar(k, v) for k, v in mc[1].items()})
             # ctx.print()
             ex.do(ctx)
-            # dprint('#t-CB1:', ex.get().get())
         
 
     def test_line_assign(self):
