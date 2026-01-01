@@ -92,6 +92,12 @@ class FuncInst(Objective):
     
     def get(self)->Var:
         pass
+    
+    def argCount(self)->int:
+        pass
+    
+    def argTypes(self)->list:
+        pass
 
 
 class TypeModule:

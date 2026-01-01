@@ -24,6 +24,70 @@ class TestFunc(TestCase):
 
 
 
+    def test_overload_by_args_count_only(self):
+        ''' func overload by count of args '''
+        code = r'''
+        res = []
+        
+        func foo()
+            1
+            
+        func foo(x)
+            x * 10
+        
+        func foo(x, y)
+            x * y
+        
+        func foo(x, y, z)
+            x * y + z
+        
+        func foo(a,b,c,d)
+            (a+b) * (c + d)
+        
+        func foo(a,b,c,d,e)
+            ~' < {a} {b} {c} {d} {e} > '
+        
+        func foo(a,b,c,d,e,f)
+            [a,b,c,d,e,f].map(x -> x * 10)
+        
+        func foo(fff, a,b,c,d,e,f,g,h,i,j,k,l,m,n,,o,p,q,r,s,t,u,v,w,x,y,z)
+            nn = [a,b,c,d,e,f,g,h,i,j,k,l,m,n,,o,p,q,r,s,t,u,v,w,x,y,z]
+            nn.map(fff)
+        
+        res <- foo()
+        
+        res <- foo(2)
+        
+        res <- foo(2, 4)
+        
+        res <- foo(3, 3, 11)
+        res <- foo(2, 3, 4, 6)
+        
+        res <- foo(1,2,3,4,5)
+        res <- foo(1,2,3,4,5,6)
+        res <- foo(
+            x -> foo(x),
+            1,2,3,4,5,6,7,8,9,10,
+            11,12,13,14,15,16,17,18,19,20,
+            21,22,23,24,25,26
+        )
+        
+        # print('res', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            1, 20, 8, 20, 50, ' < 1 2 3 4 5 > ', [10, 20, 30, 40, 50, 60], 
+            [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260]]
+        self.assertEqual(exv, rvar.vals())
+
     def test_func_variadic_args_in_methods(self):
         ''' def foo(args...) '''
         code = r'''

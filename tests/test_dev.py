@@ -49,8 +49,96 @@ class TestDev(TestCase):
     '''
 
 
+    def test_func_overload(self):
+        ''' func overload 
+            can't be overloaded (at least one such case):
+            1. if has var... argument
+            2. if has default values
+        '''
+
+    def _test_overload_by_args_type(self):
+        ''' func overload by type of args '''
+        code = r'''
+        res = []
+            
+        func foo(x:int)
+            x * 10
+            
+        func foo(x:float)
+            x / 100 + 5000
+            
+        func foo(x:string)
+            ~'<x>'
+            
+        func foo(x:list)
+            len(x) + 3000
+            
+        func foo(x:dict)
+            x.keys()
+            
+        func foo(x:tuple)
+            len(x) + 2000
+        
+        struct A a:int
+        
+        func foo(a:A)
+            a.a + 1000
+        
+        res <- foo(1)
+        
+        
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        # self.assertEqual([], rvar.vals())
 
 
+    def _test_new_collection_constr(self):
+        ''' constr-like brackets with colon - []:, {}:, (): '''
+        code = r'''
+        res = []
+        
+        varList = []:
+            111,
+            222,
+            333
+        
+        # varDict = {}:
+        #     1:1111
+        #     2:2222
+        #     3:3333
+        
+        # Vd2= {}:
+        #     'a': 'AAAAAAAAAAAAAAAAAAAA'
+        #     'b': 'BBBBBBBBBBBBBBBBBBB'
+        #     'c': 'CCCCCCCCCCCCCCCCCC'
+        
+        # varTuple = ():
+        #     'aaaaa'
+        #     'bbbbb'
+        
+        print(f1(200))
+        # print('res = ', 1)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        # print('>>', dd.values())
+        # self.assertEqual(0, rvar.getVal())
+        # rvar = ctx.get('res').get()
+        # self.assertEqual([], rvar.vals())
 
     def _test_1(self):
         ''''''
@@ -65,15 +153,15 @@ class TestDev(TestCase):
             222,
             333
         
-        varDict = {}:
-            1:1111
-            2:2222
-            3:3333
+        # varDict = {}:
+        #     1:1111
+        #     2:2222
+        #     3:3333
         
-        Vd2= {}:
-            'a': 'AAAAAAAAAAAAAAAAAAAA'
-            'b': 'BBBBBBBBBBBBBBBBBBB'
-            'c': 'CCCCCCCCCCCCCCCCCC'
+        # Vd2= {}:
+        #     'a': 'AAAAAAAAAAAAAAAAAAAA'
+        #     'b': 'BBBBBBBBBBBBBBBBBBB'
+        #     'c': 'CCCCCCCCCCCCCCCCCC'
         
         # varTuple = ():
         #     'aaaaa'
