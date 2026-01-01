@@ -40,3 +40,13 @@ def doCode(code):
     ex.do(ctx)
     return ctx
     
+def trydo(expr, ctx):
+    try:
+        expr.do(ctx)
+    except LangError as ex:
+        print('Error:', ex.msg)
+        raise ex
+    except Exception as ex:
+        print(ex.args)
+        raise ex
+    
