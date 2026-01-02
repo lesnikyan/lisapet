@@ -243,7 +243,7 @@ class FuncCallExpr(CallExpr):
             if isinstance(func, FuncOverSet):
                 # overloaded set
                 over:FuncOverSet = func
-                callArgTypes = [ar.getType().name for ar in args]
+                callArgTypes = [ar.getType() for ar in args]
                 # print('callArgTypes:', callArgTypes)
                 func = over.get(callArgTypes)
                 if not func:

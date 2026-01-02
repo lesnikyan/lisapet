@@ -65,11 +65,26 @@ class StructDef(TypeStruct):
 
     def addMethod(self, func:FuncInst):
         name = func.getName()
-        # dprint('struct.add Method:', name)
-        if name in self.__typeMethods:
-            raise EvalErr('Method `%s` already defined in type `%s`.' % (name, self.name))
-        self.__typeMethods[name] = func
+        # print('struct.add Method:', name)
+        # if name in self.__typeMethods:
+        #     exist = self.__typeMethods
+        #     raise EvalErr('Method `%s` already defined in type `%s`.' % (name, self.name))
+        if name not in self.__typeMethods:
+            self.__typeMethods[name] = func
+            return
+        exist = self.__typeMethods[name]
+        if isinstance(exist, FuncInst):
+            # start overloading
+            overSet = FuncOverSet(name)
+            overSet.add(exist)
+            overSet.add(func)
+            self.__typeMethods[name] = overSet
+            return
+        elif isinstance(exist, FuncOverSet):
+            exist.add(func)
+    
 
+    # TODO: Think about case with same name func in child overloaded for another args
     def getMethod(self, name):
         # dprint('getMeth', name)
         if not name in self.__typeMethods:
@@ -459,18 +474,22 @@ class MethodCallExpr(FuncCallExpr):
         # raise XDebug('MethodCallExpr')
         self.inst = inst
 
-    def getFunc(self):
+    def getFunc(self, args:list):
         stype = self.inst.getType()
-        self.func = stype.getMethod(self.name)
+        fn = stype.getMethod(self.name)
+        if isinstance(fn, FuncOverSet):
+            over:FuncOverSet = fn
+            callArgTypes = [ar.getType() for ar in args]
+            fn = over.get(callArgTypes)
+        self.func = fn
 
     def do(self, ctx: Context):
         okCond = isinstance(self.inst, StructInstance)
         # okCond = okCond or isinstance(self.func, BoundMethod)
         if not okCond:
             raise EvalErr('Incorrect instance of struct: %s ', self.inst)
-        # dprint('MethodCallExpr.do 1', self.name, self.inst.getType())
+        # print('MethodCallExpr.do 1', self.name, self.inst.getType())
 
-        self.getFunc()
         # instVar = self.inst[0].get(), self.inst[1].get()
         # print('instVar', self.inst, self.func.argVars)
         args:list[Var] = [self.inst]
@@ -478,8 +497,9 @@ class MethodCallExpr(FuncCallExpr):
         for exp in self.argExpr:
             # dprint('#1# meth-call do20 exp=: ', exp)
             exp.do(ctx)
-            dprint('meth-call do3:', exp, exp.get())
+            # print('meth-call do3:', exp, exp.get())
             args.append(exp.get())
+        self.getFunc(args)
         self.func.setArgVals(args)
         # TODO: add usage of Definishion Context instead of None
         callCtx = Context(ctx)

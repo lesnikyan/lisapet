@@ -49,14 +49,24 @@ class TestDev(TestCase):
     '''
 
 
-    def test_func_overload(self):
+    def test_func_overload_by_count_and_types(self):
         ''' func overload 
             can't be overloaded (at least one such case):
             1. if has var... argument
             2. if has default values
+            3. overloaded func can't be assigned by name, 
+                [possible by future feature `func type` (: arg-types)
+                    name(types) like f = foo(: int, int)
+                    name(count) like f = foo(: _, _)      ]
         '''
 
-    def _test_overload_by_args_type(self):
+    def _test_overload_by_args_type_compatible(self):
+        ''' more complex case, for overload by type
+            if called expr don't have equal types of existed funcs, but have compatible
+            def: func foo(float, float); call: foo(1,2)
+            '''
+
+    def _test_overload_by_args_type_strict(self):
         ''' func overload by type of args '''
         code = r'''
         res = []
