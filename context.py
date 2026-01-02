@@ -11,7 +11,7 @@ Current context can find var|func name up to root context (module).
 
 import lang
 from vars import *
-from nodes.over_ctx import *
+from bases.over_ctx import FuncOverSet
 
 
 class Context(NSContext):

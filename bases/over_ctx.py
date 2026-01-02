@@ -2,7 +2,8 @@
 Docstring for nodes.over_ctx
 '''
 
-from vars import *
+# from vars import *
+from typex import FuncInst
 
 '''
 # by arg count
