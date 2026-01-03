@@ -53,10 +53,21 @@ class Base:
         pass
 
 
+class TH:
+    base =  0x10a
+    
+    @classmethod
+    def mk(cc):
+        cc.base += 1
+        return hex(cc.base)[2:]
+
+
 class VType(Base):
     ''' Base of Var Type '''
     name = 'type'
     _defVal = None
+    th = TH.mk()
+    
     ''' '''
     def __init__(self):
         pass
@@ -65,16 +76,21 @@ class VType(Base):
     def defVal(cls):
         cls._defVal
     
+    def hash(self):
+        return self.th
+    
     def __eq__(self, value):
         return self.__class__ == value.__class__
 
 
 class TypeAny(VType):
     name = 'any'
+    th = TH.mk()
 
-class TypeNoval(VType):
+class TypeNoVal(VType):
     ''' No value, just technical object '''
     name = 'noval'
+    th = TH.mk()
 
 
 class Val(Base):

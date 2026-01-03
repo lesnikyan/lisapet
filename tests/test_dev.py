@@ -9,9 +9,9 @@ from lang import Lt, Mk, CLine
 from parser import splitLine, splitLexems, charType, splitOper, elemStream
 from vars import *
 from vals import numLex
-import context
+# import context
 from context import Context
-from strformat import *
+from bases.strformat import *
 # from nodes.structs import *
 from tree import *
 from eval import rootContext, moduleContext
@@ -19,6 +19,7 @@ from eval import rootContext, moduleContext
 from cases.utils import *
 from nodes.tnodes import Var
 from nodes import setNativeFunc, Function
+from bases.over_ctx import FuncOverSet
 from tests.utils import *
 from libs.regexp import *
 
@@ -49,7 +50,7 @@ class TestDev(TestCase):
     '''
 
 
-    def test_func_overload_by_count_and_types(self):
+    def _test_func_overload_by_count_and_types(self):
         ''' func overload 
             can't be overloaded (at least one such case):
             1. if has var... argument
@@ -65,49 +66,6 @@ class TestDev(TestCase):
             if called expr don't have equal types of existed funcs, but have compatible
             def: func foo(float, float); call: foo(1,2)
             '''
-
-    def _test_overload_by_args_type_strict(self):
-        ''' func overload by type of args '''
-        code = r'''
-        res = []
-            
-        func foo(x:int)
-            x * 10
-            
-        func foo(x:float)
-            x / 100 + 5000
-            
-        func foo(x:string)
-            ~'<x>'
-            
-        func foo(x:list)
-            len(x) + 3000
-            
-        func foo(x:dict)
-            x.keys()
-            
-        func foo(x:tuple)
-            len(x) + 2000
-        
-        struct A a:int
-        
-        func foo(a:A)
-            a.a + 1000
-        
-        res <- foo(1)
-        
-        
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        rvar = ctx.get('res').get()
-        # self.assertEqual([], rvar.vals())
 
 
     def _test_new_collection_constr(self):
@@ -150,8 +108,53 @@ class TestDev(TestCase):
         # rvar = ctx.get('res').get()
         # self.assertEqual([], rvar.vals())
 
+    def _test_TypeHash(self):
+        ''''''
+        TH.base = 0xff001
+        print('th>>', TH.mk())
+
+    def _test_func_signHash(self):
+        ''''''
+        htt = [
+            [TypeInt(), TypeFloat(),], 
+            [TypeFloat(), TypeBool(),], 
+            [TypeInt(), TypeFloat(), TypeBool(),], 
+            [TypeString(), TypeString(), TypeString(), TypeInt()], 
+            [TypeBool(), StructDef('A')],
+            [StructDef('A'), StructDef('B')],
+            [TypeInt(), TypeFloat(), TypeBool(), StructDef('A'), StructDef('B'), StructDef('C')],
+        ]
+        for ht in htt:
+            hash = FuncInst.sigHash(ht)
+            print('hh>>', hash)
+
+
     def _test_1(self):
         ''''''
+        # hh = TH.mk()
+        # for i in range(9999):
+            # hh = TH.mk()
+        #     if i > 1000:
+        #         print(hh)
+        #         if i > 1005:
+        #             break
+
+        tt = [TypeInt(), TypeFloat(), TypeBool(), StructDef('A'), StructDef('B'), StructDef('C'), ]
+        # for t in tt:
+        #     
+        htt = [
+            [TypeInt(), TypeFloat(),], 
+            [TypeFloat(), TypeBool(),], 
+            [TypeInt(), TypeFloat(), TypeBool(),], 
+            [TypeString(), TypeString(), TypeString(), TypeInt()], 
+            [TypeBool(), StructDef('A')],
+            [StructDef('A'), StructDef('B')],
+            [TypeInt(), TypeFloat(), TypeBool(), StructDef('A'), StructDef('B'), StructDef('C')],
+        ]
+        for ht in htt:
+            hash = FuncInst.sigHash(ht)
+            print('hh>>', hash)
+
 
     def _test_new_collection_constr(self):
         ''' constr-like brackets with colon - []:, {}:, (): '''

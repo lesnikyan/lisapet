@@ -30,7 +30,7 @@ class Function(FuncInst):
         self.vtype = TypeFunc()
         self.argNum = 0
         self.argVars:list[Var] = []
-        self.argTypes:dict[str, VType] = {}
+        self._argTypes:dict[str, VType] = {}
         self.callArgs = []
         self.defArgs = {}
         self.block:Block = None
@@ -50,7 +50,7 @@ class Function(FuncInst):
         return self.argNum
     
     def argTypes(self)->list:
-        return self.argTypes.values()
+        return self._argTypes.values()
 
     def addArg(self, arg:Var|AssignExpr, defVal=None):
         # print('F.AddArg:', arg, defVal)
@@ -61,7 +61,7 @@ class Function(FuncInst):
             self.extOrdered = arname
             
         self.argNames.append(arname)
-        self.argTypes[arname] = arg.getType()
+        self._argTypes[arname] = arg.getType()
         if defVal is not None:
             self.defArgs[arname] = defVal
         self.argNum += 1
@@ -244,10 +244,10 @@ class FuncCallExpr(CallExpr):
                 # overloaded set
                 over:FuncOverSet = func
                 callArgTypes = [ar.getType() for ar in args]
-                # print('callArgTypes:', callArgTypes)
+                # print('callArgTypes:', [f'{n.__class__.__name__}:{n.hash()}' for n in callArgTypes])
                 func = over.get(callArgTypes)
                 if not func:
-                    errMsg = f"Can't find overloaded function {self.name} with args = ({','.join(callArgTypes)}) "
+                    errMsg = f"Can't find overloaded function {self.name} with args = ({','.join([f'{n.__class__.__name__}' for n in callArgTypes])}) "
                     raise EvalErr(errMsg)
                 
         if isinstance(func, Var):

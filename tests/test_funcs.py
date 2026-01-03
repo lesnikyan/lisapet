@@ -26,6 +26,76 @@ class TestFunc(TestCase):
 
 
 
+    def test_overload_by_args_type_strict(self):
+        ''' func overload by type of args '''
+        code = r'''
+        res = []
+            
+        func foo()
+            1
+            
+        func foo(x:int)
+            x * 10
+            
+        func foo(x:float)
+            x / 100 + 5000
+            
+        func foo(x:string)
+            ~'<x>'
+        
+        struct A a:int
+        struct B b:int
+        struct SuperLongNamedStructType c:int
+        
+        func foo(a:A)
+            a.a + 2200
+        
+        func foo(b:B)
+            b.b + 5205
+        
+        func foo(ss:SuperLongNamedStructType)
+            ss.c + 9200
+            
+        # TODO: complete after refactoring of collection constructors
+        
+        # func foo(x:list)
+        #     len(x) + 3000
+            
+        # func foo(x:dict)
+        #     x.keys()
+            
+        # func foo(x:tuple)
+        #     len(x) + 2000
+        
+        res <- foo()
+        res <- foo(1)
+        res <- foo(100.0)
+        res <- foo('hello!')
+        
+        a1 = A(1)
+        res <- foo(a1)
+        
+        b1 = B(10)
+        res <- foo(b1)
+        
+        c1 = SuperLongNamedStructType(33)
+        res <- foo(c1)
+        
+        
+        # print('res', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [1, 10, 5001.0, '<x>', 2201, 5215, 9233]
+        self.assertEqual(exv, rvar.vals())
+
     def test_overload_by_args_count_methods(self):
         ''' func overload by count of args '''
         code = r'''

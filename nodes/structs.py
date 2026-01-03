@@ -26,6 +26,8 @@ class StructDef(TypeStruct):
 
     def __init__(self, name, fields:list[Var]=[]):
         self.name=name
+        self._th = TH.mk()
+        # print('SDef', self.name, self._th)
         self.fields = []
         self.nfields = [] # full fields count with inherited
         self.__parents:dict[str,TypeStruct] = {}
@@ -39,6 +41,9 @@ class StructDef(TypeStruct):
 
     def initConstr(self):
         self.__constr = StructDefConstrFunc(self)
+
+    def hash(self):
+        return self._th
 
     def setConstr(self, cons:Function):
         self.__constr = cons
