@@ -223,6 +223,8 @@ class ComparT:
 
 class NSContext:
     ''' namespace context '''
+    def get(self, name):
+        pass
 
 
 def find(self, name)->Base:

@@ -61,13 +61,6 @@ class TestDev(TestCase):
                     name(count) like f = foo(: _, _)      ]
         '''
 
-    def _test_overload_by_args_type_compatible(self):
-        ''' more complex case, for overload by type
-            if called expr don't have equal types of existed funcs, but have compatible
-            def: func foo(float, float); call: foo(1,2)
-            '''
-
-
     def _test_new_collection_constr(self):
         ''' constr-like brackets with colon - []:, {}:, (): '''
         code = r'''

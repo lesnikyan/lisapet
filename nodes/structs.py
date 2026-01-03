@@ -13,7 +13,7 @@ AnonStructConstr *? : create instance of anonymous struct (json-like object)
 from nodes.expression import *
 from context import *
 from nodes.expression import ServPairExpr, defaultValOfType
-from nodes.ntype import structTypeCompat
+from bases.ntype import structTypeCompat
 from nodes.func_expr import FuncDefExpr, FuncCallExpr, Function, BoundMethod
 
 

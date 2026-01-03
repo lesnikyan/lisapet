@@ -10,7 +10,7 @@ from vars import *
 # from typex import *
 from nodes.expression import *
 from nodes.structs import StructConstrBegin 
-from nodes.ntype import *
+from bases.ntype import *
 from nodes.base_oper import *
 from nodes.oper_dot import *
 

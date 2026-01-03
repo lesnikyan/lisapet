@@ -25,6 +25,182 @@ class TestFunc(TestCase):
 
 
 
+    def test_overload_by_args_type_compatible(self):
+        ''' more complex case, for overload by type
+            if called expr don't have equal types of existed funcs, but have compatible
+            def: func foo(float, float); call: foo(1,2)
+            '''
+        code = r'''
+        res = []
+            
+        func foo()
+            1
+            
+        func foo(x:int)
+            x * 10
+            
+        func foo(x:string)
+            ~'foo<{x}>'
+            
+        # func foo(x)
+        #     ('any', x)
+            
+        func bar(x:float)
+            x / 10 + 1000
+            
+        func bar(x:string)
+            ~'bar<{x}>'
+        
+            
+        # TODO: complete after refactoring of collection constructors
+        
+        # func foo(x:list)
+        #     len(x) + 3000
+            
+        # func foo(x:dict)
+        #     x.keys()
+            
+        # func foo(x:tuple)
+        #     len(x) + 2000
+        
+        # struct types
+        
+        struct A a:int
+        struct B(A) b:int
+        struct Caramba(B) c:int
+        
+        func bar(a:A)
+            a.a + 4400
+        
+        func bar(ss:Caramba)
+            ss.c + 7700
+        
+        
+        # 2 args
+        
+        func foo(a:int, b:int)
+            a * b
+        
+        func foo(a:float, b:float)
+            (a + b) / 10 + 100
+        
+        func bar(a:bool, b:float)
+            a ? b + 500: -1000.0
+        
+        # 3 args
+        
+        func foo(a:int, b:float, c:float)
+            [b * c + i * 100; i <- iter(a)]
+            
+        func foo(a:int, b:string, c:string)
+            r = -100
+            match a
+                0 !- r = ~'-{b}'
+                1 !- r = ~'{b}:{c}'
+                _ !- r = [b]+[c ; i <- iter(a)]
+            r
+        
+        # 4 args
+        
+        func foo(a:float, b:float, c:float, d:float)
+            ~"{a:.3f}/{b:.3f}/{c:.3f}/{d:.3f}"
+        
+        func foo(a:string, b:float, c:float, d:float)
+            ~"{a:s}/{b:.3f}/{c:.3f}/{d:.3f}"
+        
+        func foo(a:string, b:string, c:float, d:float)
+            ~"{a:s}/{b:s}/{c:.3f}/{d:.3f}"
+        
+        func foo(a:string, b:string, c:string, d:float)
+            ~"{a:s}/{b:s}/{c:s}/{d:.3f}"
+        
+        # 1
+        res <- foo()
+        res <- foo('hello!')
+        res <- foo(1)
+        res <- foo(true)
+        res <- foo(false)
+        
+        res <- bar(0)
+        res <- bar(false)
+        res <- bar(true)
+        res <- bar(2)
+        res <- bar(3.5)
+        
+        # structs
+        a1 = A(1)
+        res <- bar(a1)
+        
+        b1 = B(10, 2)
+        res <- bar(b1)
+        
+        c1 = Caramba(33, 11, 22)
+        res <- bar(c1)
+        
+        # 2
+        res <- foo(11, 13)
+        res <- foo(11.0, 13)
+        res <- foo(11.0, true)
+        res <- foo(true, 13.)
+        res <- bar(true, 11)
+        res <- bar(true, 13.0)
+        res <- bar(true, true)
+        
+        func int1()
+            1
+        
+        # 3
+        res <- foo(2, 1.5, 2.5)
+        res <- foo(2, 2, 3)
+        res <- foo(2, true, true)
+        res <- foo(0, '1-', 'w11')
+        res <- foo(false, '2-', 'w22')
+        res <- foo(null, '3-', 'w33')
+        res <- foo(1, '11-', 'z11')
+        res <- foo(true, '22-', 'z12')
+        res <- foo(int1(), '33-', 'z13')
+        
+        res <- foo(2, '44-', 'z21')
+        res <- foo(3, '55-', 'z22')
+        res <- foo(4, '66-', 'z23')
+        
+        # 4
+        res <- foo(1., 2., 3., 4.)
+        res <- foo(1.0, 2.0, 3.0, 4.0)
+        res <- foo(1.1, 2.1, 3.1, 4.1)
+        res <- foo(1.05, 2.05, 3.05, 4.05)
+        res <- foo(1, 2, 3, 4)
+        res <- foo(true, false, null, int1())
+        
+        # 4 num-str
+        res <- foo('aa', 2, 3, 4)
+        res <- foo('bb', '-', 3, 4)
+        res <- foo('cc', '=', '!', 4)
+        res <- foo('ff', '@', '^', false)
+        
+        # for n <- res /: print('> ', n)
+        # print('res', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            1, 'foo<hello!>', 10, 10, 0, 1000.0, 1000.0, 1000.1, 1000.2, 1000.35, 
+            4401, 4410, 7722, 143, 102.4, 101.2, 101.4, 511.0, 513.0, 501.0, 
+            [3.75, 103.75], [6.0, 106.0], [1.0, 101.0], 
+            '-1-', '-2-', '-3-', '11-:z11', '22-:z12', '33-:z13', 
+            ['44-', 'z21', 'z21'], ['55-', 'z22', 'z22', 'z22'], ['66-', 'z23', 'z23', 'z23', 'z23'], 
+            '1.000/2.000/3.000/4.000', '1.000/2.000/3.000/4.000', '1.100/2.100/3.100/4.100', 
+            '1.050/2.050/3.050/4.050', '1.000/2.000/3.000/4.000', '1.000/0.000/0.000/1.000', 
+            'aa/2.000/3.000/4.000', 'bb/-/3.000/4.000', 'cc/=/!/4.000', 'ff/@/^/0.000']
+        self.assertEqual(exv, rvar.vals())
+
 
     def test_overload_by_args_type_strict(self):
         ''' func overload by type of args '''
@@ -81,6 +257,29 @@ class TestFunc(TestCase):
         c1 = SuperLongNamedStructType(33)
         res <- foo(c1)
         
+
+        # 2 args
+        
+        func foo(a:int, b:int)
+            a * b
+        
+        func foo(a:float, b:float)
+            (a + b) / 10 + 100
+        
+        func foo(a:bool, b:float)
+            a ? b + 500: -1000.0
+        
+        func foo(a:string, b:int)
+            [~'{_a}' ; i <- iter(b)]
+        
+        func foo(a:int, b:string)
+            [~'{b_}' ; i <- iter(a)]
+        
+        
+        res <- foo(11, 20)
+        res <- foo(11, 20)
+        res <- foo(11, 20)
+        res <- foo(11, 20)
         
         # print('res', res)
         '''
@@ -93,7 +292,7 @@ class TestFunc(TestCase):
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         rvar = ctx.get('res').get()
-        exv = [1, 10, 5001.0, '<x>', 2201, 5215, 9233]
+        exv = [1, 10, 5001.0, '<x>', 2201, 5215, 9233, 220, 220, 220, 220]
         self.assertEqual(exv, rvar.vals())
 
     def test_overload_by_args_count_methods(self):

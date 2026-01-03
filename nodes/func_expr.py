@@ -4,7 +4,7 @@ from collections.abc import  Callable
 from vars import *
 from nodes.expression import *
 from nodes.keywords import *
-from nodes.ntype import *
+from bases.ntype import *
 from nodes.base_oper import AssignExpr
 
 
@@ -50,7 +50,7 @@ class Function(FuncInst):
         return self.argNum
     
     def argTypes(self)->list:
-        return self._argTypes.values()
+        return list(self._argTypes.values())
 
     def addArg(self, arg:Var|AssignExpr, defVal=None):
         # print('F.AddArg:', arg, defVal)

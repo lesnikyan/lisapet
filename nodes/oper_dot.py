@@ -6,7 +6,7 @@ from lang import *
 from vars import *
 from nodes.expression import *
 from nodes.structs import StructInstance, MethodCallExpr, StructConstr, BoundMethodCall
-from nodes.ntype import *
+from bases.ntype import *
 from nodes.base_oper import *
 
 

@@ -6,11 +6,7 @@ import copy
 
 from lang import *
 from vars import *
-# from typex import *
-from nodes.expression import *
-# from nodes.func_expr import FuncCallExpr, BoundMethod
-from typex import TypeStruct # StructInstance, StructDef,
-# from nodes.tnodes import MString
+from typex import TypeStruct
 
 
 def isCompatible( destT, srcT):
@@ -62,4 +58,14 @@ def structTypeCompat(dtype:TypeStruct, stype:VType):
     if stype.hasParent(dtype):
         return True
     return False
-    
+
+
+def checkCompatArgs(destSet, callSet):
+    ac = len(destSet)
+    if ac != len(callSet):
+        return False
+    for ii in range(ac):
+        if not isCompatible(destSet[ii], callSet[ii]):
+            return False
+    return True
+
