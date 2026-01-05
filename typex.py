@@ -4,77 +4,94 @@
 '''
 
 from base import *
-
+        
 
 class TypeType(VType):
     name = 'type'
+    th = TH.mk()
 
 
 class TypeNull(VType):
     name = 'null'
+    th = TH.mk()
 
 
 class Undefined(VType):
     name='undefined'
+    th = TH.mk()
 
 class TypeNum(VType):
     name = 'num'
     _defVal = 0
+    th = TH.mk()
 
 
 class TypeInt(TypeNum):
     name = 'int'
+    th = TH.mk()
 
 
 class TypeRatio(TypeNum):
     '''rational number n/m'''
     name = 'ratio'
+    th = TH.mk()
 
 class TypeFloat(TypeNum):
     name = 'float'
+    th = TH.mk()
 
 
 class TypeComplex(TypeNum):
     name = 'complex'
+    th = TH.mk()
 
 
 class TypeBool(VType):
     name = 'bool'
     _defVal = False
+    th = TH.mk()
 
 
 class TypeMaybe(VType):
     name='maybe'
+    th = TH.mk()
 
 
 class TypeContainer(VType):
     pass
+    th = TH.mk()
 
 class TypeList(TypeContainer):
     name = 'list'
+    th = TH.mk()
 
 class TypeDict(TypeContainer):
     name = 'dict'
     _defVal = dict()
+    th = TH.mk()
 
 
 class TypeTuple(TypeContainer):
     name = 'tuple'
     _defVal = tuple()
+    th = TH.mk()
 
 
 class TypeString(VType):
     name = 'string'
     _defVal = ''
+    th = TH.mk()
 
 
 class TypeMString(TypeString):
     name='mstring'
     _defVal = ''
+    th = TH.mk()
 
 class TypeRegexp(VType):
     name='re'
     _defVal = None
+    th = TH.mk()
     
 
 
@@ -92,6 +109,16 @@ class FuncInst(Objective):
     
     def get(self)->Var:
         pass
+    
+    def argCount(self)->int:
+        pass
+    
+    def argTypes(self)->list:
+        pass
+    
+    @classmethod
+    def sigHash(cc, argTypes:list[VType]):
+        return '~'.join([at.hash() for at in argTypes])
 
 
 class TypeModule:
@@ -132,6 +159,7 @@ class ModuleInst(Var):
 class TypeStruct(TypeContainer):
     name = 'struct'
     _defVal = None
+    th = TH.mk()
 
     def setConstr(self, cons:FuncInst):
         pass
@@ -151,6 +179,7 @@ class TypeStruct(TypeContainer):
 class TypeFunc(VType):
     name = 'function'
     _defVal = None
+    th = TH.mk()
 
 
 class FuncSpace:
@@ -167,6 +196,8 @@ class FuncSpace:
 
 
 class TypeProperty:
+    th = TH.mk()
+    
     def __init__(self, btype:VType, funcs:FuncSpace):
         self.type = btype
         self.funcs:FuncSpace = funcs
@@ -175,11 +206,13 @@ class TypeProperty:
 class TypeAccess(VType):
     '''  '''
     name = 'handler'
+    th = TH.mk()
 
 
 class TypeIterator(VType):
     name = 'iterator'
     _defVal = None
+    th = TH.mk()
 
 
 class ComparT:
@@ -189,7 +222,10 @@ class ComparT:
 
 
 class NSContext:
-    ''' namespeca contxt '''
+    ''' namespace context '''
+    def get(self, name):
+        pass
+
 
 def find(self, name)->Base:
     pass

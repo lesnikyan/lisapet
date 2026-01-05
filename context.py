@@ -11,6 +11,7 @@ Current context can find var|func name up to root context (module).
 
 import lang
 from vars import *
+from bases.over_ctx import FuncOverSet
 
 
 class Context(NSContext):
@@ -85,9 +86,22 @@ class Context(NSContext):
 
     def addFunc(self, fn:FuncInst):
         name = fn.getName()
-        dprint('x.addFunc ===>  name:', name, ' var: ', fn)
-        self.funcs[name] = fn
-
+        # print('x.addFunc ===>  name:', name, ' var: ', fn)
+        # instName = name # intername name for search instance
+        if name not in self.funcs:
+            self.funcs[name] = fn
+            return
+        exist = self.funcs[name]
+        if isinstance(exist, FuncInst):
+            # start overloading
+            overSet = FuncOverSet(name)
+            overSet.add(exist)
+            overSet.add(fn)
+            self.funcs[name] = overSet
+            return
+        elif isinstance(exist, FuncOverSet):
+            exist.add(fn)
+    
     def addTypeMethod(self, typeName, func:FuncInst):
         typeVal = self.getType(typeName)
         xtype:TypeStruct|FuncBinder = typeVal.get()

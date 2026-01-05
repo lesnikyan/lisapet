@@ -30,8 +30,13 @@ Content:
 5. [Collections, short overview `[,]`, `(,)`](#5-collections-list-array-tuple-dict-map)
 6. [Dict `{'key':val}`](#6-dict-linear-and-block-constructor)
 7. [For-statement: `for i <- [1..5]`](#7-for-statement---operator)
-8. [Functions:`func foo()`](#8-function-definition-context-of-functions)
-9. Collection features:
+8. Functions:`func foo()`  
+    1 [Base info](#8-function-definition-context-of-functions)  
+    2 [Default arguments `func foo(x=1)`](#82-default-value-of-arguments)  
+    3 [Named arguments `n = foo(x=2)`](#83-named-arguments)  
+    4 [Variadik arguments `func foo(args...)`](#84-variadic-arguments)  
+    5 [Overload of functions](#85-function-overload)  
+9. Collection features:  
     1. [append operator `nums <- 15`](#91-arrow-appendset-operator--)
     2. [deletion operator `data - [key]`](#92-minus-key---key-delete-operator)
     3. [plus for lists `[] + []`](#93-list-plus---)
@@ -661,7 +666,7 @@ bar(1.5, 2.8) #// ok
 bar(2, 3) #// ok too
 bar('a', 'b') #// error
 ```
-4. Default value of arguments.  
+### 8.2. Default value of arguments.  
 Arguments of functions can have default value.  
 Default values is used if function was called without arguments that have default value.  
 Default values are possible in the end of arg list in func definition only, they should fill missing args. So it doen't make sense to declare argument without default value after at least one arg with default value.  
@@ -676,7 +681,7 @@ foo(5) #// >> 5
 
 ```
 
-5. Named arguments.  
+### 8.3. Named arguments.  
 In function call expression named args are allowed.  
 Named argument is passed like assignment expression on the argument position in function call, name of argument as a left operand of assignment:  
 `foo(name='Bob')`  
@@ -692,7 +697,7 @@ foo(a=10, b = foo(3,2)) #// 9
 foo(5, 2, a=10) #// 3; 10 is ignored
 ```
 
-6. Variadic arguments.  
+### 8.4 Variadic arguments.  
 Variadic arguments is a feature of function that allow pass into function different number of params, but take them in function body as a one list.  
 Most used example is a `print()` function from builtins.  
 ```golang
@@ -722,8 +727,80 @@ func f4(x, nn..., pref='', post='')
 f4('A-', 'a') #// ['A-a']
 f4('c=', '1', '2', '3', pref='<', post='>') #// ['<C=1>', '<C=2>', '<C=3>']
 ```
-The same works for methods.  
 
+### 8.5 Function overload.  
+C++ like overload means that we can create several functions with the same name but different list of arguments.  
+
+1. Arg count overloading.  
+Simples case is overloading function by number of arguments.  
+
+Example:
+```golang
+func foo()
+    0
+
+func foo(x)
+    x * 100
+
+func foo(a, b)
+    a * b
+
+foo() #// >> 0
+
+foo(3) #// >> 300
+
+foo(2, 6) #// >> 12
+```
+
+2. Overload by arg types.  
+If overloaded functions have the same number of args, interpreter takes function with such types which was passed in call expression.  
+```golang
+
+func foo(x: int, y:int)
+    x + y
+
+func foo(x:float, y:float)
+    x * y
+
+func foo(s:string, n:int)
+    [s ; i <- iter(n)]
+
+
+foo(2, 3) # // >> 5
+
+foo(2.0, 3.5) # // >> 7.0
+
+foo('hey', 3) # // >> ['hey', 'hey', 'hey']
+
+```
+In case if exact arg types wasn't found the function with compatible arg types will be used.  
+But if several functions have compatible types interpreter will make error.  
+
+If arguments of one of overloaded cases have type `any` (no type of arg in definition) this case is compatible with any other types, so be accurate to avoid uncertainty.  
+```golang
+func foo(s:string)
+    {'a':s}
+
+func foo(x:int)
+    x * 10
+
+func foo(x)
+    [x]
+
+foo(1) #//        [1]
+foo(1.5) #//      [1.5]
+foo('hello') #//  {'a': 'hello'}
+
+#// error because bool is compatible with `int` and `any`
+foo(true) #  // Error: More than 1 compatible case found for overload...
+```
+
+Warning. Overloading and variadic args (including default vals and named args) are two different approach of function flexibility. So they shouldn't be combine for one name of function. So choose those which more applicable for a specific case.  
+The same about functional objects (like lambdas or function in variable).  
+Combinations of different approaches wasn't planned, implemented or tested.  
+
+
+All features: variadic and named args, default vals, overloading (looks like) works for methods too.  
 
 See more about functions in next sections:  
 [14 builtins](#14-builtin-functions), 

@@ -4,7 +4,7 @@ from collections.abc import  Callable
 from vars import *
 from nodes.expression import *
 from nodes.keywords import *
-from nodes.ntype import *
+from bases.ntype import *
 from nodes.base_oper import AssignExpr
 
 
@@ -30,7 +30,7 @@ class Function(FuncInst):
         self.vtype = TypeFunc()
         self.argNum = 0
         self.argVars:list[Var] = []
-        self.argTypes:dict[str, VType] = {}
+        self._argTypes:dict[str, VType] = {}
         self.callArgs = []
         self.defArgs = {}
         self.block:Block = None
@@ -45,6 +45,12 @@ class Function(FuncInst):
 
     def getName(self):
         return self._name
+    
+    def argCount(self)->int:
+        return self.argNum
+    
+    def argTypes(self)->list:
+        return list(self._argTypes.values())
 
     def addArg(self, arg:Var|AssignExpr, defVal=None):
         # print('F.AddArg:', arg, defVal)
@@ -55,7 +61,7 @@ class Function(FuncInst):
             self.extOrdered = arname
             
         self.argNames.append(arname)
-        self.argTypes[arname] = arg.getType()
+        self._argTypes[arname] = arg.getType()
         if defVal is not None:
             self.defArgs[arname] = defVal
         self.argNum += 1
@@ -185,31 +191,12 @@ class FuncCallExpr(CallExpr):
         self.funcExpr = fexp
 
     def addArgExpr(self, exp:Expression):
-        # if isinstance(exp, AssignExpr):
-        #     # prepare arg by name
-        #     1
         self.argExpr.append(exp)
 
     def do(self, ctx: Context):
         # inne rcontext
         args:list[Var] = []
-        # print(f'Function `{self.name}`:', self.func)
-        self.funcExpr.do(ctx)
-        func:Function = self.funcExpr.get()
-        
-        # unpack function from var
-        # print('#1# func-call do00: ', self.name, 'F:', func)
-        if isinstance(func, Var):
-            func = func.get()
-        if isinstance(func, TypeVal):
-            tVal = func.getVal()
-            if isinstance(tVal, TypeStruct):
-                func = tVal.getConstr()
-        # print('#1# func-call do01: ', self.name, 'F:', func)
-        self.func = func
-        if isinstance(self.func, VarUndefined):
-            raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
-        # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
+        # print(f'\nFunction `{self.name}`:', self.func)
         named = {}
         for exp in self.argExpr:
             # print('#1# func-call do2 exp=: ', exp)
@@ -229,12 +216,42 @@ class FuncCallExpr(CallExpr):
             valExp = exp
                 
             valExp.do(ctx) # val or vaiable
-            # print('func-call do2:', valExp, valExp.get())
             arg = valExp.get()
             if isinstance(arg, Var):
                 arg = arg.get()
+            # print('func-call do2:', valExp, arg)
             args.append(arg)
+        
+        # print(f'F()', self.funcExpr )
+        self.funcExpr.do(ctx)
+        func:Function|FuncOverSet = self.funcExpr.get()
+        
+        # unpack function from var
+        # print('#1# func-call do00: ', self.name, 'F:', func)
+        if isinstance(self.funcExpr, VarExpr):
+            # call by defined name
+            if isinstance(func, FuncOverSet):
+                # overloaded set
+                over:FuncOverSet = func
+                callArgTypes = [ar.getType() for ar in args]
+                # print('callArgTypes:', [f'{n.__class__.__name__}:{n.hash()}' for n in callArgTypes])
+                func = over.get(callArgTypes)
+                if not func:
+                    errMsg = f"Can't find overloaded function {self.name} with args = ({','.join([f'{n.__class__.__name__}' for n in callArgTypes])}) "
+                    raise EvalErr(errMsg)
+                
+        if isinstance(func, Var):
+            func = func.get()
+        if isinstance(func, TypeVal):
+            tVal = func.getVal()
+            if isinstance(tVal, TypeStruct):
+                func = tVal.getConstr()
         # print('FCall.do.args:', self.name, args)
+        self.func = func
+        # print('#1# func-call do01: ', self.name, 'F:', func)
+        # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
+        if isinstance(self.func, VarUndefined):
+            raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
         self.func.setArgVals(args, named)
         callCtx = Context(None)
         self.func.do(callCtx)
@@ -261,6 +278,7 @@ class FuncDefExpr(ObjDefExpr, Block):
         self.blockLines:list[Expression] = []
         self.argVars:list[Var] = []
         self.defValCount = 0
+        self.fullIdent = name
         # self.signExp:Expression = None # func signature : name (arg set) ???
 
     def addArg(self, arg:VarExpr):
@@ -286,6 +304,7 @@ class FuncDefExpr(ObjDefExpr, Block):
         # if defVal is not None:
         arg.defVal = defVal
         
+        # print('FDef.addArg1 :', arg.name, argType.name)
         self.argVars.append(arg)
 
     def add(self, exp:Expression):
@@ -294,11 +313,13 @@ class FuncDefExpr(ObjDefExpr, Block):
         self.blockLines.append(exp)
 
     def doFunc(self, ctx:Context):
+        # print('\nFDef.doF', self.name)
         func = Function(self.name)
         return func
 
     def regFunc(self, ctx:Context, func:FuncInst):
         fname = func.getName()
+        # funcXname(func)
         # check if name is type
         strtype:TypeStruct = ctx.getType(fname)
         # print('regFunc1', fname, strtype)
@@ -317,8 +338,11 @@ class FuncDefExpr(ObjDefExpr, Block):
         argCtx = Context(ctx)
         for arg in self.argVars:
             # print('FDef.do#1', arg)
+            argType = TypeAny()
+            aName = arg.name
             if isinstance(arg, TypedArgExpr):
                 arg.do(argCtx)
+                # print('FDef.addArg11 :', arg, aName, argType.name)
             # if isinstance(arg, ArgExtList):
             #     print('##2')
                 
