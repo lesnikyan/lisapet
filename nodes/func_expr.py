@@ -177,13 +177,6 @@ class Function(FuncInst):
         return 'func %s(%s)' % (self._name, ', '.join(args))
 
 
-# def funcXname(func:Function):
-#     ''' technical name of function '''
-#     func._name
-#     for arg in func.argVars:
-#         print(arg)
-
-
 class FuncCallExpr(CallExpr):
     ''' foo(agr1, 2, foo(3))  '''
 
@@ -198,9 +191,6 @@ class FuncCallExpr(CallExpr):
         self.funcExpr = fexp
 
     def addArgExpr(self, exp:Expression):
-        # if isinstance(exp, AssignExpr):
-        #     # prepare arg by name
-        #     1
         self.argExpr.append(exp)
 
     def do(self, ctx: Context):

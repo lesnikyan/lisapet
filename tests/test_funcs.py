@@ -25,6 +25,320 @@ class TestFunc(TestCase):
 
 
 
+    def test_overload_methods(self):
+        ''' test overload for methods '''
+        code = r'''
+        res = []
+        
+        struct A a:int
+        struct B(A) b:int
+        struct Caramba(B) c:int
+        
+        struct D d:float
+        
+        struct Utype u: int
+            
+        func  u:Utype foo()
+            -1
+            
+        func u:Utype foo(x:int)
+            x * 10
+            
+        func u:Utype foo(x:string)
+            ~'u-string<{x}>'
+            
+        func u:Utype bar()
+            -2
+            
+        func u:Utype bar(x:float)
+            x / 10 + 1000
+            
+        func u:Utype bar(x:string)
+            ~'bar<{x}>'
+        
+        
+        # struct types
+        
+        func u:Utype bar(aaa:A)
+            aaa.a + 4400
+        
+        func u:Utype bar(ss:Caramba)
+            ss.c + 7700
+        
+        func u:Utype bar(xa:A, xd:D)
+            r = xa.a * xd.d
+            ~"barAD:{xa.a} * {xd.d} = {r}"
+        
+        
+            
+        func u:Utype baz(x:bool)
+            ('baz', x ? 'yep' : 'nop')
+            
+        func u:Utype baz(x:string)
+            'baz(%s)' << x
+            
+        func u:Utype baz(x)
+            ('baz-any', x)
+        
+        # 2 args
+        
+        func u:Utype foo(a:int, b:int)
+            a * b
+        
+        func u:Utype foo(a:float, b:float)
+            a / b
+        
+        func u:Utype foo(a:string, b:string)
+            '%s||%s' << (a, b)
+        
+        # 3 arg 
+        func u:Utype foo(a,b,c)
+            [-3, a, b, c]
+            
+        func u:Utype foo(a:bool,b:float,c:float)
+            [-30, a,b,c]
+        
+        # 4 args
+        func u:Utype foo(a,b,c,d)
+            [-4, a,b,c,d]
+        
+        u1 = Utype{}
+        
+        # 0
+        res <- u1.foo()
+        res <- u1.bar()
+        
+        
+        # 1
+        res <- u1.foo('hello!')
+        
+        res <- u1.bar(1)
+        
+        # # structs
+        a1 = A(1)
+        res <- u1.bar(a1)
+        
+        b1 = B(10, 2)
+        res <- u1.bar(b1)
+        
+        c1 = Caramba(33, 11, 22)
+        res <- u1.bar(c1)
+        
+        # # 2
+        res <- u1.foo(11, 13)
+        
+        a2 = A(3)
+        d2 = D(2.12)
+        res <- u1.bar(a2, d2)
+        
+        b3 = B(5, 10)
+        d3 = D(1.5)
+        res <- u1.bar(b3, d3)
+        
+        
+        func int1()
+            1
+        
+        val5 = 5
+        
+        # # 3
+        res <- u1.foo(2, 1.5, 2.5)
+        res <- u1.foo(int1(), val5, 3)
+        res <- u1.foo(true, 11.1, 22.2)
+        res <- u1.foo(false, 11,22,33)
+        res <- u1.foo(false, 1.1,2.2,3.3)
+        res <- u1.foo(false, val5, 2.5, true)
+        
+        # over with basic type any
+        res <- u1.baz(true)
+        res <- u1.baz(false)
+        res <- u1.baz('-str-')
+        res <- u1.baz(10)
+        res <- u1.baz(2.5)
+        res <- u1.baz([1,2,3])
+        res <- u1.baz(A(115))
+        res <- u1.baz({1:11})
+        res <- u1.baz((2, 23))
+        
+        # for n <- res /: print('> ', n)
+        # print('res', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            -1, -2, 'u-string<hello!>', 1000.1, 4401, 4410, 7722, 143, 
+            'barAD:3 * 2.12 = 6.36', 'barAD:5 * 1.5 = 7.5', 
+            [-3, 2, 1.5, 2.5], [-3, 1, 5, 3], 
+            [-30, True, 11.1, 22.2], [-4, False, 11, 22, 33], 
+            [-4, False, 1.1, 2.2, 3.3], [-4, False, 5, 2.5, True], 
+            ('baz', 'yep'), ('baz', 'nop'), 'baz(-str-)', 
+            ('baz-any', 10), ('baz-any', 2.5), ('baz-any', [1, 2, 3]), 
+            ('baz-any', 'st@A{a: 115}'), ('baz-any', {1: 11}), ('baz-any', (2, 23))]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_func_all_variative_cases(self):
+        ''' func overload 
+            can't be overloaded (at least one such case):
+            1. if has var... argument
+            2. if has default values
+            3. overloaded func can't be assigned by name, 
+                [possible by future feature `func type` (: arg-types)
+                    name(types) like f = foo(: int, int)
+                    name(count) like f = foo(: _, _)      ]
+        '''
+        
+        code = r'''
+        res = []
+        
+        struct A a:int
+        struct AA(A) aa: string
+        struct B b:int
+        struct B2 b2:string
+        struct C(A, B2) c:string
+        struct D(B) d:string
+        
+        # over no args
+        func foo()
+            1
+            
+        # over 1 arg by type
+        func foo(x:int)
+            x * 10
+            
+        func foo(x:float)
+            x / 10.
+            
+        func foo(x:string)
+            ~'foo `{x}`:str'
+        
+        func foo(a:A)
+            a.a
+        
+        func foo(b:B)
+            b.b
+            
+        # overload 2 args, by type
+        func foo(a:float,b:float)
+            a + b
+        
+        func foo(a:string, b:string)
+            if b :: null
+                b = 'null'
+            ~'{a}:>{b}'
+        
+        func foo(a,b,c,d)
+            [a,b,c,d]
+        
+        func foo(a,b,c,d,e)
+            {'k1':a, 'k2':b, 'k3':c, 'k4':d, 'k5':e}
+        
+        # over 2 args, by type with any
+        
+        func bar(a:string, b:float)
+            ~'a::{b * 1000}'
+        
+        func bar(a,b)
+            [a,b]
+        
+        # variadic args...
+        
+        func makeDict(args...)
+            pairLen = toint(len(args) / 2)
+            dr = {}
+            for i <- iter(pairLen)
+                k, v = args[i*2], args[i*2+1]
+                dr <- (k, v)
+            dr
+
+        # named default
+        
+        func tag(s, inner='', open='<', close='>')
+            if len(inner) > 0
+                inner = ' ' + inner
+            ~'{open}{s}{inner}{close}'
+
+        # call
+        
+        a1 = A(101)
+        aa2 = AA{a:102, aa:'aa-2'}
+        b1 = (202)
+        c1 = C(103, 'b2-33', 'c-33')
+        d1 = D(404, 'dd-44')
+        
+        res <- '<foo obj>'
+        res <- foo(a1)
+        res <- foo(aa2)
+        res <- foo(b1)
+        res <- foo(c1)
+        res <- foo(d1)
+        
+        res <-'<foo #0>'
+        res <- foo()
+        # # 1
+        res <-'<foo #1>'
+        res <- foo(1)
+        res <- foo(1.5)
+        res <- foo('hello!')
+        
+        res <-'<foo #2>'
+        res <- foo(500, 2)
+        res <- foo(510, 2.5)
+        res <- foo('Yaa', 'Xoo')
+        res <- foo('nil', null)
+        
+        
+        res <-'<foo #4>'
+        res <- foo(1,2,3,4)
+        res <- foo('foo','4','args','case')
+        
+        res <-'<foo #5>'
+        res <- foo(11,22,33,44,55)
+        res <- foo('foo','5','args','case','done')
+        
+        res <-'<bar #2>'        
+        res <- bar('a',2.0)
+        res <- bar(1,2.5)
+        res <- bar(2,2)
+        res <- bar(3,[3,4,5])
+        res <- bar(4,{5:55, 6:77})
+        
+        
+        res <-'<makeDict(n...)>'
+        res <- makeDict('a', 111, 'b', 222, 'c', 333 )
+        res <- makeDict(1, 11, 2, 22, 3, 33, 4, 44)
+        res <-'<tag>'
+        res <- tag('div')
+        res <- tag('div', 'id="11"')
+        res <- tag('div', open='</')
+        res <- tag('div', open='<=', close='=>')
+        
+        # for n <- res /: print('> ', n)
+        # print('res', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            '<foo obj>', 101, 102, 2020, 103, 404, '<foo #0>', 1, '<foo #1>', 10, 0.15, 'foo `hello!`:str', '<foo #2>', 
+            502.0, 512.5, 'Yaa:>Xoo', 'nil:>null', '<foo #4>', [1, 2, 3, 4], ['foo', '4', 'args', 'case'], '<foo #5>', 
+            {'k1': 11, 'k2': 22, 'k3': 33, 'k4': 44, 'k5': 55}, {'k1': 'foo', 'k2': '5', 'k3': 'args', 'k4': 'case', 'k5': 'done'}, 
+            '<bar #2>', 'a::2000.0', [1, 2.5], [2, 2], [3, [3, 4, 5]], [4, {5: 55, 6: 77}], '<makeDict(n...)>', 
+            {'a': 111, 'b': 222, 'c': 333}, {1: 11, 2: 22, 3: 33, 4: 44}, '<tag>', '<div>', '<div id="11">', '</div>', '<=div=>']
+        self.assertEqual(exv, rvar.vals())
+
     def test_overload_by_args_type_compatible(self):
         ''' more complex case, for overload by type
             if called expr don't have equal types of existed funcs, but have compatible

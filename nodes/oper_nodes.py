@@ -5,17 +5,15 @@ Eval tree nodes: operators.
 '''
 
 
-from lang import *
-from vars import *
-# from typex import *
-from nodes.expression import *
-from nodes.structs import StructConstrBegin 
-from bases.ntype import *
 from nodes.base_oper import *
+from nodes.datanodes import ListConstr, DictConstr
+from nodes.expression import *
+from bases.ntype import *
+from lang import *
 from nodes.oper_dot import *
+from nodes.structs import StructConstrBegin 
+from vars import *
 
-
-# from formatter import  StrFormatter
 
 
 class OpAssign(AssignExpr):
@@ -266,7 +264,7 @@ class OpMath(BinOper):
         numTs = (TypeNull, TypeBool, TypeInt, TypeFloat)
         if not isinstance(atype, numTs) or not isinstance(btype, numTs):
             # incorrect operand for math operator!
-            # print(f'Incorrect types {atype.name} , {btype.name} for math operator {self.oper}')
+            print(f'Incorrect types {atype} , {btype} for math operator {self.oper}')
             raise EvalErr(f'Incorrect types {atype.name} , {btype.name} for math operator {self.oper}')
         
         rtype = atype
@@ -344,15 +342,17 @@ class OpMath(BinOper):
         return Val(tpl % args, TypeString)
 
     def normalize(self, val:Val):
-        if isinstance(val, Val) and isinstance(val.getVal(), SequenceGen):
-            return val.val.allVals()
+        # print('O-nod.normalize', val)
         if isinstance(val, ObjectMember):
             # print('OMb:', val, val.get())
             return val.get()
+        if isinstance(val, Val) and isinstance(val.getVal(), SequenceGen):
+            return val.val.allVals()
         return val
 
     def overs(self, a, b):
         a, b = valFrom(a), valFrom(b)
+        # print('#bin-overs-1', a, b)
         a, b = self.normalize(a), self.normalize(b)
         # print('#bin-overs-1', a, b)
         match self.oper:
@@ -735,8 +735,6 @@ class CtrlSubExpr(Expression):
         self.control.add(self.sub)
         return self.control
 
-from nodes.datanodes import ListConstr, DictConstr
-
 def valHasType(val:Val|Var, typeVal:TypeVal):
     lop = var2val(val)
     rop = var2val(typeVal)
@@ -760,16 +758,20 @@ class IsTypeExpr(BinOper):
         if isinstance(self.right, (ListConstr, DictConstr)) and self.right.byword:
             tname = self.right.tname
             self.right = VarExpr(Var(tname, TypeAny()))
-        # TODO: think about `null`
-        # elif isinstance(self.right, (Val)) and isinstance(self.right.getType(), TypeNull()):
-        #     tname = self.right.tname
-        #     self.right = VarExpr(Var('null', TypeAny()))
         self.right.do(ctx)
         rop = var2val(self.right.get())
         
-        # print('::1>', lop, rop)
-        if not isinstance(rop, TypeVal):
-            raise EvalErr("Incorrect right operand of `::` operator.")
+        if not isinstance(rop, (TypeVal)):
+            if not isinstance(rop.get(), Null):
+                raise EvalErr("Incorrect right operand of `::` operator.")
+            
+        
+        # Null case trick
+        if isinstance(rop.get(), Null):
+            if lop.getVal() == Null():
+                self.res = Val(isinstance(lop.get(), Null), TypeBool())
+                return
+         
         expt = rop.getVal()
         # print('::2>', expt, lop.getType())
         res = Val(isinstance(lop.getType(), expt.__class__), TypeBool())

@@ -146,9 +146,8 @@ def buit_print(ctx:Context,*args):
         # print('b-print2:::', v)
     print(*pargs)
 
-def built_len(_, arg):
-    # print('##len:', arg.__class__)
-    return arg.len()
+def built_len(_, arg:Collection|StringVal):
+    return  Val(arg.len(), TypeInt())
 
 
 def built_int(_, x):

@@ -47,19 +47,30 @@ class TestDev(TestCase):
         TODO: declaration of var:type without assignment: check and fix.
         
         TODO: check type of operand for all operators
+        
+        TODO: overload: test methods with compatiple types
+            add overloaded constructors, custom and default (at least empty)
+            test overload for imported functions, 
+            struct type args in overloaded func, 
+            overloaded methods of imported structs
+        TODO: partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
+        # not sure, partial usage of operator - make lambda:
+                    (2 +) =>> x -> 2 + x
+                    (-(2)) =>> x -> x - 2, or -1 # problem here
+                    underscore here looks better
+                    looks mostly as a shorten syntax of lambdas
+                    (2 + _) =>> x -> 2 + x
+                    (_ - 2) =>> x -> x - 2
+        TODO: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
+            =>> curried_foo(1)(2)(3)
+        TODO: composition foo * bar (x)
+        TODO: prevent overloading of func with default/named args or variadic list args...
+        
+        TODO bug: Sequence  match and split if brackets in quotes: (1, '[', ']')
+
+        TODO: test overloading with type function, as function and any.
     '''
 
-
-    def _test_func_overload_by_count_and_types(self):
-        ''' func overload 
-            can't be overloaded (at least one such case):
-            1. if has var... argument
-            2. if has default values
-            3. overloaded func can't be assigned by name, 
-                [possible by future feature `func type` (: arg-types)
-                    name(types) like f = foo(: int, int)
-                    name(count) like f = foo(: _, _)      ]
-        '''
 
     def _test_new_collection_constr(self):
         ''' constr-like brackets with colon - []:, {}:, (): '''
@@ -183,7 +194,7 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         # print('>>', dd.values())
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
@@ -194,7 +205,19 @@ class TestDev(TestCase):
         ''' '''
         code = r'''
         res = []
+        func foo(s:string)
+            {'a':s}
 
+        func foo(x:int)
+            x * 10
+
+        func foo(x)
+            [x]
+
+        res <- foo(1) #//        [1]
+        res <- foo(1.5) #//      [1.5]
+        # res <- foo(true) #//     [true]
+        res <- foo('hello') #//  {'a': 'hello'}
         print('res = ', res)
         '''
         code = norm(code[1:])
@@ -204,7 +227,7 @@ class TestDev(TestCase):
         ex = lex2tree(clines)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         # print('>>', dd.values())
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()

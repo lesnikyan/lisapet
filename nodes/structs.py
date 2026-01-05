@@ -500,10 +500,11 @@ class MethodCallExpr(FuncCallExpr):
         args:list[Var] = [self.inst]
         # dprint('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
         for exp in self.argExpr:
-            # dprint('#1# meth-call do20 exp=: ', exp)
+            # print('#1# meth-call do20 exp=: ', exp)
             exp.do(ctx)
-            # print('meth-call do3:', exp, exp.get())
-            args.append(exp.get())
+            vv = var2val(exp.get())
+            # print('meth-call do3:', exp, vv, vv.get())
+            args.append(vv)
         self.getFunc(args)
         self.func.setArgVals(args)
         # TODO: add usage of Definishion Context instead of None
@@ -529,30 +530,4 @@ class BoundMethodCall(MethodCallExpr):
 
     def get(self):
         return self.func.get()
-
-
-# def structTypeCompat(dtype:StructInstance, stype:VType):
-#     ''' criterion: src should 
-#         have the same type the dest have,
-#         be child of dest type, 
-#         or null
-#         dtype - dest type
-#         stype = src type
-#     '''
-#     # stype = src.getType()
-#     # print('tcopmt1', stype)
-#     if isinstance(stype, TypeNull):
-#         return True
-#     # TODO: possible interface check for future
-    
-#     # nest - for structs only
-#     if not isinstance(stype, StructDef):
-#         # not a struct
-#         return False
-#     if dtype == stype:
-#         return True
-#     if stype.hasParent(dtype):
-#         return True
-#     return False
-    
 
