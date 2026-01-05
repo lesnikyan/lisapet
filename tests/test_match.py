@@ -18,7 +18,7 @@ from context import Context
 from tree import *
 from eval import rootContext, moduleContext
 
-from strformat import *
+from bases.strformat import *
 
 
 from tests.utils import *

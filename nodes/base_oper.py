@@ -5,7 +5,7 @@
 from lang import *
 from vars import *
 from nodes.expression import *
-from nodes.ntype import *
+from bases.ntype import *
 
 
 class OperCommand(Expression):

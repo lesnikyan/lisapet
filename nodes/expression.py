@@ -14,7 +14,7 @@ class Expression:
         # dprint('Expression init', self)
         self.src:CLine = src
     
-    def do(self, ctx:Context):
+    def do(self, ctx:NSContext):
         pass
     
     def get(self) -> Var|list[Var]:
@@ -48,7 +48,7 @@ class ValExpr(Expression):
     def __init__(self, val:Val):
         super().__init__(val)
 
-    def do(self, ctx:Context):
+    def do(self, ctx:NSContext):
         pass
 
     def get(self)->Var:
@@ -65,7 +65,7 @@ class VarExpr(Expression):
         # self.val = var # or name,type ?
         self.name = var.name
     
-    def do(self, ctx:Context):
+    def do(self, ctx:NSContext):
         # dprint('VarExpr.do ctx:', ctx, 'name=', self.name)
         # ctx.print(forsed=1)
         newVal = ctx.get(self.name)
@@ -121,7 +121,7 @@ class VarExpr_(VarExpr):
         super().__init__(Var_())
         self.name = '_'
     
-    def do(self, ctx:Context):
+    def do(self, ctx:NSContext):
         ''' nothing to do'''
 
     def get(self)->None:
@@ -140,7 +140,7 @@ class DebugExpr(Expression):
         super().__init__()
         self.val = txt
     
-    def do(self, ctx:Context):
+    def do(self, ctx:NSContext):
         dprint(" $$$ >>> >>> DEBUG: ", self.val)
 
 
@@ -150,7 +150,7 @@ class ControlExpr(Expression):
 
 class Block(Expression):
     def __init__(self):
-        # self.ctx = Context()
+        # self.ctx = NSContext()
         super().__init__()
         self.subs: list[Expression] = []
         self.storeRes = False
@@ -165,7 +165,7 @@ class Block(Expression):
     def isEmpty(self):
         return len(self.subs)
 
-    def do(self, ctx:Context):
+    def do(self, ctx:NSContext):
         self.lastVal = None
         # eval sequences one by one, store result of each line, change vars in contexts
         elen = len(self.subs)
@@ -248,7 +248,7 @@ class TypeExpr(Expression):
         # super().__init__(val)
         self.type:VType = Undefined
     
-    def do(self, ctx:Context):
+    def do(self, ctx:NSContext):
         ''' '''
     
     def get(self)->VType:
@@ -264,7 +264,7 @@ class DeclarationExpr(Expression):
         self.varExpr:VarExpr = None
         self.typeExpr:TypeExpr = None
     
-    def do(self, ctx:Context):
+    def do(self, ctx:NSContext):
         self.typeExpr.do(ctx)
         self.var = self.varExpr.do(ctx)
         self.var.setType(self.typeExpr.get())
@@ -320,7 +320,7 @@ class ServPairExpr(Expression):
         self.left:Expression = None # key|name|def
         self.right:Expression = None # val|type
 
-    def do(self, ctx:Context):
+    def do(self, ctx:NSContext):
         self.left.do(ctx)
         self.right.do(ctx)
 
@@ -359,7 +359,7 @@ class TypedVarExpr(VarExpr):
         self.right = right
         self.val = None
 
-    def do(self, ctx:Context):
+    def do(self, ctx:NSContext):
         self.right.do(ctx)
         tpv = self.right.get()
         name = self.left.get().name
@@ -428,7 +428,7 @@ class SequenceExpr(Expression):
     def getSubs(self):
         return self.subs
 
-    def getVals(self, ctx:Context):
+    def getVals(self, ctx:NSContext):
         res = []
         for sub in self.subs:
             dprint('SEQ getTuple:', sub)

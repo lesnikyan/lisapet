@@ -86,12 +86,12 @@ class FuncRes(Val):
 class PopupBreak(Val):
     ''' '''
     def __init__(self):
-        super().__init__(None, TypeNoval())
+        super().__init__(None, TypeNoVal())
 
 class PopupContinue(Val):
     ''' '''
     def __init__(self):
-        super().__init__(None, TypeNoval())
+        super().__init__(None, TypeNoVal())
 
 # Objects
 

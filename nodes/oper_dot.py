@@ -6,7 +6,7 @@ from lang import *
 from vars import *
 from nodes.expression import *
 from nodes.structs import StructInstance, MethodCallExpr, StructConstr, BoundMethodCall
-from nodes.ntype import *
+from bases.ntype import *
 from nodes.base_oper import *
 
 
@@ -27,7 +27,7 @@ class ObjectMember(ObjectElem):
 
     def get(self):
         ''' res = obj.member; foo(obj.member); obj.member() '''
-        # print('self.member, get :: ',self.object, type(self.object), '::', self.member)
+        # print('self.member, get :: obj:',self.object, ':', type(self.object), '; .member:', self.member)
         val = self.object.get(self.member)
         
         # print('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)

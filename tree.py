@@ -24,7 +24,7 @@ from cases.operwords import *
 from cases.modules import *
 
 from parser import *
-from strformat import  *
+from bases.strformat import  *
 
 
 class CaseDebug(ExpCase):

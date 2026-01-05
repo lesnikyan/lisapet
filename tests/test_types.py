@@ -12,7 +12,7 @@ from vars import *
 from vals import numLex
 import context
 from context import Context
-from strformat import *
+from bases.strformat import *
 from nodes.structs import *
 from tree import *
 from eval import rootContext, moduleContext
