@@ -50,7 +50,7 @@ func a:A afunc(x:string, y:string):
 func foo2(arg:int, args:int ...)
     [arg + n; n <- args;]
 
-names = list
+names = []
     'Adam'
     'Bobr'
     'Cyclon'

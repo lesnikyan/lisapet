@@ -21,6 +21,120 @@ from tree import *
 class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
+    def test_refactored_block_constr(self):
+        ''' test refactored multiline collections constructors []\\n, {}\\n, (,)\\n '''
+        code = r'''
+        res = []
+        
+        varList = []
+            111
+            222
+        res <- varList
+        
+        varList2 = []
+            'aaaaa'
+            'bbbbb'
+            [11,22,33]
+        res <- varList2
+        
+        varDict = {}
+            1:1111
+            2:2222
+            3:3333
+            'a': 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+            'b': {4:444}
+            'cccc': [444,555,666]
+        res <- varDict
+        
+        varTup = (,)
+            100111
+            100222
+            100333
+        res <- varTup
+        
+        rr = ['rr']
+        rr <- []
+            1000
+            1222
+        
+        rr <- {}
+            112: 22222
+            113: 33333
+        
+        res <- rr
+        
+        
+        func fList()
+            []
+                11222
+                11333
+        
+        res <- fList()
+        
+        func fDict()
+            {}
+                11: '1-11'
+                22: '1-22'
+                'a3': [1, 33]
+        
+        lfRes = fList()
+        res <- lfRes
+        
+        dfRes = fDict()
+        res <- dfRes
+        
+        func same(x)
+            x
+        
+        subL = []
+            []
+                2011
+                2022
+                same(3011)
+            {}
+                'c1' : 'armature'
+                'c2': [44,55,66]
+                'c3' : same(4011)
+            (,)
+                'tuple-tuple-123'
+                'tuple-opop-5432'
+            (,)
+        res <- subL
+        
+        subD = {}
+            'x1': []
+                111
+                222
+                same(50333)
+            'x2': {}
+                'a4': 'a4444'
+                'a5': [5,55,555]
+                'a6': same(60111)
+                'a6': [same(60222), same(60333)]
+        res <- subD
+        
+        # print(res)
+        '''
+
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            [111, 222], ['aaaaa', 'bbbbb', [11, 22, 33]], 
+            {1: 1111, 2: 2222, 3: 3333, 'a': 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAA', 'b': {4: 444}, 'cccc': [444, 555, 666]}, 
+            (100111, 100222, 100333), ['rr', [1000, 1222], {112: 22222, 113: 33333}], 
+            [11222, 11333], [11222, 11333], 
+            {11: '1-11', 22: '1-22', 'a3': [1, 33]}, 
+            [[2011, 2022, 3011], {'c1': 'armature', 'c2': [44, 55, 66], 'c3': 4011}, ('tuple-tuple-123', 'tuple-opop-5432'), ()], 
+            {'x1': [111, 222, 50333], 'x2': {'a4': 'a4444', 'a5': [5, 55, 555], 'a6': [60222, 60333]}}]
+        self.assertEqual(exv, rvar.vals())
+
     def test_code_listgen_plus(self):
         ''' '''
         code = r'''
@@ -786,7 +900,7 @@ class TestLists(TestCase):
         code = '''
         # block-constructor of list
         
-        names = list
+        names = []
             'Anna'
             'Barbi'
             'Cindy'

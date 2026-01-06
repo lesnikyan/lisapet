@@ -160,46 +160,6 @@ class TestDev(TestCase):
             print('hh>>', hash)
 
 
-    def _test_new_collection_constr(self):
-        ''' constr-like brackets with colon - []:, {}:, (): '''
-        code = r'''
-        res = []
-        
-        varList = []:
-            111,
-            222,
-            333
-        
-        # varDict = {}:
-        #     1:1111
-        #     2:2222
-        #     3:3333
-        
-        # Vd2= {}:
-        #     'a': 'AAAAAAAAAAAAAAAAAAAA'
-        #     'b': 'BBBBBBBBBBBBBBBBBBB'
-        #     'c': 'CCCCCCCCCCCCCCCCCC'
-        
-        # varTuple = ():
-        #     'aaaaa'
-        #     'bbbbb'
-        
-        print(f1(200))
-        # print('res = ', 1)
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # print('>>', dd.values())
-        # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # self.assertEqual([], rvar.vals())
-
 
     def _test_code(self):
         ''' '''

@@ -7,10 +7,12 @@ Mostly for usage into for-loop or generators.
 from lang import *
 from vars import *
 from vals import *
+
+from nodes.base_oper import BinOper
 from nodes.expression import *
 from nodes.oper_nodes import OpAssign
-from nodes.func_expr import FuncCallExpr
-import nodes.datanodes
+# from nodes.func_expr import FuncCallExpr
+# import nodes.datanodes
 from nodes.datanodes import DictVal, ListVal, TupleVal
 
 
@@ -334,7 +336,7 @@ class Append(Expression):
                     self.target.data[key] = val
 
 
-class LeftArrowExpr(Expression):
+class LeftArrowExpr(BinOper):
     ''' '''
 
     def __init__(self, src = ''):
@@ -350,10 +352,13 @@ class LeftArrowExpr(Expression):
         # print('Arr <- setArgs1', left, right)
         self.leftExpr = left
         self.rightExpr = right
+
+    def add(self, expr:Expression):
+        ''' where right is MultilineVal '''
+        self.rightExpr.add(expr)
     
     # def start(self, ctx:Context):
     #     self.expr.start()
-        
     
     def init(self, ctx:Context):
         ''' get left, right, decide what the case here: iter or append '''
