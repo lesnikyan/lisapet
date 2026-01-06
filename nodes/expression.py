@@ -30,6 +30,9 @@ class Expression:
     def __str__(self):
         return self.__class__.__name__
 
+    add = None
+
+
 class CommentExpr(Expression):
     ''' for future usage'''
     def __init__(self, text:str):
@@ -268,9 +271,10 @@ class DeclarationExpr(Expression):
         self.typeExpr.do(ctx)
         self.var = self.varExpr.do(ctx)
         self.var.setType(self.typeExpr.get())
-    
+
     def get(self)->Var:
         ''' return '''
+
 
 class DefinitionExpr(Expression):
     ''' base for struct, alias
@@ -338,6 +342,10 @@ class ServPairExpr(Expression):
         # print('ServPairExpr.setArgs', left, right)
         self.left = left
         self.right = right
+
+    def add(self, expr:Expression):
+        ''' where right is MultilineVal '''
+        self.right.add(expr)
 
 
 class VarStrict(Var):

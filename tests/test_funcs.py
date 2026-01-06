@@ -1309,7 +1309,7 @@ class TestFunc(TestCase):
         ffs = [x2, x -> 5000 + x]
         
         # lambda in dict
-        ffd = dict
+        ffd = {}
             'f' : ((a) -> a * 11)
             's' : ((a, b) -> a * b)
         

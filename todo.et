@@ -140,32 +140,12 @@ catch crit
     2) executive tree (prepared exec file)
 
 12 Functions: 
-12.1 named args for function: func foo(name:string) # call: foo(name='Abc')
-12.2 other args in `func(a, b, other...) : foo(1, 2, 33, 44, 55, 66, 77) other = [33, 44, 55, 66, 77]
-12.3 #DONE default values of args func foo(x, y=3) :: needed
-12.xx other possible extensions of basic scheme of function:
-    - undeclared args passed by name (like kwargs in python):: thinkable
-    - function / method overload: totally not applicable to strategy of floating number of args like default-val and named-args / No.
     - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but :: thinkable
     - unused/unnamed var `_` for function args foo(_, x), multiple assignment `for key, _ <- dict`:: thinkable
 
     # type-groups: 
         numeric, bool, string, list, tuple, dict, struct, function, regexp, [set, maybe, tree, ...]
 
-func bar(a, b, [c...])
-    for n <- c /: ..
---
-func foo()
-    1
-func foo(x)
-    x * 2
-func foo(x, y)
-    x + y
-func foo(nums:list)
-    sum(nums)
-func foo(x, y, nums...)
-        [x + y * n ; n <- nums]
-    
 
 13. Interfaces as a some list of method signatures.
 
@@ -361,7 +341,27 @@ Fixes:
     - #DONE data.keys() ; dkeys(data) # dict keys
     - #DONE for item <- ditems(data) ; for item <- data.items()  # key-val pairs from dict
 
+12.1 #DONE named args for function: func foo(name:string) # call: foo(name='Abc')
+12.2 #DONE other args in `func(a, b, other...) : foo(1, 2, 33, 44, 55, 66, 77) other = [33, 44, 55, 66, 77]
+12.3 #DONE default values of args func foo(x, y=3) :: needed
+12.xx other possible extensions of basic scheme of function:
+    # DONE undeclared args passed by name (like kwargs in python):: thinkable
+    # DONE function / method overload: totally not applicable to strategy of floating number of args like default-val and named-args / No.
 
+func bar(a, b, [c...])
+    for n <- c /: ..
+--
+func foo()
+    1
+func foo(x)
+    x * 2
+func foo(x, y)
+    x + y
+func foo(nums:list)
+    sum(nums)
+func foo(x, y, nums...)
+        [x + y * n ; n <- nums]
+    
 3.2. # DONE Type auto-casting. Important for struct constructors, function args
 
 3.2.1 #DONE type auto-conversion in math operators.
@@ -723,6 +723,7 @@ hellos = list
     'Helo desktop!'
 
 #== dict DONE
+# changed to {}
 data = dict
     'a': 1
     'b': 2

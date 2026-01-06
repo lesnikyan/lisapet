@@ -34,6 +34,10 @@ class BinOper(OperCommand):
         # dprint('BinOper.setArgs', left, right)
         self.left = left
         self.right = right
+    
+    def add(self, expr:Expression):
+        ''' where right is MultilineVal '''
+        self.right.add(expr)
 
 
 class AssignExpr(BinOper):

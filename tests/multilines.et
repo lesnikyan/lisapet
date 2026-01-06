@@ -33,7 +33,7 @@ back-q
 m-string ''' """
 ```
 
-mlist = list
+mlist = []
     '''
     mstr 1 ' " `
     '''

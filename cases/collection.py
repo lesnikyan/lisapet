@@ -87,7 +87,7 @@ class CaseList(SubCase):
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        dprint('CaseList.setSub: ', base, subs)
+        # dprint('CaseList.setSub: ', base, subs)
         for exp in subs:
             if isinstance(exp, NothingExpr):
                 # empty position after comma
@@ -100,9 +100,10 @@ class CaseList(SubCase):
 class CaseListBlock(SubCase):
     def match(self, elems:list[Elem]) -> bool:
         '''
-        list
-        varName = list
+        []
+        varName = []
         '''
+        return False # deprecated
         if len(elems) != 1:
             return False
         return isLex(elems[0], Lt.word, 'list')
@@ -286,6 +287,7 @@ class CaseDictBlock(SubCase):
         dict
         from varName = dict
         '''
+        return False # deprecated
         # dprint('CaseDictBlock.match')
         if len(elems) != 1:
             return False
