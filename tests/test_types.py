@@ -517,7 +517,7 @@ class TestTypes(TestCase):
         ff:F = F(7, 'fd7', 'f7')
         gg:G = G(9.01)
         
-        std = dict
+        std = {}
             # []
             'a': [A(2)]
             'b': [B(22, 2.2)]

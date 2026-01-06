@@ -31,11 +31,11 @@ Content:
 6. [Dict `{'key':val}`](#6-dict-linear-and-block-constructor)
 7. [For-statement: `for i <- [1..5]`](#7-for-statement---operator)
 8. Functions:`func foo()`  
-    1 [Base info](#8-function-definition-context-of-functions)  
-    2 [Default arguments `func foo(x=1)`](#82-default-value-of-arguments)  
-    3 [Named arguments `n = foo(x=2)`](#83-named-arguments)  
-    4 [Variadik arguments `func foo(args...)`](#84-variadic-arguments)  
-    5 [Overload of functions](#85-function-overload)  
+    1) [Base info](#8-function-definition-context-of-functions)  
+    2) [Default arguments `func foo(x=1)`](#82-default-value-of-arguments)  
+    3) [Named arguments `n = foo(x=2)`](#83-named-arguments)  
+    4) [Variadic arguments `func foo(args...)`](#84-variadic-arguments)  
+    5) [Overload of functions](#85-function-overload)  
 9. Collection features:  
     1. [append operator `nums <- 15`](#91-arrow-appendset-operator--)
     2. [deletion operator `data - [key]`](#92-minus-key---key-delete-operator)
@@ -490,7 +490,7 @@ nums = ['One', 'Two', 'Three']
 
 List, block constructor (for long elements)
 ```python
-names = list
+names = []
     'Anna'
     'Barbi'
     'Cindy'
@@ -516,9 +516,12 @@ print(nums[-2])
 2. Tuples: `(val, val, val)`.  
 
 Tuple. Few values in the parenthesis over comma.  
-Tuple is immutable.
+Tuple is immutable.  
 ```python
 vals = (1, 100, 'More numbers')
+
+# comma means that here is a constr of empty tuple, not just brackets
+val = (,)
 
 # read value by index
 print(vals[2])
@@ -532,13 +535,22 @@ vals = (1, 22, 33,3)
 a, b, c = vals
 ```
 
+Tuple has block contructor too.  
+```python
+data = (,)
+    11
+    'Vasya Pupkin'
+    ['a', 'b', 'c']
+data[1] # >> 'Vasya Pupkin'
+```
+
 ### 6. Dict. Linear and block constructor
 ```python
 # linear constr
 dd = {'a':1, 'b':2}
 
 # block constr
-ddd = dict
+ddd = {}
     'a': 'a a a a a a a a a a a a a a a a a'
     'b': 'b b b b b b b b b b b b b b b b b'
 
@@ -800,7 +812,7 @@ The same about functional objects (like lambdas or function in variable).
 Combinations of different approaches wasn't planned, implemented or tested.  
 
 
-All features: variadic and named args, default vals, overloading (looks like) works for methods too.  
+All features (looks like): variadic and named args, default vals, overloading works for methods too.  
 
 See more about functions in next sections:  
 [14 builtins](#14-builtin-functions), 
@@ -2029,7 +2041,7 @@ ffs[1]('arg-val')
 ```
 - function in dict
 ```golang
-ffd = dict
+ffd = {}
     'f' : foo,
     's' : sum
 

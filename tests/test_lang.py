@@ -432,7 +432,7 @@ class TestLang(TestCase):
         # # multiline
         code = '''
         # create dict var with values in sub-block
-        dd = dict
+        dd = {}
             'red' :'#ff0000'
             'green' :'#00ff00'
             'blue' :'#0000ff'

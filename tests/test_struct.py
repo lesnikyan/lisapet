@@ -543,7 +543,7 @@ class TestStructs(TestCase):
         code='''
         struct Product price:float, amount:int
         struct Book title:string, author:string, pages:int, prod:Product
-        books = list
+        books = []
             Book{title:'Green  gardens', author:'Bob Stinger', pages:100, prod: Product{price:10., amount:1111}}
             Book{title:'Blue, blue sky', author:'Ani Arabesquin', pages:200, prod: Product{price:20., amount:2222}}
             Book{title:'Silver sword of small town', author:'Arnold Whiteshvartz', pages:300, prod: Product{price:20., amount:3333}}
