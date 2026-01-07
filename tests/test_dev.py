@@ -60,8 +60,58 @@ class TestDev(TestCase):
     '''
 
 
+    def _test_func_from_method(self):
+        ''' test when func returned from method and call obj.foo()(arg)
+        '''
+        
+        code = r'''
+        res = []
+        
+        
+        
+        for n <- res /: print('> ', n)
+        # print('res', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = ['#1', 1, 'dark', '~`hello`:str', 'func-0', 312, 5.5, 3.0, 125.0, [100, 200, 300]]
+        self.assertEqual(exv, rvar.vals())
+
     def _test_1(self):
         ''''''
+        def _foo(n, x, y):
+            r = x + y
+            if n == 0:
+                return r
+            n, x, y = n - 1, r, y
+            return _foo(n, x, y)
+        
+        def foo(x, y):
+            return _foo(x, x, y)
+            
+        def _loop(n, x, y):
+            # r, n = 0, x
+            # dx = x
+            while True:
+                r = x + y
+                if n == 0:
+                    return r
+                n, x, y = n - 1, r, y
+        
+        def loop(x, y):
+            return _loop(x, x, y)
+        
+        rfoo = foo(10, 2)
+        rloop = loop(10, 2)
+        print('tt>>', rfoo, rloop)
+        self.assertEqual(rfoo, rloop)
 
     def _test_code(self):
         ''' '''

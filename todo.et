@@ -348,8 +348,6 @@ Fixes:
     # DONE undeclared args passed by name (like kwargs in python):: thinkable
     # DONE function / method overload: totally not applicable to strategy of floating number of args like default-val and named-args / No.
 
-func bar(a, b, [c...])
-    for n <- c /: ..
 --
 func foo()
     1
@@ -515,27 +513,12 @@ match n
 >>>
 
 
-3.1 # DONE import x > * `instead of ` import x.* (?) thinking
-
-16. # DONE 1-line if/for/while: 
-    for x <- vals /: doit(x); y = x + 2; print(x, y)
-    # operator variants: !-  !~  !:  ::  \:  /:  |:  :|
-
-
-
-31. # DONE Struct constructor
-        func TypeName(a, b, c)
-            Typename{name:a, addr:b, age: c}
-            
-        val = TypeName('Vasya', 'Green st., 12/5', 20)
-        note: it have to be implemented (instead of `T{...}`) but we can make default implementation by order of fields in definition
-
 -------------------------
 
 # Perspective things: 
 0. build.py - builder of *.et files with resulting binary files (serialized executable object).
 1. Maybe type 
-# 2. default, unnecessary and named function args
+# DONE 2. default, unnecessary and named function args
 3. tail-recursion optimization
 4.1 Duck-type for structs:: func f(arg:struct{foo(int, float), bar(string)}) // ? not sure
 4.2 anonimous structs inst = struct{name: 'Abc', num: 123}; possible sugar: ${name: '', num:123}
@@ -564,17 +547,6 @@ foo = func (args...)
 [1,2,3] + [4,5] --> [1,2,3,4,5]
 
 
-#= 
-# Native regexp
-pattern cases:  /pattern/mod ; |pattern|mod ; <pattern>mod ; %pattern%mod, 
-numsRx = /^[0-9]+$/in
-numsRx.match(strVal) # bool
-res = numRx.first(strVal) # string
-resList = numRx.find(strVal) # [string]
-grs = numsRx.groups(strVal) # [[string]]
-
-rx = /`^Regex$`in/
-
 
 #==
 # Maybe type: Nothing, Thing
@@ -591,6 +563,7 @@ i-- # i -= 1
 #== store content of comments as a runtime metadata
 
 #== multiline expr
+
 #== possible sugar
 
 
@@ -624,28 +597,6 @@ type intN3 [int, int, int]
 type intN3 int[3]
 
 
-#== DONE
-# Named func args
-
-func foo(user:User=null, name: string, age: int)
-    user ?: getUser(name, age) 
-    # return user if not null, otherwize - return result of getUser()
-user = foo(age=22, name='Vasya')
-
-
-#== DONE
-# Variadic  functions, just preliminary thinking
-
-foo(arg1:string, arg2:float, ...args3:int) # any number of values after 2-nd arg.
-
-# after vaiadic var-list only named args (future feature) can be used. declaration:
-func foo2(arg1:float, arg2:float, ...arg3:int, narg1:string, narg2:string) ...
-func foo2(arg1:float, arg2:float, arg3:int ... , narg1:string, narg2:string) ...
-
-# arg:int ... the same as:  arg:int [] for usage  in function body 
-# call:
-foo2(1.1, 2.2, 31, 32, 33, 34, narg1:'a', narg2:'b')
-
 # unpack list using it as many vals
 func foo3(...args) -> for val <- args ...
 
@@ -662,14 +613,6 @@ func foo(int, int): int
 foo(a, b)
     a + b
 
-
-#==
-# func overload (?)
-func foo()
-
-func foo(a:int, b:int)
-
-func foo(a:string, b:int)
 
 #==
 # composition of functions are possible, by `.` or another
@@ -710,6 +653,64 @@ func foo(arg)
 
 ########################### Done section ############################# 
 @#
+
+
+#== DONE
+# func overload (?)
+func foo()
+
+func foo(a:int, b:int)
+
+func foo(a:string, b:int)
+
+#== DONE
+# Named func args
+
+func foo(user:User=null, name: string, age: int)
+    user ?: getUser(name, age) 
+    # return user if not null, otherwize - return result of getUser()
+user = foo(age=22, name='Vasya')
+
+
+#== DONE
+# Variadic  functions, just preliminary thinking
+
+foo(arg1:string, arg2:float, ...args3:int) # any number of values after 2-nd arg.
+
+# after vaiadic var-list only named args (future feature) can be used. declaration:
+func foo2(arg1:float, arg2:float, ...arg3:int, narg1:string, narg2:string) ...
+func foo2(arg1:float, arg2:float, arg3:int ... , narg1:string, narg2:string) ...
+
+# arg:int ... the same as:  arg:int [] for usage  in function body 
+# call:
+foo2(1.1, 2.2, 31, 32, 33, 34, narg1:'a', narg2:'b')
+
+3.1 # DONE import x > * `instead of ` import x.* (?) thinking
+
+16. # DONE 1-line if/for/while: 
+    for x <- vals /: doit(x); y = x + 2; print(x, y)
+    # operator variants: !-  !~  !:  ::  \:  /:  |:  :|
+
+
+
+31. # DONE Struct constructor
+        func TypeName(a, b, c)
+            Typename{name:a, addr:b, age: c}
+            
+        val = TypeName('Vasya', 'Green st., 12/5', 20)
+        note: it have to be implemented (instead of `T{...}`) but we can make default implementation by order of fields in definition
+
+#= DONE
+# Native regexp
+pattern cases:  /pattern/mod ; |pattern|mod ; <pattern>mod ; %pattern%mod, 
+numsRx = /^[0-9]+$/in
+numsRx.match(strVal) # bool
+res = numRx.first(strVal) # string
+resList = numRx.find(strVal) # [string]
+grs = numsRx.groups(strVal) # [[string]]
+
+rx = /`^Regex$`in/
+
 
 #== DONE!
 #@ 

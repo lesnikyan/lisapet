@@ -25,6 +25,118 @@ class TestFunc(TestCase):
 
 
 
+    def test_overload_func_as_arg(self):
+        ''' func overload with func in args
+        '''
+        
+        code = r'''
+        res = []
+        
+        
+        # over no args
+        func foo()
+            1
+            
+        # over 1 arg by type
+        func foo(x:bool)
+            x ? 'dark' : 'light'
+            
+        func foo(f:function)
+            f()
+        
+        func ret(f:function)
+            f
+        
+        func ret(a:float)
+            x -> x * a
+        
+            
+        func foo(x:string)
+            ~'~`{x}`:str'
+        
+            
+        # overload 2 args, by type
+        func foo(a:float,b:float)
+            a + b
+        
+        func foo(f:function, b)
+            f(b)
+        
+        func foo(f:function, b:list)
+            b.map(f)
+        
+        struct A a:int
+        
+        func st:A foo()
+            st.a
+        
+        func st:A foo(a:int, b:int)
+            a + b
+        
+        func st:A foo(f:function, x:int)
+            f(x) + 1000
+        
+        func st:A boo(x, f:function)
+            y -> y + f(x)
+        
+        # call
+        
+        func f0()
+            'func-0'
+        
+        func f1(x)
+            x + 300
+        
+        res <- '#1'
+        res <- foo()
+        res <- foo(true)
+        res <- foo('hello')
+        res <- foo(f0)
+        res <- ret(f1)(12)
+        res <- ret(1.1)(5)
+        
+        
+        res <- '#2'
+        
+        func x100(x)
+            x * 100
+        
+        res <- foo(1, 2)
+        res <- foo(x100, 1.25)
+        res <- foo(x100, [1,2,3])
+        
+        res <- '# struct'
+        
+        a1 = A(17)
+        res <- a1.foo()
+        res <- a1.foo(10, 4)
+        res <- a1.foo(x100, 2)
+        
+        fa = a1.boo(3, x100)
+        res <- fa(41)
+        res <- (a1.boo(3, x100))(52)
+        
+        # TODO need fix!
+        # res <- a1.boo(4, x100)(1.5)
+        res <- (a1.boo(4, x100))(1.5)
+        
+        
+        # for n <- res /: print('> ', n)
+        # print('res', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = ['#1', 1, 'dark', '~`hello`:str', 'func-0', 312, 5.5, '#2', 3.0, 125.0, [100, 200, 300], 
+               '# struct', 17, 14, 1200, 341, 352, 401.5]
+        self.assertEqual(exv, rvar.vals())
+
     def test_overload_methods(self):
         ''' test overload for methods '''
         code = r'''
@@ -1656,7 +1768,7 @@ class TestFunc(TestCase):
 
     def test_lambda_match(self):
         ''' Lambda and match-case in one example.
-        Resolved conflict between lambdas and preavious syntax of matches. '''
+        Resolved conflict between lambdas and previous syntax of matches. '''
         code = r'''
         c = 5
         res = 0
