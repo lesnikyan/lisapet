@@ -535,7 +535,7 @@ match n
 # Perspective things: 
 0. build.py - builder of *.et files with resulting binary files (serialized executable object).
 1. Maybe type 
-2. default, unnecessary and named function args
+# 2. default, unnecessary and named function args
 3. tail-recursion optimization
 4.1 Duck-type for structs:: func f(arg:struct{foo(int, float), bar(string)}) // ? not sure
 4.2 anonimous structs inst = struct{name: 'Abc', num: 123}; possible sugar: ${name: '', num:123}
@@ -590,7 +590,6 @@ i-- # i -= 1
 
 #== store content of comments as a runtime metadata
 
-
 #== multiline expr
 #== possible sugar
 
@@ -625,7 +624,7 @@ type intN3 [int, int, int]
 type intN3 int[3]
 
 
-#== 
+#== DONE
 # Named func args
 
 func foo(user:User=null, name: string, age: int)
@@ -634,7 +633,7 @@ func foo(user:User=null, name: string, age: int)
 user = foo(age=22, name='Vasya')
 
 
-#==
+#== DONE
 # Variadic  functions, just preliminary thinking
 
 foo(arg1:string, arg2:float, ...args3:int) # any number of values after 2-nd arg.
@@ -695,6 +694,19 @@ func foo(arg)
     arg2 = expr3
     foo(arg2)
 
+
+        TODO: partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
+        # not sure, partial usage of operator - make lambda:
+                    (2 +) =>> x -> 2 + x
+                    (-(2)) =>> x -> x - 2, or -1 # problem here
+                    underscore here looks better
+                    looks mostly as a shorten syntax of lambdas
+                    (2 + _) =>> x -> 2 + x
+                    (_ - 2) =>> x -> x - 2
+        TODO: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
+            =>> curried_foo(1)(2)(3)
+        TODO: composition foo * bar (x)
+        TODO: prevent overloading of func with default/named args or variadic list args...
 
 ########################### Done section ############################# 
 @#

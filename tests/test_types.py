@@ -30,6 +30,51 @@ class TestTypes(TestCase):
 
 
 
+    def test_func_signHash(self):
+        ''''''
+        TH.base = 0x1100
+        tt = [TypeNum, TypeInt, TypeFloat, TypeBool, TypeString, TypeNull, TypeList, TypeDict, TypeTuple ]
+        for tp in tt:
+            tp.th = TH.mk()
+        
+        TH.base = 0x1119
+        tsA = StructDef('A')
+        tsB = StructDef('B')
+        tsC = StructDef('C')
+
+        htt = [
+            [TypeNum()],
+            [TypeInt()],
+            [TypeFloat()],
+            [TypeBool()],
+            [TypeString()],
+            [TypeNull()],
+            [TypeList()],
+            [TypeDict()],
+            [TypeTuple()],
+            [TypeInt(), TypeFloat(),], 
+            [TypeFloat(), TypeBool(),], 
+            [TypeInt(), TypeFloat(), TypeBool(),], 
+            [TypeString(), TypeString(), TypeString(), TypeInt()], 
+            [tsA],
+            [tsB],
+            [tsC],
+            [TypeBool(), tsA],
+            [tsA, tsB, TypeInt()],
+            [TypeInt(), TypeFloat(), TypeBool(), tsA, tsB, tsC],
+        ]
+        res = []
+        for ht in htt:
+            hash = FuncInst.sigHash(ht)
+            res.append(hash)
+            # print('hh>>', hash)
+        # print(res)
+        exv = [
+            '1101', '1102', '1103', '1104', '1105', '1106', '1107', '1108', '1109', 
+            '1102~1103', '1103~1104', '1102~1103~1104', '1105~1105~1105~1102', '111a', '111b', '111c', 
+            '1104~111a', '111a~111b~1102', '1102~1103~1104~111a~111b~111c']
+        self.assertEqual(exv, res)
+
     def test_oper_type_autocasting(self):
         ''' a / b '''
         code = r'''
