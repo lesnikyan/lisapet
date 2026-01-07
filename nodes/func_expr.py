@@ -393,6 +393,12 @@ class NFunc(Function):
         return self.res
 
 
+def coverFunc(name:str, fn:Callable, rtype:VType=TypeAny):
+    func = NFunc(name)
+    func.resType = rtype
+    func.callFunc = fn
+    return func
+
 def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
     func = NFunc(name)
     func.resType = rtype

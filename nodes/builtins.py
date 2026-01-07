@@ -130,16 +130,6 @@ def buit_print(ctx:Context,*args):
             pargs.append(str(n))
             continue
         v = getVal(n)
-        # print('b-print0::', v, v.__class__.__name__)
-        # v = n
-        # if isinstance(n, Var):
-        #     v = n.get()
-        # if isinstance(v, (ListVal, DictVal, TupleVal)):
-        #     v = v.vals()
-        # elif isinstance(v, StructInstance):
-        #     v = v.istr()
-        # elif isinstance(v, Val):
-        #     v = v.getVal()
         if isinstance(v, StructInstance):
             v = v.istr()
         pargs.append(v)
