@@ -83,10 +83,10 @@ class TypeString(VType):
     th = TH.mk()
 
 
-class TypeMString(TypeString):
-    name='mstring'
-    _defVal = ''
-    th = TH.mk()
+# class _TypeMString(TypeString):
+#     name='mstring'
+#     _defVal = ''
+#     th = TH.mk()
 
 class TypeRegexp(VType):
     name='re'
