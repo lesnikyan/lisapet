@@ -10,7 +10,8 @@ from vals import numLex
 from cases.utils import *
 
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
+# from objects.func import Function
+# from nodes.func_expr import setNativeFunc
 from nodes.structs import *
 
 from context import Context
@@ -51,6 +52,7 @@ class TestOper(TestCase):
         func foo()
             "function_resUlT"
         
+        # res <- '12'
         
         src = [
             ("abc", 0),
@@ -87,7 +89,7 @@ class TestOper(TestCase):
             res <- (s, index, s[index]) 
         
         
-        # print('res = ', res)
+        print('res = ', res)
         ''')
         code = norm(code[1:])
 
@@ -106,6 +108,7 @@ class TestOper(TestCase):
                ('qwerty', 2, 'e'), ('perin', -1, 'n'), ('xyzlog', 2, 'z'), ('abc', 1, 'b'), ('def', 2, 'f'), 
                ('function_resUlT', 2, 'n'), ('function_resUlT', 8, '_'), 
                ('function_resUlT', -3, 'U'), ('function_resUlT</~:>', -3, '~')]
+        exv = []
         self.assertEqual(exv, rvar.vals())
 
     def test_code_string_plus(self):

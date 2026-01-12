@@ -118,7 +118,7 @@ class CaseStructBlockDef(SubCase):
         return base
 
 
-class CaseStructConstr(SubCase):
+class CaseStructConstr(SubCase, SolidCase):
     ''' 
         inline struct creation
         Example:
@@ -163,10 +163,6 @@ class CaseStructBlockConstr(SubCase):
                 field: val
                 field: val
     '''
-    # def match(self, elems:list[Elem]) -> bool:
-    #     if len(elems) != 1:
-    #         return False
-    #     return InterpretContext.get().hasStruct(elems[0].text)
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         # typeName = elems[0].text
@@ -174,7 +170,4 @@ class CaseStructBlockConstr(SubCase):
 
     def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
         dprint('StructConstr.setSub empty: ', base, subs)
-        # for exp in subs:
-        #     base.add(exp)
-        # return base
 

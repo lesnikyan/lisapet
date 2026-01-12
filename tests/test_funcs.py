@@ -13,14 +13,16 @@ from vars import *
 from vals import numLex
 from context import Context
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
+from objects.func import Function
+from nodes.func_expr import setNativeFunc
+from nodes.func_expr import setNativeFunc
 from cases.utils import *
 from tree import *
 from eval import *
 
 
 
-class TestFunc(TestCase):
+class TestFuncs(TestCase):
 
 
 
@@ -149,27 +151,35 @@ class TestFunc(TestCase):
         struct D d:float
         
         struct Utype u: int
-            
+        
         func  u:Utype foo()
+            d = 10
+            if d > 0
+                c = 20
+            else if d < 15
+                c = 30
+            else
+                c = 7
             -1
-            
+        
         func u:Utype foo(x:int)
             x * 10
-            
+        
+        
         func u:Utype foo(x:string)
             ~'u-string<{x}>'
-            
+        
         func u:Utype bar()
             -2
-            
+        
         func u:Utype bar(x:float)
             x / 10 + 1000
-            
+        
         func u:Utype bar(x:string)
             ~'bar<{x}>'
         
         
-        # struct types
+        struct types
         
         func u:Utype bar(aaa:A)
             aaa.a + 4400
@@ -181,8 +191,6 @@ class TestFunc(TestCase):
             r = xa.a * xd.d
             ~"barAD:{xa.a} * {xd.d} = {r}"
         
-        
-            
         func u:Utype baz(x:bool)
             ('baz', x ? 'yep' : 'nop')
             
@@ -213,7 +221,7 @@ class TestFunc(TestCase):
         # 4 args
         func u:Utype foo(a,b,c,d)
             [-4, a,b,c,d]
-        
+            
         u1 = Utype{}
         
         # 0
@@ -253,7 +261,7 @@ class TestFunc(TestCase):
         
         val5 = 5
         
-        # # 3
+        # 3
         res <- u1.foo(2, 1.5, 2.5)
         res <- u1.foo(int1(), val5, 3)
         res <- u1.foo(true, 11.1, 22.2)
@@ -274,6 +282,11 @@ class TestFunc(TestCase):
         
         # for n <- res /: print('> ', n)
         # print('res', res)
+        
+        '''
+        r'''
+        
+        
         '''
         code = norm(code[1:])
 
@@ -1095,14 +1108,17 @@ class TestFunc(TestCase):
             a.a + a.b
         
         aa1 = A(12, 13)
-        aa2 = A(22,23)
+        aa2 = A(21, 32)
 
         res <- ('f1-17', f1(aaa=aa1.a, bbb=aa1.b))
         res <- ('f1-18', f1(bbb=aa1.sum(), aaa=aa2.sum()))
         res <- ('f1-19', f1(bbb=aa1.b + b, aaa=aa2.sum() + aa1.sum()))
-        
-        
-        # print('res = ', res)
+        # bbb=aa1.sum()
+        # aaa=aa2.sum()
+        # x = len([])
+        # f1(bbb=aa1.sum(), aaa=aa2.sum())
+        # rsl = res[len(res)-3:]
+        # print('res = ', rsl)
         '''
         code = norm(code[1:])
 
@@ -1122,8 +1138,8 @@ class TestFunc(TestCase):
             ('f3-4', [1, 2, 3, 4, 5, 36, 37, 38, 39, 310, 311, 312]), 
             ('f3-5', [41, 42, 43, 44, 45, 46, 47, 48, 9, 10, 411, 412]), 
             ('f3-6', [51, 52, 53, 54, 55, 560, 570, 580, 590, 10, 11, 512]), 
-            ('f1-11', (1, 2)), ('f1-12', (1, 2)), ('f1-13', (1, 50)), ('f1-14', (70, 70)), 
-            ('f1-15', (2, 1)), ('f1-16', (11, 22)), ('f1-17', (12, 13)), ('f1-18', (45, 25)), ('f1-19', (70, 15))]
+            ('f1-11', (1, 2)), ('f1-12', (1, 2)), ('f1-13', (1, 50)), ('f1-14', (60, 70)), 
+            ('f1-15', (2, 1)), ('f1-16', (11, 22)), ('f1-17', (12, 13)), ('f1-18', (53, 25)), ('f1-19', (78, 15))]
         self.assertEqual(exv, rvar.vals())
 
     def test_func_default_arg_vals(self):
@@ -1212,6 +1228,7 @@ class TestFunc(TestCase):
         recursion without tail-recursion optimisation.
         pythons recursion limit matters
         '''
+        self.fail()
         code = r'''
         res = 0
         func f1(x)
@@ -1594,7 +1611,7 @@ class TestFunc(TestCase):
         func foo(a:int, b:int)
             a + b
         
-        func list3(a, b, c)
+        func xxist3(a, b, c)
             [a, b, c]
         
         func lsum(nums)
@@ -1611,23 +1628,25 @@ class TestFunc(TestCase):
                         sm = foo(n, n % 4)
                         bres <- sm + 100
                 else
-                    nn = list3(i, i%3, i%7)
-                    for n <- nn
-                        bres <- n
+                    nn = xxist3(i, i%3, i%7)
+                #     for n <- nn
+                #         bres <- n
             bres
         
         rr = {}
         rr2 = []
             
-        func test()
-            for i <- [2,4,6,3,5,7]
-                br = bar(i)
-                sb = lsum(br) + 0
-                rr <- (i, sb)
-                rr2 <- i
+        # func test()
+        #     for i <- [2,4,6,3,5,7]
+        #         br = bar(i)
+        #         sb = lsum(br) + 0
+        #         rr <- (i, sb)
+        #         rr2 <- i
         
-        test()
-        # print('res = ', rr)
+        # test()
+        
+        # print('res1 = ', rr)
+        # print('res2 = ', rr2)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)

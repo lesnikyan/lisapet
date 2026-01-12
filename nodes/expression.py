@@ -7,6 +7,14 @@ from vars import *
 from typex import *
 from context import *
 
+
+
+
+def repr(obj):
+    if not obj:
+        return str(obj)
+    return '%s= %s' % (obj.__class__.__name__, '~%03d' % (hash(obj) % 1000))
+
 class Expression:
     def __init__(self, val=None, src=None):
         self.val = val

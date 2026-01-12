@@ -7,6 +7,7 @@ from vals import isDefConst, elem2val, isLex
 
 from cases.utils import *
 from cases.tcases import *
+# from cases.funcs import CaseFunCall
 from nodes.oper_nodes import *
 from nodes.datanodes import *
 
@@ -79,7 +80,7 @@ class CaseAssign(SubCase):
         return base
 
 
-_operPrior = ('() [] . , -x !x ~x , ** , * / % , + - ,'
+_operPrior = ('() [] {} , . , -x !x ~x , ** , * / % , + - ,'
 ' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, ::, == != , &, ^ , | , && , ||, ?: , : , ? , <- , = += -= *= /= %= , ; , /:,  !: :?, !-  ') #
 
 
@@ -94,6 +95,7 @@ class CaseBinOper(SubCase):
         priorGroups = _operPrior.split(',')
         self.priorGroups = [[ n for n in g.split(' ') if n.strip()] for g in priorGroups]
         self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
+        # self.funcCall = CaseFunCall()
 
     def match(self, elems:list[Elem]) -> bool:
         # print('CaseBinOper.match', type(self).__name__)
@@ -317,7 +319,7 @@ def makeUnary(elem:Elem)->OperCommand:
         return BoolNot(oper)
 
 
-class CaseBrackets(SubCase):
+class CaseBrackets(SubCase, SolidCase):
     ''' cases:
         math expression,
         call function
@@ -361,7 +363,7 @@ def checkTypes(elems:list[Elem], exp:list[int]):
     return True
 
 
-class CaseListGen(SubCase):
+class CaseListGen(SubCase, SolidCase):
     ''' [startVal..endVal] '''
     def match(self, elems:list[Elem]) -> bool:
         # trivial check
@@ -392,7 +394,7 @@ class CaseListGen(SubCase):
         return base
 
 
-class CaseListComprehension(SubCase):
+class CaseListComprehension(SubCase, SolidCase):
     '''
     List comprehantion. As possible used haskell-like syntax.
     We don`t use verticall bar (| as haskell) because it olready is used as a bitwise OR with another precedence.

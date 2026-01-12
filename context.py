@@ -105,7 +105,7 @@ class Context(NSContext):
     def addTypeMethod(self, typeName, func:FuncInst):
         typeVal = self.getType(typeName)
         xtype:TypeStruct|FuncBinder = typeVal.get()
-        dprint('**addTypeMethod', typeName, xtype, func)
+        # print('**addTypeMethod', typeName, xtype, func)
         if not isinstance(xtype, TypeStruct):
             raise EvalErr('Strange  type fpund by name `%s`' % typeName, xtype)
         xtype.addMethod(func)

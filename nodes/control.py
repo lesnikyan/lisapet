@@ -93,22 +93,40 @@ class IfExpr(ControlBlock):
 
 
 class ElsFold:
+    '''
+    class covers main IF for folding inner `else if.
     
+    '''
     def __init__(self, main:IfExpr):
         self.top:IfExpr = main
         self.cur:IfExpr = main
+        self._lastElse = False
     
     def setNext(self, exp:ElseExpr):
         # self.cur.toElse(exp)
         # subIf = exp.subIf
         # self.cur.add(subIf)
+        
+        if self._lastElse:
+            raise EvalErr("Can't put more `if` after `else` without subIf.")
         self.cur = exp.subIf
 
     def add(self, exp:Expression):
+        print(' -- ElsFold.add  >', expSrc(exp), self.cur)
         self.cur.add(exp)
     
     def toElse(self, exp:ElseExpr):
+        if self._lastElse:
+            raise EvalErr("Can't put more `else` after `else` without subIf.")
+        if not exp.hasIf():
+            self._lastElse = True
         self.cur.toElse(exp)
+
+    def lastElse(self):
+        return self._lastElse
+
+    def getCur(self)->ElseExpr:
+        return self.cur
 
     def getMain(self):
         return self.top

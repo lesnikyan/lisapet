@@ -171,13 +171,6 @@ class ListVal(Collection):
         if i >= len(self.elems):
             raise EvalErr('List out of range by index %d ' % i)
         self.elems[i] = val
-
-    # def getVal(self, key:Val|int):
-    #     raise XDebug("dict getVal")
-        # i = key.getVal()
-        # if i < len(self.elems):
-        #     return self.elems[i]
-        # raise EvalErr('List out of range by index %d ' % i)
     
     def getElem(self, key:Val):
         i = key.getVal()
@@ -195,6 +188,7 @@ class ListVal(Collection):
         return ListVal(elems=self.elems[:])
 
     def get(self):
+        # print('ListVal.get', len(self.elems))
         return  [n.get() for n in self.elems] # debug
 
     def delete(self, index:Val):
@@ -425,7 +419,7 @@ class Regexp(Val):
 
 class FuncBinder(FuncSpace):
     '''
-    Binds functions to the type like method tu struct definition
+    Binds functions to the type like method to struct definition
     '''
     def __init__(self, btype:VType):
         '''

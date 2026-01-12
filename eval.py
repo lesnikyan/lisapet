@@ -27,7 +27,7 @@ def initFuncs(ctx:Context):
     setNativeFunc(ctx, 'replace', lstr.replace, TypeList)
     setNativeFunc(ctx, 'dkeys', dc.dict_keys, TypeList)
     setNativeFunc(ctx, 'ditems', dc.dict_items, TypeList)
-    
+    # print('>>>\n\n~~~!!!!\n\n')
     # bind methods
     bindNativeMethod(ctx, 'list', list_join, 'join', TypeString)
     bindNativeMethod(ctx, 'list', list_reverse, 'reverse', TypeList)

@@ -48,6 +48,10 @@ class OpAssign(AssignExpr):
 
     def add(self, expr:Expression):
         ''' where right is MultilineVal '''
+        print('OpAssig.add', expSrc(self.right), ' < ', expSrc(expr))
+        if isinstance(self.right, CallExpr):
+            rr = self.right
+            print('OpAsg. CallExpr:', rr)
         self.right.add(expr)
 
     def doRight(self, ctx:Context, leftSize):

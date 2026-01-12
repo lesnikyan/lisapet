@@ -5,8 +5,7 @@
 
 from nodes.iternodes import *
 from nodes.structs import StructInstance
-from nodes.func_expr import Function
-
+from objects.func import Function
 
 def loop_iter(_, *args):
     beg, over, step = Val(0, None), Val(0, None), Val(1, None)

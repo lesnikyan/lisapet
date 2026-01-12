@@ -11,8 +11,6 @@ from vars import *
 from vals import numLex
 from context import Context
 from eval import rootContext
-# from nodes.tnodes import Var
-# from nodes import setNativeFunc, Function
 from tree import *
 # from nodes.structs import *
 # import pdb

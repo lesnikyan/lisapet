@@ -12,7 +12,8 @@ from vars import *
 from vals import numLex
 from context import Context
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
+from objects.func import Function
+from nodes.func_expr import setNativeFunc
 from cases.utils import *
 from tree import *
 from eval import *

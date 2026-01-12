@@ -19,7 +19,7 @@ from eval import rootContext, moduleContext
 
 from cases.utils import *
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
+# from nodes import setNativeFunc, Function
 from tests.utils import *
 from libs.regexp import *
 

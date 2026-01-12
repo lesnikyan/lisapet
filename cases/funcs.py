@@ -145,7 +145,7 @@ class CaseMathodDef(CaseFuncDef):
     def setSub(self, base:MethodDefExpr, subs:Expression|list[Expression])->Expression:
         inst = subs[0]
         args = []
-        # dprint('CaseMathodDef seSub1', base, subs)
+        print('CaseMathodDef seSub1', base, subs)
         if len(subs) > 1:
             args = subs[1:]
         dprint('CaseMathodDef seSub2', base, inst, args)
@@ -156,7 +156,7 @@ class CaseMathodDef(CaseFuncDef):
 
 
 
-class CaseFunCall(SubCase):
+class CaseFunCall(SubCase, SolidCase):
     ''' foo(agrs)
         {expr}(args)'''
 
@@ -217,7 +217,7 @@ class CaseFunCall(SubCase):
         exp = FuncCallExpr(elemStr(valExpr), src)
         # print('FCall.split1', valExpr, args)
         subs = [valExpr] + args
-        # print('FCall.split2', elemStr(valExpr), exp, subs)
+        print('FCall.split2', elemStr(valExpr), 'Exp:',exp, 'subs:', [elemStr(s) for s in subs])
         return exp, subs
 
     def setSub(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 

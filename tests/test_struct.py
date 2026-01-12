@@ -10,7 +10,6 @@ from vals import numLex
 from context import Context
 from eval import rootContext
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
 from tree import *
 from nodes.structs import *
 import pdb
@@ -389,17 +388,15 @@ class TestStructs(TestCase):
         ''' struct method definition  '''
         code = '''
         
-        func xprint(arg)
-            print('<x>', arg, '<x>')
+        # func xprint(arg)
+        #     print('<x>', arg, '<x>')
         
         struct User
             name: string 
 
         func u:User setName(name)
-            # print('x@1', name)
-            # print('x@2', u.name)
             u.name = name
-            # print('x@3', u.name)
+        
         user = User{name:'Markos'}
         user.setName('Lukas')
         # xprint(user.name)
@@ -414,7 +411,7 @@ class TestStructs(TestCase):
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
         ctx = rootContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         usr = ctx.get('user').get()
         # print('#tt user.name:', usr.get('name').get())
         self.assertEqual('Lukas', usr.get('name').get())
