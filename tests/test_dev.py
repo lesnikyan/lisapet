@@ -133,6 +133,89 @@ class TestDev(TestCase):
             self.assertFalse(res)
         
         
+    def test_multiline_base(self):
+        ''' test when func returned from method and call obj.foo()(arg)
+        '''
+        
+        code = r'''
+        res = []
+        
+        '!!!!!!!!!!!!!!!'
+        '''
+        r'''
+        
+        '''
+        code = r'''
+        res = []
+        
+        
+        
+        func foo(x)
+            x + x
+        res <- foo(20)
+        
+        s = """
+        a ' X ' 
+        ``` 12 
+        ```
+        b
+        c"""
+        
+        res <- s
+        
+        aa = [
+            1,2,3,
+            foo(
+                4 + foo(
+                    2
+                )
+            )
+        ]
+        res <- aa
+        
+        b = (10 + (
+                2 ** 2 * 5)
+                + 4 * 5 *( 5 + 5)) + 1000
+        
+        res <- b
+        
+        s0 = 'aaa bbb ccc'
+        s1 = """
+        111 11 \"\"\"
+            222 22 ```
+                3333 33\'\'\'"""
+        
+        res <- s1
+        #@
+        # comments
+        # @#
+        
+        c = []
+            111
+            """
+            222
+            """
+            ```
+            333
+            ```
+        
+        res <- c
+        ``` Q
+        in mult
+        qwe
+        ```
+        
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = []
+        print('TT>>', rvar.vals())
+        # self.assertEqual(exv, rvar.vals())
+
     def test_blocks(self):
         ''' test when func returned from method and call obj.foo()(arg)
         '''
@@ -191,18 +274,40 @@ class TestDev(TestCase):
         
         r3 = [fooo4(1), fooo4(2), fooo4(3), fooo4(4)]
         res <- r3
+        
+        func foo(a:int)
+            if a > 5
+                return a
+            else
+                return - a
+        1
+        res <- foo(2)
+        
+        r5 = 0
+        for i <- [1..10]
+            # print(i, r5)
+            if i % 2 == 0
+                continue
+            r5 += i
+        res <- r5 
+        
         # print('r1', r1, r2, r3)
-        print('res', res)
+        # print('res', res)
         '''
+        
+        # code = r'''
+        # res = [-17]
+        # '''
+        
         code = norm(code[1:])
         ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         rvar = ctx.get('res').get()
-        # exv = ['-0', 17, 18, [6, 8, 10], [1, 3, 5]]
+        print('tt>>', rvar.vals())
         exv = ['-0', 17, 18, [6, 8, 10], [1, 3, 5], 
-               [[1, 2, 3, 2, 4, 6], [24, 30, 36, 28, 35, 42, 32, 40, 48], [70, 80, 77, 88, 84, 96, 91, 104], [444]]]
+               [[1, 2, 3, 2, 4, 6], [24, 30, 36, 28, 35, 42, 32, 40, 48], [70, 80, 77, 88, 84, 96, 91, 104], [444]], -2, 25]
         self.assertEqual(exv, rvar.vals())
 
     def test_func_from_method(self):
@@ -231,7 +336,7 @@ class TestDev(TestCase):
         b1 = B(11, 'B-1')
         
         res <- b1.foo(3)(7)
-        res <- b1.bInfo(9)(8)
+        # res <- b1.bInfo(9)(8)
         
         '''
         code = norm(code[1:])

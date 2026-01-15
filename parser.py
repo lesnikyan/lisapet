@@ -231,6 +231,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
             # dprint('>>mtc:: ', cur, ' >> ', cur[-2:])
             if ''.join(cur[-2:]) == '@#':
                 cur = nextRes(cur, curType, '')
+                cur = nextRes(cur, Lt.mclose, '')
                 curType = Lt.none
             continue
     
@@ -265,6 +266,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 continue
 
             if curType == Lt.text and openQuote == s:
+                # close one-line string
                 # print('text / quote', openQuote ,'::', s, '>>', cur)
                 cur = nextRes(cur, curType, '')
                 curType = Lt.quot
@@ -275,11 +277,16 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 continue
             
             if i > 1 and curType == Lt.mttext and sType == Lt.quot:
-                # print('MTEXT Quot', src[i-2: i+1], ' open:', openMultStr)
+                print('MTEXT Quot', src[i-2: i+1], ' opened by:', openMultStr)
                 if src[i-2: i+1] == openMultStr:
-                    cur = nextRes(cur[:-2], curType, src[i-2: i+1])
-                    curType = Lt.quot
-                    cur = nextRes(cur, curType, '')
+                    # close multiline string
+                    cur.append(s)
+                    print('close m-string', cur, '|', curType, '||', src[i-2: i+1])
+                    cur = nextRes(cur, curType, src[i-2: i+1])
+                    # curType = Lt.quot
+                    curType = Lt.mclose
+                    # cur = nextRes(cur, curType, '')
+                    cur = nextRes(cur, Lt.mclose, '')
                     curType = Lt.none
                     openMultStr = None
                     continue
@@ -312,8 +319,8 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                     openMultStr = src[i-2: i+1]
                     cur = [openMultStr] # like: ['"""']
                     # dprint('Start multiline ', openMultStr )
-                    del res[-1]
-                    cur = nextRes(cur, Lt.mttext, '')
+                    del res[-1] # prev 2 quotes
+                    # cur = nextRes(cur, Lt.mttext, '')
                     curType = Lt.mttext
                     continue
                     
@@ -361,14 +368,53 @@ def splitLexems(text: str) -> list[TLine]:
             extArg = r3
             # print('splLex..', [(x.val, Lt.name(x.ltype), x.mark) for x in nextLine.lexems])
             # res.extend(nextLine)
-            # dprint('--- split res --->', [(x.val, x.ltype) for x in nextLine.lexems])
-            if res and lastType in [Lt.mtcomm, Lt.mttext] and endType == lastType:
-                # join cure line to prev
-                lasTLine = res[-1]
-                lasTLine.lexems.extend(nextLine.lexems)
-                lasTLine.src += nextLine.src
-                res[-1] = lasTLine
-                continue
+            print('--- split res --->', Lt.name(lastType), '::', [(x.val, Lt.name(x.ltype)) for x in nextLine.lexems])
+            # if res and lastType in [Lt.mtcomm, Lt.mttext] and endType == lastType:
+            if lastType in [Lt.mtcomm, Lt.mttext] and nextLine.lexems:
+                if nextLine.lexems[0].ltype == lastType:
+                    # join cur line to prev
+                    lastLine:TLine = res[-1]
+                    # append lex string
+                    lastLine.lexems[-1].val += nextLine.lexems[0].val
+                    lastLine.src += nextLine.src
+                    # continue last line
+                    lastLine.lexems.extend(nextLine.lexems[1:])
+                    res[-1] = lastLine
+                    # here we has updated res
+                    lastType = endType if endType in [Lt.mtcomm, Lt.mttext] else Lt.none
+                    continue
+                    
+                    # mType = lastType
+                    # rpart = []
+                    # '''
+                    # ``` aaa
+                    # bbb
+                    # ccc ``` + '123' + ```
+                    # ddd
+                    # eee
+                    # ```
+                    
+                    # '''
+                    # # get end of multiline part
+                    
+                    # for rlex in nextLine.lexems:
+                    #     # rpart.append(rlex)
+                    #     if rlex.ltype != mType:
+                    #         if rlex.ltype == Lt.mclose:
+                    #             print('Prs. mtype close:', Lt.name(lastType))
+                    #             lasTLine.lexems.extend(nextLine.lexems)
+                    #             lasTLine.src += nextLine.src
+                    #             res[-1] = lasTLine
+                    #         break
+                    # # part after closed multiline
+                    # # endPart = nextLine.lexems[len(rpart):]
+                    # print('pars.#11', [n.val for n in rpart], endPart)
+                    # # lasTLine.lexems.extend(nextLine.lexems)
+                    # res[-1] = lasTLine
+                    # if endPart:
+                    #     res.append(endPart)
+                    #     lastType = Lt.none
+                    # continue
             
             if len(nextLine.lexems) == 0:
                 continue
@@ -400,6 +446,7 @@ def elemLine(src:TLine)->CLine:
     ''' '''
     # prep:list[lex] = []
     ind = 0
+    print('Prs#12', src)
     if len(src.lexems) == 0:
         return CLine() # or None
     # print('@@lexms:', ','.join([lx.val for lx in src.lexems]))

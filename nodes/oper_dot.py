@@ -101,7 +101,7 @@ class ModuleMember:
 class OperDot(BinOper):
     ''' inst.field '''
 
-    def __init__(self, member):
+    def __init__(self, member=None):
         super().__init__('.')
         # obj, foo(), arr[key], obj.sub 
         self.objExp:VarExpr = None

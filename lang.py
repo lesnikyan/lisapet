@@ -56,8 +56,9 @@ class Lt:
     indent = 14 # set of spaces, 4-th by default,
     mtcomm = 15 # multiline comment
     mttext = 16 # multiline string
+    mclose = 17 # close multiline cases
     
-    _names:str = 'none space word lang num oper comm text quot esc . block close endline indent mtcomm mttext'
+    _names:str = 'none space word lang num oper comm text quot esc . block close endline indent mtcomm mttext mclose'
     
     @classmethod
     def name(c, val):
@@ -83,6 +84,10 @@ class TLine:
         # print ('TLine:', src, ' ::', lexems)
         # print('#a51:', [(x.val, Lt.name(x.ltype), x.mark) for x in lexems])
         # print('#a52:', [n.val for n in self.lexems])
+
+    def add(self, part:'TLine'):
+        self.src += part.src
+        self.lexems += part.lexems
 
 
 class CLine:

@@ -108,7 +108,6 @@ class TestOper(TestCase):
                ('qwerty', 2, 'e'), ('perin', -1, 'n'), ('xyzlog', 2, 'z'), ('abc', 1, 'b'), ('def', 2, 'f'), 
                ('function_resUlT', 2, 'n'), ('function_resUlT', 8, '_'), 
                ('function_resUlT', -3, 'U'), ('function_resUlT</~:>', -3, '~')]
-        exv = []
         self.assertEqual(exv, rvar.vals())
 
     def test_code_string_plus(self):
@@ -563,10 +562,9 @@ class TestOper(TestCase):
         func unar(cond)
             inv = false
             if cond && ! inv
-                # print('inverted')
                 return true
             false
-                
+
         res = unar(true)
         '''
         code = norm(code[1:])

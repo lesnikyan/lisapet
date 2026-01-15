@@ -65,14 +65,14 @@ class TestRegexp(TestCase):
         code = r'''
         src = """a11 b22,c33
         d44;d45
-        e55|f66    g77 h88 i99 /j101-k202--n204
-        """
+        e55|f66    g77 h88 i99 /j101-k202--n204"""
+        
         parts = split(src, re`[\s\n\t\|/;,-]+`)
         res = []
         for s <- parts
             res <- ~'<{s}>'
         
-        # print('parts:', parts)
+        print('parts:', parts)
         # print(res)
         '''
         code = norm(code[1:])

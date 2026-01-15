@@ -81,7 +81,7 @@ class TestLang(TestCase):
     def test_null_struct(self):
         ''' null, val, var, structVar = null '''
         code = r'''
-        
+        re = []
         struct A a:int
         
         func foo()
@@ -89,6 +89,7 @@ class TestLang(TestCase):
         
         a = A{a:1}
         a = null
+        
         b = null
         c = b
         d = foo()
@@ -101,20 +102,22 @@ class TestLang(TestCase):
         
         res = [a, b, c, d, f, g, h]
         
+        
         # print('res = ', res)
         '''
+        
         code = norm(code[1:])
         # dprint('>>\n', code)
         # return
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        exp = lex2tree(clines)
         ctx = rootContext()
-        ex.do(ctx)
+        exp.do(ctx)
         rvar = ctx.get('res').get()
         exp = [Null(), Null(), Null(), Null(), Null(), Null(), Null()]
-        # dprint('exp', exp)
-        # dprint('res', rvar.vals())
+        # # dprint('exp', exp)
+        # print('res', rvar)
         res = rvar.vals()
         for i in range(max(len(exp), len(res))):
             self.assertEqual(type(exp[i]), type(res[i]))
@@ -259,20 +262,25 @@ class TestLang(TestCase):
             r = a + b
             [r, a, b]
         
+        # res = foo(1,2,3)
+        
         res = foo(
             1,2,
             3
             )
-        # print('res=', res)
+            
+        print('res=', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
-        ctx = rootContext()
+        
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
         ex.do(ctx)
         res = ctx.get('res').get()
-        # dprint('tt>', res.vals())
+        print('tt>', res)
         self.assertEqual([3,1,2], res.get())
 
     def test_unclosed_brackets_expr(self):
@@ -345,24 +353,28 @@ class TestLang(TestCase):
         \t
         \\ / \' \" ` ( +- )
         <a href='main-page.html'>Main page</a>
+        
         '''
         
         expVal = norm(expVal[1:])[:-1]
         fpath = filepath('multilines.et')
         with open(fpath, 'r') as f:
             code = f.read()
-            tlines = splitLexems(code)
-            clines:CLine = elemStream(tlines)
-            exp = lex2tree(clines)
+            ex = tryParse(code)
             ctx = rootContext()
             # dprint('$$ run test ------------------')
-            exp.do(ctx)
+            trydo(ex, ctx)
             mstr1 = ctx.get('mstr')
             res = mstr1.getVal()
-            # dprint('#tt e>', [s for s in expVal])
-            # dprint('#tt r>', [s for s in res])
-            # for i in range(len(res)):
-            #     self.assertEqual(res[i], expVal[i], ' i: %d / `%s`<>`%s` ' % (i, res[i], expVal[i]) )
+            # print('EXP:', f'|{expVal}|')
+            # print('RES:', f'|{res}|')
+            # for i in range(0, 132, 40):
+            #     print(i, i+40)
+            #     print('#tt e>', [s for s in expVal[i:i+40]])
+            #     print('#tt r>', [s for s in res[i:i+40]])
+            for i in range(len(expVal)):
+            #     print(' i: %d / `%s`<>`%s` ' % (i, res[i], expVal[i]))
+                self.assertEqual(res[i], expVal[i], ' i: %d / `%s`<>`%s` ' % (i, res[i], expVal[i]) )
             self.assertEqual(expVal, res)
 
     def test_multiline2(self):

@@ -43,13 +43,13 @@ class TestControl(TestCase):
         
         print('len res=', len(res))
         # for /: if /:
-        # r2 = []
-        # for n <- res /:  if n % 2 > 0 /: k=n; n += 1 ; r2 <- n + 1000
-        # res += r2
+        r2 = []
+        for n <- res /:  if n % 2 > 0 /: k=n; n += 1 ; r2 <- n + 1000
+        res += r2
         
         # expression before controls
-        # r3 = []; (for i <- [1..5] /: if n=i*2; n >5 /: x = i * 10; y = i + 100; r3 <- (x + y))
-        # res += r3
+        r3 = []; (for i <- [1..5] /: if n=i*2; n >5 /: x = i * 10; y = i + 100; r3 <- (x + y))
+        res += r3
         
         # print('res = ', res)
         '''
@@ -62,11 +62,11 @@ class TestControl(TestCase):
         rCtx:Context = rootContext()
         ctx = rCtx.moduleContext()
         ex.do(ctx)
-        # # rvar = ctx.get('res')
-        # # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # exp = [11, 22, 33, 300, 600, 900, 30, 35, 40, 45, 50, 1012, 1034, 1036, 1046, 133, 144, 155]
-        # self.assertEqual(exp, rvar.vals())
+        # rvar = ctx.get('res')
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        exp = [11, 22, 33, 300, 600, 900, 30, 35, 40, 45, 50, 1012, 1034, 1036, 1046, 133, 144, 155]
+        self.assertEqual(exp, rvar.vals())
 
 
     def test_for_if_for_case(self):
@@ -342,7 +342,7 @@ class TestControl(TestCase):
             ex.do(ctx)
             res = ctx.get('res').get()
             dprint('##################t-IF1:', )
-            # self.assertEqual(res, 45)
+            self.assertEqual(45, res.getVal())
 
     def test_for_expr(self):
         code = '''
@@ -359,8 +359,8 @@ class TestControl(TestCase):
         res = y
         '''
         code = norm(code[1:])
-        # data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
-        data = [6]
+        data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
+        # data = [6]
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
@@ -375,8 +375,10 @@ class TestControl(TestCase):
             rr = [ctx.get('res').get(), ctx.get('a').get() , ctx.get('b').get()]
             ress.append(rr)
             # ress.append(ctx.get('a').get())
-            dprint('##################t-IF1:', ctx.get('res').get())
-        dprint('all:', ress)
+            print('##################t-IF1:', ctx.get('res').get())
+            rval = ctx.get('res').get()
+            self.assertEqual(-100500, rval)
+        # dprint('all:', ress)
 
     def test_while_expr(self):
         code = '''

@@ -9,6 +9,7 @@ Here multi-line
 string \'\' " " ` `
 value.
 '''
+1
 mstr = '''
 string
 content

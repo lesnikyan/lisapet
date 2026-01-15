@@ -458,8 +458,9 @@ class CallExpr(Expression):
 
 
 class StringExpr(ValExpr):
-    def __init__(self, val:Val):
+    def __init__(self, val:Val, quot):
         super().__init__(val)
+        self.quot = quot
 
     def __str__(self):
         return 'StrExpr(%s)' % self.val
@@ -467,8 +468,8 @@ class StringExpr(ValExpr):
 
 class MString(StringExpr, MultilineVal):
     
-    def __init__(self, val):
-        super().__init__(val)
+    def __init__(self, val, quot):
+        super().__init__(val, quot)
         self.val = StringVal(''.join(val), TypeString())
 
     def add(self, next:'MString'):

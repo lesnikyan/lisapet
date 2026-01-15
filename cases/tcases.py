@@ -229,23 +229,32 @@ class CaseString(CaseVal, SolidCase):
         # print('StrCase:', elems, ' strlen=', len(elems))
         if len(elems) != 1:
             return False
-        if elems[0].type in [Lt.text, Lt.mttext]:
+        # if elems[0].type in [Lt.text, Lt.mttext]:
+        if elems[0].type in [Lt.text]:
             return True
         return False
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
-        res = StringExpr(elem2val(elems[0]))
+        res = StringExpr(elem2val(elems[0]), 'TODO:quot')
         return res
 
 
 class CaseMString(ExpCase):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
-        if len(elems) == 0:
+        if len(elems) != 1:
             return False
         if elems[0].type != Lt.mttext:
             return False
+        mqoutes = '""" ``` \'\'\''.split(' ')
+        # print('CMSt#1', '|%s|' % elems[0].text[:3], '',  elems[0].text[:3] in mqoutes)
+        print('CMSt#1', '|%s|' % elems[-1].text[-3:], '',  elems[-1].text[-3:] in mqoutes)
+        if elems[0].text[:3] not in mqoutes:
+            return False
+        if len(elems[-1].text) < 3 or elems[-1].text[-3:] not in mqoutes:
+            return False
+        
         for el in elems:
             if el.type != Lt.mttext:
                 return False
@@ -254,15 +263,15 @@ class CaseMString(ExpCase):
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
         res = []
-        i = -1
-        if elems[0].text[:3] in ' """ ``` \'\'\' ':
-            elems[0].text = elems[0].text[3:]
-        for el in elems:
-            i += 1
-            if el.type == Lt.mttext:
-                res.append(el.text)
-        res = MString(''.join(res))
-        # dprint('## MString')
+        # i = -1
+        # if elems[0].text[:3] in ' """ ``` \'\'\' ':
+        #     elems[0].text = elems[0].text[3:]
+        # for el in elems:
+        #     i += 1
+        #     if el.type == Lt.mttext:
+        #         res.append(el.text)
+        val = elems[0].text[3:-3]
+        res = MString(val, elems[0].text[:3])
         return res
 
 class CaseVar(ExpCase, SolidCase):
