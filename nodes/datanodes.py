@@ -98,6 +98,7 @@ class DictConstr(MultilineVal, DictExpr):
 class CollectElemExpr(Expression, CollectElem):
     
     def __init__(self):
+        super().__init__()
         self.target:Collection = None
         self.varExpr:Expression = None
         self.keyExpr = None

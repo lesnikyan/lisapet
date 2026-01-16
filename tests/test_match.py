@@ -551,12 +551,10 @@ class TestMatch(TestCase):
         '''
         code = norm(code[1:])
 
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         
         exp = [
             ['st@Type1{a: 0,b: 0}', 10], ['st@Type1{a: 10,b: 20}', 11], ['st@Type1{a: 10,b: 0}', 10], ['st@Type1{a: 10,b: 2}', 12], ['st@Type1{a: 1,b: 2}', 19], 

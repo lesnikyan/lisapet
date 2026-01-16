@@ -31,6 +31,11 @@ class EvalErr(LangError):
         super().__init__(*args)
 
 
+class Deprecated(EvalErr):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
 class TypeErr(LangError):
     def __init__(self, *args):
         super().__init__(*args)

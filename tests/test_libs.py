@@ -91,6 +91,8 @@ class TestLibs(TestCase):
         res <- [1,2,3,4,5].map(x -> x * 11)
         func f1(x)
             ~"({x})"
+        
+        dbg = "string0".map(f1)
         res <- "string1".map(f1)
         res <- "l i s t 2".split(' ').map(f1)
         res <- (1,2,3).map(x -> x * 5)
@@ -157,12 +159,10 @@ class TestLibs(TestCase):
         '''
         code = norm(code[1:])
 
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         
         rvar = ctx.get('res').get()
         exv = [

@@ -902,7 +902,7 @@ class TestFuncs(TestCase):
         a2.f2(3, 7, 2,3,4,5,6,7,8,9)
         res <- ('f2-2', a2.a)
         
-        # # # default-args after collector... never will passed by order, only by name
+        # default-args after collector... never will passed by order, only by name
         func a:A f4(x, nn..., pref='', post='')
             tt = [~"{pref}{x}{n}{post}" ; n <- nn]
             n = len(tt)
@@ -923,18 +923,16 @@ class TestFuncs(TestCase):
         '''
         code = norm(code[1:])
 
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         rvar = ctx.get('res').get()
         exv = [
             ('f1-0', 0), ('f1-0', 1), ('f1-0', 3), ('f1-0', 6), ('f1-0', 52),
             ('f2-2', 0), ('f2-2', 20), ('f2-2', 50), ('f2-2', 440),
-            ('f4-1 n=1', 'A-a'), ('f4-2 n=2', 'B-b B-c'), ('f4-3 n=5', 'C-c C-d C-e C-<? C-?>'),
-            ('f4-4 n=10', 'D-d D-e D-f D-g D-h D-i D-j D-k D-[= D-=]')
+            ('f4-1 n=1', 'A-a'), ('f4-2 n=2', 'B-b B-c'), ('f4-3 n=3', '<?C-c?> <?C-d?> <?C-e?>'),
+            ('f4-4 n=8', '[=D-d=] [=D-e=] [=D-f=] [=D-g=] [=D-h=] [=D-i=] [=D-j=] [=D-k=]')
         ]
         self.assertEqual(exv, rvar.vals())
 
@@ -1025,18 +1023,16 @@ class TestFuncs(TestCase):
         # all args passed by name
         res <- ('a.f1-1', a.f1(3, bbb='cc'))
         res <- ('f1-2', a.f1(aaa=2, bbb='dd'))
-        res <- ('f1-3', a.f1(bbb=4, aaa='E'))
+        res <- ('f1-3', a.f1(bbb='E', aaa=4))
         
         # print('res = ', res)
         '''
         code = norm(code[1:])
 
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         rvar = ctx.get('res').get()
         exv = [
             ('a.f1-0', ['A']), ('a.f1-1', ['bb', 'bb']), 
@@ -1228,7 +1224,7 @@ class TestFuncs(TestCase):
         recursion without tail-recursion optimisation.
         pythons recursion limit matters
         '''
-        self.fail()
+        # self.fail()
         code = r'''
         res = 0
         func f1(x)
@@ -1260,8 +1256,7 @@ class TestFuncs(TestCase):
             '', ' ', '123', 'a b c'
         ]
         nn <- """abc
-        def
-        """
+        def"""
         res = []
         for s <- nn
             res <- len(s)
@@ -1269,12 +1264,10 @@ class TestFuncs(TestCase):
         '''
         code = norm(code[1:])
 
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         rvar = ctx.get('res').get()
         self.assertEqual([0, 1, 3, 5, 7], rvar.vals())
 
@@ -1629,21 +1622,21 @@ class TestFuncs(TestCase):
                         bres <- sm + 100
                 else
                     nn = xxist3(i, i%3, i%7)
-                #     for n <- nn
-                #         bres <- n
+                    for n <- nn
+                        bres <- n
             bres
         
         rr = {}
         rr2 = []
             
-        # func test()
-        #     for i <- [2,4,6,3,5,7]
-        #         br = bar(i)
-        #         sb = lsum(br) + 0
-        #         rr <- (i, sb)
-        #         rr2 <- i
+        func test()
+            for i <- [2,4,6,3,5,7]
+                br = bar(i)
+                sb = lsum(br) + 0
+                rr <- (i, sb)
+                rr2 <- i
         
-        # test()
+        test()
         
         # print('res1 = ', rr)
         # print('res2 = ', rr2)

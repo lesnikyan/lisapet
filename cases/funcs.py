@@ -177,20 +177,34 @@ class CaseFunCall(SubCase, SolidCase):
             return False
         if elems[0].type == Lt.word and elems[0].text in KEYWORDS:
             return False
+        
+        r =  isSolidExpr(elems, getLast=True)
+        if not isinstance(r, tuple):
+            return False
+        ok, pos = r
+        print('FCall. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
+        # prels('F match', elems, show=1)
+        if pos == 1 and elems[0].type == Lt.oper:
+            # print('FCall. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
+            return False
+        if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '(') : 
+            return False
+        # exit()
+        print('F.Call/3')
         # TODO: use word(any-with-brackets) pattern
         
         # print('FuncCallMatch ---------1----------')
-        if not isGetValExpr(elems):
-            return False
+        # if not isGetValExpr(elems):
+        #     return False
         
-        # print('FuncCallMatch ---------2----------')
-        opInd = findLastBrackets(elems)
+        # # print('FuncCallMatch ---------2----------')
+        # opInd = findLastBrackets(elems)
 
-        if opInd < 1:
-            # means only brackets, no collection var before
-            return False
-        if not isLex(elems[opInd], Lt.oper, '('):
-            return False
+        # if opInd < 1:
+        #     # means only brackets, no collection var before
+        #     return False
+        # if not isLex(elems[opInd], Lt.oper, '('):
+        #     return False
         # print('FuncCallMatch ---------3----------')
         
         # endInd = afterNameBr(elems)

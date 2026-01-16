@@ -336,7 +336,7 @@ class TestDev(TestCase):
         b1 = B(11, 'B-1')
         
         res <- b1.foo(3)(7)
-        # res <- b1.bInfo(9)(8)
+        res <- b1.bInfo(9)(8)
         
         '''
         code = norm(code[1:])

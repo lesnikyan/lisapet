@@ -40,7 +40,7 @@ class Context(NSContext):
         
 
     def addType(self, tp:VType):
-        dprint('ctx.addType: ', tp, '::', type(tp))
+        print('ctx.addType: ', tp, '::', type(tp), tp.get())
         if not isinstance(tp, (VType, TypeVal)):
             raise EvalErr(f'Trying to put non-type {tp.name} to ctx.types.')
         # if tp.name not in self.types:
@@ -50,7 +50,8 @@ class Context(NSContext):
         elif isinstance(tp.get(), TypeStruct):
             name = tp.get().getName()
         if name in self.types:
-            raise EvalErr(f'Type {tp.name} already defined.')
+            print('ctx.types:', name, self.types)
+            raise EvalErr(f'Type {name} already defined.')
         # print('>>>>>>> :tp:', tp)
         tprop = TypeProperty(tp, FuncBinder(tp.get()))
         self.types[name] = tprop

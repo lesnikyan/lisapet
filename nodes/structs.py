@@ -53,7 +53,7 @@ class StructDef(TypeStruct):
         return self.__constr
 
     def addParent(self, superType: TypeStruct):
-        # dprint('StructDef. addParent1 :', superType)
+        print('StructDef. addParent1 :', superType)
         self.__parents[superType.getName()] = superType
         self.nmethods.extend([mt for mt in superType.nmethods if mt not in self.nmethods])
         self.nfields = [n for n in superType.nfields if n not in self.nfields] + self.nfields
@@ -107,6 +107,20 @@ class StructDef(TypeStruct):
             return None
         return self.__typeMethods[name]
 
+    def hasMethod(self, fname):
+        print('.---.hasMethod', self.nmethods)
+        # return fname in self.nmethods
+        return fname in self.methodList()
+
+    def methodList(self):
+        # TODO: need optimization
+        ms = list(self.__typeMethods.keys())
+        if self.__parents :
+            for _, stype in self.__parents.items():
+                mt = stype.methodList()
+                ms.extend(mt)
+        return ms
+
     def debug(self):
         mm = [(k, v) for k, v in self.__typeMethods.items()]
         return mm
@@ -141,9 +155,6 @@ class StructDef(TypeStruct):
 
     def getName(self):
         return self.name
-    
-    def hasMethod(self, fname):
-        return fname in self.nmethods
     
     def hasField(self, fname):
         if fname in self.fields:
@@ -396,10 +407,14 @@ class StructArgPair(Expression):
 class StructConstr(Expression):
     ''' Typename{[field-values]} '''
 
-    def __init__(self,  typeName):
+    def __init__(self, obj:Expression=None):
         super().__init__()
-        self.typeName:str = typeName
+        # self.typeName:str = typeName
+        self.objExpr = obj
         self.fieldExp = []
+
+    def setObj(self, obj:Expression):
+        self.objExpr = obj
 
     def add(self, fexp:Expression):
         if isinstance(fexp, ServPairExpr):
@@ -407,12 +422,33 @@ class StructConstr(Expression):
         self.fieldExp.append(fexp)
         self.inst = None
 
-    def do(self, ctx:Context):
+    def findType(self, ctx:Context):
         self.inst = None
-        stype = ctx.getType(self.typeName)
+        self.objExpr.do(ctx)
+        print('finfT.obj', self.objExpr, self.objExpr.get())
+        stype = self.objExpr.get()
+        # stype = ctx.getType(self.typeName)
+        if isinstance(stype, TypeVal):
+            return stype.get()
         # print('StructConstr.do1 >> ', stype)
-        inst = StructInstance(stype.get())
+        # if isinstance(stype, ModuleBox):
+        #     print('ModuleBox is object', self.typeName)
+        #     mbox:ModuleBox = stype
+        #     mbox.getType()
+        
+
+    def do(self, ctx:Context):
+        # self.inst = None
+        # stype = ctx.getType(self.typeName)
+        # print('StructConstr.do1 >> ', stype)
+        # if isinstance(stype, ModuleBox):
+        #     print('ModuleBox is object', self.typeName)
+        sType = self.findType(ctx)
+        print('Strc.{} type:', sType)
+            
+        inst = StructInstance(sType)
         vals = []
+        print('#dbg1', self.fieldExp)
         for fexp in self.fieldExp:
             fexp.do(ctx)
             # if val only
@@ -425,7 +461,7 @@ class StructConstr(Expression):
                 var2val(val)
                 inst.set(fname, val)
             else:
-                raise EvalErr('Struct def error: fiels expression returns incorrect result: %s ' % expRes)
+                raise EvalErr('Struct def error: field expression returns incorrect result: %s ' % expRes)
         if len(vals) > 0:
             inst.setVals(vals)
         # print('StructConstr: before defaults', len(vals))

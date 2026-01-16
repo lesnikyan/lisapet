@@ -201,20 +201,21 @@ class FuncCallExpr(CallExpr):
 
     def do(self, ctx: Context):
         # inne rcontext
-        print(f'\nF()', self.funcExpr )
+        print('F().do/1')
         
         self.funcExpr.do(ctx)
         
         func:Function|FuncOverSet = self.funcExpr.get()
+        # print(f'\nF() expr:', self.funcExpr, 'func:', func )
         
         args:list[Var] = []
         
         if isinstance(func, ObjectMember):
             obj:ObjectMember = func
             memVal = func.get(ctx)
-            print('objMem val=', memVal)
+            # print('objMem val=', memVal)
             func = memVal
-            print('F.do: ObjectMember', obj, func)
+            # print('F.do: ObjectMember', obj, func)
             inst = obj.getInst()
             args.append(inst)
             
@@ -261,6 +262,7 @@ class FuncCallExpr(CallExpr):
                 errMsg = f"Can't find overloaded function {self.name} with args = ({','.join([f'{n.__class__.__name__}' for n in callArgTypes])}) "
                 raise EvalErr(errMsg)
                 
+        print('#2# func-call do04: ', self.name, 'F:', func)
         if isinstance(func, Var):
             func = func.get()
         if isinstance(func, TypeVal):
@@ -269,15 +271,15 @@ class FuncCallExpr(CallExpr):
                 func = tVal.getConstr()
         # print('FCall.do.args:', self.name, args)
         self.func = func
-        # print('#1# func-call do01: ', self.name, 'F:', func)
+        print('#3# func-call do05: ', self.name, 'F:', func)
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
         if isinstance(self.func, VarUndefined):
             raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
         self.func.setArgVals(args, named)
         callCtx = Context(None)
-        if len(inspect.stack(0)) > 40 :
-            print('len(inspect.stack(0)) >>> ', len(inspect.stack(0)))
-            raise EvalErr(f'DEBUG {self.name}')
+        # if len(inspect.stack(0)) > 40 :
+        #     print('len(inspect.stack(0)) >>> ', len(inspect.stack(0)))
+        #     raise EvalErr(f'DEBUG {self.name}')
         self.func.do(callCtx)
         self.res = self.func.get()
 

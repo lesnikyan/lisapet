@@ -98,7 +98,8 @@ class CaseBinOper(SubCase):
         # self.funcCall = CaseFunCall()
 
     def match(self, elems:list[Elem]) -> bool:
-        # print('CaseBinOper.match', type(self).__name__)
+        # print('CaseBinOper.match', elemStr(elems))
+        # print(self.opers)
         elen = len(elems)
         inBr = 0
         if elen < 3:
@@ -117,12 +118,14 @@ class CaseBinOper(SubCase):
                 inBr -= 1
             if inBr > 0:
                 continue
+            print('el.text:', el.text, Lt.name(el.type))
+            
             if el.type != Lt.oper:
                 continue
             if i in [0, elen-1]:
                 continue 
             # in simple case if we have oper, it's operator case
-            if el.text in self.opers:
+            if el.text in self.opers and  el.text != '.':
                 return True
         return False
                 
@@ -230,8 +233,8 @@ def makeOperExp(elem:Elem)->OperCommand:
         return IsInExpr()
     if oper == '!?>':
         return IsInExpr(isNot=True)
-    if oper == '.':
-        return OperDot()
+    # if oper == '.':
+    #     return OperDot()
     if oper == '=~':
         return RegexpMatchOper()
     if oper == '?~':

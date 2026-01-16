@@ -146,9 +146,13 @@ expCaseList:list[ExpCase] = [
     # CaseVar_(), CaseVal(), CaseString(), CaseVar(), CaseBrackets() 
 ]
 
-patternMatchCases = [
-    MT_Other(), MTPtGuard(), MTMultiCase(), MTTypedVal(), MTDuaColon(),
+patternMatchCasesSolid = [
+    MT_Other(),
     MTVal(), MTString(), MTRegexp(), MTList(), MTTuple(), MTDict(), MTStruct(), 
+]
+
+patternMatchCasesCplx = [
+    MTPtGuard(), MTMultiCase(), MTTypedVal(), MTDuaColon(),
 ]
 
 
@@ -161,10 +165,8 @@ def simpleExpr(expCase:ExpCase, elems)->Expression:
     return expCase.expr(elems)
 
 
-def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
-    # print('#makePMatchExpr:', [(n.text, Lt.name(n.type)) for n in elems])
-    # print('\n#tree-makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
-    cases: list[ExpCase] = patternMatchCases
+def mtCases(elems:list[Elem], cases: list[ExpCase], parent:ExpCase=None)->MatchingPattern:
+    print('mtCases', [repr(cc) for cc in cases])
     if isinstance(parent, (MTList)):
         cases = pMListInnerCases
     for mtCase in cases:
@@ -178,6 +180,20 @@ def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
             else:
                 pattr = mtCase.expr(elems)
             return pattr
+    return None
+
+
+def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
+    # print('#makePMatchExpr:', [(n.text, Lt.name(n.type)) for n in elems])
+    print('\n#tree-makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
+    caseList = patternMatchCasesSolid
+    if not isSolidExpr(elems):
+        caseList = patternMatchCasesCplx
+        
+    found = mtCases(elems, caseList, parent)
+    if found:
+        return found
+    
     # print('DEBUG: No current MTCase for `%s` ' % '~'.join([n.text for n in elems]))
     raise InterpretErr('No current MTCase for `%s` ' % ''.join([n.text for n in elems]))
 

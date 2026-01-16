@@ -527,8 +527,11 @@ _keyWords = (
     'if else while for match func struct import @debug'
 ).split(' ')
 
-def isSolidExpr(elems:list[Elem]):
-    ''' single varName or chain of fields, subelem, call '''
+def isSolidExpr(elems:list[Elem], getLast=None):
+    ''' single varName or chain of fields, subelem, call 
+    
+        getLast - get pos of lastsubpart like word after dot, brackets
+    '''
     # print('isSolid #1', elemStr(elems))
     elen = len(elems)
     if elen == 0:
@@ -540,7 +543,7 @@ def isSolidExpr(elems:list[Elem]):
         return False
     
     fopers = _noDotOpers
-    # print(fopers)
+    # print('solid-fopers', fopers)
     opened = [] # brackets openede from right
     # cbr = []
     rob = list('}])')
@@ -557,16 +560,20 @@ def isSolidExpr(elems:list[Elem]):
             opened.append(el.text)
             continue
         if isLex(el, Lt.oper, rcb):
-           # close brackets
-           if len(opened) == 0:
-               # posibly multiline expr
-               return False
-           lastObr = opened.pop()
-           if bpairs[etx] != lastObr:
-               # incorrect brackets pair in closing
-               raise InterpretErr(f"incorrect brackets pair in closing `{etx}{bpairs[etx]}`")
+            # close brackets
+            if len(opened) == 0:
+                # posibly multiline expr
+                print('No-solid', )
+                return False
+            lastObr = opened.pop()
+            if bpairs[etx] != lastObr:
+                # incorrect brackets pair in closing
+                raise InterpretErr(f"incorrect brackets pair in closing `{etx}{bpairs[etx]}`")
                 # return False
-           continue
+            if len(opened) == 0 and getLast:
+                # last closed part found in solidExpr
+                return True, i
+            continue
         if not opened and isLex(el, Lt.oper, fopers):
             # any operator has been found not in brackets a + b
             # print('No Solid because of ', etx)
@@ -605,33 +612,40 @@ def isSeqElem(elems:list[Elem]):
     '''
 
 
-class SolidExprCase(SubCase):
-    ''' single varName or chain of fields, subelem, call
-        a.b
-        a.b[0]
-        a.b[0].c
-        a.b.c[0]
-        a.b().c
-        a.b()[0].c
-        a.b.c[0]()
-        a.b()()
-        a.b[0]()()
-        a.b[0]()()[0]
-        a.b[0]()().c
-        a.b[0]()().c[0]
+# class SolidExprCase(SubCase):
+#     ''' single varName or chain of fields, subelem, call
+#         a.b
+#         a.b[0]
+#         a.b[0].c
+#         a.b.c[0]
+#         a.b().c
+#         a.b()[0].c
+#         a.b.c[0]()
+#         a.b()()
+#         a.b[0]()()
+#         a.b[0]()()[0]
+#         a.b[0]()().c
+#         a.b[0]()().c[0]
         
     
-    '''
+#     '''
     
-    def __init__(self):
-        self.opSpl = OperSplitter()
+#     def __init__(self):
+#         self.opSpl = OperSplitter()
 
-    def match(self, elems:list[Elem]) -> bool:
-        self.opSpl.mainOper(elems)
+#     def match(self, elems:list[Elem]) -> bool:
+#         self.opSpl.mainOper(elems)
 
 
 class CaseDotName(SubCase, SolidCase):
-    ''' solidExpr.name '''
+    ''' solidExpr.name:
+        obj.name
+        "str".split
+        [1,2,3].map
+        foo().field
+        nn[key].field
+    
+    '''
 
     def match(self, elems:list[Elem]) -> bool:
         ''' '''

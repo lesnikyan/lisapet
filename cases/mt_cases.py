@@ -421,13 +421,13 @@ class MTStruct(MTContr):
         self.struCase = CaseStructConstr()
     
     def match(self, elems:list[Elem]) -> bool:
-        return self.struCase.match(elems)
+        return (elems[0].type == Lt.word) and self.struCase.match(elems)
 
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         # subPtts = self.split(elems)
         # exp = MCDict()
         constr, subs = self.struCase.split(elems)
-        stype = constr.typeName
+        stype = elems[0].text
         # print('MTStruct', stype, subs)
         exp = None
         if stype == '_':

@@ -654,8 +654,8 @@ class TestOper(TestCase):
                 vv.set(Val(v, TypeAny))
                 return vv
             ctx.addSet({k: tvar(k, v) for k,v in ctxData.items()})
-            # dprint('#tc11', td, mres)
             ex = elems2expr(elems)
+            print('#tc11', td, mres)
             ex.do(ctx)
             res = ex.get()
             # dprint(' -- #tr11',td, res.getType(), res.get())

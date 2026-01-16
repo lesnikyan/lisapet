@@ -114,7 +114,7 @@ class CaseStructBlockDef(SubCase):
         return exp, subs
 
     def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
-        dprint('CaseDictBlock.setSub empty: ', base, subs)
+        # dprint('CaseDictBlock.setSub empty: ', base, subs)
         return base
 
 
@@ -130,44 +130,70 @@ class CaseStructConstr(SubCase, SolidCase):
     '''
     def match(self, elems:list[Elem]) -> bool:
         '''
-        TypeName {dict-like part}
+        TypeName {dict-like args}
+        module.Typename{args}
+        future anonimous str:
+        _{args}
         '''
+        # prels('Struct{} match', elems, show=1)
         el0 = elems[0]
         if el0.type != Lt.word:
             return False
-        if len(elems) > 1:
-            dc = CaseDictLine()
-            return dc.match(elems[1:])
+        if len(elems) < 2:
+            return False
+        dc = CaseDictLine()
+        print(dc)
+        # get curvy brackets part
+        # be sure that case already checked as Solid expr
+        r =  isSolidExpr(elems, getLast=True)
+        print('Str.Match', r)
+        if not isinstance(r, tuple):
+            return False
+        ok, pos = r
+        print('lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
+        if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '{') : 
+            return False
+        # exit()
+        print('Scon')
+        return dc.match(elems[pos:])
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        typeName = elems[0].text
-        sub = elems[2:-1]
+        _, pos = isSolidExpr(elems, getLast=True)
+        typePart = elems[:pos]
+        argPart = elems[pos:]
+        argSub = argPart[1:-1]
         cs = CaseCommas()
-        subs = [sub]
-        if cs.match(sub):
-            _, subs = cs.split(sub)
-        return StructConstr(typeName), subs
+        subs = [argSub]
+        if cs.match(argSub):
+            _, subs = cs.split(argSub)
+        return StructConstr(), [typePart] + subs
 
     def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
-        dprint('StructConstr.setSub empty: ', base, subs)
-        for exp in subs:
-            base.add(exp)
+        print('StructConstr.setSub empty: ', base, subs)
+        base.setObj(subs[0])
+        args = subs[1:]
+        if args:
+            for exp in subs[1:]:
+                if isinstance(exp, NothingExpr):
+                    continue
+                base.add(exp)
         return base
 
 
-class CaseStructBlockConstr(SubCase):
-    ''' 
-        block struct creation
-        Example:
-            varName = TypeName
-                field: val
-                field: val
-    '''
+# class CaseStructBlockConstr(SubCase):
+#     ''' 
+#         block struct creation
+#         Example:
+#             varName = TypeName
+#                 field: val
+#                 field: val
+#     '''
     
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        # typeName = elems[0].text
-        return StructConstrBegin(elems[0].text), []
+#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+#         # typeName = elems[0].text
+#         raise Deprecated('Deprecated block-constructor of struct. Block constructor should have empty curvy brackets')
+#         return StructConstrBegin(elems[0].text), []
 
-    def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
-        dprint('StructConstr.setSub empty: ', base, subs)
+#     def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
+#         dprint('StructConstr.setSub empty: ', base, subs)
 

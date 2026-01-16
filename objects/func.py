@@ -127,7 +127,7 @@ class Function(FuncInst):
                         # print(ex.getMessage())
                         raise ex
                 else:
-                    raise EvalErr('Uncompatible val %s for func arg %s' % valType, atype)
+                    raise EvalErr('Uncompatible val %s for func arg %s' % (valType, atype))
             
             # print('FN (%s), self.argVars[i]: ' % self._name, self.argVars[i], ' /:/', arg)
             argVar = Var(aname, atype)

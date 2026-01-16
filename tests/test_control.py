@@ -349,35 +349,40 @@ class TestControl(TestCase):
         y = 0
         a = 100
         b = 0
-        @debug 1
-        for i=0; i < 5; i = i + 1
+        # @debug 1
+        dd1 = 1000
+        for i=0; i < x; i = i + 1
             y = y + 2
             for j=-3; j <= 0; j = j + 1
                 a = a - j ** 2
                 if a % 2 == 0
-                    b = b + 1
+                    b += 1
+                    dd1 -= (a + b)
         res = y
         '''
         code = norm(code[1:])
-        data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
+        data = [0, 1, 4, 5, 10, 200]
+        expd = [1000, 825, 444, 365, 330, 443600]
         # data = [6]
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
         ress = []
-        for x in data:
+        for i in range(len(data)):
+            x = data[i]
             ctx = Context(None)
-            vv = Var('x', TypeInt)
-            vv.set(x)
+            vv = Var('x', TypeInt())
+            vv.set(Val(x, TypeInt()))
             ctx.addSet({'x': vv})
-            dprint('~~~~ test case: %d ~~~~' % x)
+            # print('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             rr = [ctx.get('res').get(), ctx.get('a').get() , ctx.get('b').get()]
             ress.append(rr)
             # ress.append(ctx.get('a').get())
-            print('##################t-IF1:', ctx.get('res').get())
-            rval = ctx.get('res').get()
-            self.assertEqual(-100500, rval)
+            # print('##################t-IF1:', ctx.get('res').get(), ctx.get('dd1').get())
+            # rval = ctx.get('res').get()
+            rdd = ctx.get('dd1').get()
+            self.assertEqual(expd[i], rdd.getVal())
         # dprint('all:', ress)
 
     def test_while_expr(self):
