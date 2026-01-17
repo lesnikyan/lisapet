@@ -11,7 +11,7 @@ from nodes.tnodes import *
 from nodes.func_expr import *
 from cases.tcases import *
 from cases.oper import *
-from cases.structs import MethodDefExpr, MethodCallExpr
+from cases.structs import MethodDefExpr
 from cases.utils import OperSplitter
 
 

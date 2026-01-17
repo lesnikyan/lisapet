@@ -102,13 +102,6 @@ class CLine:
         self.line = 0
 
 
-# KEYWORDS = '''
-# import
-# const
-# for if do while func
-# case match 
-# '''
-
 KEYWORDS = re.split(r'\s+',
     '''
 import

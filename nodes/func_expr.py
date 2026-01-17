@@ -12,175 +12,6 @@ from objects.func import Function
 import inspect
 
 
-# class Function(FuncInst):
-#     ''' user-defined function object 
-#     args:
-#         call:
-#         foo(a, b, c)
-#         # def:
-#         func foo(arg1, arg2, arg3)
-#             # inner blok:
-#             arg1 + arg2 + arg3
-#     '''
-
-#     def __init__(self, name):
-#         super().__init__()
-#         # self.argExpr:list[Expression] = None # like ListExpression: expr, expr, expr
-#         self.isLambda = False
-#         if name is None:
-#             name = '@lambda'
-#             self.isLambda = True
-#         self._name = name
-#         self.vtype = TypeFunc()
-#         self.argNum = 0
-#         self.argVars:list[Var] = []
-#         self._argTypes:dict[str, VType] = {}
-#         self.callArgs = []
-#         self.defArgs = {}
-#         self.block:Block = None
-#         self.defCtx:Context = None # for future: definition context (closure - ctx of module or upper block if function is local or lambda)
-#         self.res = None
-#         self.argNames = []
-#         self.extOrdered = None
-#         # print('Fuu.init', self)
-
-#     def setDefContext(self, ctx:Context):
-#         self.defCtx = ctx
-
-#     def getName(self):
-#         return self._name
-    
-#     def argCount(self)->int:
-#         return self.argNum
-    
-#     def argTypes(self)->list:
-#         return list(self._argTypes.values())
-
-#     def addArg(self, arg:Var|AssignExpr, defVal=None):
-#         # print('F.AddArg:', arg, defVal)
-#         self.argVars.append(arg)
-#         arname = arg.getName()
-#         if isinstance(arg, ArgSetOrd):
-#             # only 1 per function
-#             self.extOrdered = arname
-            
-#         self.argNames.append(arname)
-#         self._argTypes[arname] = arg.getType()
-#         if defVal is not None:
-#             self.defArgs[arname] = defVal
-#         self.argNum += 1
-
-#     # TODO: flow-number arguments
-#     def setArgVals(self, args:list[Val], named:dict={}):
-#         passedCount = len(args)
-#         # print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
-#         # print('! setArgVals', ['%s'%ag for ag in args ], 'len=', passedCount)
-#         # argNames = [n.getName() for n in self.argVars]
-#         namePassed = {k:v for k, v in named.items() if k in self.argNames} # filtering extra args
-#         defNamedCount = len([k for k in self.defArgs.keys() if k not in namePassed]) + len(namePassed)
-#         skipCount = int(self.extOrdered is not None)
-#         if self.argNum - skipCount > len(args) + defNamedCount:
-#             # print('Not enough args in call of fuction `%s`. Exppected: %d, got: %d. defVals+named: %d ; skip:%d' % (
-#             #     self._name, self.argNum, len(args), defNamedCount, skipCount))
-#             raise EvalErr('Not enough args in call of fuction `%s`. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
-#         self.callArgs = []
-#         inCtx = Context(self.defCtx)
-#         # ordCollector = []
-#         noMoreOrds = False
-#         # func foo(a, b, nn..., c=1, d='', dd$$)
-#         #      foo(1, 2, 33, 44, 55, d='qwe', xx=77, yy='FF')
-        
-#         # loop over defined arguments
-#         for i in range(self.argNum):
-#             val = None
-#             valExpr = None
-#             aname = self.argVars[i].getName()
-#             atype = self.argVars[i].getType()
-#             # print('F.setArgVals#1', self.argVars[i])
-#             if isinstance(self.argVars[i], ArgSetOrd):
-#                 # variadic args: func foo(vargs...)
-#                 noMoreOrds = True
-#                 # all args from current - put into -> vargs...
-#                 # ordCollector = args[i:]
-#                 val = ListVal(elems=args[i:])
-#             if not noMoreOrds and i < passedCount:
-#                 # Regulat args: func foo(a, b)
-#                 val = args[i]
-#             else:
-#                 if aname in namePassed:
-#                     # Named args: foo(name='Bob')
-#                     valExpr:Expression = namePassed[aname]
-#                 elif aname in self.defArgs:
-#                     # Default val: func foo(x=1, y=2)
-#                     valExpr:ValExpr = self.defArgs[aname]
-#                     valExpr.do(inCtx)
-#                 if valExpr:
-#                     val = valExpr.get()
-#             if not val:
-#                 # print(f'Func addVals: No val for argument {self.argVars[i].getName()}')
-#                 raise EvalErr(f'Func addVals: No val for argument {self.argVars[i].getName()}')
-#             valType = val.getType()
-#             if atype != valType:
-#                 if isCompatible(atype, valType):
-#                     # convert val
-#                     try:
-#                         val = resolveVal(atype, val)
-#                     except EvalErr as ex:
-#                         # print('err.farg>', self.getName(), atype, valType)
-#                         # print(ex.getMessage())
-#                         raise ex
-#                 else:
-#                     raise EvalErr('Uncompatible val %s for func arg %s' % valType, atype)
-            
-#             # print('FN (%s), self.argVars[i]: ' % self._name, self.argVars[i], ' /:/', arg)
-#             argVar = Var(aname, atype)
-#             argVar.set(val)
-#             # dprint('FN setArgVals-4: ', atype, aname)
-#             if isinstance(atype, TypeAny):
-#                 argVar.setType(valType)
-#             # print('set arg8  >> ', self.argVars[i], 'val:', val)
-#             # arg.name = self.argVars[i].name
-#             self.callArgs.append(argVar)
-#             # self.argVars[i].set(arg.get())
-
-#     # def checkArgType(self, arg, val):
-#     #     '''Use val.getType() and types compatibility '''
-#     #     return typeCompat(arg, val)
-#     #     # return True
-
-#     def do(self, ctx: Context):
-#         self.res = None
-#         self.block.storeRes = True # save last expr value
-#         inCtx = Context(self.defCtx) # inner context, empty new for each call
-#         # inCtx.addVar(Var(1000001, 'debVal', TypeInt))
-#         for arg in self.callArgs:
-#             # print('Fu.do:', arg)
-#             inCtx.addVar(arg)
-#         # inCtx.get('debVal')
-#         # inCtx.upper = ctx
-#         self.block.do(inCtx)
-#         res = self.block.get()
-#         # print('Func.do res=', res)
-#         if isinstance(res, FuncRes):
-#             res = res.get()
-#         if res is None:
-#             res = Val(Null(), TypeNull())
-#         self.res = var2val(res)
-
-#     def get(self)->Var:
-#         return self.res
-#         # return Val(self, TypeFunc())
-    
-#     def __str__(self):
-#         if self.__class__.__name__ == 'NFunc':
-#             return 'func %s(???)' % (self._name)
-#         args = []
-#         # dprint('Func_str_. arg:', self.argVars)
-#         for arg in self.argVars:
-#             args.append('%s' % arg.name)
-#         return 'func %s(%s)' % (self._name, ', '.join(args))
-
-
 class FuncCallExpr(CallExpr):
     ''' foo(agr1, 2, foo(3))  '''
 
@@ -200,16 +31,14 @@ class FuncCallExpr(CallExpr):
         self.argExpr.append(exp)
 
     def do(self, ctx: Context):
-        # inne rcontext
-        # print('F().do/1')
-        
-        self.funcExpr.do(ctx)
-        
-        func:Function|FuncOverSet = self.funcExpr.get()
-        # print(f'\nF() expr:', self.funcExpr, 'func:', func )
-        
         args:list[Var] = []
         
+        # Get function object
+        self.funcExpr.do(ctx)
+        func:Function|FuncOverSet = self.funcExpr.get()
+        # print(f'\nF() expr:', self.funcExpr, 'func:', func )
+                
+        # Case of calling member of object / module
         if isinstance(func, ObjectMember):
             obj:ObjectMember = func
             memVal = func.get(ctx)
@@ -245,13 +74,8 @@ class FuncCallExpr(CallExpr):
                 arg = arg.get()
             # print('func-call do2:', valExp, arg)
             args.append(arg)
-        
-        # unpack function from var
-        # print('#1# func-call do03: ', self.name, 'F:', func)
-        # for aa in args: print('--- final args:', aa)
-        # for ak, av in named.items(): print('--- final nmed:', ak, av.get())
-        # if isinstance(self.funcExpr, VarExpr):
-        # call by defined name
+
+        # Case with overloaded function
         if isinstance(func, FuncOverSet):
             # overloaded set
             over:FuncOverSet = func
@@ -262,14 +86,14 @@ class FuncCallExpr(CallExpr):
                 errMsg = f"Can't find overloaded function {self.name} with args = ({','.join([f'{n.__class__.__name__}' for n in callArgTypes])}) "
                 raise EvalErr(errMsg)
                 
-        # print('#2# func-call do04: ', self.name, 'F:', func)
+        # Case with func in var
         if isinstance(func, Var):
             func = func.get()
         if isinstance(func, TypeVal):
             tVal = func.getVal()
             if isinstance(tVal, TypeStruct):
                 func = tVal.getConstr()
-        # print('FCall.do.args:', self.name, args)
+        
         self.func = func
         # print('#3# func-call do05: ', self.name, 'F:', func)
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
@@ -280,13 +104,13 @@ class FuncCallExpr(CallExpr):
         # if len(inspect.stack(0)) > 40 :
         #     print('len(inspect.stack(0)) >>> ', len(inspect.stack(0)))
         #     raise EvalErr(f'DEBUG {self.name}')
+        
         self.func.do(callCtx)
         self.res = self.func.get()
 
     def get(self):
         # print('F.get', self.name, '=', self.func.get())
         return self.res
-        # return self.func.get()
 
 
 class FuncDefExpr(ObjDefExpr, Block):
@@ -488,73 +312,4 @@ class MethodDefExpr(FuncDefExpr):
     def do(self, ctx:Context):
         '''''' 
         super().do(ctx)
-
-
-class MethodCallExpr(FuncCallExpr):
-    ''' foo(agr1, 2, foo(3))  '''
-
-    def __init__(self, func:FuncCallExpr):
-        super().__init__(func.name, func.src)
-        # print('MCall.init:', func.name, 'src:', func.src)
-        self.inst:ObjectInstance = None
-        # self.name = name
-        # self.func:Function = None
-        self.argExpr:list[Expression] = func.argExpr
-
-    def setInstance(self, inst: ObjectInstance|Val):
-        dprint('MethCall set inst', inst)
-        # raise XDebug('MethodCallExpr')
-        self.inst = inst
-
-    def getFunc(self, args:list):
-        stype = self.inst.getType()
-        fn = stype.getMethod(self.name)
-        if isinstance(fn, FuncOverSet):
-            over:FuncOverSet = fn
-            callArgTypes = [ar.getType() for ar in args]
-            fn = over.get(callArgTypes)
-        self.func = fn
-
-    def do(self, ctx: Context):
-        okCond = isinstance(self.inst, ObjectInstance)
-        # okCond = okCond or isinstance(self.func, BoundMethod)
-        if not okCond:
-            raise EvalErr('Incorrect instance of struct: %s ', self.inst)
-        # print('MethodCallExpr.do 1', self.name, self.inst.getType())
-
-        # instVar = self.inst[0].get(), self.inst[1].get()
-        # print('instVar', self.inst, self.func.argVars)
-        args:list[Var] = [self.inst]
-        # print('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
-        for exp in self.argExpr:
-            # print('#1# meth-call do20 exp=: ', exp)
-            exp.do(ctx)
-            vv = var2val(exp.get())
-            # print('meth-call do3:', exp, vv, vv.get())
-            args.append(vv)
-        self.getFunc(args)
-        self.func.setArgVals(args)
-        # TODO: add usage of Definishion Context instead of None
-        callCtx = Context(ctx)
-        self.func.do(callCtx)
-
-class BoundMethodCall(MethodCallExpr):
-    def __init__(self, func:BoundMethod, callExpr:FuncCallExpr):
-        super().__init__(callExpr)
-        self.inst:Val = None
-        self.func:BoundMethod = func
-        self.argExpr:list[Expression] = callExpr.argExpr
-
-    def do(self, ctx: Context):
-        # print('instVar', self.inst, self.func.argVars)
-        args:list[Var] = [self.inst]
-        for exp in self.argExpr:
-            exp.do(ctx)
-            args.append(exp.get())
-        self.func.setArgVals(args)
-        callCtx = Context(ctx)
-        self.func.do(callCtx)
-
-    def get(self):
-        return self.func.get()
 

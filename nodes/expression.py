@@ -161,7 +161,6 @@ class ControlExpr(Expression):
 
 class Block(Expression):
     def __init__(self):
-        # self.ctx = NSContext()
         super().__init__()
         self.subs: list[Expression] = []
         self.storeRes = False
@@ -183,14 +182,11 @@ class Block(Expression):
         if elen < 1:
             return
         lastInd = 0
-        # self.ctx.upper = ctx
         # print('!! Block.do', self.storeRes)
-        # ctx.print()
         self.lastVal = None
         for i in range(elen):
             # dprint('!! Block.iter ', i, self.subs[i])
             expr = self.subs[i]
-            # exsrc = expSrc(expr)
             # print('!! Block.iter ', i, expr, expSrc(expr) ) # '{{ %s }}' % expr.src.src.src
             expr.do(ctx)
             if isinstance(expr, (DefinitionExpr)): # and not isinstance(expr, (ObjDefExpr))
@@ -200,7 +196,6 @@ class Block(Expression):
             # lineRes = None
             lineRes = expr.get()
             if isinstance(lineRes, FuncRes):
-                # return expr
                 # dprint(' - return::', lineRes)
                 self.lastVal = lineRes
                 return

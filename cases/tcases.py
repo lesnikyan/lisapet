@@ -612,31 +612,6 @@ def isSeqElem(elems:list[Elem]):
     '''
 
 
-# class SolidExprCase(SubCase):
-#     ''' single varName or chain of fields, subelem, call
-#         a.b
-#         a.b[0]
-#         a.b[0].c
-#         a.b.c[0]
-#         a.b().c
-#         a.b()[0].c
-#         a.b.c[0]()
-#         a.b()()
-#         a.b[0]()()
-#         a.b[0]()()[0]
-#         a.b[0]()().c
-#         a.b[0]()().c[0]
-        
-    
-#     '''
-    
-#     def __init__(self):
-#         self.opSpl = OperSplitter()
-
-#     def match(self, elems:list[Elem]) -> bool:
-#         self.opSpl.mainOper(elems)
-
-
 class CaseDotName(SubCase, SolidCase):
     ''' solidExpr.name:
         obj.name

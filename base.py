@@ -120,11 +120,6 @@ class Val(Base):
         return self.vtype
 
     def __str__(self):
-        # n = self.name
-        # if not n:
-        #     n = '#noname'
-        # tt = '#notype'
-        # if self.vtype is not None:
         tt = self.vtype.name
         return '%s(%s: %s)' % (self.__class__.__name__, self.val, tt)
 
