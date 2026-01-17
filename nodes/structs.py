@@ -53,7 +53,7 @@ class StructDef(TypeStruct):
         return self.__constr
 
     def addParent(self, superType: TypeStruct):
-        print('StructDef. addParent1 :', superType)
+        # print('StructDef. addParent1 :', superType)
         self.__parents[superType.getName()] = superType
         self.nmethods.extend([mt for mt in superType.nmethods if mt not in self.nmethods])
         self.nfields = [n for n in superType.nfields if n not in self.nfields] + self.nfields
@@ -108,7 +108,7 @@ class StructDef(TypeStruct):
         return self.__typeMethods[name]
 
     def hasMethod(self, fname):
-        print('.---.hasMethod', self.nmethods)
+        # print('.---.hasMethod', self.nmethods)
         # return fname in self.nmethods
         return fname in self.methodList()
 
@@ -425,7 +425,7 @@ class StructConstr(Expression):
     def findType(self, ctx:Context):
         self.inst = None
         self.objExpr.do(ctx)
-        print('finfT.obj', self.objExpr, self.objExpr.get())
+        # print('finfT.obj', self.objExpr, self.objExpr.get())
         stype = self.objExpr.get()
         # stype = ctx.getType(self.typeName)
         if isinstance(stype, TypeVal):
@@ -444,11 +444,11 @@ class StructConstr(Expression):
         # if isinstance(stype, ModuleBox):
         #     print('ModuleBox is object', self.typeName)
         sType = self.findType(ctx)
-        print('Strc.{} type:', sType)
+        # print('Strc.{} type:', sType)
             
         inst = StructInstance(sType)
         vals = []
-        print('#dbg1', self.fieldExp)
+        # print('#dbg1', self.fieldExp)
         for fexp in self.fieldExp:
             fexp.do(ctx)
             # if val only
@@ -475,75 +475,4 @@ class StructConstr(Expression):
 class StructConstrBegin(StructConstr, MultilineVal):
     def __init__(self, typeName):
         super().__init__(typeName)
-
-
-
-
-# class MethodCallExpr(FuncCallExpr):
-#     ''' foo(agr1, 2, foo(3))  '''
-
-#     def __init__(self, func:FuncCallExpr):
-#         super().__init__(func.name, func.src)
-#         print('MCall.init:', func.name, 'src:', func.src)
-#         self.inst:StructInstance = None
-#         # self.name = name
-#         # self.func:Function = None
-#         self.argExpr:list[Expression] = func.argExpr
-
-#     def setInstance(self, inst: StructInstance|Val):
-#         dprint('MethCall set inst', inst)
-#         # raise XDebug('MethodCallExpr')
-#         self.inst = inst
-
-#     def getFunc(self, args:list):
-#         stype = self.inst.getType()
-#         fn = stype.getMethod(self.name)
-#         if isinstance(fn, FuncOverSet):
-#             over:FuncOverSet = fn
-#             callArgTypes = [ar.getType() for ar in args]
-#             fn = over.get(callArgTypes)
-#         self.func = fn
-
-#     def do(self, ctx: Context):
-#         okCond = isinstance(self.inst, StructInstance)
-#         # okCond = okCond or isinstance(self.func, BoundMethod)
-#         if not okCond:
-#             raise EvalErr('Incorrect instance of struct: %s ', self.inst)
-#         # print('MethodCallExpr.do 1', self.name, self.inst.getType())
-
-#         # instVar = self.inst[0].get(), self.inst[1].get()
-#         # print('instVar', self.inst, self.func.argVars)
-#         args:list[Var] = [self.inst]
-#         print('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
-#         for exp in self.argExpr:
-#             # print('#1# meth-call do20 exp=: ', exp)
-#             exp.do(ctx)
-#             vv = var2val(exp.get())
-#             # print('meth-call do3:', exp, vv, vv.get())
-#             args.append(vv)
-#         self.getFunc(args)
-#         self.func.setArgVals(args)
-#         # TODO: add usage of Definishion Context instead of None
-#         callCtx = Context(ctx)
-#         self.func.do(callCtx)
-
-# class BoundMethodCall(MethodCallExpr):
-#     def __init__(self, func:BoundMethod, callExpr:FuncCallExpr):
-#         super().__init__(callExpr)
-#         self.inst:Val = None
-#         self.func:BoundMethod = func
-#         self.argExpr:list[Expression] = callExpr.argExpr
-
-#     def do(self, ctx: Context):
-#         # print('instVar', self.inst, self.func.argVars)
-#         args:list[Var] = [self.inst]
-#         for exp in self.argExpr:
-#             exp.do(ctx)
-#             args.append(exp.get())
-#         self.func.setArgVals(args)
-#         callCtx = Context(ctx)
-#         self.func.do(callCtx)
-
-#     def get(self):
-#         return self.func.get()
 

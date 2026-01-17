@@ -166,7 +166,7 @@ def simpleExpr(expCase:ExpCase, elems)->Expression:
 
 
 def mtCases(elems:list[Elem], cases: list[ExpCase], parent:ExpCase=None)->MatchingPattern:
-    print('mtCases', [repr(cc) for cc in cases])
+    # print('mtCases', [repr(cc) for cc in cases])
     if isinstance(parent, (MTList)):
         cases = pMListInnerCases
     for mtCase in cases:
@@ -185,7 +185,7 @@ def mtCases(elems:list[Elem], cases: list[ExpCase], parent:ExpCase=None)->Matchi
 
 def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
     # print('#makePMatchExpr:', [(n.text, Lt.name(n.type)) for n in elems])
-    print('\n#tree-makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
+    # print('\n#tree-makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
     caseList = patternMatchCasesSolid
     if not isSolidExpr(elems):
         caseList = patternMatchCasesCplx
@@ -202,9 +202,7 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     base, subs = expCase.split(elems)
     # print('#complex-case:', expCase.__class__.__name__, ' base:', base, subs)
     # print('#complexExpr', expCase.__class__.__name__, base, '', [elemStr(s) for s in subs])
-    # if isinstance(subs, list):
-    #     for ee in subs:
-            # prels('#cml-exp1:', ee)
+
     if not expCase.sub():
         return base
     
@@ -249,7 +247,7 @@ def elems2expr(elems:list[Elem])->Expression:
             # print('#elems2expr/2:', type(expCase).__name__, (elems))
             # print('#elems2expr/12:', type(expCase).__name__)
             if expCase.match(elems):
-                print('CaseSl found::', expCase.__class__.__name__, '', elemStr(elems), '\n')
+                # print('CaseSl found::', expCase.__class__.__name__, '', elemStr(elems), '\n')
                 expr = makeExpr(expCase, elems)
                 if isinstance(expr, CtrlSubExpr):
                     # print('#elems2expr/3 ', expr)
@@ -262,7 +260,7 @@ def elems2expr(elems:list[Elem])->Expression:
         # print('#elems2expr/2:', type(expCase).__name__, (elems))
         # print('#elems2expr/2:', type(expCase).__name__)
         if expCase.match(elems):
-            print('CaseOt found::', expCase.__class__.__name__, '', elemStr(elems), '\n')
+            # print('CaseOt found::', expCase.__class__.__name__, '', elemStr(elems), '\n')
             # print('Case found::', expCase.__class__.__name__)
             expr = makeExpr(expCase, elems)
             if isinstance(expr, CtrlSubExpr):
@@ -299,7 +297,7 @@ def raw2done(parent:Expression, raw:RawCase)->Expression:
         etc.
     '''
     # match-case
-    print('>> raw2done', parent, raw)
+    # print('>> raw2done', parent, raw)
     if isinstance(parent, MatchExpr) and isinstance(raw, MatchPtrCase):
         # `case` sub-expr in `match`
         res = CaseExpr()
@@ -320,9 +318,6 @@ def lex2tree(src:list[CLine]) -> Block:
     curBlock = root
     lineNum = 0
     parents:list[Block] = []
-    # curInd = 0 # indent
-    # elifDeps = []
-    # parByInd:dict[int, int] = {} # indent : index in parents 
     # dprint('~~~~~~~~~~~` start tree builder ~~~~~~~~~~~~')
     i = -1
 
@@ -337,9 +332,9 @@ def lex2tree(src:list[CLine]) -> Block:
         lineNum += 1
         cline.line = lineNum
         
-        print('\n(((((( == >>>>>---------- #cline-code1:', f"<{' '.join([ee.text for ee in cline.code])}>", ' ))))) curBlock:>>', repr(curBlock))
+        # print('\n(((((( == >>>>>---------- #cline-code1:', f"<{' '.join([ee.text for ee in cline.code])}>", ' ))))) curBlock:>>', repr(curBlock))
         # print('#code-src: `%s`' % cline.src.src, '$ind=',  indent, '; curInd=', curInd)
-        print('#  --- ', [(ee.text, Lt.name(ee.type)) for ee in cline.code])
+        # print('#  --- ', [(ee.text, Lt.name(ee.type)) for ee in cline.code])
         if len(cline.code) == 0:
             continue
         
@@ -383,69 +378,30 @@ def lex2tree(src:list[CLine]) -> Block:
         else:
             indent = unclosed.indent
 
-        # dprint('lex2tree-14:', expr, expr.__class__.__name__, type(expr))
-        
         if isinstance(expr, CtrlSubExpr):
-            # print('#tree 011', expr)
             expr = expr.toControl()
-        # print('#tree 012', expr)
-            
         
-        print('lex2tree-2 expr:', repr(expr), 'prev:', repr(prev), 
-              '; \n ^^ parents:', [repr(n) for n in parents], repr(curBlock), ('in=',  indent, '; pin=', prevIndent))
-        # dprint(dir(expr))
-        # elDep = 0 # diff nest depth - indent. for `if else` case depth > indent
+        # print('lex2tree-2 expr:', repr(expr), 'prev:', repr(prev), 
+            #   '; \n ^^ parents:', [repr(n) for n in parents], repr(curBlock), ('in=',  indent, '; pin=', prevIndent))
         goBack = False # if we move back from nected block
         # goBack = indent < curInd #  and (isinstance(expr, ElseExpr) and not expr.hasIf())
         goBack = indent < prevIndent
         goDeep = indent > prevIndent
-        # TODO except else if, but if not last else in `if` tree
-        # sameIndBlock = curBlock # prev block of case indent
         prevPar = []
         if goBack:
-            # end of block
-            # stepsUp = curInd - indent
             stepsUp = prevIndent - indent
-            # print('-- ind:', prevIndent, indent)
-            # if isinstance(expr, (ElseExpr, ElsFold)):
-            #     stepsUp -= 1
-                
-            # dprint('lex2tree-3#stepsUp=', stepsUp, parents)
-            # dprint('lex2tree-33=', parByInd)
-            # backParId = stepsUp
-            # if len(parents) >= stepsUp:
-            #     backParId = stepsUp - 1
-            # print('parens[-stp]', parents[-backParId], 'stepsUp', stepsUp)
-            # sameIndBlock = parents[-backParId]
             for i in range(stepsUp):
-                print('------', i, repr(parents[-1]), repr(curBlock))
-                # if i == stepsUp - 1:
-                #     if isinstance(curBlock, (IfExpr)):
-                #         break
-                #     if isinstance(curBlock, ElsFold):
-                #         if not curBlock.lastElse():
-                #             break
+                # print('------', i, repr(parents[-1]), repr(curBlock))
                 prevPar.append(curBlock)
                 curBlock = parents.pop()
-                # curInd -= 1
-                # dprint('lex2tree-pop parents =', parents)
-                # print('lex2tree-pop curBlock =', curBlock)
-            # print('^>> parents:', [type(n) for n in parents])
-            # curInd -= stepsUp
-        
-        # curInd = indent
-        # inndent of block (assign with sublines)
-        # print('#tree ## preDeep', goDeep, prev, expr, 'add:', '<has>' if prev.add else 'None')
-        print('..........>>', [ repr(pp) for pp in parents], 'curBl:', repr(curBlock), 'D-int:', (prevIndent - indent))
-        print('_ _ _ _ prevPar:', [ repr(pp) for pp in prevPar])
-        
+
         
         if isinstance(expr, ElseExpr): # else | else if ..
             if not prevPar or not isinstance(prevPar[-1], (IfExpr,ElsFold)):
                 raise EvalErr('Incorrect `else` block after non-`if`')
             parents.append(curBlock)
             curBlock = prevPar[-1]
-            print('in Else:', repr(curBlock), repr(expr))
+            # print('in Else:', repr(curBlock), repr(expr))
             curBlock.toElse(expr)
             if isinstance(curBlock, IfExpr):
                 # ELSE statement
@@ -459,40 +415,15 @@ def lex2tree(src:list[CLine]) -> Block:
             
         if goDeep and prev.add:
             # start new block
-            print('! goDeep', repr(curBlock), repr(prev), repr(expr),'is ELSE?:', isinstance(prev, (ElseExpr)))
+            # print('! goDeep', repr(curBlock), repr(prev), repr(expr),'is ELSE?:', isinstance(prev, (ElseExpr)))
             # prev.toBlock()
             if not isinstance(prev, (ElseExpr)):
                 parents.append(curBlock)
                 curBlock = prev
-                print('! ! deeper 3', repr(curBlock), repr(expr))
-            # curBlock.add(expr)
-            print('    !     ! afterDeep:', [ repr(pp) for pp in parents], 'curBl:', repr(curBlock))
 
         if isinstance(expr, RawCase):
             expr = raw2done(curBlock, expr)
-            print('>> after raw:', expr)
-        
-        # print('sameIndBlock:', sameIndBlock, expr) # isinstance(curBlock, (IfExpr)) and 
-
-        
-            
-        # if isinstance(expr, IfExpr):
-            # first else in if
-            # print('*add new to elifDeps: ', elifDeps)
-            # elifDeps.append(0)
-            # parByInd[curInd] = len(parents)
-
-        # if stepBlock:
-        #     # start new sub-level
-        #     # if definition of func, type: add to upper level context
-
-        #     # print('!! in-block', parents, curBlock, expr)
-        #     curBlock.add(expr)
-        #     parents.append(curBlock)
-        #     curBlock = expr
-        #     # curInd += 1
-        #     # print('-=-= indent cur:', curInd)
-        #     continue
+            # print('>> after raw:', expr)
         
         # if 1-line block
         if isinstance(expr, SequenceExpr):

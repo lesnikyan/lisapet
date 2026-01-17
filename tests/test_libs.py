@@ -213,6 +213,14 @@ class TestLibs(TestCase):
         res <- "/".join(['s7','s8', 's9'])
         res <- `"`.join((11,12,13))
         
+        mstr_splitted = """
+        aaa
+        bbb
+        ccc
+        """.split('\n')[1:-1]
+        
+        res <- mstr_splitted
+        
         # combo
         wds = 'Hello dear friend'.split(' ').map(w -> ~"<t>{w}</t>").join(' ')
         res <- wds
@@ -233,7 +241,7 @@ class TestLibs(TestCase):
             [3, 2, 1], '1^2^3', [1, 2, 'a', 'b', 'c'], 
             [(1, 11), (2, 22), ('a', 'aaa'), ('b', 'bbb'), ('c', 'ccc')], 
             ['aa', 'bb', 'cc'], ['d', 'e', 'f'], ['here', 'many', 'hidden', 'words'], 
-            's1-s2-s3', 's4_s5_s6', 's7/s8/s9', '11"12"13', '<t>Hello</t> <t>dear</t> <t>friend</t>']
+            's1-s2-s3', 's4_s5_s6', 's7/s8/s9', '11"12"13', ['aaa', 'bbb', 'ccc'], '<t>Hello</t> <t>dear</t> <t>friend</t>']
         self.assertEqual(exv, rvar.vals())
 
 

@@ -81,7 +81,7 @@ class TestLang(TestCase):
         for cline in clines:
             if not cline.code:
                 continue
-            print('', elemStr(cline.code))
+            # print('', elemStr(cline.code))
             res = isSolidExpr(cline.code)
             # print('', res)
             self.assertFalse(res)
@@ -162,7 +162,7 @@ class TestLang(TestCase):
             '\n111 11 """\n    222 22 ```\n        3333 33\'\'\'', 
             [111, '\n    222\n    ', '\n    333\n    '], 
             ' Q\nin mult\nqwe\n']
-        print('TT>>', rvar.vals())
+        # print('TT>>', rvar.vals())
         self.assertEqual(exv, rvar.vals())
 
     def test_type_nums(self):
@@ -412,7 +412,7 @@ class TestLang(TestCase):
             3
             )
             
-        print('res=', res)
+        # print('res=', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -423,7 +423,7 @@ class TestLang(TestCase):
         ctx = rCtx.moduleContext()
         ex.do(ctx)
         res = ctx.get('res').get()
-        print('tt>', res)
+        # print('tt>', res)
         self.assertEqual([3,1,2], res.get())
 
     def test_unclosed_brackets_expr(self):
@@ -680,7 +680,7 @@ class TestLang(TestCase):
             
         c = a + 7 #@ inline comment @# - 100
         res = [x, y, a, b, c]
-        print(res)
+        # print(res)
         '''
 
         code = norm(code[1:])
@@ -722,10 +722,10 @@ class TestLang(TestCase):
             elems = clines[0].code
             cs = CaseSeq(',')
             self.assertTrue(cs.match(elems))
-            prels('CaseSeq.match: TRUE=%s' % cs.match(elems), elems)
+            # prels('CaseSeq.match: TRUE=%s' % cs.match(elems), elems)
             _, subs = cs.split(elems)
-            for sub in subs:
-                prels('tt>', sub)
+            # for sub in subs:
+            #     prels('tt>', sub)
 
 
     def test_elem2var(self):

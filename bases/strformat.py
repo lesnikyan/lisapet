@@ -204,7 +204,7 @@ class Formatter:
         # '   -12.100' '   +12.100'
         # '000-12.100' '000012.100'
         # '-00012.100' '+00012.100'
-        dprint('#1:', res, ' shift:', shiftR)
+        # dprint('#1:', res, ' shift:', shiftR)
         if isNum and numSign:
             # maybe we need to move sign to the res[0]
             if opt.zeroLead:
@@ -287,7 +287,7 @@ class StrJoinExpr(Expression):
         self.parts:list[Expression] = []
         if parts:
             for pp in parts:
-                dprint('SJE.init:', pp)
+                # dprint('SJE.init:', pp)
                 self.add(pp)
         self.res = None
 
@@ -299,7 +299,7 @@ class StrJoinExpr(Expression):
         for pp in self.parts:
             pp.do(ctx)
             tres = pp.get()
-            dprint('SJEx.do1:', pp, tres)
+            # dprint('SJEx.do1:', pp, tres)
             s = tres.getVal()
             ss.append(s)
         rval = ''.join(ss)

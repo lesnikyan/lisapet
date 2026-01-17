@@ -39,7 +39,7 @@ class TestDev(TestCase):
         abc = ABC{a:1, b:2}
         res <- type(abc)
         
-        TODO: check TypeMString if need. If not then Convert to TypeString
+        DONE: check TypeMString if need. If not then Convert to TypeString
         # print(type(""" """))
         # print((""" a s d""").split(' '))
         
@@ -49,7 +49,7 @@ class TestDev(TestCase):
 
         DONE: test overloading with type function, as function and any.
         
-        TODO?: Null() -> Null(Val)
+        TODO?: class Null() -> class Null(Val)
         
         TODO: declaration of var:type without assignment: check and fix.
         
@@ -71,7 +71,6 @@ class TestDev(TestCase):
             collection in collection in field: stru.field[0][1]
    
     '''
-
 
 
     def _test_dev_tail_recursion(self):
@@ -107,16 +106,14 @@ class TestDev(TestCase):
         ''' '''
         code = r'''
         res = []
-
-
-        print('res = ', res)
+        
+        print('res = ', s)
         '''
         code = norm(code[1:])
         ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
-        # print('>>', dd.values())
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
         # self.assertEqual([], rvar.vals())

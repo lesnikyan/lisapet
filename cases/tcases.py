@@ -249,7 +249,7 @@ class CaseMString(ExpCase):
             return False
         mqoutes = '""" ``` \'\'\''.split(' ')
         # print('CMSt#1', '|%s|' % elems[0].text[:3], '',  elems[0].text[:3] in mqoutes)
-        print('CMSt#1', '|%s|' % elems[-1].text[-3:], '',  elems[-1].text[-3:] in mqoutes)
+        # print('CMSt#1', '|%s|' % elems[-1].text[-3:], '',  elems[-1].text[-3:] in mqoutes)
         if elems[0].text[:3] not in mqoutes:
             return False
         if len(elems[-1].text) < 3 or elems[-1].text[-3:] not in mqoutes:
@@ -563,7 +563,7 @@ def isSolidExpr(elems:list[Elem], getLast=None):
             # close brackets
             if len(opened) == 0:
                 # posibly multiline expr
-                print('No-solid', )
+                # print('No-solid', )
                 return False
             lastObr = opened.pop()
             if bpairs[etx] != lastObr:

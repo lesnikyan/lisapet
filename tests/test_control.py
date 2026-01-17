@@ -41,7 +41,7 @@ class TestControl(TestCase):
         # with subs in ()
         for i <- [1..10] /: x = i * 5; (if i > 5 /:  res <- x); (if y = i * 3; y < 12 /:  res <- y * 100)
         
-        print('len res=', len(res))
+        # print('len res=', len(res))
         # for /: if /:
         r2 = []
         for n <- res /:  if n % 2 > 0 /: k=n; n += 1 ; r2 <- n + 1000

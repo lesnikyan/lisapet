@@ -112,7 +112,7 @@ class ElsFold:
         self.cur = exp.subIf
 
     def add(self, exp:Expression):
-        print(' -- ElsFold.add  >', expSrc(exp), self.cur)
+        # print(' -- ElsFold.add  >', expSrc(exp), self.cur)
         self.cur.add(exp)
     
     def toElse(self, exp:ElseExpr):

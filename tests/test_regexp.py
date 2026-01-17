@@ -72,7 +72,7 @@ class TestRegexp(TestCase):
         for s <- parts
             res <- ~'<{s}>'
         
-        print('parts:', parts)
+        # print('parts:', parts)
         # print(res)
         '''
         code = norm(code[1:])

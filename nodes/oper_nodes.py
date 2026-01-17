@@ -269,7 +269,7 @@ class OpMath(BinOper):
         numTs = (TypeNull, TypeBool, TypeInt, TypeFloat)
         if not isinstance(atype, numTs) or not isinstance(btype, numTs):
             # incorrect operand for math operator!
-            print(f'Incorrect types a:{atype.__class__} , b:{btype.__class__} for math operator {self.oper}', 'a,b=', a, b)
+            # print(f'Incorrect types a:{atype.__class__} , b:{btype.__class__} for math operator {self.oper}', 'a,b=', a, b)
             raise EvalErr(f'Incorrect types {atype.name} , {btype.name} for math operator {self.oper}')
         
         rtype = atype

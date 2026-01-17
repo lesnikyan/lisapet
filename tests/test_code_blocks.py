@@ -108,7 +108,7 @@ class TestCodeBlocks(TestCase):
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         rvar = ctx.get('res').get()
-        print('tt>>', rvar.vals())
+        # print('tt>>', rvar.vals())
         exv = ['-0', 17, 18, [6, 8, 10], [1, 3, 5], 
                [[1, 2, 3, 2, 4, 6], [24, 30, 36, 28, 35, 42, 32, 40, 48], [70, 80, 77, 88, 84, 96, 91, 104], [444]], -2, 25]
         self.assertEqual(exv, rvar.vals())

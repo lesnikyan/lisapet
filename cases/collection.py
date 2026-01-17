@@ -43,7 +43,7 @@ class CaseTuple(SubCase, SolidCase):
         ok, pos = r
         if not ok or pos != 0:
             return False
-        print('Tuple. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
+        # print('Tuple. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
         # prels('dict-c match', elems, show=1)
         # if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '(') : 
         #     return False
@@ -235,13 +235,13 @@ class CaseDictLine(SubCase, SolidCase):
     def match(self, elems:list[Elem]) -> bool:
         if not isBrPair(elems, '{','}'):
             return False
-        prels('dict-c match', elems, show=1)
+        # prels('dict-c match', elems, show=1)
         if len(elems) == 2:
             # dprint('case-dict empty')
             return True
 
         ind = bracketsPart(elems)
-        print('case-dict ind', ind)
+        # print('case-dict ind', ind)
         if ind != -1:
             return False
 

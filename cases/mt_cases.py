@@ -424,8 +424,7 @@ class MTStruct(MTContr):
         return (elems[0].type == Lt.word) and self.struCase.match(elems)
 
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        # subPtts = self.split(elems)
-        # exp = MCDict()
+
         constr, subs = self.struCase.split(elems)
         stype = elems[0].text
         # print('MTStruct', stype, subs)

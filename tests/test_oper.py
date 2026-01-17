@@ -87,7 +87,7 @@ class TestOper(TestCase):
             res <- (s, index, s[index]) 
         
         
-        print('res = ', res)
+        # print('res = ', res)
         ''')
         code = norm(code[1:])
 
@@ -653,7 +653,7 @@ class TestOper(TestCase):
                 return vv
             ctx.addSet({k: tvar(k, v) for k,v in ctxData.items()})
             ex = elems2expr(elems)
-            print('#tc11', td, mres)
+            # print('#tc11', td, mres)
             ex.do(ctx)
             res = ex.get()
             # dprint(' -- #tr11',td, res.getType(), res.get())
@@ -715,6 +715,7 @@ class TestOper(TestCase):
         data = [
             'x = 5.0', 'x = 5j2', 'x = 0xf000a', "x = '5' ", 'x = 0b10101'
         ]
+        results = []
         for src in data:
             tlines = splitLexems(src)
             clines = elemStream(tlines)
@@ -722,11 +723,10 @@ class TestOper(TestCase):
             expr = line2expr(line0)
             ctx = Context(None)
             expr.do(ctx)
-            res = ctx.get('x')
+            rval = ctx.get('x')
+            results.append(rval.getVal())
             # dprint('#a7 ===> ', res.get(), res.getType())
-
-
-
+        self.fail()
 
 
 if __name__ == '__main__':

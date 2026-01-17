@@ -48,13 +48,15 @@ class CaseAssign(SubCase):
         left:list[Elem] = [] # vars only
         right:list[Elem] = [] # vars, vals, funcs, methods
         # slice
-        prels('# OpAsgn split1: ', elems)
+        # prels('# OpAsgn split1: ', elems)
         opInd = afterLeft(elems)
         dprint('Assign-split opInd:', opInd, elems[opInd].text)
         left = elems[:opInd]
         right = elems[opInd+1:]
         # TODO: Implement multi-assign case
-        return OpAssign(), [left, right]
+        expr = OpAssign()
+        expr.src = elems
+        return expr, [left, right]
 
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         # waiting: OpAssign, [right]
@@ -118,7 +120,7 @@ class CaseBinOper(SubCase):
                 inBr -= 1
             if inBr > 0:
                 continue
-            print('el.text:', el.text, Lt.name(el.type))
+            # print('el.text:', el.text, Lt.name(el.type))
             
             if el.type != Lt.oper:
                 continue

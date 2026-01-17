@@ -109,7 +109,6 @@ class TestStructs(TestCase):
             ('e0', 'st@E{a: -5,b: 50,c: 555,s: Eee,d: WERTY,q: 1005,e: 5000}', -5, 'WERTY', 5000)]
         self.assertEqual(exv, rvar.vals())
 
-
     def test_inherined_struct_wide(self):
         ''' '''
         code = r'''
@@ -357,6 +356,7 @@ class TestStructs(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+        self.fail()
 
     def test_method_typed_args(self):
         ''' make vars and assign vals from tuple  '''

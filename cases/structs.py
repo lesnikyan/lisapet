@@ -45,20 +45,20 @@ class CaseStructDef(SubCase):
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         typeName = elems[1].text
-        prels('CaseStructDef.split', elems)
+        # prels('CaseStructDef.split', elems)
         # struct B(A,C)
         superNames = []
         subStart = 2
         if len(elems) > 2 and isLex(elems[2], Lt.oper, '('):
             # we have super-struct here
             brInd = bracketsPart(elems[2:])
-            dprint('Strc.split, brInd: ', brInd, elems[brInd+1].text)
+            # dprint('Strc.split, brInd: ', brInd, elems[brInd+1].text)
             superPart = elems[3:brInd+1]
-            prels('CaseStructDef.split supers:', superPart)
+            # prels('CaseStructDef.split supers:', superPart)
             _, spl = CaseCommas().split(superPart)
-            dprint('## spl:', [(n) for n in spl])
+            # dprint('## spl:', [(n) for n in spl])
             superNames = [elemStr(n) for n in spl]
-            dprint('## superNames:', superNames)
+            # dprint('## superNames:', superNames)
             subStart = brInd+2
             
         
@@ -142,19 +142,19 @@ class CaseStructConstr(SubCase, SolidCase):
         if len(elems) < 2:
             return False
         dc = CaseDictLine()
-        print(dc)
+        # print(dc)
         # get curvy brackets part
         # be sure that case already checked as Solid expr
         r =  isSolidExpr(elems, getLast=True)
-        print('Str.Match', r)
+        # print('Str.Match', r)
         if not isinstance(r, tuple):
             return False
         ok, pos = r
-        print('lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
+        # print('lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
         if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '{') : 
             return False
         # exit()
-        print('Scon')
+        # print('Scon')
         return dc.match(elems[pos:])
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
@@ -169,7 +169,7 @@ class CaseStructConstr(SubCase, SolidCase):
         return StructConstr(), [typePart] + subs
 
     def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
-        print('StructConstr.setSub empty: ', base, subs)
+        # print('StructConstr.setSub empty: ', base, subs)
         base.setObj(subs[0])
         args = subs[1:]
         if args:
@@ -178,22 +178,3 @@ class CaseStructConstr(SubCase, SolidCase):
                     continue
                 base.add(exp)
         return base
-
-
-# class CaseStructBlockConstr(SubCase):
-#     ''' 
-#         block struct creation
-#         Example:
-#             varName = TypeName
-#                 field: val
-#                 field: val
-#     '''
-    
-#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-#         # typeName = elems[0].text
-#         raise Deprecated('Deprecated block-constructor of struct. Block constructor should have empty curvy brackets')
-#         return StructConstrBegin(elems[0].text), []
-
-#     def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
-#         dprint('StructConstr.setSub empty: ', base, subs)
-

@@ -40,7 +40,7 @@ class Context(NSContext):
         
 
     def addType(self, tp:VType):
-        print('ctx.addType: ', tp, '::', type(tp), tp.get())
+        # print('ctx.addType: ', tp, '::', type(tp), tp.get())
         if not isinstance(tp, (VType, TypeVal)):
             raise EvalErr(f'Trying to put non-type {tp.name} to ctx.types.')
         # if tp.name not in self.types:
@@ -50,7 +50,7 @@ class Context(NSContext):
         elif isinstance(tp.get(), TypeStruct):
             name = tp.get().getName()
         if name in self.types:
-            print('ctx.types:', name, self.types)
+            # print('ctx.types:', name, self.types)
             raise EvalErr(f'Type {name} already defined.')
         # print('>>>>>>> :tp:', tp)
         tprop = TypeProperty(tp, FuncBinder(tp.get()))
@@ -264,7 +264,7 @@ class ModuleContext(Context):
         # find in modules
         for k, mbox in self.imported.items():
             if mbox.hasImported(name):
-                dprint('has', name, ' in ', k)
+                # dprint('has', name, ' in ', k)
                 return mbox.get(name)
         # Nothing was found
         # print('findIn ## 2:', res)
@@ -298,8 +298,8 @@ class ModuleBox(ModuleInst):
         self.inames.append(name)
     
     def hasImported(self, name):
-        dprint('hasImported1', self.name, ':', name)
-        dprint('hasImported2', self.inames)
+        # dprint('hasImported1', self.name, ':', name)
+        # dprint('hasImported2', self.inames)
         return name in self.inames
 
     def get(self, name):
@@ -315,13 +315,13 @@ class ModuleBox(ModuleInst):
         return TypeModule()
 
     def getType(self, name):
-        dprint('ModuleBox', self.name)
+        # dprint('ModuleBox', self.name)
         return self.mcontext.getType(name)
     
     def print(self):
-        dprint('ModuleBox(%s)' % self.name)
+        # dprint('ModuleBox(%s)' % self.name)
         for vv in self.inames:
-            dprint(' ', vv)
+            print(' ', vv)
 
     def __str__(self):
         return 'ModuleBox(%s)' % (self.name)

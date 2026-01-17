@@ -54,7 +54,7 @@ class Function(FuncInst):
         return list(self._argTypes.values())
 
     def addArg(self, arg:Var|AssignExpr, defVal=None):
-        print(f'F.AddArg # {self._name}:', arg, defVal)
+        # print(f'F.AddArg # {self._name}:', arg, defVal)
         self.argVars.append(arg)
         arname = arg.getName()
         if isinstance(arg, ArgSetOrd):

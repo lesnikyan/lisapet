@@ -188,7 +188,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
     # qMod = '' # if in qutes (string)
     # rxMod = '' # if native regexp
     # inRaw = False # for feature `raw string`
-    dprint(' --- splitLine:', 'prevType=', Lt.name(prevType), '::', src)
+    # dprint(' --- splitLine:', 'prevType=', Lt.name(prevType), '::', src)
     # dprint(' --- splitLine:', '::', src)
     def nextRes(cur, cType, nval=''):
         wd = ''.join(cur)
@@ -241,7 +241,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
             # print('if text-type:', Lt.name(curType))
             if escMod:
                 # in the string and after esc slash
-                dprint('## in esc' ,  'multi:', openMultStr , '; cur:', cur, 's:', s)
+                # dprint('## in esc' ,  'multi:', openMultStr , '; cur:', cur, 's:', s)
                 esc_map = c_esc_map
                 if openQuote == '`':
                     esc_map = c_esc_back_map
@@ -260,7 +260,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
         
             # start escape sequences
             if s == '\\': # sType == Lt.esc:
-                dprint('## esc ', s)# esc = True
+                # dprint('## esc ', s)# esc = True
                 # curType = Lt.esc
                 escMod = True
                 continue
@@ -277,11 +277,11 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 continue
             
             if i > 1 and curType == Lt.mttext and sType == Lt.quot:
-                print('MTEXT Quot', src[i-2: i+1], ' opened by:', openMultStr)
+                # print('MTEXT Quot', src[i-2: i+1], ' opened by:', openMultStr)
                 if src[i-2: i+1] == openMultStr:
                     # close multiline string
                     cur.append(s)
-                    print('close m-string', cur, '|', curType, '||', src[i-2: i+1])
+                    # print('close m-string', cur, '|', curType, '||', src[i-2: i+1])
                     cur = nextRes(cur, curType, src[i-2: i+1])
                     # curType = Lt.quot
                     curType = Lt.mclose
@@ -362,13 +362,13 @@ def splitLexems(text: str) -> list[TLine]:
             # interpretator magic:
             
             if s.startswith('@intr@exit'):
-                dprint('Interpretation exit in splitLexems()')
+                # dprint('Interpretation exit in splitLexems()')
                 exit(1);
             nextLine, endType, r3 = splitLine(s, lastType, **extArg)
             extArg = r3
             # print('splLex..', [(x.val, Lt.name(x.ltype), x.mark) for x in nextLine.lexems])
             # res.extend(nextLine)
-            print('--- split res --->', Lt.name(lastType), '::', [(x.val, Lt.name(x.ltype)) for x in nextLine.lexems])
+            # print('--- split res --->', Lt.name(lastType), '::', [(x.val, Lt.name(x.ltype)) for x in nextLine.lexems])
             # if res and lastType in [Lt.mtcomm, Lt.mttext] and endType == lastType:
             if lastType in [Lt.mtcomm, Lt.mttext] and nextLine.lexems:
                 if nextLine.lexems[0].ltype == lastType:
@@ -446,7 +446,7 @@ def elemLine(src:TLine)->CLine:
     ''' '''
     # prep:list[lex] = []
     ind = 0
-    print('Prs#12', src)
+    # print('Prs#12', src)
     if len(src.lexems) == 0:
         return CLine() # or None
     # print('@@lexms:', ','.join([lx.val for lx in src.lexems]))

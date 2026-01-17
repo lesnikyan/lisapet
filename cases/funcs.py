@@ -139,16 +139,16 @@ class CaseMathodDef(CaseFuncDef):
         subs = [instSub] + argSubs
         fname = elems[4].text
         exp = MethodDefExpr(fname)
-        dprint('CaseMathodDef split', exp)
+        # dprint('CaseMathodDef split', exp)
         return exp, subs
 
     def setSub(self, base:MethodDefExpr, subs:Expression|list[Expression])->Expression:
         inst = subs[0]
         args = []
-        print('CaseMathodDef seSub1', base, subs)
+        # print('CaseMathodDef seSub1', base, subs)
         if len(subs) > 1:
             args = subs[1:]
-        dprint('CaseMathodDef seSub2', base, inst, args)
+        # dprint('CaseMathodDef seSub2', base, inst, args)
         base.setInst(inst)
         for exp in args:
             base.addArg(exp)
@@ -182,7 +182,7 @@ class CaseFunCall(SubCase, SolidCase):
         if not isinstance(r, tuple):
             return False
         ok, pos = r
-        print('FCall. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
+        # print('FCall. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
         # prels('F match', elems, show=1)
         if pos == 1 and elems[0].type == Lt.oper:
             # print('FCall. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
@@ -190,7 +190,7 @@ class CaseFunCall(SubCase, SolidCase):
         if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '(') : 
             return False
         # exit()
-        print('F.Call/3')
+        # print('F.Call/3')
         # TODO: use word(any-with-brackets) pattern
         
         # print('FuncCallMatch ---------1----------')
@@ -231,7 +231,7 @@ class CaseFunCall(SubCase, SolidCase):
         exp = FuncCallExpr(elemStr(valExpr), src)
         # print('FCall.split1', valExpr, args)
         subs = [valExpr] + args
-        print('FCall.split2', elemStr(valExpr), 'Exp:',exp, 'subs:', [elemStr(s) for s in subs])
+        # print('FCall.split2', elemStr(valExpr), 'Exp:',exp, 'subs:', [elemStr(s) for s in subs])
         return exp, subs
 
     def setSub(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 

@@ -193,7 +193,7 @@ class FuncCallExpr(CallExpr):
         self.argExpr:list[Expression] = []
 
     def setFuncExpr(self, fexp:Expression):
-        print('FCall.setFuncExpr')
+        # print('FCall.setFuncExpr')
         self.funcExpr = fexp
 
     def addArgExpr(self, exp:Expression):
@@ -201,7 +201,7 @@ class FuncCallExpr(CallExpr):
 
     def do(self, ctx: Context):
         # inne rcontext
-        print('F().do/1')
+        # print('F().do/1')
         
         self.funcExpr.do(ctx)
         
@@ -223,7 +223,7 @@ class FuncCallExpr(CallExpr):
         # print(f'\nFunction `{self.name}`:', self.func)
         named = {}
         for exp in self.argExpr:
-            print('-- #1#',self.name,' func-call do2 exp=: ', exp)
+            # print('-- #1#',self.name,' func-call do2 exp=: ', exp)
             if isinstance(exp, AssignExpr):
                 varExp = exp.left # arg name
                 if not isinstance(varExp, VarExpr):
@@ -243,13 +243,13 @@ class FuncCallExpr(CallExpr):
             arg = valExp.get()
             if isinstance(arg, Var):
                 arg = arg.get()
-            print('func-call do2:', valExp, arg)
+            # print('func-call do2:', valExp, arg)
             args.append(arg)
         
         # unpack function from var
-        print('#1# func-call do03: ', self.name, 'F:', func)
-        for aa in args: print('--- final args:', aa)
-        for ak, av in named.items(): print('--- final nmed:', ak, av.get())
+        # print('#1# func-call do03: ', self.name, 'F:', func)
+        # for aa in args: print('--- final args:', aa)
+        # for ak, av in named.items(): print('--- final nmed:', ak, av.get())
         # if isinstance(self.funcExpr, VarExpr):
         # call by defined name
         if isinstance(func, FuncOverSet):
@@ -262,7 +262,7 @@ class FuncCallExpr(CallExpr):
                 errMsg = f"Can't find overloaded function {self.name} with args = ({','.join([f'{n.__class__.__name__}' for n in callArgTypes])}) "
                 raise EvalErr(errMsg)
                 
-        print('#2# func-call do04: ', self.name, 'F:', func)
+        # print('#2# func-call do04: ', self.name, 'F:', func)
         if isinstance(func, Var):
             func = func.get()
         if isinstance(func, TypeVal):
@@ -271,7 +271,7 @@ class FuncCallExpr(CallExpr):
                 func = tVal.getConstr()
         # print('FCall.do.args:', self.name, args)
         self.func = func
-        print('#3# func-call do05: ', self.name, 'F:', func)
+        # print('#3# func-call do05: ', self.name, 'F:', func)
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
         if isinstance(self.func, VarUndefined):
             raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
@@ -482,7 +482,7 @@ class MethodDefExpr(FuncDefExpr):
         return func
 
     def regFunc(self, ctx:Context, func:FuncInst):
-        print('M_Def reg', self.typeName, func)
+        # print('M_Def reg', self.typeName, func)
         ctx.addTypeMethod(self.typeName, func)
 
     def do(self, ctx:Context):
@@ -495,7 +495,7 @@ class MethodCallExpr(FuncCallExpr):
 
     def __init__(self, func:FuncCallExpr):
         super().__init__(func.name, func.src)
-        print('MCall.init:', func.name, 'src:', func.src)
+        # print('MCall.init:', func.name, 'src:', func.src)
         self.inst:ObjectInstance = None
         # self.name = name
         # self.func:Function = None
@@ -525,7 +525,7 @@ class MethodCallExpr(FuncCallExpr):
         # instVar = self.inst[0].get(), self.inst[1].get()
         # print('instVar', self.inst, self.func.argVars)
         args:list[Var] = [self.inst]
-        print('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
+        # print('#1# meth-call do1: ', self.name, self.inst, 'f:', self.func, 'line:', self.src)
         for exp in self.argExpr:
             # print('#1# meth-call do20 exp=: ', exp)
             exp.do(ctx)
