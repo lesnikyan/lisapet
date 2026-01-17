@@ -7,6 +7,14 @@ from vars import *
 from typex import *
 from context import *
 
+
+
+
+def repr(obj):
+    if not obj:
+        return str(obj)
+    return '%s= %s' % (obj.__class__.__name__, '~%03d' % (hash(obj) % 1000))
+
 class Expression:
     def __init__(self, val=None, src=None):
         self.val = val
@@ -450,8 +458,9 @@ class CallExpr(Expression):
 
 
 class StringExpr(ValExpr):
-    def __init__(self, val:Val):
+    def __init__(self, val:Val, quot):
         super().__init__(val)
+        self.quot = quot
 
     def __str__(self):
         return 'StrExpr(%s)' % self.val
@@ -459,9 +468,9 @@ class StringExpr(ValExpr):
 
 class MString(StringExpr, MultilineVal):
     
-    def __init__(self, val):
-        super().__init__(val)
-        self.val = StringVal(''.join(val), TypeMString())
+    def __init__(self, val, quot):
+        super().__init__(val, quot)
+        self.val = StringVal(''.join(val), TypeString())
 
     def add(self, next:'MString'):
         text = self.val.val + next.val.val

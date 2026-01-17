@@ -12,7 +12,8 @@ from vals import numLex
 from cases.utils import *
 
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
+from objects.func import Function
+from nodes.func_expr import setNativeFunc
 from nodes.structs import *
 
 from context import Context
@@ -40,6 +41,7 @@ class TestControl(TestCase):
         # with subs in ()
         for i <- [1..10] /: x = i * 5; (if i > 5 /:  res <- x); (if y = i * 3; y < 12 /:  res <- y * 100)
         
+        # print('len res=', len(res))
         # for /: if /:
         r2 = []
         for n <- res /:  if n % 2 > 0 /: k=n; n += 1 ; r2 <- n + 1000
@@ -340,41 +342,48 @@ class TestControl(TestCase):
             ex.do(ctx)
             res = ctx.get('res').get()
             dprint('##################t-IF1:', )
-            # self.assertEqual(res, 45)
+            self.assertEqual(45, res.getVal())
 
     def test_for_expr(self):
         code = '''
         y = 0
         a = 100
         b = 0
-        @debug 1
-        for i=0; i < 5; i = i + 1
+        # @debug 1
+        dd1 = 1000
+        for i=0; i < x; i = i + 1
             y = y + 2
             for j=-3; j <= 0; j = j + 1
                 a = a - j ** 2
                 if a % 2 == 0
-                    b = b + 1
+                    b += 1
+                    dd1 -= (a + b)
         res = y
         '''
         code = norm(code[1:])
-        # data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
-        data = [6]
+        data = [0, 1, 4, 5, 10, 200]
+        expd = [1000, 825, 444, 365, 330, 443600]
+        # data = [6]
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
         ress = []
-        for x in data:
+        for i in range(len(data)):
+            x = data[i]
             ctx = Context(None)
-            vv = Var('x', TypeInt)
-            vv.set(x)
+            vv = Var('x', TypeInt())
+            vv.set(Val(x, TypeInt()))
             ctx.addSet({'x': vv})
-            dprint('~~~~ test case: %d ~~~~' % x)
+            # print('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             rr = [ctx.get('res').get(), ctx.get('a').get() , ctx.get('b').get()]
             ress.append(rr)
             # ress.append(ctx.get('a').get())
-            dprint('##################t-IF1:', ctx.get('res').get())
-        dprint('all:', ress)
+            # print('##################t-IF1:', ctx.get('res').get(), ctx.get('dd1').get())
+            # rval = ctx.get('res').get()
+            rdd = ctx.get('dd1').get()
+            self.assertEqual(expd[i], rdd.getVal())
+        # dprint('all:', ress)
 
     def test_while_expr(self):
         code = '''
@@ -403,12 +412,13 @@ class TestControl(TestCase):
             vv = Var('x', TypeInt())
             vv.set(Val(x, TypeInt()))
             ctx.addSet({'x': vv})
-            dprint('~~~~ test case: %d ~~~~' % x)
+            # dprint('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             ress.append(ctx.get('res').get())
             ress.append(ctx.get('a').get())
-            dprint('##################t-IF1:', ctx.get('res').get())
-        dprint('all:', ress)
+            # dprint('##################t-IF1:', ctx.get('res').get())
+        # dprint('all:', ress)
+        self.fail()
 
 
 

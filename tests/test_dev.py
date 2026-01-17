@@ -18,7 +18,8 @@ from eval import rootContext, moduleContext
 
 from cases.utils import *
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
+from objects.func import Function
+from nodes.func_expr import setNativeFunc
 from bases.over_ctx import FuncOverSet
 from tests.utils import *
 from libs.regexp import *
@@ -38,11 +39,17 @@ class TestDev(TestCase):
         abc = ABC{a:1, b:2}
         res <- type(abc)
         
-        TODO: check TypeMString if need. If not then Convert to TypeString
+        DONE: check TypeMString if need. If not then Convert to TypeString
         # print(type(""" """))
         # print((""" a s d""").split(' '))
         
-        TODO?: Null() -> Null(Val)
+        # think about escapes in triple-backticks strings
+        #   unary backtick tested in test_parsing_string_backtiks
+            mres = ``` \n \t \\ \s \w ```
+
+        DONE: test overloading with type function, as function and any.
+        
+        TODO?: class Null() -> class Null(Val)
         
         TODO: declaration of var:type without assignment: check and fix.
         
@@ -56,35 +63,17 @@ class TestDev(TestCase):
         
         TODO bug: Sequence  match and split if brackets in quotes: (1, '[', ']')
 
-        TODO: test overloading with type function, as function and any.
+        TODO: add shoren alias fo struct: stru A a:int
+            shorten of string: name:strn
+        
+        TODO: fix parsing of struct.field with brackets:
+            calling func, returned from method: stru.method()()
+            collection in collection in field: stru.field[0][1]
+   
     '''
 
 
-    def _test_func_from_method(self):
-        ''' test when func returned from method and call obj.foo()(arg)
-        '''
-        
-        code = r'''
-        res = []
-        
-        
-        
-        for n <- res /: print('> ', n)
-        # print('res', res)
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        rvar = ctx.get('res').get()
-        exv = ['#1', 1, 'dark', '~`hello`:str', 'func-0', 312, 5.5, 3.0, 125.0, [100, 200, 300]]
-        self.assertEqual(exv, rvar.vals())
-
-    def _test_1(self):
+    def _test_dev_tail_recursion(self):
         ''''''
         def _foo(n, x, y):
             r = x + y
@@ -117,19 +106,14 @@ class TestDev(TestCase):
         ''' '''
         code = r'''
         res = []
-
-
-        print('res = ', res)
+        
+        print('res = ', s)
         '''
         code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
-        # print('>>', dd.values())
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
         # self.assertEqual([], rvar.vals())

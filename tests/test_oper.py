@@ -10,7 +10,8 @@ from vals import numLex
 from cases.utils import *
 
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
+# from objects.func import Function
+# from nodes.func_expr import setNativeFunc
 from nodes.structs import *
 
 from context import Context
@@ -50,7 +51,6 @@ class TestOper(TestCase):
         
         func foo()
             "function_resUlT"
-        
         
         src = [
             ("abc", 0),
@@ -560,10 +560,9 @@ class TestOper(TestCase):
         func unar(cond)
             inv = false
             if cond && ! inv
-                # print('inverted')
                 return true
             false
-                
+
         res = unar(true)
         '''
         code = norm(code[1:])
@@ -653,8 +652,8 @@ class TestOper(TestCase):
                 vv.set(Val(v, TypeAny))
                 return vv
             ctx.addSet({k: tvar(k, v) for k,v in ctxData.items()})
-            # dprint('#tc11', td, mres)
             ex = elems2expr(elems)
+            # print('#tc11', td, mres)
             ex.do(ctx)
             res = ex.get()
             # dprint(' -- #tr11',td, res.getType(), res.get())
@@ -716,6 +715,7 @@ class TestOper(TestCase):
         data = [
             'x = 5.0', 'x = 5j2', 'x = 0xf000a', "x = '5' ", 'x = 0b10101'
         ]
+        results = []
         for src in data:
             tlines = splitLexems(src)
             clines = elemStream(tlines)
@@ -723,11 +723,10 @@ class TestOper(TestCase):
             expr = line2expr(line0)
             ctx = Context(None)
             expr.do(ctx)
-            res = ctx.get('x')
+            rval = ctx.get('x')
+            results.append(rval.getVal())
             # dprint('#a7 ===> ', res.get(), res.getType())
-
-
-
+        self.fail()
 
 
 if __name__ == '__main__':

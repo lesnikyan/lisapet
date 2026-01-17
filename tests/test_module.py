@@ -147,6 +147,8 @@ class TestModule(TestCase):
         code = '''
         
         import tstructs
+        struct A a:int
+        a1 = A{}
         pr = tstructs.Pair{a:11, b:220}
         res = [pr.foo() ]
         b = pr.sum()

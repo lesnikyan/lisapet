@@ -13,6 +13,8 @@ from vars import *
 from context import Context
 from tree import *
 from nodes.func_expr import coverFunc
+from objects.func import Function
+from nodes.func_expr import setNativeFunc
 from nodes.builtins import getVal
 from eval import rootContext
 from tests.utils import *

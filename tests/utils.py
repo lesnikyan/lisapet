@@ -44,9 +44,24 @@ def trydo(expr, ctx):
     try:
         expr.do(ctx)
     except LangError as ex:
-        print('Error:', ex.msg)
+        print('\n!! Eval Error:', ex.msg)
         raise ex
     except Exception as ex:
         print(ex.args)
         raise ex
-    
+
+def tryParse(code):
+    try:
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        expTree = lex2tree(clines)
+        return expTree
+    except InterpretErr as ex:
+        print('\n!! Error Interpretation :', ex.msg)
+        raise ex
+    except LangError as ex:
+        print('\n!! Error Parsing:', ex.msg)
+        raise ex
+    except Exception as ex:
+        print('\n!! Common Error', ex.args)
+        raise ex

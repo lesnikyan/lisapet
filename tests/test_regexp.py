@@ -16,8 +16,6 @@ from tree import *
 from eval import rootContext, moduleContext
 
 from cases.utils import *
-from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
 from tests.utils import *
 from libs.regexp import *
 from cases.operwords import *
@@ -67,8 +65,8 @@ class TestRegexp(TestCase):
         code = r'''
         src = """a11 b22,c33
         d44;d45
-        e55|f66    g77 h88 i99 /j101-k202--n204
-        """
+        e55|f66    g77 h88 i99 /j101-k202--n204"""
+        
         parts = split(src, re`[\s\n\t\|/;,-]+`)
         res = []
         for s <- parts

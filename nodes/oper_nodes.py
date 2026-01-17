@@ -28,7 +28,7 @@ class OpAssign(AssignExpr):
         left - dest
         right - src
         '''
-        dprint('OpAssign__setArgs1', left, right)
+        # dprint('OpAssign__setArgs1', left, right)
         self.left = left
         r0 = right
         
@@ -48,6 +48,10 @@ class OpAssign(AssignExpr):
 
     def add(self, expr:Expression):
         ''' where right is MultilineVal '''
+        # print('OpAssig.add', expSrc(self.right), ' < ', expSrc(expr))
+        if isinstance(self.right, CallExpr):
+            rr = self.right
+            # print('OpAsg. CallExpr:', rr)
         self.right.add(expr)
 
     def doRight(self, ctx:Context, leftSize):
@@ -56,7 +60,7 @@ class OpAssign(AssignExpr):
         # print('OpAssign.do src', src)
         resSet:list[Var] = []
         if isinstance(src, SequenceExpr):
-            dprint('## op-assign, SequenceExpr src -> ', src, )
+            # dprint('## op-assign, SequenceExpr src -> ', src, )
             resSet = src.getVals(ctx)
         else:
             src.do(ctx)
@@ -70,7 +74,7 @@ class OpAssign(AssignExpr):
             if isinstance(tval, Var):
                 tval = resSet[0].getVal()
             
-            dprint('resSet[0] to unpack:', resSet[0], tval)
+            # dprint('resSet[0] to unpack:', resSet[0], tval)
             if not isinstance(tval, (ListVal, TupleVal)):
                 raise EvalErr('Count of left and right parts of assignment are different '
                                'left = %d, right = %d' % (leftSize, len(resSet)))
@@ -99,7 +103,7 @@ class OpAssign(AssignExpr):
             val = val.get()
         if isinstance(val, ModuleMember):
             val = val.get()
-        dprint(' (a = b) :3', val)
+        # dprint(' (a = b) :3', val)
         if isinstance(val, Var):
             val = val.get()
         # dprint(' (a = b) :4', val)
@@ -125,6 +129,7 @@ class OpAssign(AssignExpr):
             # print('L-1', left[i])
             left[i].do(ctx)
             # print('L-2', left[i])
+            # print('resSet', resSet[i])
             val = resSet[i]
             
             val = self.readVal(val)
@@ -264,7 +269,7 @@ class OpMath(BinOper):
         numTs = (TypeNull, TypeBool, TypeInt, TypeFloat)
         if not isinstance(atype, numTs) or not isinstance(btype, numTs):
             # incorrect operand for math operator!
-            print(f'Incorrect types {atype} , {btype} for math operator {self.oper}')
+            # print(f'Incorrect types a:{atype.__class__} , b:{btype.__class__} for math operator {self.oper}', 'a,b=', a, b)
             raise EvalErr(f'Incorrect types {atype.name} , {btype.name} for math operator {self.oper}')
         
         rtype = atype

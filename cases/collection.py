@@ -11,8 +11,6 @@ from nodes.tnodes import *
 from nodes.datanodes import *
 
 
-
-
 def keyBorders(elems:list[Elem]):
     open, close = 0, 0
     # i = -1
@@ -30,7 +28,7 @@ def keyBorders(elems:list[Elem]):
     return open, close
 
 
-class CaseTuple(SubCase):
+class CaseTuple(SubCase, SolidCase):
     ''' (a, b, c) '''
 
     def match(self, elems:list[Elem]) -> bool:
@@ -38,6 +36,17 @@ class CaseTuple(SubCase):
         # TODO: change to usage of OperSplitter
         if not (isLex(elems[0], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')')):
             return False
+        
+        r =  isSolidExpr(elems, getLast=True)
+        if not isinstance(r, tuple):
+            return False
+        ok, pos = r
+        if not ok or pos != 0:
+            return False
+        # print('Tuple. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
+        # prels('dict-c match', elems, show=1)
+        # if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '(') : 
+        #     return False
         cs = CaseCommas()
         return cs.match(elems[1:-1])
 
@@ -59,7 +68,7 @@ class CaseTuple(SubCase):
             base.add(exp)
         return base
 
-class CaseList(SubCase):
+class CaseList(SubCase, SolidCase):
     ''' [num, word, expr] '''
 
     def match(self, elems:list[Elem]) -> bool:
@@ -97,25 +106,25 @@ class CaseList(SubCase):
 
 
 
-class CaseListBlock(SubCase):
-    def match(self, elems:list[Elem]) -> bool:
-        '''
-        []
-        varName = []
-        '''
-        return False # deprecated
-        if len(elems) != 1:
-            return False
-        return isLex(elems[0], Lt.word, 'list')
+# class CaseListBlock(SubCase):
+#     def match(self, elems:list[Elem]) -> bool:
+#         '''
+#         []
+#         varName = []
+#         '''
+#         return False # deprecated
+#         if len(elems) != 1:
+#             return False
+#         return isLex(elems[0], Lt.word, 'list')
     
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        return ListConstr(byword = True), []
+#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+#         return ListConstr(byword = True), []
 
-    def setSub(self, base:ListConstr, subs:Expression|list[Expression])->Expression:
-        dprint('ListConstr.setSub empty: ', base, subs)
+#     def setSub(self, base:ListConstr, subs:Expression|list[Expression])->Expression:
+#         dprint('ListConstr.setSub empty: ', base, subs)
 
 
-class CaseCollectElem(SubCase):
+class CaseCollectElem(SubCase, SolidCase):
     ''' 
     case array[index-expr]
     case dict[key-expr]
@@ -182,7 +191,7 @@ class CaseCollectElem(SubCase):
         return base
 
 
-class CaseSlice(SubCase):
+class CaseSlice(SubCase, SolidCase):
 
     def match(self, elems:list[Elem]) -> bool:        
         ''' arr.expr[start-expr : end-expr] 
@@ -217,7 +226,7 @@ class CaseSlice(SubCase):
         return base
 
 
-class CaseDictLine(SubCase):
+class CaseDictLine(SubCase, SolidCase):
     ''' {expr:expr, ...} - here single line case
         multi-line declaration with { } - another case
         multiline declaration as val = dict // - another.. not sure 
@@ -281,23 +290,23 @@ class CaseDictLine(SubCase):
 
 
 
-class CaseDictBlock(SubCase):
-    def match(self, elems:list[Elem]) -> bool:
-        '''
-        dict
-        from varName = dict
-        '''
-        return False # deprecated
-        # dprint('CaseDictBlock.match')
-        if len(elems) != 1:
-            return False
-        return isLex(elems[0], Lt.word, 'dict')
+# class CaseDictBlock(SubCase):
+#     def match(self, elems:list[Elem]) -> bool:
+#         '''
+#         dict
+#         from varName = dict
+#         '''
+#         return False # deprecated
+#         # dprint('CaseDictBlock.match')
+#         if len(elems) != 1:
+#             return False
+#         return isLex(elems[0], Lt.word, 'dict')
     
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        return DictConstr(byword=True), []
+#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+#         return DictConstr(byword=True), []
 
-    def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
-        dprint('CaseDictBlock.setSub empty: ', base, subs)
+#     def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
+#         dprint('CaseDictBlock.setSub empty: ', base, subs)
 
 
 

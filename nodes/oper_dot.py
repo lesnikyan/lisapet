@@ -5,7 +5,7 @@
 from lang import *
 from vars import *
 from nodes.expression import *
-from nodes.structs import StructInstance, MethodCallExpr, StructConstr, BoundMethodCall
+from nodes.structs import StructInstance, StructConstr #, BoundMethodCall, MethodCallExpr
 from bases.ntype import *
 from nodes.base_oper import *
 
@@ -25,16 +25,46 @@ class ObjectMember(ObjectElem):
     def getVal(self):
         return self.get().getVal()
 
-    def get(self):
+    def getTypeMethod(self):
         ''' res = obj.member; foo(obj.member); obj.member() '''
-        # print('self.member, get :: obj:',self.object, ':', type(self.object), '; .member:', self.member)
-        val = self.object.get(self.member)
-        
-        # print('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
-        if isinstance(val, (StructInstance, Val)):
-            # dprint('membrr get struct')
-            return val
-        return val.get()
+        return self.object.vtype.getMethod(self.member)
+    
+    def getInst(self):
+        return self.object
+
+    def get(self, ctx:Context=None):
+        ''' res = obj.member; '''
+        sob:StructInstance = self.object
+        # print('obJ1:', sob.vtype.name,  sob.vtype)
+        # print('obJ:', sob.vtype.name,  sob.vtype.debug())
+        # print('self.member, get :: obj2:',self.object, ':', type(self.object), '; .member:', self.member)
+        if isinstance(sob, StructInstance) :
+            # print('Obj3Mem.get if Struct')
+            # self.membExpr = MethodCallExpr(self.membExpr)
+            if self.object.vtype.hasField(self.member):
+                val = self.object.get(self.member)
+                # print('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
+                if isinstance(val, (StructInstance, Val)):
+                    # dprint('membrr get struct')
+                    return val
+                return val.get()
+            # print('Obj55Mem')
+            if self.object.vtype.hasMethod(self.member):
+                # print('ObjectMember (checkMethod), get :: obj, member, val: ', self.object, self.member)
+                return self.getTypeMethod()
+        else:
+            # try to find bound method
+            # print('Obj5Mem.get others')
+            inst = self.object
+            fname = self.member
+            mctx:Context = ctx
+            ctype = mctx.find(inst.getType().name)
+            # print('ODt6. type:', inst.getType(), mctx, ctype, fname)
+            if isinstance(ctype, TypeProperty):
+                func = ctype.funcs.getMethod(fname)
+                # print('Dot7Oper. type-func=', type(func))
+                return func
+                # self.membExpr = BoundMethodCall(func, fcall)
     
     def getType(self):
         # print('self.member', self.member)
@@ -73,50 +103,62 @@ class ModuleMember:
 class OperDot(BinOper):
     ''' inst.field '''
 
-    def __init__(self):
+    def __init__(self, member=None):
         super().__init__('.')
         # obj, foo(), arr[key], obj.sub 
         self.objExp:VarExpr = None
         # obj.field, obj.meth(), obj.field[key]
-        self.membExpr:Expression = None
+        self.membExpr:Expression = member
         self.val:ObjectMember= None
 
-    def setArgs(self, inst:VarExpr, member:VarExpr):
+    def setObj(self, inst:Expression):
         self.objExp = inst
-        if isinstance(inst, StructInstance) and isinstance(member, CallExpr):
-            member = MethodCallExpr(member)
-        self.membExpr = member
-        # dprint('   >> OperDot.set', self.objExp, self.membExpr)
 
-    def doMethod(self, ctx:NSContext, inst:StructInstance|Var|Val):
-        # print('OperDot.do-001 CallExpr, inst:', inst, 'memExp:', self.membExpr)
-        fname = self.membExpr.name
-        fcall = self.membExpr
-        if isinstance(inst, StructInstance) :
-            self.membExpr = MethodCallExpr(self.membExpr)
-        else:
-            # try to find bound method
-            mctx:Context = ctx
-            ctype = mctx.find(inst.getType().name)
-            # print('ODt2. type:', inst.getType(), mctx, ctype, fname)
-            if isinstance(ctype, TypeProperty):
-                func = ctype.funcs.getMethod(fname)
-                # print('DotOper. type-func=', func)
-                self.membExpr = BoundMethodCall(func, fcall)
+    # def setArgs(self, inst:VarExpr, member:VarExpr):
+    #     self.objExp = inst
+    #     if isinstance(inst, StructInstance) and isinstance(member, CallExpr):
+    #         member = MethodCallExpr(member)
+    #     self.membExpr = member
+    #     # dprint('   >> OperDot.set', self.objExp, self.membExpr)
+
+    # def doMethod(self, ctx:NSContext, inst:StructInstance|Var|Val):
+    #     # print('OperDot.do-001 CallExpr, inst:', inst, 'memExp:', self.membExpr)
+    #     fname = self.membExpr.name
+    #     fcall = self.membExpr
+    #     if isinstance(inst, StructInstance) :
+    #         self.membExpr = MethodCallExpr(self.membExpr)
+    #     else:
+    #         # try to find bound method
+    #         mctx:Context = ctx
+    #         ctype = mctx.find(inst.getType().name)
+    #         # print('ODt2. type:', inst.getType(), mctx, ctype, fname)
+    #         if isinstance(ctype, TypeProperty):
+    #             func = ctype.funcs.getMethod(fname)
+    #             # print('DotOper. type-func=', func)
+    #             self.membExpr = BoundMethodCall(func, fcall)
     
-        if not isinstance(self.membExpr, (MethodCallExpr)):
-            raise EvalErr("Incorrect member in `inst.method()` call expression. ")
+    #     if not isinstance(self.membExpr, (MethodCallExpr)):
+    #         raise EvalErr("Incorrect member in `inst.method()` call expression. ")
 
-        # print('OperDot.do3 method1 =', self.membExpr, type(self.membExpr), '; methodname:', self.membExpr.name)
-        # TODO: refactor to: 1. return func-member; 2. call method as usage of `()` operator
-        self.membExpr.setInstance(inst)
-        self.membExpr.do(ctx)
-        self.val = self.membExpr.get()
-        # print('OperDot.do4 method res =', self.val)
+    #     # print('OperDot.do3 method1 =', self.membExpr, type(self.membExpr), '; methodname:', self.membExpr.name)
+    #     # TODO: refactor to: 1. return func-member; 2. call method as usage of `()` operator
+    #     self.membExpr.setInstance(inst)
+    #     self.membExpr.do(ctx)
+    #     self.val = self.membExpr.get()
+    #     # print('OperDot.do4 method res =', self.val)
 
 
     def doModuleMember(self, ctx:NSContext, base:ModuleBox):
-        # dprint('OperDot.do ModuleBox:', base, '; memb:', self.membExpr)
+        # print('OperDot.do ModuleBox:', base, '; memb:', self.membExpr)
+        
+        if isinstance(self.membExpr, VarExpr):
+            memName = self.membExpr.get().name
+            # print('OperDot.Module/1', base.get(memName))
+            res = base.get(memName)
+            if res:
+                # print('OpDot. mem res=', res)
+                return res
+        
         if isinstance(self.membExpr, CallExpr):
             self.membExpr.do(base)
             self.val = self.membExpr.get()
@@ -128,20 +170,23 @@ class OperDot(BinOper):
         
     def do(self, ctx:NSContext):
         # print('OperDot.do0', self.objExp, '; type=', type(self.objExp), ' :: ', self.membExpr)
+        # print('ODt.src', expSrc(self), 'objExp:', expSrc( self.objExp))
         self.objExp.do(ctx)
         objVar = self.objExp.get()
-        # dprint('OperDot.do00', objVar, '; type=', type(objVar))
+        # print('>>3', objVar)
+        # print('OperDot.do00', objVar, '; type=', type(objVar))
         if isinstance(objVar, ModuleBox):
             # process modules
-            return self.doModuleMember(ctx, objVar)
+            self.val = self.doModuleMember(ctx, objVar)
+            return
             
         objVal = objVar
         if isinstance(objVar, Var):
             objVal = objVar.get()
         # print('#2', objVal)
         
-        if isinstance(self.membExpr, CallExpr):
-            return self.doMethod(ctx, objVal)
+        # if isinstance(self.membExpr, CallExpr):
+        #     return self.doMethod(ctx, objVal)
         
         name = ''
         if isinstance(self.membExpr, VarExpr):
