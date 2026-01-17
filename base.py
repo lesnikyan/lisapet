@@ -31,6 +31,11 @@ class EvalErr(LangError):
         super().__init__(*args)
 
 
+class Deprecated(EvalErr):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
 class TypeErr(LangError):
     def __init__(self, *args):
         super().__init__(*args)
@@ -143,7 +148,7 @@ class Var(Base):
             mutable = not kw['const']
         # debug exception
         if not isinstance(name, str):
-            dprint('name type:', type(name))
+            # dprint('name type:', type(name))
             raise InterpretErr('OLD VAR USAGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %s ' % type(name))
         self.val:Val = None
         self.name:str = name # if name is none - here Val, not Var

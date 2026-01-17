@@ -18,7 +18,8 @@ from eval import rootContext, moduleContext
 
 from cases.utils import *
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
+from objects.func import Function
+from nodes.func_expr import setNativeFunc
 from bases.over_ctx import FuncOverSet
 from tests.utils import *
 from libs.regexp import *
@@ -38,11 +39,17 @@ class TestDev(TestCase):
         abc = ABC{a:1, b:2}
         res <- type(abc)
         
-        TODO: check TypeMString if need. If not then Convert to TypeString
+        DONE: check TypeMString if need. If not then Convert to TypeString
         # print(type(""" """))
         # print((""" a s d""").split(' '))
         
-        TODO?: Null() -> Null(Val)
+        # think about escapes in triple-backticks strings
+        #   unary backtick tested in test_parsing_string_backtiks
+            mres = ``` \n \t \\ \s \w ```
+
+        DONE: test overloading with type function, as function and any.
+        
+        TODO?: class Null() -> class Null(Val)
         
         TODO: declaration of var:type without assignment: check and fix.
         
@@ -53,142 +60,60 @@ class TestDev(TestCase):
             test overload for imported functions, 
             struct type args in overloaded func, 
             overloaded methods of imported structs
-        TODO: partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
-        # not sure, partial usage of operator - make lambda:
-                    (2 +) =>> x -> 2 + x
-                    (-(2)) =>> x -> x - 2, or -1 # problem here
-                    underscore here looks better
-                    looks mostly as a shorten syntax of lambdas
-                    (2 + _) =>> x -> 2 + x
-                    (_ - 2) =>> x -> x - 2
-        TODO: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
-            =>> curried_foo(1)(2)(3)
-        TODO: composition foo * bar (x)
-        TODO: prevent overloading of func with default/named args or variadic list args...
         
         TODO bug: Sequence  match and split if brackets in quotes: (1, '[', ']')
 
-        TODO: test overloading with type function, as function and any.
+        TODO: add shoren alias fo struct: stru A a:int
+            shorten of string: name:strn
+        
+        TODO: fix parsing of struct.field with brackets:
+            calling func, returned from method: stru.method()()
+            collection in collection in field: stru.field[0][1]
+   
     '''
 
 
-    def _test_new_collection_constr(self):
-        ''' constr-like brackets with colon - []:, {}:, (): '''
-        code = r'''
-        res = []
-        
-        varList = []:
-            111,
-            222,
-            333
-        
-        # varDict = {}:
-        #     1:1111
-        #     2:2222
-        #     3:3333
-        
-        # Vd2= {}:
-        #     'a': 'AAAAAAAAAAAAAAAAAAAA'
-        #     'b': 'BBBBBBBBBBBBBBBBBBB'
-        #     'c': 'CCCCCCCCCCCCCCCCCC'
-        
-        # varTuple = ():
-        #     'aaaaa'
-        #     'bbbbb'
-        
-        print(f1(200))
-        # print('res = ', 1)
-        '''
-        code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        # print('>>', dd.values())
-        # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # self.assertEqual([], rvar.vals())
-
-    def _test_TypeHash(self):
+    def _test_dev_tail_recursion(self):
         ''''''
-        TH.base = 0xff001
-        print('th>>', TH.mk())
-
-    def _test_func_signHash(self):
-        ''''''
-        htt = [
-            [TypeInt(), TypeFloat(),], 
-            [TypeFloat(), TypeBool(),], 
-            [TypeInt(), TypeFloat(), TypeBool(),], 
-            [TypeString(), TypeString(), TypeString(), TypeInt()], 
-            [TypeBool(), StructDef('A')],
-            [StructDef('A'), StructDef('B')],
-            [TypeInt(), TypeFloat(), TypeBool(), StructDef('A'), StructDef('B'), StructDef('C')],
-        ]
-        for ht in htt:
-            hash = FuncInst.sigHash(ht)
-            print('hh>>', hash)
-
-
-    def _test_1(self):
-        ''''''
-        # hh = TH.mk()
-        # for i in range(9999):
-            # hh = TH.mk()
-        #     if i > 1000:
-        #         print(hh)
-        #         if i > 1005:
-        #             break
-
-        tt = [TypeInt(), TypeFloat(), TypeBool(), StructDef('A'), StructDef('B'), StructDef('C'), ]
-        # for t in tt:
-        #     
-        htt = [
-            [TypeInt(), TypeFloat(),], 
-            [TypeFloat(), TypeBool(),], 
-            [TypeInt(), TypeFloat(), TypeBool(),], 
-            [TypeString(), TypeString(), TypeString(), TypeInt()], 
-            [TypeBool(), StructDef('A')],
-            [StructDef('A'), StructDef('B')],
-            [TypeInt(), TypeFloat(), TypeBool(), StructDef('A'), StructDef('B'), StructDef('C')],
-        ]
-        for ht in htt:
-            hash = FuncInst.sigHash(ht)
-            print('hh>>', hash)
-
-
+        def _foo(n, x, y):
+            r = x + y
+            if n == 0:
+                return r
+            n, x, y = n - 1, r, y
+            return _foo(n, x, y)
+        
+        def foo(x, y):
+            return _foo(x, x, y)
+            
+        def _loop(n, x, y):
+            # r, n = 0, x
+            # dx = x
+            while True:
+                r = x + y
+                if n == 0:
+                    return r
+                n, x, y = n - 1, r, y
+        
+        def loop(x, y):
+            return _loop(x, x, y)
+        
+        rfoo = foo(10, 2)
+        rloop = loop(10, 2)
+        print('tt>>', rfoo, rloop)
+        self.assertEqual(rfoo, rloop)
 
     def _test_code(self):
         ''' '''
         code = r'''
         res = []
-        func foo(s:string)
-            {'a':s}
-
-        func foo(x:int)
-            x * 10
-
-        func foo(x)
-            [x]
-
-        res <- foo(1) #//        [1]
-        res <- foo(1.5) #//      [1.5]
-        # res <- foo(true) #//     [true]
-        res <- foo('hello') #//  {'a': 'hello'}
-        print('res = ', res)
+        
+        print('res = ', s)
         '''
         code = norm(code[1:])
-
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
-        # print('>>', dd.values())
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
         # self.assertEqual([], rvar.vals())

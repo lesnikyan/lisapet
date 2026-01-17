@@ -11,6 +11,8 @@ from vals import isDefConst, elem2val, isLex
 from cases.utils import *
 
 from nodes.tnodes import *
+
+from nodes.oper_dot import OperDot
 from nodes.oper_nodes import *
 from nodes.datanodes import *
 from nodes.control import *
@@ -169,6 +171,10 @@ class ExpCase:
         return None
 
 
+class SolidCase:
+    ''' solid expressions '''
+
+
 class CaseComment(ExpCase):
     ''' possibly will be used for meta-coding'''
     def match(self, elems:list[Elem])-> bool:
@@ -195,7 +201,7 @@ class CaseEmpty(ExpCase):
         return NothingExpr()
 
 
-class CaseVal(ExpCase):
+class CaseVal(ExpCase, SolidCase):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) != 1:
@@ -217,29 +223,38 @@ class CaseVal(ExpCase):
         return res
 
 
-class CaseString(CaseVal):
+class CaseString(CaseVal, SolidCase):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
         # print('StrCase:', elems, ' strlen=', len(elems))
         if len(elems) != 1:
             return False
-        if elems[0].type in [Lt.text, Lt.mttext]:
+        # if elems[0].type in [Lt.text, Lt.mttext]:
+        if elems[0].type in [Lt.text]:
             return True
         return False
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
-        res = StringExpr(elem2val(elems[0]))
+        res = StringExpr(elem2val(elems[0]), 'TODO:quot')
         return res
 
 
 class CaseMString(ExpCase):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
-        if len(elems) == 0:
+        if len(elems) != 1:
             return False
         if elems[0].type != Lt.mttext:
             return False
+        mqoutes = '""" ``` \'\'\''.split(' ')
+        # print('CMSt#1', '|%s|' % elems[0].text[:3], '',  elems[0].text[:3] in mqoutes)
+        # print('CMSt#1', '|%s|' % elems[-1].text[-3:], '',  elems[-1].text[-3:] in mqoutes)
+        if elems[0].text[:3] not in mqoutes:
+            return False
+        if len(elems[-1].text) < 3 or elems[-1].text[-3:] not in mqoutes:
+            return False
+        
         for el in elems:
             if el.type != Lt.mttext:
                 return False
@@ -248,20 +263,21 @@ class CaseMString(ExpCase):
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
         res = []
-        i = -1
-        if elems[0].text[:3] in ' """ ``` \'\'\' ':
-            elems[0].text = elems[0].text[3:]
-        for el in elems:
-            i += 1
-            if el.type == Lt.mttext:
-                res.append(el.text)
-        res = MString(''.join(res))
-        # dprint('## MString')
+        # i = -1
+        # if elems[0].text[:3] in ' """ ``` \'\'\' ':
+        #     elems[0].text = elems[0].text[3:]
+        # for el in elems:
+        #     i += 1
+        #     if el.type == Lt.mttext:
+        #         res.append(el.text)
+        val = elems[0].text[3:-3]
+        res = MString(val, elems[0].text[:3])
         return res
 
-class CaseVar(ExpCase):
+class CaseVar(ExpCase, SolidCase):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
+        # print('CaseVar', elems)
         if len(elems) > 1:
             return False
         if elems[0].type == Lt.word:
@@ -273,7 +289,7 @@ class CaseVar(ExpCase):
         expr = VarExpr(Var(elems[0].text, TypeAny())) # Any for non-typed vars
         return expr
 
-class CaseVar_(ExpCase):
+class CaseVar_(ExpCase, SolidCase):
     ''' _ var
         null-assign var
         value won't assigned
@@ -495,4 +511,159 @@ class MatchPtrCase(RawCase):
     def __init__(self, left=None, right=None):
         self.left:Expression = left
         self.right:Expression = right
+
+
+def flatOpers():
+    opers = getOperPriors()[1:]
+    fopers = []
+    for oops in opers:
+        # print(oops.split(' '))
+        fopers.extend([n for n in oops.split(' ') if n and  n not in ' .'])
+    return fopers
+
+_noDotOpers = flatOpers()
+
+_keyWords = (
+    'if else while for match func struct import @debug'
+).split(' ')
+
+def isSolidExpr(elems:list[Elem], getLast=None):
+    ''' single varName or chain of fields, subelem, call 
+    
+        getLast - get pos of lastsubpart like word after dot, brackets
+    '''
+    # print('isSolid #1', elemStr(elems))
+    elen = len(elems)
+    if elen == 0:
+        return False
+    if elen == 1 and elems[0].type in [Lt.word, Lt.text, Lt.num]:
+        return True
+    # print('isSolid #2', f"<{elems[0].text}>", elems[0].text in _keyWords)
+    if elems[0].type == Lt.word and elems[0].text in _keyWords:
+        return False
+    
+    fopers = _noDotOpers
+    # print('solid-fopers', fopers)
+    opened = [] # brackets openede from right
+    # cbr = []
+    rob = list('}])')
+    rcb = list('([{')
+    bpairs = {'(':')', '[':']', '{':'}'}
+    # print('ss:', end=' ')
+    for i in range(elen-1, -1, -1):
+        el = elems[i]
+        etx = el.text
+        # print('=>', etx, end=' ')
+        et = el.type
+        if isLex(el, Lt.oper, rob):
+            # open brackets from right
+            opened.append(el.text)
+            continue
+        if isLex(el, Lt.oper, rcb):
+            # close brackets
+            if len(opened) == 0:
+                # posibly multiline expr
+                # print('No-solid', )
+                return False
+            lastObr = opened.pop()
+            if bpairs[etx] != lastObr:
+                # incorrect brackets pair in closing
+                raise InterpretErr(f"incorrect brackets pair in closing `{etx}{bpairs[etx]}`")
+                # return False
+            if len(opened) == 0 and getLast:
+                # last closed part found in solidExpr
+                return True, i
+            continue
+        if not opened and isLex(el, Lt.oper, fopers):
+            # any operator has been found not in brackets a + b
+            # print('No Solid because of ', etx)
+            return False
+    # print('\n>> ', opened, ' //')
+    return not opened
+
+def isFuncCall(elems:list[Elem]):
+    ''' solid expr with func call in the end
+        a()
+        a(args)
+        a.b()
+        a[0]()
+        a()()
+        a.b()()
+    '''
+
+def isField(elems:list[Elem]):
+    ''' solid expr with `.fieldName` in the end 
+        a.b
+        a().b
+        a.b().c
+        a.b[0].c
+    '''
+    if not isLex(elems[-2], Lt.oper, '.'):
+        return False
+    
+    return elems[-1].type == Lt.word and elems[-1].text
+
+def isSeqElem(elems:list[Elem]):
+    ''' solid expr with square brackets in the end
+        a[0]
+        a.b[0]
+        a()[0]
+        
+    '''
+
+
+# class SolidExprCase(SubCase):
+#     ''' single varName or chain of fields, subelem, call
+#         a.b
+#         a.b[0]
+#         a.b[0].c
+#         a.b.c[0]
+#         a.b().c
+#         a.b()[0].c
+#         a.b.c[0]()
+#         a.b()()
+#         a.b[0]()()
+#         a.b[0]()()[0]
+#         a.b[0]()().c
+#         a.b[0]()().c[0]
+        
+    
+#     '''
+    
+#     def __init__(self):
+#         self.opSpl = OperSplitter()
+
+#     def match(self, elems:list[Elem]) -> bool:
+#         self.opSpl.mainOper(elems)
+
+
+class CaseDotName(SubCase, SolidCase):
+    ''' solidExpr.name:
+        obj.name
+        "str".split
+        [1,2,3].map
+        foo().field
+        nn[key].field
+    
+    '''
+
+    def match(self, elems:list[Elem]) -> bool:
+        ''' '''
+        ln = len(elems)
+        if ln < 3:
+            return False
+        return isField(elems)
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        ''' '''
+        fname = elems[-1].text
+        member = VarExpr(Var(fname, TypeAny()))
+        expr = OperDot(member)
+        return expr, [elems[:-2]]
+    
+    def setSub(self, base:OperDot, subs:Expression|list[Expression])->Expression: 
+        ''' '''
+        objExpr = subs[0]
+        base.setObj(objExpr)
+
 

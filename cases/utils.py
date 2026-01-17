@@ -13,7 +13,7 @@ oper group replacement:
 `1` >=> ,
 '''
 
-operPrior = ('( ) [ ] { } , . , -x !x ~x , ** , * / % , + - ,'
+operPrior = ('. , ( ) [ ] { } , -x !x ~x , ** , * / % , + - ,'
 ' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, ::, == != , &, ^ , | , && , ||, ?: , : , ? , `1`, <- , ->, = += -= *= /= %= , ; , /: , !: :? => , !- ')
 
 unaryOperators = '- ! ~'.split(' ')
@@ -66,15 +66,16 @@ def el_text(elems:list[Elem]):
     return [n.text for n in elems]
 
 def prels(pref, elems:list[Elem], *args, **kwargs):
+    ''' Print list of elems '''
     if not (FullPrint or ('show' in kwargs and kwargs['show'])):
         return
     if not elems:
-        print(pref, '-empty-')
+        # print(pref, '-empty-')
         return
     
     # list[list[Elem]]
     if isinstance(elems[0], (list, tuple)):
-        print(pref, end='')
+        # print(pref, end='')
         for subel in elems:
             print(el_text(subel), end=' $$ ', sep = ' ')
         print('')

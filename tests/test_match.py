@@ -11,7 +11,8 @@ from vals import numLex
 from cases.utils import *
 
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
+from objects.func import Function
+from nodes.func_expr import setNativeFunc
 from nodes.structs import *
 
 from context import Context
@@ -550,12 +551,10 @@ class TestMatch(TestCase):
         '''
         code = norm(code[1:])
 
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         
         exp = [
             ['st@Type1{a: 0,b: 0}', 10], ['st@Type1{a: 10,b: 20}', 11], ['st@Type1{a: 10,b: 0}', 10], ['st@Type1{a: 10,b: 2}', 12], ['st@Type1{a: 1,b: 2}', 19], 

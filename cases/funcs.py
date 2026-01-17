@@ -139,16 +139,16 @@ class CaseMathodDef(CaseFuncDef):
         subs = [instSub] + argSubs
         fname = elems[4].text
         exp = MethodDefExpr(fname)
-        dprint('CaseMathodDef split', exp)
+        # dprint('CaseMathodDef split', exp)
         return exp, subs
 
     def setSub(self, base:MethodDefExpr, subs:Expression|list[Expression])->Expression:
         inst = subs[0]
         args = []
-        # dprint('CaseMathodDef seSub1', base, subs)
+        # print('CaseMathodDef seSub1', base, subs)
         if len(subs) > 1:
             args = subs[1:]
-        dprint('CaseMathodDef seSub2', base, inst, args)
+        # dprint('CaseMathodDef seSub2', base, inst, args)
         base.setInst(inst)
         for exp in args:
             base.addArg(exp)
@@ -156,7 +156,7 @@ class CaseMathodDef(CaseFuncDef):
 
 
 
-class CaseFunCall(SubCase):
+class CaseFunCall(SubCase, SolidCase):
     ''' foo(agrs)
         {expr}(args)'''
 
@@ -177,20 +177,34 @@ class CaseFunCall(SubCase):
             return False
         if elems[0].type == Lt.word and elems[0].text in KEYWORDS:
             return False
+        
+        r =  isSolidExpr(elems, getLast=True)
+        if not isinstance(r, tuple):
+            return False
+        ok, pos = r
+        # print('FCall. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
+        # prels('F match', elems, show=1)
+        if pos == 1 and elems[0].type == Lt.oper:
+            # print('FCall. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
+            return False
+        if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '(') : 
+            return False
+        # exit()
+        # print('F.Call/3')
         # TODO: use word(any-with-brackets) pattern
         
         # print('FuncCallMatch ---------1----------')
-        if not isGetValExpr(elems):
-            return False
+        # if not isGetValExpr(elems):
+        #     return False
         
-        # print('FuncCallMatch ---------2----------')
-        opInd = findLastBrackets(elems)
+        # # print('FuncCallMatch ---------2----------')
+        # opInd = findLastBrackets(elems)
 
-        if opInd < 1:
-            # means only brackets, no collection var before
-            return False
-        if not isLex(elems[opInd], Lt.oper, '('):
-            return False
+        # if opInd < 1:
+        #     # means only brackets, no collection var before
+        #     return False
+        # if not isLex(elems[opInd], Lt.oper, '('):
+        #     return False
         # print('FuncCallMatch ---------3----------')
         
         # endInd = afterNameBr(elems)
@@ -217,7 +231,7 @@ class CaseFunCall(SubCase):
         exp = FuncCallExpr(elemStr(valExpr), src)
         # print('FCall.split1', valExpr, args)
         subs = [valExpr] + args
-        # print('FCall.split2', elemStr(valExpr), exp, subs)
+        # print('FCall.split2', elemStr(valExpr), 'Exp:',exp, 'subs:', [elemStr(s) for s in subs])
         return exp, subs
 
     def setSub(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 

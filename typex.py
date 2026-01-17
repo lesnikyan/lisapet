@@ -82,12 +82,6 @@ class TypeString(VType):
     _defVal = ''
     th = TH.mk()
 
-
-class TypeMString(TypeString):
-    name='mstring'
-    _defVal = ''
-    th = TH.mk()
-
 class TypeRegexp(VType):
     name='re'
     _defVal = None

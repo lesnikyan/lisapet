@@ -13,17 +13,171 @@ from vars import *
 from vals import numLex
 from context import Context
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
+from objects.func import Function
+from nodes.func_expr import setNativeFunc
+from nodes.func_expr import setNativeFunc
 from cases.utils import *
 from tree import *
 from eval import *
 
 
 
-class TestFunc(TestCase):
+class TestFuncs(TestCase):
 
 
 
+    def test_func_from_method(self):
+        ''' test when func is returned from method and immediately called 
+            obj.foo(a)(b)
+        '''
+        
+        code = r'''
+        res = []
+        
+        struct A a:int
+        struct R r:list
+        struct B(A) b:string
+        
+        func st:A foo(a)
+            x -> x + a
+        
+        func st:B bInfo(y)
+            x -> ~"{st.a},{st.b} ({x}, {y})"
+        
+        func bin:B triple(x)
+            func f2(y)
+                t = x * 10000
+                q -> y * 100 + t + q
+
+        
+        aa = A{}
+        res <-  aa.foo(2)(5)
+        
+        r1 = R([[1,2,3]])
+        res <-  r1.r[0][1]
+        
+        b1 = B(11, 'B-1')
+        
+        res <- b1.foo(3)(7)
+        res <- b1.bInfo(9)(8)
+        res <- b1.triple(3)(5)(7)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [7, 2, 10, '11,B-1 (8, 9)', 30507]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_overload_func_as_arg(self):
+        ''' func overload with func as argument
+        '''
+        
+        code = r'''
+        res = []
+        
+        
+        # over no args
+        func foo()
+            1
+            
+        # over 1 arg by type
+        func foo(x:bool)
+            x ? 'dark' : 'light'
+            
+        func foo(f:function)
+            f()
+        
+        func ret(f:function)
+            f
+        
+        func ret(a:float)
+            x -> x * a
+        
+            
+        func foo(x:string)
+            ~'~`{x}`:str'
+        
+            
+        # overload 2 args, by type
+        func foo(a:float,b:float)
+            a + b
+        
+        func foo(f:function, b)
+            f(b)
+        
+        func foo(f:function, b:list)
+            b.map(f)
+        
+        struct A a:int
+        
+        func st:A foo()
+            st.a
+        
+        func st:A foo(a:int, b:int)
+            a + b
+        
+        func st:A foo(f:function, x:int)
+            f(x) + 1000
+        
+        func st:A boo(x, f:function)
+            y -> y + f(x)
+        
+        # call
+        
+        func f0()
+            'func-0'
+        
+        func f1(x)
+            x + 300
+        
+        res <- '#1'
+        res <- foo()
+        res <- foo(true)
+        res <- foo('hello')
+        res <- foo(f0)
+        res <- ret(f1)(12)
+        res <- ret(1.1)(5)
+        
+        
+        res <- '#2'
+        
+        func x100(x)
+            x * 100
+        
+        res <- foo(1, 2)
+        res <- foo(x100, 1.25)
+        res <- foo(x100, [1,2,3])
+        
+        res <- '# struct'
+        
+        a1 = A(17)
+        res <- a1.foo()
+        res <- a1.foo(10, 4)
+        res <- a1.foo(x100, 2)
+        
+        fa = a1.boo(3, x100)
+        res <- fa(41)
+        res <- a1.boo(3, x100)(52)        
+        res <- a1.boo(4, x100)(1.5)
+        
+        # for n <- res /: print('> ', n)
+        # print('res', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = ['#1', 1, 'dark', '~`hello`:str', 'func-0', 312, 5.5, '#2', 3.0, 125.0, [100, 200, 300], 
+               '# struct', 17, 14, 1200, 341, 352, 401.5]
+        self.assertEqual(exv, rvar.vals())
 
     def test_overload_methods(self):
         ''' test overload for methods '''
@@ -37,27 +191,35 @@ class TestFunc(TestCase):
         struct D d:float
         
         struct Utype u: int
-            
+        
         func  u:Utype foo()
+            d = 10
+            if d > 0
+                c = 20
+            else if d < 15
+                c = 30
+            else
+                c = 7
             -1
-            
+        
         func u:Utype foo(x:int)
             x * 10
-            
+        
+        
         func u:Utype foo(x:string)
             ~'u-string<{x}>'
-            
+        
         func u:Utype bar()
             -2
-            
+        
         func u:Utype bar(x:float)
             x / 10 + 1000
-            
+        
         func u:Utype bar(x:string)
             ~'bar<{x}>'
         
         
-        # struct types
+        struct types
         
         func u:Utype bar(aaa:A)
             aaa.a + 4400
@@ -69,8 +231,6 @@ class TestFunc(TestCase):
             r = xa.a * xd.d
             ~"barAD:{xa.a} * {xd.d} = {r}"
         
-        
-            
         func u:Utype baz(x:bool)
             ('baz', x ? 'yep' : 'nop')
             
@@ -101,7 +261,7 @@ class TestFunc(TestCase):
         # 4 args
         func u:Utype foo(a,b,c,d)
             [-4, a,b,c,d]
-        
+            
         u1 = Utype{}
         
         # 0
@@ -141,7 +301,7 @@ class TestFunc(TestCase):
         
         val5 = 5
         
-        # # 3
+        # 3
         res <- u1.foo(2, 1.5, 2.5)
         res <- u1.foo(int1(), val5, 3)
         res <- u1.foo(true, 11.1, 22.2)
@@ -162,6 +322,7 @@ class TestFunc(TestCase):
         
         # for n <- res /: print('> ', n)
         # print('res', res)
+        
         '''
         code = norm(code[1:])
 
@@ -777,7 +938,7 @@ class TestFunc(TestCase):
         a2.f2(3, 7, 2,3,4,5,6,7,8,9)
         res <- ('f2-2', a2.a)
         
-        # # # default-args after collector... never will passed by order, only by name
+        # default-args after collector... never will passed by order, only by name
         func a:A f4(x, nn..., pref='', post='')
             tt = [~"{pref}{x}{n}{post}" ; n <- nn]
             n = len(tt)
@@ -798,18 +959,16 @@ class TestFunc(TestCase):
         '''
         code = norm(code[1:])
 
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         rvar = ctx.get('res').get()
         exv = [
             ('f1-0', 0), ('f1-0', 1), ('f1-0', 3), ('f1-0', 6), ('f1-0', 52),
             ('f2-2', 0), ('f2-2', 20), ('f2-2', 50), ('f2-2', 440),
-            ('f4-1 n=1', 'A-a'), ('f4-2 n=2', 'B-b B-c'), ('f4-3 n=5', 'C-c C-d C-e C-<? C-?>'),
-            ('f4-4 n=10', 'D-d D-e D-f D-g D-h D-i D-j D-k D-[= D-=]')
+            ('f4-1 n=1', 'A-a'), ('f4-2 n=2', 'B-b B-c'), ('f4-3 n=3', '<?C-c?> <?C-d?> <?C-e?>'),
+            ('f4-4 n=8', '[=D-d=] [=D-e=] [=D-f=] [=D-g=] [=D-h=] [=D-i=] [=D-j=] [=D-k=]')
         ]
         self.assertEqual(exv, rvar.vals())
 
@@ -900,18 +1059,16 @@ class TestFunc(TestCase):
         # all args passed by name
         res <- ('a.f1-1', a.f1(3, bbb='cc'))
         res <- ('f1-2', a.f1(aaa=2, bbb='dd'))
-        res <- ('f1-3', a.f1(bbb=4, aaa='E'))
+        res <- ('f1-3', a.f1(bbb='E', aaa=4))
         
         # print('res = ', res)
         '''
         code = norm(code[1:])
 
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         rvar = ctx.get('res').get()
         exv = [
             ('a.f1-0', ['A']), ('a.f1-1', ['bb', 'bb']), 
@@ -983,12 +1140,11 @@ class TestFunc(TestCase):
             a.a + a.b
         
         aa1 = A(12, 13)
-        aa2 = A(22,23)
+        aa2 = A(21, 32)
 
         res <- ('f1-17', f1(aaa=aa1.a, bbb=aa1.b))
         res <- ('f1-18', f1(bbb=aa1.sum(), aaa=aa2.sum()))
         res <- ('f1-19', f1(bbb=aa1.b + b, aaa=aa2.sum() + aa1.sum()))
-        
         
         # print('res = ', res)
         '''
@@ -1010,8 +1166,8 @@ class TestFunc(TestCase):
             ('f3-4', [1, 2, 3, 4, 5, 36, 37, 38, 39, 310, 311, 312]), 
             ('f3-5', [41, 42, 43, 44, 45, 46, 47, 48, 9, 10, 411, 412]), 
             ('f3-6', [51, 52, 53, 54, 55, 560, 570, 580, 590, 10, 11, 512]), 
-            ('f1-11', (1, 2)), ('f1-12', (1, 2)), ('f1-13', (1, 50)), ('f1-14', (70, 70)), 
-            ('f1-15', (2, 1)), ('f1-16', (11, 22)), ('f1-17', (12, 13)), ('f1-18', (45, 25)), ('f1-19', (70, 15))]
+            ('f1-11', (1, 2)), ('f1-12', (1, 2)), ('f1-13', (1, 50)), ('f1-14', (60, 70)), 
+            ('f1-15', (2, 1)), ('f1-16', (11, 22)), ('f1-17', (12, 13)), ('f1-18', (53, 25)), ('f1-19', (78, 15))]
         self.assertEqual(exv, rvar.vals())
 
     def test_func_default_arg_vals(self):
@@ -1100,6 +1256,7 @@ class TestFunc(TestCase):
         recursion without tail-recursion optimisation.
         pythons recursion limit matters
         '''
+        # self.fail()
         code = r'''
         res = 0
         func f1(x)
@@ -1131,8 +1288,7 @@ class TestFunc(TestCase):
             '', ' ', '123', 'a b c'
         ]
         nn <- """abc
-        def
-        """
+        def"""
         res = []
         for s <- nn
             res <- len(s)
@@ -1140,12 +1296,10 @@ class TestFunc(TestCase):
         '''
         code = norm(code[1:])
 
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         rvar = ctx.get('res').get()
         self.assertEqual([0, 1, 3, 5, 7], rvar.vals())
 
@@ -1482,7 +1636,7 @@ class TestFunc(TestCase):
         func foo(a:int, b:int)
             a + b
         
-        func list3(a, b, c)
+        func xxist3(a, b, c)
             [a, b, c]
         
         func lsum(nums)
@@ -1499,7 +1653,7 @@ class TestFunc(TestCase):
                         sm = foo(n, n % 4)
                         bres <- sm + 100
                 else
-                    nn = list3(i, i%3, i%7)
+                    nn = xxist3(i, i%3, i%7)
                     for n <- nn
                         bres <- n
             bres
@@ -1515,7 +1669,9 @@ class TestFunc(TestCase):
                 rr2 <- i
         
         test()
-        # print('res = ', rr)
+        
+        # print('res1 = ', rr)
+        # print('res2 = ', rr2)
         '''
         code = norm(code[1:])
         # dprint('>>\n', code)
@@ -1656,7 +1812,7 @@ class TestFunc(TestCase):
 
     def test_lambda_match(self):
         ''' Lambda and match-case in one example.
-        Resolved conflict between lambdas and preavious syntax of matches. '''
+        Resolved conflict between lambdas and previous syntax of matches. '''
         code = r'''
         c = 5
         res = 0

@@ -145,8 +145,8 @@ class CaseFor(BlockCase, SubCase):
             case 2|3: exp = LoopExpr()
             case _ :pass
         dprint('# CaseFor.split-', len(elems),  exp, 'len-subs=', len(subs))
-        for ees in subs:
-            prels('>>', ees)
+        # for ees in subs:
+        #     prels('>>', ees)
         return exp, subs
     
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:

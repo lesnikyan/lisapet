@@ -16,8 +16,6 @@ from tree import *
 from eval import rootContext, moduleContext
 
 from cases.utils import *
-from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
 from tests.utils import *
 
 
@@ -93,6 +91,7 @@ class TestLibs(TestCase):
         res <- [1,2,3,4,5].map(x -> x * 11)
         func f1(x)
             ~"({x})"
+        
         res <- "string1".map(f1)
         res <- "l i s t 2".split(' ').map(f1)
         res <- (1,2,3).map(x -> x * 5)
@@ -159,12 +158,10 @@ class TestLibs(TestCase):
         '''
         code = norm(code[1:])
 
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
+        ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         
         rvar = ctx.get('res').get()
         exv = [
@@ -216,6 +213,14 @@ class TestLibs(TestCase):
         res <- "/".join(['s7','s8', 's9'])
         res <- `"`.join((11,12,13))
         
+        mstr_splitted = """
+        aaa
+        bbb
+        ccc
+        """.split('\n')[1:-1]
+        
+        res <- mstr_splitted
+        
         # combo
         wds = 'Hello dear friend'.split(' ').map(w -> ~"<t>{w}</t>").join(' ')
         res <- wds
@@ -236,7 +241,7 @@ class TestLibs(TestCase):
             [3, 2, 1], '1^2^3', [1, 2, 'a', 'b', 'c'], 
             [(1, 11), (2, 22), ('a', 'aaa'), ('b', 'bbb'), ('c', 'ccc')], 
             ['aa', 'bb', 'cc'], ['d', 'e', 'f'], ['here', 'many', 'hidden', 'words'], 
-            's1-s2-s3', 's4_s5_s6', 's7/s8/s9', '11"12"13', '<t>Hello</t> <t>dear</t> <t>friend</t>']
+            's1-s2-s3', 's4_s5_s6', 's7/s8/s9', '11"12"13', ['aaa', 'bbb', 'ccc'], '<t>Hello</t> <t>dear</t> <t>friend</t>']
         self.assertEqual(exv, rvar.vals())
 
 

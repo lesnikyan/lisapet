@@ -10,7 +10,6 @@ from vals import numLex
 from context import Context
 from eval import rootContext
 from nodes.tnodes import Var
-from nodes import setNativeFunc, Function
 from tree import *
 from nodes.structs import *
 import pdb
@@ -79,6 +78,7 @@ class TestStructs(TestCase):
         
         res = []
         
+        # a1 = A(999)
         b1 = B{a:1, b:10}
         c = C{a:3, b:30, c:333, s:'Ccc'}
         d = D{a:4, b:40, c:444, s:'Ddd', d:'QWERT', q:1004}
@@ -108,7 +108,6 @@ class TestStructs(TestCase):
             ('d0', 'st@D{a: 4,b: 40,c: 444,s: Ddd,d: QWERT,q: 1004}', 4, 40, 444, 'Ddd', 'QWERT'), 
             ('e0', 'st@E{a: -5,b: 50,c: 555,s: Eee,d: WERTY,q: 1005,e: 5000}', -5, 'WERTY', 5000)]
         self.assertEqual(exv, rvar.vals())
-
 
     def test_inherined_struct_wide(self):
         ''' '''
@@ -357,6 +356,7 @@ class TestStructs(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+        self.fail()
 
     def test_method_typed_args(self):
         ''' make vars and assign vals from tuple  '''
@@ -364,42 +364,45 @@ class TestStructs(TestCase):
         
         struct MyType name: string
         
-        func st: MyType foo(nn: int, ff: float, arg4 )
-            # print('arg4:', arg4)
-            div = ' ' * nn
-            st.name + div + '/'
-        
-        dd = {'a':1}
+        func st: MyType foo(n: int, ff: float, s:string)
+            r = []
+            for i <- iter(n)
+                v = ff * i
+                r <- ~"{s}-{v:0.2f}/{st.name}"
+            r
         
         myt = MyType{name: 'Grrr'}
         myt.name = 'Rrrr'
         
-        # print('p>>', myt.foo(4, 0.1, '4444'))
+        res = myt.foo(4, 0.1, 'wow')
+        
+        # print('p>>', res)
         '''
         tt = '''
         '''
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        
+        exv = ['wow-0.00/Rrrr', 'wow-0.10/Rrrr', 'wow-0.20/Rrrr', 'wow-0.30/Rrrr']
+        rvar = ctx.get('res').get()
+        self.assertEqual(exv, rvar.vals())
 
     def test_struct_method_call(self):
         ''' struct method definition  '''
         code = '''
         
-        func xprint(arg)
-            print('<x>', arg, '<x>')
+        # func xprint(arg)
+        #     print('<x>', arg, '<x>')
         
         struct User
             name: string 
 
         func u:User setName(name)
-            # print('x@1', name)
-            # print('x@2', u.name)
             u.name = name
-            # print('x@3', u.name)
+        
         user = User{name:'Markos'}
         user.setName('Lukas')
         # xprint(user.name)
@@ -414,7 +417,7 @@ class TestStructs(TestCase):
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
         ctx = rootContext()
-        ex.do(ctx)
+        trydo(ex, ctx)
         usr = ctx.get('user').get()
         # print('#tt user.name:', usr.get('name').get())
         self.assertEqual('Lukas', usr.get('name').get())
@@ -451,18 +454,18 @@ class TestStructs(TestCase):
             num: int
             sub: Btype
 
-        aa = Atype
+        aa = Atype{}
             name:'Vasya'
             num:20
             sub: bb
         # print('t-inst: ', aa.name , aa.num , aa.sub.title)
         '''
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
+
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
 
     def test_struct_block(self):
         code='''
@@ -491,26 +494,25 @@ class TestStructs(TestCase):
         ctx = rootContext()
         ex.do(ctx)
 
-    def test_struct_empty(self):
+    def test_struct_no_fields(self):
         code='''
         struct Btype
         struct Atype
             name: string
             num: int
             sub: Btype
-        # bb = Btype{title: 'Bim-bom', vall: 11.55}
+        
         aa = Atype{name:'Vasya', num:20, sub:Btype{}}
         # print('var user: ', aa.name, aa.num, aa.sub)
         '''
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
         atype = ctx.getType('Atype')
         btype = ctx.getType('Btype')
-        # dprint(atype, btype)
+        # print(atype, btype)
 
     def test_left_assign_arg(self):
         code='''

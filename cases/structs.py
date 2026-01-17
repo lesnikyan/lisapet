@@ -45,20 +45,20 @@ class CaseStructDef(SubCase):
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         typeName = elems[1].text
-        prels('CaseStructDef.split', elems)
+        # prels('CaseStructDef.split', elems)
         # struct B(A,C)
         superNames = []
         subStart = 2
         if len(elems) > 2 and isLex(elems[2], Lt.oper, '('):
             # we have super-struct here
             brInd = bracketsPart(elems[2:])
-            dprint('Strc.split, brInd: ', brInd, elems[brInd+1].text)
+            # dprint('Strc.split, brInd: ', brInd, elems[brInd+1].text)
             superPart = elems[3:brInd+1]
-            prels('CaseStructDef.split supers:', superPart)
+            # prels('CaseStructDef.split supers:', superPart)
             _, spl = CaseCommas().split(superPart)
-            dprint('## spl:', [(n) for n in spl])
+            # dprint('## spl:', [(n) for n in spl])
             superNames = [elemStr(n) for n in spl]
-            dprint('## superNames:', superNames)
+            # dprint('## superNames:', superNames)
             subStart = brInd+2
             
         
@@ -114,11 +114,11 @@ class CaseStructBlockDef(SubCase):
         return exp, subs
 
     def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
-        dprint('CaseDictBlock.setSub empty: ', base, subs)
+        # dprint('CaseDictBlock.setSub empty: ', base, subs)
         return base
 
 
-class CaseStructConstr(SubCase):
+class CaseStructConstr(SubCase, SolidCase):
     ''' 
         inline struct creation
         Example:
@@ -130,51 +130,51 @@ class CaseStructConstr(SubCase):
     '''
     def match(self, elems:list[Elem]) -> bool:
         '''
-        TypeName {dict-like part}
+        TypeName {dict-like args}
+        module.Typename{args}
+        future anonimous str:
+        _{args}
         '''
+        # prels('Struct{} match', elems, show=1)
         el0 = elems[0]
         if el0.type != Lt.word:
             return False
-        if len(elems) > 1:
-            dc = CaseDictLine()
-            return dc.match(elems[1:])
+        if len(elems) < 2:
+            return False
+        dc = CaseDictLine()
+        # print(dc)
+        # get curvy brackets part
+        # be sure that case already checked as Solid expr
+        r =  isSolidExpr(elems, getLast=True)
+        # print('Str.Match', r)
+        if not isinstance(r, tuple):
+            return False
+        ok, pos = r
+        # print('lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
+        if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '{') : 
+            return False
+        # exit()
+        # print('Scon')
+        return dc.match(elems[pos:])
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        typeName = elems[0].text
-        sub = elems[2:-1]
+        _, pos = isSolidExpr(elems, getLast=True)
+        typePart = elems[:pos]
+        argPart = elems[pos:]
+        argSub = argPart[1:-1]
         cs = CaseCommas()
-        subs = [sub]
-        if cs.match(sub):
-            _, subs = cs.split(sub)
-        return StructConstr(typeName), subs
+        subs = [argSub]
+        if cs.match(argSub):
+            _, subs = cs.split(argSub)
+        return StructConstr(), [typePart] + subs
 
     def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
-        dprint('StructConstr.setSub empty: ', base, subs)
-        for exp in subs:
-            base.add(exp)
+        # print('StructConstr.setSub empty: ', base, subs)
+        base.setObj(subs[0])
+        args = subs[1:]
+        if args:
+            for exp in subs[1:]:
+                if isinstance(exp, NothingExpr):
+                    continue
+                base.add(exp)
         return base
-
-
-class CaseStructBlockConstr(SubCase):
-    ''' 
-        block struct creation
-        Example:
-            varName = TypeName
-                field: val
-                field: val
-    '''
-    # def match(self, elems:list[Elem]) -> bool:
-    #     if len(elems) != 1:
-    #         return False
-    #     return InterpretContext.get().hasStruct(elems[0].text)
-    
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        # typeName = elems[0].text
-        return StructConstrBegin(elems[0].text), []
-
-    def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:
-        dprint('StructConstr.setSub empty: ', base, subs)
-        # for exp in subs:
-        #     base.add(exp)
-        # return base
-
