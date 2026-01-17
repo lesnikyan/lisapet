@@ -26,6 +26,39 @@ class TestFuncs(TestCase):
 
 
 
+    def test_func_args_typed_by_list_dict(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func key_intersect(nn:list, dd:dict)
+            r = []
+            for n <- nn
+                if n ?> dd
+                    r <- dd[n]
+            r
+        
+        keys = [11, 22, 'a', 'b']
+        data = {22:220022, 'a':'Aloha!'}
+        r1 = key_intersect(keys, data)
+        res <- r1
+        
+        keys2 = [50, 17, 'abc']
+        data2 = {17:'seventeen', 'abc':'Bonjour', 'qwerty':'asdfg'}
+        res <- key_intersect(keys2, data2)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        exv = [[220022, 'Aloha!'], ['seventeen', 'Bonjour']]
+        self.assertEqual(exv, rvar.vals())
+
     def test_func_from_method(self):
         ''' test when func is returned from method and immediately called 
             obj.foo(a)(b)

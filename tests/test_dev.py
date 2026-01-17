@@ -45,7 +45,7 @@ class TestDev(TestCase):
         
         # think about escapes in triple-backticks strings
         #   unary backtick tested in test_parsing_string_backtiks
-            mres = ``` \n \t \\ \s \w ```
+            mres = ``` \\n \\t \\ \\s \\w ```
 
         DONE: test overloading with type function, as function and any.
         
@@ -106,8 +106,8 @@ class TestDev(TestCase):
         ''' '''
         code = r'''
         res = []
-        
-        print('res = ', s)
+
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         ex = tryParse(code)
@@ -115,8 +115,8 @@ class TestDev(TestCase):
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # self.assertEqual([], rvar.vals())
+        rvar = ctx.get('res').get()
+        self.assertEqual([220022, 'Aloha!'], rvar.vals())
 
 
     def _test_barr(self):
