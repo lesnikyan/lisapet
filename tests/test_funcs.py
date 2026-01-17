@@ -26,9 +26,53 @@ class TestFuncs(TestCase):
 
 
 
+    def test_func_from_method(self):
+        ''' test when func is returned from method and immediately called 
+            obj.foo(a)(b)
+        '''
+        
+        code = r'''
+        res = []
+        
+        struct A a:int
+        struct R r:list
+        struct B(A) b:string
+        
+        func st:A foo(a)
+            x -> x + a
+        
+        func st:B bInfo(y)
+            x -> ~"{st.a},{st.b} ({x}, {y})"
+        
+        func bin:B triple(x)
+            func f2(y)
+                t = x * 10000
+                q -> y * 100 + t + q
+
+        
+        aa = A{}
+        res <-  aa.foo(2)(5)
+        
+        r1 = R([[1,2,3]])
+        res <-  r1.r[0][1]
+        
+        b1 = B(11, 'B-1')
+        
+        res <- b1.foo(3)(7)
+        res <- b1.bInfo(9)(8)
+        res <- b1.triple(3)(5)(7)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [7, 2, 10, '11,B-1 (8, 9)', 30507]
+        self.assertEqual(exv, rvar.vals())
 
     def test_overload_func_as_arg(self):
-        ''' func overload with func in args
+        ''' func overload with func as argument
         '''
         
         code = r'''
@@ -116,12 +160,8 @@ class TestFuncs(TestCase):
         
         fa = a1.boo(3, x100)
         res <- fa(41)
-        res <- (a1.boo(3, x100))(52)
-        
-        # TODO need fix!
-        # res <- a1.boo(4, x100)(1.5)
-        res <- (a1.boo(4, x100))(1.5)
-        
+        res <- a1.boo(3, x100)(52)        
+        res <- a1.boo(4, x100)(1.5)
         
         # for n <- res /: print('> ', n)
         # print('res', res)
@@ -282,10 +322,6 @@ class TestFuncs(TestCase):
         
         # for n <- res /: print('> ', n)
         # print('res', res)
-        
-        '''
-        r'''
-        
         
         '''
         code = norm(code[1:])
@@ -1109,12 +1145,8 @@ class TestFuncs(TestCase):
         res <- ('f1-17', f1(aaa=aa1.a, bbb=aa1.b))
         res <- ('f1-18', f1(bbb=aa1.sum(), aaa=aa2.sum()))
         res <- ('f1-19', f1(bbb=aa1.b + b, aaa=aa2.sum() + aa1.sum()))
-        # bbb=aa1.sum()
-        # aaa=aa2.sum()
-        # x = len([])
-        # f1(bbb=aa1.sum(), aaa=aa2.sum())
-        # rsl = res[len(res)-3:]
-        # print('res = ', rsl)
+        
+        # print('res = ', res)
         '''
         code = norm(code[1:])
 

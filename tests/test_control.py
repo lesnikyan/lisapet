@@ -39,7 +39,7 @@ class TestControl(TestCase):
         for i <- [11,22,33] /: res <- i
         
         # with subs in ()
-        for i <- [1..10] /: x = i * 5;  (if i > 5 /:  res <- x); (if y = i * 3; y < 12 /:  res <- y * 100)
+        for i <- [1..10] /: x = i * 5; (if i > 5 /:  res <- x); (if y = i * 3; y < 12 /:  res <- y * 100)
         
         print('len res=', len(res))
         # for /: if /:
@@ -412,12 +412,13 @@ class TestControl(TestCase):
             vv = Var('x', TypeInt())
             vv.set(Val(x, TypeInt()))
             ctx.addSet({'x': vv})
-            dprint('~~~~ test case: %d ~~~~' % x)
+            # dprint('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             ress.append(ctx.get('res').get())
             ress.append(ctx.get('a').get())
-            dprint('##################t-IF1:', ctx.get('res').get())
-        dprint('all:', ress)
+            # dprint('##################t-IF1:', ctx.get('res').get())
+        # dprint('all:', ress)
+        self.fail()
 
 
 

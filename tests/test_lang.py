@@ -23,22 +23,166 @@ class TestLang(TestCase):
 
 
 
-    def _test_type_nums(self):
-        code = '''
-        a: int = 5
-        b: float = 10
-        c = b / a
-        # print(c, type(c))
+    def test_solidExpr_for_dot_and_brackets(self):
+        ''' '''
+        # True cases
+        exam = '''
+        a.b
+        a.b[0]
+        a.b[0].c
+        a.b.c[0]
+        a.b().c
+        a.b()[0].c
+        a.b.c[0]()
+        a.b()()
+        a([f([g('', []())])])
+        a.b[0]()()
+        a.b[0]()()[0]
+        a.b[0]()().c
+        a.b[0]()().c[0]
+        [][](a+b)
+        a[](1,2,3)
+        a.b([], 1+2, c[]()[].d).e[f+3-g]
+        re`abc`Ui
+        [1,2,3]
+        {1:11, 2:22, 3:foo(1,2,3)}
+        (1,2,3,['a'])
+        'hello + 1'
+        `hello \s 1 + 2`
+        """ hello \n 3 """
+        '''
+        code = norm(exam[1:])
+        tlines = splitLexems(code)
+        clines:list[CLine] = elemStream(tlines)
+        for cline in clines:
+            if not cline.code:
+                continue
+            # print('', elemStr(cline.code))
+            res = isSolidExpr(cline.code)
+            # print('', res)
+            self.assertTrue(res)
+            
+        # False cases
+        # print(flatOpers())
+        exam = '''
+        a.b + 1
+        a + b[0]
+        a; b
+        a << 2
+        r <- 2
+        f() - g()
+        a = 123
+        a.b : c[0].d
+        a.b , c[0]
+        '''
+        code = norm(exam[1:])
+        tlines = splitLexems(code)
+        clines:list[CLine] = elemStream(tlines)
+        for cline in clines:
+            if not cline.code:
+                continue
+            print('', elemStr(cline.code))
+            res = isSolidExpr(cline.code)
+            # print('', res)
+            self.assertFalse(res)
+
+    def test_multiline_base(self):
+        ''' test when func returned from method and call obj.foo()(arg)
+        '''
+
+        code = r'''
+        res = []
+
+        
+        func foo(x)
+            x + x
+        res <- foo(20)
+        
+        s = """
+        a ' X ' 
+        ``` 12 
+        ```
+        b
+        c"""
+        
+        res <- s
+        
+        aa = [
+            1,2,3,
+            foo(
+                4 + foo(
+                    2
+                )
+            )
+        ]
+        res <- aa
+        
+        b = (10 + (
+                2 ** 2 * 5)
+                + 4 * 5 *( 5 + 5)) + 1000
+        
+        res <- b
+        
+        s0 = 'aaa bbb ccc'
+        s1 = """
+        111 11 \"\"\"
+            222 22 ```
+                3333 33\'\'\'"""
+        
+        res <- s1
+        #@
+        # comments
+        # @#
+        
+        c = []
+            111
+            """
+            222
+            """
+            ```
+            333
+            ```
+        
+        res <- c
+        res <- ``` Q
+        in mult
+        qwe
+        ```
+        
         '''
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            40, "\na ' X ' \n``` 12 \n```\nb\nc", 
+            [1, 2, 3, 16], 1230, 
+            '\n111 11 """\n    222 22 ```\n        3333 33\'\'\'', 
+            [111, '\n    222\n    ', '\n    333\n    '], 
+            ' Q\nin mult\nqwe\n']
+        print('TT>>', rvar.vals())
+        self.assertEqual(exv, rvar.vals())
+
+    def test_type_nums(self):
+        code = '''
+        a: int = 5
+        b:int = 9
+        c:int = a * b
+        
+        d: float = 10
+        e = c / d
+        res = [c, e]
+        # print(res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
         res = ctx.get('res').get()
-        # print('##################t-IF1:', )
-        self.assertEqual(res, 45)
+        self.assertEqual([45, 4.5], res.getVal())
 
     def test_parsing_string_backtiks(self):
         ''' ` string `
@@ -153,7 +297,7 @@ class TestLang(TestCase):
         exp = 100
         self.assertEqual(exp, res.getVal())
 
-    def test_unclosed_comprehansion(self):
+    def test_unclosed_comprehension(self):
         '''   '''
         code = '''
         res = 54
@@ -228,7 +372,6 @@ class TestLang(TestCase):
         # dprint('tt>', res.vals())
         exp = {'a': 1, 'b': 2}
         self.assertEqual(exp, res.vals())
-
 
     def test_unclosed_brackets_list(self):
         '''   '''
@@ -366,12 +509,7 @@ class TestLang(TestCase):
             trydo(ex, ctx)
             mstr1 = ctx.get('mstr')
             res = mstr1.getVal()
-            # print('EXP:', f'|{expVal}|')
-            # print('RES:', f'|{res}|')
-            # for i in range(0, 132, 40):
-            #     print(i, i+40)
-            #     print('#tt e>', [s for s in expVal[i:i+40]])
-            #     print('#tt r>', [s for s in res[i:i+40]])
+
             for i in range(len(expVal)):
             #     print(' i: %d / `%s`<>`%s` ' % (i, res[i], expVal[i]))
                 self.assertEqual(res[i], expVal[i], ' i: %d / `%s`<>`%s` ' % (i, res[i], expVal[i]) )
@@ -387,22 +525,6 @@ class TestLang(TestCase):
                 dprint('tl>> ', tl.src, '\n :>> ', 
                       ' , '.join([ '`%s`:%s' %(xx.val, Lt.name(xx.ltype)) for xx in tl.lexems]))
             clines:CLine = elemStream(tlines)
-
-    def test_type_nums(self):
-        code = '''
-        a: int = 5
-        b: int = 10
-        c = b * a
-        # print(c, type(c))
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        res = ctx.get('c').getVal()
-        self.assertEqual(res, 50)
 
     def test_struct_field_full(self):
         ''' full test of obj.member cases '''
@@ -475,6 +597,9 @@ class TestLang(TestCase):
         dd = {'aa': 'hello AA', 'bb': 123}
         dd['bb'] = 333
         dd['cc'] = 555
+        
+        res = dd
+        
         # print(dd['aa'], dd['bb'] + dd['cc'])
         '''
 
@@ -485,21 +610,25 @@ class TestLang(TestCase):
         ctx = rootContext()
         # dprint('$$ run test ------------------')
         exp.do(ctx)
+        rvar = ctx.get('res').get()
+        expval = {'aa': 'hello AA', 'bb': 333, 'cc': 555}
+        self.assertEqual(expval, rvar.vals())
 
     def test_CaseDictLine_match(self):
         data = [
-            ("{}", True),
-            ("{'key':'val'}", True),
-            ("{a:1, b:2}", True),
-            ("{'a':'aa', 'b':22}", True),
-            ("{'a':[1,2,3], 'b c d': 2 + 3 - foo(17)}", True),
-            ("{'b': data['key'], 'b':arr[12] + num / 2}", True),
-            ("(a, b, c)", False),
-            ("{a, b, c}", False),
-            ("[a, b, c]", False),
-            ("{'asd as ds d'}", False),
-            ("{a:b:'c'}", False),
-            ("{'aa': 'hello dd', 'bb': 123}", False)
+            (r"{}", True),
+            (r"{'key':'val'}", True),
+            (r"{a:1, b:2}", True),
+            (r"{11:111, 22:222}", True),
+            (r"{'a':'aa', 'b':22}", True),
+            (r"{'a':[1,2,3], 'b c d': 2 + 3 - foo(17)}", True),
+            (r"{'b': data['key'], 'b':arr[12] + num / 2}", True),
+            (r"(a, b, c)", False),
+            (r"{a, b, c}", False),
+            (r"[a, b, c]", False),
+            (r"{'asd as ds d'}", False),
+            (r"{a:b:'c'}", False),
+            (r"_{'aa': 'hello dd', 'bb': 123}", False)
         ]
         cd = CaseDictLine()
         for code, exp in data:
@@ -509,8 +638,8 @@ class TestLang(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             res = cd.match(elems)
-            # self.assertEqual(res, exp)
-            # dprint('## t:', code, exp, '>>>', res)
+            # print('## t:', code, exp, '>>>', res)
+            self.assertEqual(res, exp, f"exp:{exp} of ``{code}`` but {res}")
 
     def test_bracketsPart(self):
         data = [
@@ -530,29 +659,38 @@ class TestLang(TestCase):
             # dprint('## t:', code, exp, '>>>', ind, res.text)
             self.assertEqual(res.text, exp)
 
-    def test_multiline_commets(self):
+    def test_multiline_comments(self):
+        '''
+        Multiline comments. 
+        Mostly tests if comment doesn't breack other code
+        '''
         code = '''
-        # x = 1
+        x = 1
         # one line comment
         #@ line1
         multiline comment
-        @#x = 5 + 2
+        @#y = 5 + 2
         # print(x)
-        '''
-        code = '''
+        
         a = 10 # first arg
-        b = 3 #@  second arg  @#
-        x = a + b #@ inline comment @# - 5
-        # print(x)
+        b = 3 #@  second arg  @# + 5
+        if b == 8
+            # reassign b
+            b = 48
+            
+        c = a + 7 #@ inline comment @# - 100
+        res = [x, y, a, b, c]
+        print(res)
         '''
 
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        exp = lex2tree(clines)
-        ctx = rootContext()
-        # dprint('$$ run test ------------------')
-        exp.do(ctx)
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        exv = [1, 7, 10, 48, -83]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exv, rvar.vals())
 
     def test_str_in_fun(self):
         code = 'print("Hello buhlo 123!")'
@@ -561,49 +699,6 @@ class TestLang(TestCase):
         # dprint('lexems', [x.val for n in tlines for x in n.lexems ])
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
-
-# TODO: check what func uses instead of `afterNameBr`
-    # def _test_afterNameBr(self):
-    #     data = [
-    #         ('arr[1] + ','+'),
-    #         ('arr[index] = foo(123)','='),
-    #         ('var = 11','='),
-    #         ('var += 12','+='),
-    #         ('var -= 13','-='),
-    #         ('var[ii] += 14','+='),
-    #     ]
-        
-    #     for code, exp in data:
-    #         tlines = splitLexems(code)
-    #         clines:CLine = elemStream(tlines)
-    #         elems = clines[0].code
-    #         ind = afterNameBr(elems)
-    #         res = elems[ind]
-    #         dprint('## t:', code, exp, '>>>', res.text)
-    #         self.assertEqual(res.text, exp)
-
-    #     data = [
-    #         ('arr[1]', -1),
-    #         ('arr[1+2]', -1),
-    #         ('arr[foo(123)]', -1),
-    #         ('foo()', -1),
-    #         ('foo(123)', -1),
-    #         ('foo(a,b,c)', -1),
-    #         ('foo(bar())', -1),
-    #         ('foo(arr[1])', -1),
-    #         ('foo(arr[2],foo(a, arr[3]), b, c)', -1),
-    #     ]
-        
-    #     dprint('#t ------------- no tail')
-    #     for code, exp in data:
-    #         dprint('#t code: ', code)
-    #         tlines = splitLexems(code)
-    #         clines:CLine = elemStream(tlines)
-    #         elems = clines[0].code
-    #         res = afterNameBr(elems)
-    #         # res = elems[ind]
-    #         dprint('## t:', code, exp, '>>>', res)
-    #         self.assertEqual(res, exp)
 
     def test_seq_split(self):
         data = [

@@ -154,7 +154,7 @@ class TestModule(TestCase):
         b = pr.sum()
         res <- b
         res <- pr.mult()
-        # # print('res:', res)
+        # print('res:', res)
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)

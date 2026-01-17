@@ -92,7 +92,6 @@ class TestLibs(TestCase):
         func f1(x)
             ~"({x})"
         
-        dbg = "string0".map(f1)
         res <- "string1".map(f1)
         res <- "l i s t 2".split(' ').map(f1)
         res <- (1,2,3).map(x -> x * 5)

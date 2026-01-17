@@ -52,8 +52,6 @@ class TestOper(TestCase):
         func foo()
             "function_resUlT"
         
-        # res <- '12'
-        
         src = [
             ("abc", 0),
             ('def', 2),
