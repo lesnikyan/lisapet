@@ -102,12 +102,13 @@ class TestDev(TestCase):
         print('tt>>', rfoo, rloop)
         self.assertEqual(rfoo, rloop)
 
+
     def _test_code(self):
         ''' '''
         code = r'''
         res = []
-
-        # print('res = ', res)
+        
+        print('res = ', res)
         '''
         code = norm(code[1:])
         ex = tryParse(code)
@@ -115,8 +116,8 @@ class TestDev(TestCase):
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        self.assertEqual([220022, 'Aloha!'], rvar.vals())
+        # rvar = ctx.get('res').get()
+        # self.assertEqual([220022, 'Aloha!'], rvar.vals())
 
 
     def _test_barr(self):
