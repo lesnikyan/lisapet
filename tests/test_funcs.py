@@ -26,6 +26,49 @@ class TestFuncs(TestCase):
 
 
 
+    def test_tail_recursion(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func foo(a, b)
+            if a == 0
+                return b
+            foo(a - 1, b * 2)
+        
+        res <- foo(10, 1)
+        
+        func f2(a, b)
+            if a == 0
+                return b
+            f2(a - 1, b + 1)
+        
+        res <- f2(5000, 0)
+        
+        # tail recursion for a method
+        struct A a:int
+        
+        func st:A ff(a, b)
+            if a == 0
+                return b
+            st.ff(a - 1, b + st.a)
+        
+        a1 = A(3)
+        res <- a1.ff(101, 0)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        sys.setrecursionlimit(100)
+        trydo(ex, ctx)
+        sys.setrecursionlimit(1000)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        self.assertEqual([1024, 5000, 303], rvar.vals())
+
     def test_carrying_cascade(self):
         ''' '''
         code = r'''

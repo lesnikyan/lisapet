@@ -228,7 +228,7 @@ class CaseFunCall(SubCase, SolidCase):
         cs = CaseCommas()
         if cs.match(argEl):
             _, args = cs.split(argEl)
-        exp = FuncCallExpr(elemStr(valExpr), src)
+        exp = FuncCallExpr(elemStr(valExpr).replace(' ', ''), src)
         # print('FCall.split1', valExpr, args)
         subs = [valExpr] + args
         # print('FCall.split2', elemStr(valExpr), 'Exp:',exp, 'subs:', [elemStr(s) for s in subs])

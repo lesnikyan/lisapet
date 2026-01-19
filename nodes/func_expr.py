@@ -64,7 +64,8 @@ class FuncCallExpr(CallExpr):
         self.funcExpr.do(ctx)
         func:Function|FuncOverSet = self.funcExpr.get()
         # print(f'\nF() expr:', self.funcExpr, 'func:', func )
-                
+        
+        objInst = None
         # Case of calling member of object / module
         if isinstance(func, ObjectMember):
             obj:ObjectMember = func
@@ -72,8 +73,8 @@ class FuncCallExpr(CallExpr):
             # print('objMem val=', memVal)
             func = memVal
             # print('F.do: ObjectMember', obj, func)
-            inst = obj.getInst()
-            args.append(inst)
+            objInst = obj.getInst()
+            args.append(objInst)
             
         '''
         # print(f'\nFunction `{self.name}`:', self.func)
@@ -129,6 +130,7 @@ class FuncCallExpr(CallExpr):
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
         if not isinstance(self.func, Function):
             raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
+        self.func.objInst = objInst
         self.func.setArgVals(args, named)
         callCtx = Context(None)
         # if len(inspect.stack(0)) > 40 :

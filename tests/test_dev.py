@@ -104,36 +104,6 @@ class TestDev(TestCase):
         self.assertEqual(rfoo, rloop)
 
 
-    def test_tail_recursion(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        func foo(a, b)
-            if a == 0
-                return b
-            foo(a - 1, b * 2)
-        
-        res <- foo(10, 1)
-        
-        func f2(a, b)
-            if a ==0
-                return b
-            f2(a - 1, b + 1)
-        
-        res <- f2(5000, 0)
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        self.assertEqual([1024, 5000], rvar.vals())
-
 
     def _test_code(self):
         ''' '''

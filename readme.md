@@ -75,6 +75,7 @@ Content:
     4. [Closures](#154-closures)
     5. [Call-chain `foo(1)(2)(3)`](#155-call-chain)
     6. [Currying cascade](#156-currying-cascade)
+    7. [Currying cascade](#157-tail-recursion)
 16.
 17. 
 
@@ -1543,6 +1544,38 @@ func bar(a)
                     f5vals(a, b, c, d, e)
 
 bar(11)(22)(33)(44)(55) #  [11, 22, 33, 44, 55]
+```
+
+### 15.7 Tail recursion
+Classical tail recursion is recursion in which the last expression in a function is a call to itself.  
+In the LP tail recursion works if we put the returning call into a last position, literally (I'm still thinking about earlier returns). So, if interpreter detected tail recursion it will run code of such function in lightweight loop instead of increasing depth of call stack.  
+This way we can avoid limits of python recursion.  
+Next example was tested with depth of recursion = 1 million.  
+
+```golang
+func f2(a, b)
+    if a == 0
+        return b
+    f2(a - 1, b + 1)
+
+f2(10**6, 0) # 1000000
+```
+(bad idea for such slow engine :))  
+```
+>> Ran 1 test in 30.307s 
+```
+It works for method of struct too.  
+
+```golang
+struct A a:int
+
+func st:A ff(a, b)
+    if a == 0
+        return b
+    st.ff(a - 1, b + st.a)
+
+a1 = A(3)
+res <- a1.ff(1001, 0) # 3003
 ```
 
 

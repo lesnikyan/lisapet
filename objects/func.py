@@ -40,6 +40,7 @@ class Function(FuncInst):
         self.res = None
         self.argNames = []
         self.extOrdered = None
+        self.objInst = None #  for methods
         # print('Fuu.init', self)
 
     def setDefContext(self, ctx:Context):
@@ -81,6 +82,8 @@ class Function(FuncInst):
             #     self._name, self.argNum, len(args), defNamedCount, skipCount))
             raise EvalErr('Not enough args in call of fuction `%s`. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
+        # if self.objInst and isinstance(self.objInst, TypeStruct):
+        #     self.callArgs.append(self.objInst)
         inCtx = Context(self.defCtx)
         # ordCollector = []
         noMoreOrds = False
@@ -161,11 +164,23 @@ class Function(FuncInst):
         lastExpr = self.block.subs[-1]
         isTail = False
         if isinstance(lastExpr, CallExpr):
-            # print('F.do', self, lastExpr.name)
-            if self.getName() == lastExpr.name:
-                rname = lastExpr.name
-                rfunc = self.defCtx.get(rname)
+            # print('F.do last callExpr', self, 'name:', lastExpr.name)
+            # if method
+            ''
+            lastName = lastExpr.name
+            if self.objInst and lastExpr.name.find('.') > -1:
+                lastName = lastExpr.name.split('.')[-1]
+                # print('Method of', self.objInst, lastName, 'self.getName()', self.getName(), self.getName() == lastName)
+                # print('method',' lastName `%s` self.getName() `%s`' % (lastName, self.getName()), self.getName() == lastName)
+            if self.getName() == lastName:
+                rname = lastName
+                rfunc = None
                 # print('same name', rname, rfunc)
+                if self.objInst and isinstance(self.objInst, ObjectInstance):
+                    stype = self.objInst.vtype
+                    rfunc = stype.getMethod(rname)
+                else:
+                    rfunc = self.defCtx.get(rname)
                 if rfunc == self:
                     # print('-- same fn:', rname, rfunc)
                     isTail = True
@@ -220,6 +235,8 @@ class ResursionLoop(Block):
             super().do(ctx)
             # print('recLoop.i=', i, self.lastVal)
             args = [] # add instance for methods
+            if self.func.objInst:
+                args.append(self.func.objInst)
             args, named = self.callExpr.doArgs(args, ctx)
             self.func.setArgVals(args, named)
             self.func.fillArgs(ctx)
