@@ -49,26 +49,27 @@ class TestDev(TestCase):
 
         DONE: test overloading with type function, as function and any.
         
+        DONE: fix parsing of struct.field with brackets:
+            calling func, returned from method: stru.method()()
+            collection in collection in field: stru.field[0][1]
+
+        TODO:? add shoren alias fo struct: stru A a:int
+            shorten of string: name:strn
+        
         TODO?: class Null() -> class Null(Val)
         
         TODO: declaration of var:type without assignment: check and fix.
         
         TODO: check type of operand for all operators
         
-        TODO: overload: test methods with compatiple types
+        TODO: overload: 
             add overloaded constructors, custom and default (at least empty)
-            test overload for imported functions, 
-            struct type args in overloaded func, 
+            test overloading for imported functions, 
             overloaded methods of imported structs
+            # done: struct type args in overloaded func, 
+            # done: test methods with compatiple types
         
         TODO bug: Sequence  match and split if brackets in quotes: (1, '[', ']')
-
-        TODO: add shoren alias fo struct: stru A a:int
-            shorten of string: name:strn
-        
-        TODO: fix parsing of struct.field with brackets:
-            calling func, returned from method: stru.method()()
-            collection in collection in field: stru.field[0][1]
    
     '''
 
@@ -101,6 +102,37 @@ class TestDev(TestCase):
         rloop = loop(10, 2)
         print('tt>>', rfoo, rloop)
         self.assertEqual(rfoo, rloop)
+
+
+    def test_tail_recursion(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func foo(a, b)
+            if a == 0
+                return b
+            foo(a - 1, b * 2)
+        
+        res <- foo(10, 1)
+        
+        func f2(a, b)
+            if a ==0
+                return b
+            f2(a - 1, b + 1)
+        
+        res <- f2(5000, 0)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        self.assertEqual([1024, 5000], rvar.vals())
 
 
     def _test_code(self):

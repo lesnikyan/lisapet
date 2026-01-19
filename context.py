@@ -146,7 +146,7 @@ class Context(NSContext):
         if name in src.funcs:
             # dprint('CTX.find func ?', name, src.funcs[name].__class__.__name__)
             # if src.funcs[name].__class__.__name__ != 'NFunc':
-                # dprint('CTX.find func:`%s`' % name, '::', src.funcs[name])
+            #     print('CTX.find func:`%s`' % name, '::', src.funcs[name])
             return src.funcs[name]
 
         return None

@@ -30,26 +30,7 @@ class FuncCallExpr(CallExpr):
     def addArgExpr(self, exp:Expression):
         self.argExpr.append(exp)
 
-    def do(self, ctx: Context):
-        args:list[Var] = []
-        
-        # Get function object
-        self.funcExpr.do(ctx)
-        func:Function|FuncOverSet = self.funcExpr.get()
-        # print(f'\nF() expr:', self.funcExpr, 'func:', func )
-                
-        # Case of calling member of object / module
-        if isinstance(func, ObjectMember):
-            obj:ObjectMember = func
-            memVal = func.get(ctx)
-            # print('objMem val=', memVal)
-            func = memVal
-            # print('F.do: ObjectMember', obj, func)
-            inst = obj.getInst()
-            args.append(inst)
-            
-        
-        # print(f'\nFunction `{self.name}`:', self.func)
+    def doArgs(self, args:list, ctx: Context):
         named = {}
         for exp in self.argExpr:
             # print('-- #1#',self.name,' func-call do2 exp=: ', exp)
@@ -74,6 +55,55 @@ class FuncCallExpr(CallExpr):
                 arg = arg.get()
             # print('func-call do2:', valExp, arg)
             args.append(arg)
+        return args, named
+
+    def do(self, ctx: Context):
+        args:list[Var] = []
+        
+        # Get function object
+        self.funcExpr.do(ctx)
+        func:Function|FuncOverSet = self.funcExpr.get()
+        # print(f'\nF() expr:', self.funcExpr, 'func:', func )
+                
+        # Case of calling member of object / module
+        if isinstance(func, ObjectMember):
+            obj:ObjectMember = func
+            memVal = func.get(ctx)
+            # print('objMem val=', memVal)
+            func = memVal
+            # print('F.do: ObjectMember', obj, func)
+            inst = obj.getInst()
+            args.append(inst)
+            
+        '''
+        # print(f'\nFunction `{self.name}`:', self.func)
+        # named = {}
+        # for exp in self.argExpr:
+        #     # print('-- #1#',self.name,' func-call do2 exp=: ', exp)
+        #     if isinstance(exp, AssignExpr):
+        #         varExp = exp.left # arg name
+        #         if not isinstance(varExp, VarExpr):
+        #             raise EvalErr("Func named arg has incorrect type of name")
+        #         argName = varExp.name
+        #         valExp = exp.right
+        #         valExp.do(ctx)
+        #         named[argName] = valExp
+        #         continue
+        #     if len(named) != 0:
+        #         # if not variadic args part:
+        #         # if len(args) >= func.argNum and not func.extOrdered:
+        #         raise EvalErr("Attempt to use ordered agr after named")
+        #     valExp = exp
+                
+        #     valExp.do(ctx) # val or vaiable
+        #     arg = valExp.get()
+        #     if isinstance(arg, Var):
+        #         arg = arg.get()
+        #     # print('func-call do2:', valExp, arg)
+        #     args.append(arg)
+        '''
+        
+        args, named = self.doArgs(args, ctx)
 
         # Case with overloaded function
         if isinstance(func, FuncOverSet):
@@ -97,7 +127,7 @@ class FuncCallExpr(CallExpr):
         self.func = func
         # print('#3# func-call do05: ', self.name, 'F:', func)
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
-        if isinstance(self.func, VarUndefined):
+        if not isinstance(self.func, Function):
             raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
         self.func.setArgVals(args, named)
         callCtx = Context(None)

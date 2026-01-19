@@ -6,6 +6,7 @@ from bases.ntype import *
 from vars import ListVal
 from nodes.expression import Expression, Block, ArgSetOrd, ValExpr
 from context import Context
+from nodes.expression import CallExpr
 from nodes.base_oper import AssignExpr
 
 
@@ -67,7 +68,6 @@ class Function(FuncInst):
             self.defArgs[arname] = defVal
         self.argNum += 1
 
-    # TODO: flow-number arguments
     def setArgVals(self, args:list[Val], named:dict={}):
         passedCount = len(args)
         # print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
@@ -96,10 +96,10 @@ class Function(FuncInst):
             # print('F.setArgVals#1', self.argVars[i])
             if isinstance(self.argVars[i], ArgSetOrd):
                 # variadic args: func foo(vargs...)
-                noMoreOrds = True
                 # all args from current - put into -> vargs...
-                # ordCollector = args[i:]
                 val = ListVal(elems=args[i:])
+                noMoreOrds = True
+            
             if not noMoreOrds and i < passedCount:
                 # Regulat args: func foo(a, b)
                 val = args[i]
@@ -140,23 +140,43 @@ class Function(FuncInst):
             self.callArgs.append(argVar)
             # self.argVars[i].set(arg.get())
 
-    # def checkArgType(self, arg, val):
-    #     '''Use val.getType() and types compatibility '''
-    #     return typeCompat(arg, val)
-    #     # return True 
+    def tailRecur(self, inCtx: Context):
+        # print('tail rec')
+        recBlock = ResursionLoop(self)
+        recBlock.doLoop(inCtx)
+        # print('recBlock.get()', recBlock.get())
+        return recBlock.get()
+
+    def fillArgs(self, ctx:Context):
+        for arg in self.callArgs:
+            # print('Fu.do:', arg)
+            ctx.addVar(arg)
 
     def do(self, ctx: Context):
         self.res = None
         self.block.storeRes = True # save last expr value
         inCtx = Context(self.defCtx) # inner context, empty new for each call
-        # inCtx.addVar(Var(1000001, 'debVal', TypeInt))
-        for arg in self.callArgs:
-            # print('Fu.do:', arg)
-            inCtx.addVar(arg)
-        # inCtx.get('debVal')
-        # inCtx.upper = ctx
-        self.block.do(inCtx)
-        res = self.block.get()
+        
+        # trying to detect tail recursion
+        lastExpr = self.block.subs[-1]
+        isTail = False
+        if isinstance(lastExpr, CallExpr):
+            # print('F.do', self, lastExpr.name)
+            if self.getName() == lastExpr.name:
+                rname = lastExpr.name
+                rfunc = self.defCtx.get(rname)
+                # print('same name', rname, rfunc)
+                if rfunc == self:
+                    # print('-- same fn:', rname, rfunc)
+                    isTail = True
+        
+        self.fillArgs(inCtx)
+        if isTail:
+            res = self.tailRecur(inCtx)
+        else:
+            self.block.do(inCtx)
+            res = self.block.get()
+        
         # print('Func.do res=', res)
         if isinstance(res, FuncRes):
             res = res.get()
@@ -176,4 +196,36 @@ class Function(FuncInst):
         for arg in self.argVars:
             args.append('%s' % arg.name)
         return 'func %s(%s)' % (self._name, ', '.join(args))
+
+
+class ResursionLoop(Block):
+    def __init__(self, f:Function):
+        """
+        f - function which do recursion
+        """
+        super().__init__()
+        self.subs: list[Expression] = f.block.subs
+        self.callExpr:CallExpr = f.block.subs[-1]
+        self.func = f
+        self.storeRes = False
+        self.lastVal:Var|list[Var] = None
+
+    def linesIter(self):
+        return len(self.subs) - 1
+
+    def doLoop(self, ctx:NSContext):
+        # prepare args
+        # TODO: fix struct instance as a 1-st arg for method call
+        while True:
+            super().do(ctx)
+            # print('recLoop.i=', i, self.lastVal)
+            args = [] # add instance for methods
+            args, named = self.callExpr.doArgs(args, ctx)
+            self.func.setArgVals(args, named)
+            self.func.fillArgs(ctx)
+            if isinstance(self.lastVal, FuncRes):
+                # print('RecLoop. return result', self.lastVal)
+                break
+        # return self.get()
+            
 
