@@ -75,34 +75,6 @@ class FuncCallExpr(CallExpr):
             # print('F.do: ObjectMember', obj, func)
             objInst = obj.getInst()
             args.append(objInst)
-            
-        '''
-        # print(f'\nFunction `{self.name}`:', self.func)
-        # named = {}
-        # for exp in self.argExpr:
-        #     # print('-- #1#',self.name,' func-call do2 exp=: ', exp)
-        #     if isinstance(exp, AssignExpr):
-        #         varExp = exp.left # arg name
-        #         if not isinstance(varExp, VarExpr):
-        #             raise EvalErr("Func named arg has incorrect type of name")
-        #         argName = varExp.name
-        #         valExp = exp.right
-        #         valExp.do(ctx)
-        #         named[argName] = valExp
-        #         continue
-        #     if len(named) != 0:
-        #         # if not variadic args part:
-        #         # if len(args) >= func.argNum and not func.extOrdered:
-        #         raise EvalErr("Attempt to use ordered agr after named")
-        #     valExp = exp
-                
-        #     valExp.do(ctx) # val or vaiable
-        #     arg = valExp.get()
-        #     if isinstance(arg, Var):
-        #         arg = arg.get()
-        #     # print('func-call do2:', valExp, arg)
-        #     args.append(arg)
-        '''
         
         args, named = self.doArgs(args, ctx)
 
@@ -157,7 +129,6 @@ class FuncDefExpr(ObjDefExpr, Block):
     '''
 
     def __init__(self, name):
-        # print('FuncDefExpr.__inint 1:', name)
         self.name = name
         self.res:Function
         self.blockLines:list[Expression] = []
@@ -168,28 +139,21 @@ class FuncDefExpr(ObjDefExpr, Block):
 
     def addArg(self, arg:VarExpr):
         ''' arg Var(name, type)'''
-        # print('FDef.addArg1 :', arg, type(arg))
         defVal = None
         
         # x:int = 1
         if isinstance(arg, AssignExpr):
-            # print('Fdef3:', arg.left, arg.right)
             defVal = arg.right
             arg = arg.left
-            # print('FDef.addArg2 :', arg, type(arg))
         # x : int
         if isinstance(arg, ServPairExpr):
             arg = arg.getTypedArg()
-            # print('FDef.addArg11 :', arg, arg.left, ':', arg.right)
         # x
         if not isinstance(arg, (TypedArgExpr, ArgExtList, ArgExtDict)):
-            # print('FDef.addArg#4', arg)
             arg = ArgExpr(arg.val)
             
         # if defVal is not None:
         arg.defVal = defVal
-        
-        # print('FDef.addArg1 :', arg.name, argType.name)
         self.argVars.append(arg)
 
     def add(self, exp:Expression):
@@ -204,7 +168,6 @@ class FuncDefExpr(ObjDefExpr, Block):
 
     def regFunc(self, ctx:Context, func:FuncInst):
         fname = func.getName()
-        # funcXname(func)
         # check if name is type
         strtype:TypeStruct = ctx.getType(fname)
         # print('regFunc1', fname, strtype)
@@ -218,7 +181,6 @@ class FuncDefExpr(ObjDefExpr, Block):
     def do(self, ctx:Context):
         ''''''
         func = self.doFunc(ctx)
-        # print('FuncDefExpr.do 1:', self.name, 'argExps:', self.argVars)
         # here we need local context for correct init of arg types
         argCtx = Context(ctx)
         for arg in self.argVars:
@@ -227,9 +189,6 @@ class FuncDefExpr(ObjDefExpr, Block):
             aName = arg.name
             if isinstance(arg, TypedArgExpr):
                 arg.do(argCtx)
-                # print('FDef.addArg11 :', arg, aName, argType.name)
-            # if isinstance(arg, ArgExtList):
-            #     print('##2')
                 
             func.addArg(arg.get(), arg.defVal)
         func.block = Block()
@@ -238,7 +197,6 @@ class FuncDefExpr(ObjDefExpr, Block):
             func.block.add(exp)
         func.setDefContext(ctx)
         self.res = func
-        # dprint('FuncDefExpr.do 3:', func.getName())
         if not func.isLambda:
             self.regFunc(ctx, func)
     
@@ -258,7 +216,6 @@ class NFunc(Function):
     def setArgVals(self, args:list[Var], named:dict={}):
         self.argVars = []
         for arg in (args):
-            # print('~NFsetA', self.getName(), arg)
             if isinstance(arg, Var):
                 arg = arg.get()
             self.argVars.append(arg)
@@ -267,7 +224,6 @@ class NFunc(Function):
         args = []
         for arg in self.argVars:
             args.append(arg)
-        # print('NF do1', [str(n) for n in args])
         res = self.callFunc(ctx, *args)
         if not isinstance(res, Val):
             # not Val, Not ListVal, etc.
@@ -321,7 +277,6 @@ class MethodDefExpr(FuncDefExpr):
         super().__init__(name)
         self.instExpr:Expression = None
         self.typeName = None
-        # raise EvalErr('DDD ', self.name)
 
     def setInst(self, exp:ServPairExpr):
         self.instExpr = exp.getTypedVar()
@@ -330,15 +285,13 @@ class MethodDefExpr(FuncDefExpr):
         func = Function(self.name)
         self.instExpr.do(ctx)
         inst = self.instExpr.get()
-        dprint('MethodDefExpr.doFunc', inst, self.name)
+        # dprint('MethodDefExpr.doFunc', inst, self.name)
         self.typeName = inst.getType().getName()
-        # dprint('MethodDefExpr instType:', self.typeName)
-        dprint('MethodDefExpr doFunc:', self.instExpr, self.instExpr.get())
+        # dprint('MethodDefExpr doFunc:', self.instExpr, self.instExpr.get())
         func.addArg(self.instExpr.get())
         return func
 
     def regFunc(self, ctx:Context, func:FuncInst):
-        # print('M_Def reg', self.typeName, func)
         ctx.addTypeMethod(self.typeName, func)
 
     def do(self, ctx:Context):

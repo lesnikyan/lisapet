@@ -53,7 +53,7 @@ class TestDev(TestCase):
             calling func, returned from method: stru.method()()
             collection in collection in field: stru.field[0][1]
 
-        TODO:? add shoren alias fo struct: stru A a:int
+        TODO:? add shoren alias for the struct: stru A a:int
             shorten of string: name:strn
         
         TODO?: class Null() -> class Null(Val)
@@ -65,11 +65,17 @@ class TestDev(TestCase):
         TODO: overload: 
             add overloaded constructors, custom and default (at least empty)
             test overloading for imported functions, 
+            override o overload:
+                Think about case with same name func in a child is overloaded for another args
             overloaded methods of imported structs
             # done: struct type args in overloaded func, 
             # done: test methods with compatiple types
         
         TODO bug: Sequence  match and split if brackets in quotes: (1, '[', ']')
+        
+        TODO: tail recursion:
+        1) tail optimization by func name, during interpretation (before add to ctx)
+        2) extend tail-recur case for earlier returns - not sure 
    
     '''
 
@@ -109,6 +115,11 @@ class TestDev(TestCase):
         ''' '''
         code = r'''
         res = []
+        
+        func foo(a, b)
+            if a > 0
+                return foo(a - 1, b + 1)
+            b + 1
         
         print('res = ', res)
         '''

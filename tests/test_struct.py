@@ -330,7 +330,7 @@ class TestStructs(TestCase):
         rvar = ctx.get('res')
         self.assertEqual(17, rvar.getVal())
 
-    def test_structType_in_func(self):
+    def test_struct_type_in_func(self):
         ''' test if type defined in context above is accessible in function '''
         code = '''
         struct Type1
@@ -344,19 +344,21 @@ class TestStructs(TestCase):
             tip.name
 
         func testType1()
-            tp1 = Type1 {name:'noname', id: 1}
-            tp1.setName('New-Name')
-            # print('tp1 name:', tp1.getName())
+            tp = Type1 {name:'noname', id: 1}
+            tp.setName('New-Name')
+            tp
 
-        testType1()
+        r = testType1()
+        # print(r)
         '''
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        self.fail()
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        
+        rvar = ctx.get('r')
+        self.assertEqual('st@Type1{name: New-Name,id: 1}', rvar.getVal())
 
     def test_method_typed_args(self):
         ''' make vars and assign vals from tuple  '''
@@ -394,9 +396,6 @@ class TestStructs(TestCase):
         ''' struct method definition  '''
         code = '''
         
-        # func xprint(arg)
-        #     print('<x>', arg, '<x>')
-        
         struct User
             name: string 
 
@@ -407,11 +406,6 @@ class TestStructs(TestCase):
         user.setName('Lukas')
         # xprint(user.name)
         '''
-        tt = '''
-
-        # Contexts().types['User'].__typeMethods['setName'] = Function('User@setName')
-
-        '''
         code = norm(code[1:])
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
@@ -419,7 +413,6 @@ class TestStructs(TestCase):
         ctx = rootContext()
         trydo(ex, ctx)
         usr = ctx.get('user').get()
-        # print('#tt user.name:', usr.get('name').get())
         self.assertEqual('Lukas', usr.get('name').get())
 
     def test_struct_method_definition(self):
@@ -433,15 +426,16 @@ class TestStructs(TestCase):
 
         user = User{name:'Markus'}
         '''
-        tt = '''
-        '''
+        
         # Contexts().types['User'].__typeMethods['setName'] = Function('User@setName')
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        usr = ctx.get('user').get()
+        self.assertIsInstance(usr.vtype.getMethod('setName'), Function)
+        self.assertEqual('setName', usr.vtype.getMethod('setName').getName())
 
     def test_struct_block_constr(self):
         code='''
@@ -461,11 +455,14 @@ class TestStructs(TestCase):
         # print('t-inst: ', aa.name , aa.num , aa.sub.title)
         '''
         code = norm(code[1:])
-
         ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
+        inst = ctx.get('aa').get()
+        self.assertIsInstance(inst, StructInstance)
+        self.assertEqual('Atype{name: Vasya,num: 20,sub: Btype{title: BBBBB}}', str(inst))
+        
 
     def test_struct_block(self):
         code='''
@@ -478,21 +475,15 @@ class TestStructs(TestCase):
             sub: Btype
         bb = Btype{title: 'Bim-bom', vall: 11.55}
         aa = Atype{name:'Vasya', num:20, sub: bb}
-        # print('var user: ', aa.name, aa.num, aa.sub.title, aa.sub.vall)
-        '''
-        tt = '''
-        user = User
-            name:'Catod'
-            age:25
-            sex:male
-            phone:'123-45-67'
+        res = [aa.name, aa.num, aa.sub.title, aa.sub.vall]
         '''
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rval = ctx.get('res').get()
+        self.assertEqual(['Vasya', 20, 'Bim-bom', 11.55], rval.vals())
 
     def test_struct_no_fields(self):
         code='''
@@ -502,7 +493,7 @@ class TestStructs(TestCase):
             num: int
             sub: Btype
         
-        aa = Atype{name:'Vasya', num:20, sub:Btype{}}
+        aa = Atype{name:'Vasya', num:10, sub:Btype{}}
         # print('var user: ', aa.name, aa.num, aa.sub)
         '''
         code = norm(code[1:])
@@ -513,6 +504,9 @@ class TestStructs(TestCase):
         atype = ctx.getType('Atype')
         btype = ctx.getType('Btype')
         # print(atype, btype)
+        inst = ctx.get('aa').get()
+        # self.assertIsInstance(inst, StructInstance)
+        self.assertEqual('Atype{name: Vasya,num: 10,sub: st@Btype{}}', str(inst))
 
     def test_left_assign_arg(self):
         code='''
@@ -633,25 +627,29 @@ class TestStructs(TestCase):
 
     def test_struct_inline_types(self):
         code='''
+        res = []
         struct Sex id:int
         @debug =1
         male = Sex{id:1}
-        female= Sex{id:1}
+        female= Sex{id:2}
         # print(male)
+        res <- ['a', male]
+        res <- ['b', female]
         struct User name:string, age:int, sex:Sex, phone:string
         user = User{name:'Catod', age:25, sex:male, phone:'123-45-67'}
-        # print('user data:', user.name, user.phone, user.sex)
-        '''
-        tt = '''
+        res <- ['c', user]
+        # print(res)
         '''
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
-        # rtype = ctx.getType('User')
-        # print('# TT >>>', rtype)
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        exv = [
+            ['a', 'st@Sex{id: 1}'], ['b', 'st@Sex{id: 2}'], 
+            ['c', 'st@User{name: Catod,age: 25,sex: Sex{id: 1},phone: 123-45-67}']]
+        rvar = ctx.get('res').get()
+        self.assertEqual(exv, rvar.vals())
 
     def test_struct_inline(self):
         code='''
