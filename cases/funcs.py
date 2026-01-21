@@ -11,7 +11,7 @@ from nodes.tnodes import *
 from nodes.func_expr import *
 from cases.tcases import *
 from cases.oper import *
-from cases.structs import MethodDefExpr, MethodCallExpr
+from cases.structs import MethodDefExpr
 from cases.utils import OperSplitter
 
 
@@ -31,7 +31,10 @@ class CaseArgExtraList(ExpCase):
 
 
 class CaseArgExtraDict(ExpCase):
-    ''' ${varname} varname{...}  varname^ varname..> varname..~ dd^^ dd?.. <dd> dd$$ dd~~            ''' 
+    '''
+    Not used.
+    ${varname} varname{...}  varname^ varname..> varname..~ dd^^ dd?.. <dd> dd$$ dd~~
+    ''' 
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) != 2:
             return False
@@ -66,8 +69,8 @@ class CaseFuncDef(BlockCase, SubCase):
         exp = FuncDefExpr(fname)
         subs = self.splitArgs(elems[3:-1])
         subs = [ees for ees in subs if len(ees) > 0]
-        for ees in subs:
-            dprint('--------------- >>>>>>>>>>>>>>', elemStr(ees))
+        # for ees in subs:
+        #     dprint('--------------- >>>>>>>>>>>>>>', elemStr(ees))
         return exp, subs
 
     def splitArgs(self, elems):
@@ -189,27 +192,6 @@ class CaseFunCall(SubCase, SolidCase):
             return False
         if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '(') : 
             return False
-        # exit()
-        # print('F.Call/3')
-        # TODO: use word(any-with-brackets) pattern
-        
-        # print('FuncCallMatch ---------1----------')
-        # if not isGetValExpr(elems):
-        #     return False
-        
-        # # print('FuncCallMatch ---------2----------')
-        # opInd = findLastBrackets(elems)
-
-        # if opInd < 1:
-        #     # means only brackets, no collection var before
-        #     return False
-        # if not isLex(elems[opInd], Lt.oper, '('):
-        #     return False
-        # print('FuncCallMatch ---------3----------')
-        
-        # endInd = afterNameBr(elems)
-        # if endInd != -1:
-        #     return False
         return True
         
         # if elems[1].type != Lt.oper or elems[-1].type != Lt.oper or elems[1].text != '(' or elems[-1].text != ')':
@@ -217,9 +199,6 @@ class CaseFunCall(SubCase, SolidCase):
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
-        # 1. func name, in next phase: method call: inst.foo() ? separated case for objects with members: obj.field, obj.method()
-        # 2. arg-expressions
-
         src = elemStr(elems)
         opInd = findLastBrackets(elems)
         argEl = elems[opInd+1 : -1]
@@ -228,7 +207,7 @@ class CaseFunCall(SubCase, SolidCase):
         cs = CaseCommas()
         if cs.match(argEl):
             _, args = cs.split(argEl)
-        exp = FuncCallExpr(elemStr(valExpr), src)
+        exp = FuncCallExpr(elemStr(valExpr).replace(' ', ''), src)
         # print('FCall.split1', valExpr, args)
         subs = [valExpr] + args
         # print('FCall.split2', elemStr(valExpr), 'Exp:',exp, 'subs:', [elemStr(s) for s in subs])

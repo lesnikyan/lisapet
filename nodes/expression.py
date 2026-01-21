@@ -161,9 +161,9 @@ class ControlExpr(Expression):
 
 class Block(Expression):
     def __init__(self):
-        # self.ctx = NSContext()
         super().__init__()
         self.subs: list[Expression] = []
+        self.skipLines = []
         self.storeRes = False
         self.lastVal:Var|list[Var] = None # result of last sequence, can be a list if many results: a, b, [1,2,3]
 
@@ -174,23 +174,23 @@ class Block(Expression):
         # print('Block.add:', type(self), '::', self.subs)
 
     def isEmpty(self):
+        return self.linesIter() < 1
+
+    def linesIter(self):
         return len(self.subs)
 
     def do(self, ctx:NSContext):
         self.lastVal = None
         # eval sequences one by one, store result of each line, change vars in contexts
-        elen = len(self.subs)
-        if elen < 1:
+        # elen = len(self.subs)
+        if self.isEmpty():
             return
         lastInd = 0
-        # self.ctx.upper = ctx
         # print('!! Block.do', self.storeRes)
-        # ctx.print()
         self.lastVal = None
-        for i in range(elen):
-            # dprint('!! Block.iter ', i, self.subs[i])
+        for i in range(self.linesIter()):
+            # print('!! Block.iter ', i, self.subs[i])
             expr = self.subs[i]
-            # exsrc = expSrc(expr)
             # print('!! Block.iter ', i, expr, expSrc(expr) ) # '{{ %s }}' % expr.src.src.src
             expr.do(ctx)
             if isinstance(expr, (DefinitionExpr)): # and not isinstance(expr, (ObjDefExpr))
@@ -200,7 +200,6 @@ class Block(Expression):
             # lineRes = None
             lineRes = expr.get()
             if isinstance(lineRes, FuncRes):
-                # return expr
                 # dprint(' - return::', lineRes)
                 self.lastVal = lineRes
                 return
@@ -218,7 +217,6 @@ class Block(Expression):
     def isBlock(self)->bool:
         ''' True if one of: func, for, if, match, case'''
         return True
-
 
 class ControlBlock(Block, ControlExpr):
     ''''''
@@ -455,6 +453,8 @@ class SequenceExpr(Expression):
 
 class CallExpr(Expression):
     ''' expr() '''
+    def doArgs(self, args:list, ctx: Context):
+        pass
 
 
 class StringExpr(ValExpr):

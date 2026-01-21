@@ -45,9 +45,16 @@ class TestDev(TestCase):
         
         # think about escapes in triple-backticks strings
         #   unary backtick tested in test_parsing_string_backtiks
-            mres = ``` \n \t \\ \s \w ```
+            mres = ``` \\n \\t \\ \\s \\w ```
 
         DONE: test overloading with type function, as function and any.
+        
+        DONE: fix parsing of struct.field with brackets:
+            calling func, returned from method: stru.method()()
+            collection in collection in field: stru.field[0][1]
+
+        TODO:? add shoren alias for the struct: stru A a:int
+            shorten of string: name:strn
         
         TODO?: class Null() -> class Null(Val)
         
@@ -55,20 +62,20 @@ class TestDev(TestCase):
         
         TODO: check type of operand for all operators
         
-        TODO: overload: test methods with compatiple types
+        TODO: overload: 
             add overloaded constructors, custom and default (at least empty)
-            test overload for imported functions, 
-            struct type args in overloaded func, 
+            test overloading for imported functions, 
+            override o overload:
+                Think about case with same name func in a child is overloaded for another args
             overloaded methods of imported structs
+            # done: struct type args in overloaded func, 
+            # done: test methods with compatiple types
         
         TODO bug: Sequence  match and split if brackets in quotes: (1, '[', ']')
-
-        TODO: add shoren alias fo struct: stru A a:int
-            shorten of string: name:strn
         
-        TODO: fix parsing of struct.field with brackets:
-            calling func, returned from method: stru.method()()
-            collection in collection in field: stru.field[0][1]
+        TODO: tail recursion:
+        1) tail optimization by func name, during interpretation (before add to ctx)
+        2) extend tail-recur case for earlier returns - not sure 
    
     '''
 
@@ -102,12 +109,19 @@ class TestDev(TestCase):
         print('tt>>', rfoo, rloop)
         self.assertEqual(rfoo, rloop)
 
+
+
     def _test_code(self):
         ''' '''
         code = r'''
         res = []
         
-        print('res = ', s)
+        func foo(a, b)
+            if a > 0
+                return foo(a - 1, b + 1)
+            b + 1
+        
+        print('res = ', res)
         '''
         code = norm(code[1:])
         ex = tryParse(code)
@@ -116,7 +130,7 @@ class TestDev(TestCase):
         trydo(ex, ctx)
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
-        # self.assertEqual([], rvar.vals())
+        # self.assertEqual([220022, 'Aloha!'], rvar.vals())
 
 
     def _test_barr(self):

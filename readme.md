@@ -24,64 +24,92 @@ Content:
     1. [vars, vals, assignment](#11-vars-vals-lists-assignment)
     2. [Context](#12-execution-context)
     3. [Basic types](#13-numbers-strings-bool-types)
+
 2. [Code blocks and formatting.](#2-sub-blocks-code-formatting)
+
 3. [`if`-statement](#3-if-statement-else)
+
 4. [Operators. Math, bool, unary, others.](#4-operators-math-unary-others)
-5. [Collections, short overview `[,]`, `(,)`](#5-collections-list-array-tuple-dict-map)
+
+5. [List `[]`, tuple `(,)`, unpack `a,b = [1,2]`](#5-collections-list-array-tuple-unpack-of-sequence)
+
 6. [Dict `{'key':val}`](#6-dict-linear-and-block-constructor)
+
 7. [For-statement: `for i <- [1..5]`](#7-for-statement---operator)
+
 8. Functions:`func foo()`  
     1) [Base info](#8-function-definition-context-of-functions)  
     2) [Default arguments `func foo(x=1)`](#82-default-value-of-arguments)  
     3) [Named arguments `n = foo(x=2)`](#83-named-arguments)  
     4) [Variadic arguments `func foo(args...)`](#84-variadic-arguments)  
     5) [Overload of functions](#85-function-overload)  
+
 9. Collection features:  
     1. [append operator `nums <- 15`](#91-arrow-appendset-operator--)
     2. [deletion operator `data - [key]`](#92-minus-key---key-delete-operator)
     3. [plus for lists `[] + []`](#93-list-plus---)
+
 10. Struct: 
     1. [Definition, constructor `A{f:val}`, fields, `.` operator](#101-struct)
     2. [Callable constructor `A(val)`](#102-constructor-function-typename)
+
 11. Struct, OOP:
     1. [Methods `x.foo()`](#111-struct-method)
     2. [Inheritance `A(B)`](#112-struct-inheritance-multiple-inheritance-is-allowed)
+
 12. List features:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
     2. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
+
 13. [Multiline expressions](#13-multiline-expressions-if-for-math-expr)
-14. Builtin (native) functions
+
+14. Builtin (native) functions and methods
     1. [Global functions: print, iter, etc.](#141-global-native-functions)
     2. [Bind native function as a method `[1,2].join(',')`](#142-binding-method-for-type)
     3. [Methods are already bound](#143-methods--are-already-bound-to-types)
 
-15. [Lambdas and high-order functions `x -> x ** 2`](#15-lambda-functions-and-high-order-functions-right-arrow--)
-16. Match-statement
-    1. [Match, cases, `!-`](#16-match-statement)
-    2. [List and tuple `[0,x,_,?,*]` `(_,?,*)`](#162-matching-list-and-tuple)
-    3. [Dict pattern `{'a':a, _:_, *}`](#163-matching-dict)
-    4. [Struct pattern `N{ }`, `_{ }`](#164-matching-struct)
-    5. [Multicase `1 | 2`](#165-multicase-)
-    6. [Guard with pattern `[a] :? a > 5`](#166-bool-guard-in-case)
-    7. [Mixed patterns: `[]|{}`, `[A{},B{}]`](#167-mixed-nested-patterns)
-    8. [Regexp case ```re`abc` ```](#168-regexp-case)
-    9. [Type pattern `::`](#169-type-matching-_int)
-17. [Multi-assignment `a, b = c, d`](#17-multi-assignment)
+15. [Functional features](#15-functional-programming-features)  
+    1. [Lambdas `x -> x ** 2`](#151-lambda-functions-right-arrow--)  
+    2. [high-order functions](#152-high-order-functions)
+    3. [Function as object](#153-function-as-an-object)
+    4. [Closures](#154-closures)
+    5. [Call-chain `foo(1)(2)(3)`](#155-call-chain)
+    6. [Currying cascade](#156-currying-cascade)
+    7. [Currying cascade](#157-tail-recursion)
+16.
+17. 
+
 18. Operators with bool condition.  
-    1. [Ternary `?:` operator](#18-ternary-operator-)
-    2. [In `?>`, not in `!?>` operators](#19-val-in--and-val-not-in--operators)
+    1. [Ternary `?:` operator](#181-ternary-operator-)
+    2. [In `?>`, not in `!?>`](#182-val-in--and-val-not-in--operators)
     3. [Check type `::`](#183-check-type-operator-)
+
 19. [optimized place :) ]
+
 20. Inline syntax.  
     [Few-expressions block ` ; `](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
+
 21. [String features](#21-string-features)
     1. [insert `"%s" << x`](#211-percent-formatting)
     2. [include `~"{x}"`](#212-format-by-including-expressions)
     3. [base functions](#213-string-functions)
+
 22. [Import modules](#22-import-modules)
-23. [Function as object](#23-function-as-an-object)
-24. [Closures](#24-closures)
+
+23. Match-statement
+    1. [Match, cases, `!-`](#23-match-statement)
+    2. [List and tuple `[0,x,_,?,*]` `(_,?,*)`](#232-matching-list-and-tuple)
+    3. [Dict pattern `{'a':a, _:_, *}`](#233-matching-dict)
+    4. [Struct pattern `N{ }`, `_{ }`](#234-matching-struct)
+    5. [Multicase `1 | 2`](#235-multicase-)
+    6. [Guard with pattern `[a] :? a > 5`](#236-bool-guard-in-case)
+    7. [Mixed patterns: `[]|{}`, `[A{},B{}]`](#237-mixed-nested-patterns)
+    8. [Regexp case ```re`abc` ```](#238-regexp-case)
+    9. [Type pattern `::`](#239-type-matching-_int)
+
+24. [(Your AD can be here :-)]
+
 25. Regular expression:
     1. [Base syntax ```re`[abc]`i```](#251-regular-expressions-re)
     2. [match `=~`](#252-regexp-match-)
@@ -481,7 +509,7 @@ Table of priority order:
 !-
 ```
 
-### 5. Collections: list (array), tuple, dict (map)
+### 5. Collections: list (array), tuple, unpack of sequence.
 1. List, linear constructor.  
 ```python
 
@@ -542,6 +570,19 @@ data = (,)
     'Vasya Pupkin'
     ['a', 'b', 'c']
 data[1] # >> 'Vasya Pupkin'
+```
+
+3. Unpack of sequence by multi-assignment.   
+Multiassignment can unpack sequences to the set of variables.  
+```python
+# simple vals
+a, b, c = 1,"2",3.5
+
+# unpack tuple
+a, b, c = (1, 2, 3)
+
+# unpack list
+a, b, c = [1,2,3]
 ```
 
 ### 6. Dict. Linear and block constructor
@@ -1307,32 +1348,25 @@ res = 'Hello dear friend'.split(' ').map(w -> ~"<t>{w}</t>").join('^')
 ```
 
 
-### 15. Lambda functions and high-order functions. Right-arrow `->`.
+### 15. Functional programming features.  
+Here are some features that make Lisapet also a functional programming language.  
+
+### 15.1 Lambda functions. Right-arrow `->`.
 Right-arrow is an operator for definition lambda-function.  
 Arrow separates arguments and body of function.  
-
+One argement can be defined without brackets. For more then one we need put args into brackets.  
 ```python
 # one-arg lambda
-x -> x * 10
+f1 = x -> x * 10
 
 # several args
-(x, y, z) -> (x + y) * z
+f2 = (x, y, z) -> (x + y) * z
 
-# high order func: func which can accept or return another 
-# (maybe lambda) function
-
-# high-order func (will use lambdas)
-func foo(ff, arg)
-    ff(arg * 2)
-
-# lambda arg as var
-f1 = x -> x * 3
-n1 = foo(f1, 5)
-
-# lambda as a local expression in argument
-n2 = foo( x -> 2 ** x , 5)
+# call
+f1(5) # 50
+f2(3,4,5) # 35
 ```
-We can put inline-block in brackets and use as a lambdas body.  
+We can put inline-block in brackets and use it as a lambdas body.  
 ```python
 ff = x -> (a = 100; b = x * 10; a + (b * x))
 r = ff(3)
@@ -1346,385 +1380,211 @@ ff = x -> (
     a + (b * x))
 ```
 
-See more about function-as-object in section 23.  
 
-### 16. match-statement.  
-`match` keyword  
-`!-` case-operator  
-Each case starts a new block.
-Case-block can be in the same line (not for control statements).  
-Now:  
-Just simple case with value-equal has been implemented  
-Control statements (`if`, `for`, `match`, `while` ) should be started in next line (with indent).
-```python
-# value|template !- expressions
-# _ !- expr # default case
-
-a, b, r1 = 4, 3, 0
-
-match a
-    1  !- r1 = 100 # one-line case block
-    10 !- r1 = 200
-    b  !- b = a * 1000
-        r1 = [a, b]
-    20 !-
-        if a > b
-            r1 = 5
-    _  !- r1 = -2
-```
-TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
-
-### 16.2 Matching list and tuple.
-List or tuple can be matched by special collection-patterns. They look similar to regular collections, but have some special features.  
-```python
-[?, 12, b, _, *] !- ...
-```
-In collection patterns we can use several types of sub-expressions. They can be combined.  
-
-1.  Const value in the collection. Pattern matches if element from pattern equals the element of such position in value we check.  
-```python
-match n
-    # list
-    [1,2,3] !- expr
-    
-    # tuple
-    (3,4,5) !- expr
-```
-2. Variable in collection `[a,b]`, `(a,b,c)`, named non-constant element.  
-    Var in pattern is matched with any element and will be assigned with the value according to position if pattern will be matched.  
-    Assigned var can be used in the sub block of current match-case.  
-```python
-match n
-    [a] !- print(a) # array with 1 element 
-        # in case block var `a` will contain value of n[0]
-        res = a * 100
-    [a,b,c] !- # any array with 3 elements
-        #vars a,b,c with values of list elements
-        res = a + b + c 
-```
-3. Wildcard `_` (means - any value), unnamed non-constant element.  
-    Wildcard don't assign anything, unlike of var-pattern.  
-```python
-match n
-    [_] !- # any array with 1 element
-    [1,_] !- # any arrays with 2 elemnts, and n[0] == 1
-    [_,_] !- # any array with 2 elements
-    (1,_) !- the same for tuple
-```
-Combined example:
-```python
-match n
-    (1, _) !- print('tuple with 1')
-    (a, b, _) !- sum = a + b
-    [a, 22, b, _] !- res = [a, b, a + b]
-```
-
-4. `?` - optional element.  
-In case when we need match sequence one or more element is not necessary we can use question mark `?` pattern-element.  
-Matcher can ignore optional element.  
-In common case we can think about optional + non-constant (var, `_`) that it is pattern of min-max optional segment.  
-`(a, _, ?,?)` - segment witn 2-4 elements.  
-```
-nn = [[], [1], [2], [1,2], [1,2,3], [2,4], [5,6,7,8,15], [5,8,15]]
-
-for n in nn
-    match n
-        [1, ?] !- # match [1], [1,2]
-        [?] !- # match [], [2]
-        [1,?,3] !- # [1,2,3]
-        [?, 4] !- # [2,4]
-        [5,?,?,?,a,15] !- # [5,6,7,8,15], [5,8,15]; a = 8
-        _ !- 
-```
-The same applies to cases of a tuple `(a,?,_)`.  
-Uncertainty of result with optional subpatterns.  
-Optional sub-patterns can work unpredictable with same sub-values of matching data in sequence like `[1, 10, 2, 3, 10]`, matching them as `?` or const. Especially with set of `?`-s before const pattern like `?,?,?,10`.  
-Matcher tries to find a const value one-by-one in segment with such length as a whole set of question marks (before it) has + 1, but will take only first one. Then it may cause fail if the value of const pattern will be found in optional segment.  
-Keep in mind that `match` is not a full functional query language like regexp, but just simple element-by-element search machine.  
-
-5. Star `*` in list or tuple matches any sub elements with any count from 0 up to size of collection.  
-In common case `*` means 'any others' in the and of pattern.  
-Or it can be between two const values, meaning 'any but not the same as second one'. Here works the same rule as for `?` subpattern - first matching value (equal to 1-st const pattern after `*`) will close the uncertain subsequence.  
-Combinations `*` and any number of `?`-s means the same as just `*`.  
-Star as a length-independent subpattern can provoke uncertain behavior near vars or `_` subpattern. Be accurate with it.  
-For templates with optional subelements, it is important for predictable behavior to define a relationship between the variable to be assigned and some constant value or collection side (start, end).  
-```python
-
-match n
-    [1, *] !- # any list starts with 1
-    (*, 2) !- # any tuple that ends with 2
-    [31, *, 32] !- # list starts with 31 and ends with 32
-    [*, 44, *] !- # list has 44
-
-    # list has at least 4 elements,
-    # 1-st and two last will be assigned with var `a,b,c`.
-    [a, 55, *, b, c] !- ...
-    
-    # list starts with 60, has at least 3 elements after it, 
-    # and the 3rd from the end will be assigned with the var `a`
-    [60, *, a,  _, _] !- ...
-
-    [*] !- # any list
-    (*) !- # any tuple
-```
-
-
-### 16.3 Matching dict.
-
-Base pattern is similar to regular inline constructor of dict: `{key:val, ...}`.  
-Var, value, `_` cases applicable for dicts.  
-
-1. Emplty dict:
-```python
-{} !- ...
-```
-2. Dict with 1 element:
-```python
-match x
-    {1:_} !- # numeric key, any val
-    {'name':_} !- # string key any val
-    {_:100500} !- # any key, but const val
-    {k:v} !- # local vars in key and val
-    {_:_} !- # wildcard - any key, any val, will never matched here
-```
-
-In the key position all `null` instances are equal.  
-`0`, `''` and `null` are different cases.  
-```python
-x = {null:123}
-match x
-    {0:_} !- ...
-    {null:val} !- # will matched
-```
-
-3. Dict with many subpatterns. 
-Subpatterns are defined like pairs in dict, over comma.  
-```python
-    !- {'name':nameVal, 'age':25, _:100500, a:b}
-    !- {'a':a, 'b':_, c:'ccc'}
-```
-Var and `_` have the same matching result, so `{k:v}` after `{_:_}` will never matched.  
-Order of subpatterns in dict doesn't matter.  
-```python
-{'a':_, _:b}
-# the same as
-{_:b, 'a':_}
-
-```
-Within one pattern with many parts, subpatterns have priority by predictability of result (const before any, left(key) before right(val)).  
-At first pattern looks for keys (left-part of subpattern) with const values, like `{, 'name':_,}`, if failed then tries match sub-cases with const val in right-part `{, _:'Harry',}`.  
-If pattern didn't match const cases, it will apply first pattern with key-var or wildcard `{key1:val1}`.  
-Notes.   
-    Long patterns with right-values `_:'abc'` take more time. Avoid them without necessity.  
-    Be accurate using variable for key, because position of key is undefined.  
-    It's ok if 1 var key in pattern with constantly defined others.  
-
-4. Star `*`. Means any values with any number of sub-elements including 0.  
-
-In dict pattern `*` star sub-elem matches with all elements that wasn't matched before. 
-In general It is used if we need match some elements beyond those previously defined, and with undefined number of those.  
-```python
-match n
-    {'a':b, *}  !- # 'a' key and any more elements
-    {_:_, *}    !- # one or more elements
-    {*}         !- # empty or any elements == any dict
-    _ !-        !- # here any non-dict, because after {*} case
-```
-
-5. Question mark `?` as a 'maybe' case.  
-Question mark in dict means 1 optional element.  
-The position of `?`-elements in the dict doesn't matter. Only number matters.  
-So number of q-marks means possible elements from 0 up to number.  
-In case {?,?} - 0-2 elements.  
-```python
-match d
-    {?}             !- # empty or 1 key
-    {'a':_, ?, ?}   !- # dict has key 'a' and may contain yet 1 or 2
-    {_:_, ?, ?}     !- # dict has at least 1 key but not more than 3
-    {'b':v, _:_, ?, ?}  !- # dict has from 2 up to 4 keys, one of them is 'b'
-    {?,?,?,?}       !- # only dict with 4 keys without 'b'-key will match here, less was matched above
-    {?,?,*}         !- # doesn't make sense, because equal to {*}
-```
-
-Notes.  
-    `*` and `?` doen't make sense for variable in key like `{a:b, ?,?}` because position of key is not predictable.  
-    `*` after `?` means the same as a just `*`.  
-    For better readability, it makes sense to put `?` or `*` subs in the end of pattern.  
-
-
-### 16.4 Matching struct
-Struct pattern looks like general constructor with curly brackets `Typename{...}`.  
-1. Empty brackets means that pattern matches any instances of type.  
-Child type will be matched by parent.  
-```python
-struct A
-struct B
-struct C(B)
-
-match st
-    A{} !- # match any of A
-    B{} !- # match B and C (as a child of B)
-```
-2. Fields in brackets.  
-Pattern will try match those field which has in pattern.  
-So struct pattern filters instances only by fields has used in pattern, skipping others, instead of how pattern of dict works.  
-Names of fields should be just words like in struct constructor, no vars, wilcards, etc.  
-Subpattern of fields value can be any pattern of value - const, var, collection-pattern.  
-```python
-struct A a:int
-struct B b: string
-struct C(B) c:list
-
-match st
-    A{a:val} !- # any A inst, assign value of A.a to var `val`
-    B{b:'abc'} !- # B anc C inst, by value of field `b`
-    C{b:bval} :? bval ?> ['aaa', 'bbb', 'ccc'] !- # field from parent type (and complex condition)
-    B{b:_} !- # wildcard in field-value of struct doesn't make sense, but works
-    C{c:[_,*]} !- # C with non-empty list in `c`-field
-```
-3. Pattern of any-type struct.  
-In pattern of struct we can match any instance of struct ignoring type of value.  
-Undercore `_{}` lexem instead of type name is used for that.  
-```python
-
-A a:int
-B name:string
-C name:string
-...
-match nn
-    _{a:val} !- # struct with field `a` will be matched: A
-    _{name:val} !- # with field `name`: B, C
-    _{} !- # any other structs will be matched
-    _ !- # non-struct values will reach this point
-```
-
-
-### 16.5 Multicase `|`
-Multicase is feature for combine several patterns in one executable case.  
-Operator `|` is divider in such complex expression between patterns.  
-The case will be executed if one of patterns in set is matched.  
-```python
-match n
-    1 | 2 | 3 !- # one of 1, 2, 3 is matched
-    (*) | [*] !- # any tuple or list
-
-    # 1-key dict or dict with 2 keys one of them is 'name' is matched. 
-    # a:b will be assigned by matched pattern
-    {a:b} | {'name':_, a:b} !- ...
-```
-
-### 16.6 Bool guard in case
-Case pattern can has additional `guard` - bool condition equal to `if`. 
-Guard can be added to case-condition by operator `:?` after pattern.  
-Guard will be used after pattern has matched.  
-Guard can contain assign-part, equally to `if` statement.  
-(Actually, guard is the same object as the `if`, without execution block).  
-```python
-x = someval()
-match n
-    [a, *] :? x < a !- # list pattern, val from list in guard
-    (1, b) | [2, b] :? b > 10 !- # multipattern before guard
-    {'name':name, *} :? name !- 'Alan' && 'address' ?> n !- # complex condition in guard
-    (a, b, c) :? d = a + b; c < d !- print(a, b, c, d) # assign sub-expression, var from guard uses in sub-block  
-    _ :? n != 17 !- guard with `_`
-    _ !- # other
-```
-
-### 16.7 Mixed (nested) patterns
-Multipattern can contain collections or structs.  
-```python
-struct A a1: int
-struct B(A) b1: int
-
-match n
-    [1,2,3] | (1,2,3) | {'a':_, 'b':_, 'c':_} !- # some collections
-    A{a1:1} | B{b1:2} | C{c1:'c3'} !- # some structs
-    [*] | (*) | {*}  !- # any collections
-```
-Containers can contain another containers.  
-```python
-match n
-    # dict / list / tuple
-    [(), ()] !- # top list
-    ([], []) !- # top tuple
-    [{}, {}] !- # dict in
-    [{1:()}] !- # 3-lvl, tuple is last
-    ({2:[]}) !- # 3-lvl, list is last
-    [({3:_})] !- #-lvl dict is last
-    # with structs
-    [(A{}, 11), (B{}, 22)] !- ...
-    {'a':A{}, 'b':B{}} !- ...
-```
-
-
-### 16.8 Regexp case
-String value can be matched by regular expression.  
+### 15.2 High order functions.
+Functions which can accept or return another function (maybe lambda).  
 ```golang
-match n
-    re`aa|bb|cc` !- #// simple pattern 
-    re`^[houpring]{3,6}$` !- #// full string
-    re`.+`m !- #// non empty string
-    [re`\d+`, *] !- #// regexp can be a sub-element of a container-pattern
+#// high-order func (will use lambdas)
+func foo(ff, arg)
+    ff(arg * 2)
+```
+Usage with lambda-functions.  
+```golang
+#// lambda arg as var
+f1 = x -> x * 3
+n1 = foo(f1, 5)
+
+#// lambda as a local expression in argument
+n2 = foo( x -> 2 ** x , 5)
 ```
 
-### 16.9 Type matching `_::int`
-Case can be matched by a type.  
-Operator `::` is used for that.  
-Now basic types have been implemented.  
-```python
-match x
-    ::int !- # all int values
-    ::float !- # float values
-    :: bool !- ..
-    ::string !- ..
-```
-Collections can be matched by type too.  
-```python
-match data
-    ::list !- ...
-    ::dict !- ...
-    ::tuple !- ...
-```
-Var pattern or `_` can be restricted by type.  
-```python
-match n
-    a::int !- print(a)
-    a::string !- print(a)
-    _::float !- ...
-```
-Actually `::type` means the same as a pattern `_::type`.
-But in dict this two sub-elements can act differently alittle in combination with `?` or `*` sub elements.  
+### Experimental: definition as a result.  
+If def of function f1 was last expression in another function f2 than f1 will be a result of f2.  
+```golang
+func getFuu(n)
+    func mult(x)
+        x * n
 
-Typed pattern can be the part of collection pattern.  
-In dict pattern typed key is found before typed val.  
-```python
-match data
-    [::int, a::int, _::float] !- # in list
-    (::string, val::float) !- # in tuple
-    {k::string : v::int} !- # in dict
-    {::string : _::list} !- # list in dict
+f3 = getFuu(11)
+res = f3(4) # here `mult` is called
+>> 44
 ```
 
+See more about function-as-object in the next section.  
 
+### 15.3 Function as an object. 
+We can use a function not only as a predefined name for call, but also as a value, place it in collections, take it from an expression, and use.  
+Typical cases:  
+- functions in list
+```golang
+func foo()
+    ...
+func bar(arg)
+    ...
+func sum(a, b)
+    ...
+ffs = [foo, bar, sum]
 
-### 17. multi-assignment
-```python
-# simple vals
-a,b,c = 1,"2",3.5
-
-# unpack tuple
-a, b, c = (1, 2, 3)
-
-# unpack list
-a, b, c = [1,2,3]
+# call them
+ffs[0]()
+ffs[1]('arg-val')
 ```
+- function in dict
+```golang
+ffd = {}
+    'f' : foo,
+    's' : sum
+
+ffd['f']()
+```
+- lambdas in collection
+```golang
+x2 = x -> x * 2
+ffs = [x2, x -> 5000 + x]
+
+ffs[0](11)
+ffs[-1](11)
+
+ffd = {'f' : ((a) -> a * 11)}
+
+ffd['f'](2)
+```
+- lambda in parentheses with immediate call
+```golang
+res = (x -> x + 10)(5)
+```
+- Also we can call function which has been returned from another function.
+```golang
+func foo3()
+    x -> x * 100
+
+res = foo()(3)
+```
+- Use passed argument in lambda.
+```golang
+func foo4(n)
+    x -> x * n + 1000 
+
+res = foo4(5)(111)
+```
+- Call passed lambda in returning lambda.
+```golang
+func foo5(f)
+    x -> f(x) + 5000 
+
+res = foo5(y -> y * 3)(33)
+```
+
+
+### 15.4 Closures.  
+Lambdas can use things defined in the function where lambda was defined,  
+including another lambdas passed into a parent function.
+```golang
+func getLamb(n, ff)
+    funVar = 100 + n
+    
+    func bar(x, y)
+        x + 10000 * y
+    
+    x -> ff(x) + bar(n, funVar)
+
+lamb = getLamb(3, a -> a * 5)
+
+res = lamb(2)
+>> 1030013
+```
+
+### 15.5 Call chain. 
+We can make chain of calls returning func from func.
+```golang
+func foo(x)
+    func plus(y)
+        z -> x * 100 + y * 10 + z
+    plus
+
+foo(3)(4)(5) #  345
+```
+The same works for methods too.
+```golang
+struct B b:string
+
+func bin:B triple(x)
+    func f2(y)
+        t = x * 100
+        (q, post) -> ~"{bin.b}_{t + y * 10 + q}{post}"
+
+b1 = B('Num')
+b1.triple(3)(5)(7, '_Yo') #  'Num_357_Yo'
+```
+
+
+### 15.6 Currying cascade.   
+In case when def of function is a last expression in the upper function, we get some useful hack for native currying.  
+```golang
+func foo(x)
+    func f2(y)
+        func f3(z)
+            x * 100 + y * 10 + z
+
+foo(1)(2)(3) #  123
+```
+And we can cover any other multiarg function by curriyng cascade.  
+It can be long enough.  
+```golang
+#// func for currying
+func f5vals(n1,n2,n3,n4,n5)
+    [n1,n2,n3,n4,n5]
+
+#// currying cascade
+func bar(a)
+    func f2(b)
+        func f3(c)
+            func f4(d)
+                func f5(e)
+                    f5vals(a, b, c, d, e)
+
+bar(11)(22)(33)(44)(55) #  [11, 22, 33, 44, 55]
+```
+
+### 15.7 Tail recursion
+Classical tail recursion is recursion in which the last expression in a function is a call to itself.  
+In the LP tail recursion works if we put the returning call into a last position, literally (I'm still thinking about earlier returns). So, if interpreter detected tail recursion it will run code of such function in lightweight loop instead of increasing depth of call stack.  
+This way we can avoid limits of python recursion.  
+Next example was tested with depth of recursion = 1 million.  
+
+```golang
+func f2(a, b)
+    if a == 0
+        return b
+    f2(a - 1, b + 1)
+
+f2(10**6, 0) # 1000000
+```
+(bad idea for such slow engine :))  
+```
+>> Ran 1 test in 30.307s 
+```
+It works for method of struct too.  
+
+```golang
+struct A a:int
+
+func st:A ff(a, b)
+    if a == 0
+        return b
+    st.ff(a - 1, b + st.a)
+
+a1 = A(3)
+res <- a1.ff(1001, 0) # 3003
+```
+
 
 ### 18.1 Ternary operator `?:`  
 classic ternary oper `condition ? valIfTrue : elseVal`  
 ```python
 x = a < b ? 10 : 20
 ```
-shortened case. null-or:  `val1 ?: va2 `  
+Shortened case. value-or:  `val1 ?: va2 `  
 returns val1 if not null (zero num, empty string, list or tuple); otherwize returns val2  
 ```python
 x = val1 ?: va2
@@ -2022,96 +1882,366 @@ $ py -m run -p "tests" \
     -r tt
 ```
 
-### 23. Function as an object. 
-We can use a function not only as a predefined name for call, but also as a value, place it in collections, take it from an expression, and use.  
-Typical cases:  
-- functions in list
-```golang
-func foo()
-    ...
-func bar(arg)
-    ...
-func sum(a, b)
-    ...
-ffs = [foo, bar, sum]
 
-# call them
-ffs[0]()
-ffs[1]('arg-val')
+### 23. match-statement.  
+`match` keyword  
+`!-` case-operator  
+Each case starts a new block.
+Case-block can be in the same line (not for control statements).  
+Now:  
+Just simple case with value-equal has been implemented  
+Control statements (`if`, `for`, `match`, `while` ) should be started in next line (with indent).
+```python
+# value|template !- expressions
+# _ !- expr # default case
+
+a, b, r1 = 4, 3, 0
+
+match a
+    1  !- r1 = 100 # one-line case block
+    10 !- r1 = 200
+    b  !- b = a * 1000
+        r1 = [a, b]
+    20 !-
+        if a > b
+            r1 = 5
+    _  !- r1 = -2
 ```
-- function in dict
-```golang
-ffd = {}
-    'f' : foo,
-    's' : sum
+TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
 
-ffd['f']()
+### 23.2 Matching list and tuple.
+List or tuple can be matched by special collection-patterns. They look similar to regular collections, but have some special features.  
+```python
+[?, 12, b, _, *] !- ...
 ```
-- lambdas in collection
-```golang
-x2 = x -> x * 2
-ffs = [x2, x -> 5000 + x]
+In collection patterns we can use several types of sub-expressions. They can be combined.  
 
-ffs[0](11)
-ffs[-1](11)
-
-ffd = {'f' : ((a) -> a * 11)}
-
-ffd['f'](2)
-```
-- lambda in parentheses with immediate call
-```golang
-res = (x -> x + 10)(5)
-```
-- Also we can call function which has been returned from another function.
-```golang
-func foo3()
-    x -> x * 100
-
-res = foo()(3)
-```
-- Use passed argument in lambda.
-```golang
-func foo4(n)
-    x -> x * n + 1000 
-
-res = foo4(5)(111)
-```
-- Call passed lambda in returning lambda.
-```golang
-func foo5(f)
-    x -> f(x) + 5000 
-
-res = foo5(y -> y * 3)(33)
-```
-### 24. Closures.  
-Lambdas can use things defined in the function where lambda was defined,  
-including another lambdas passed into parent function.
-```golang
-func getLamb(n, ff)
-    funVar = 100 + n
+1.  Const value in the collection. Pattern matches if element from pattern equals the element of such position in value we check.  
+```python
+match n
+    # list
+    [1,2,3] !- expr
     
-    func bar(x, y)
-        x + 10000 * y
+    # tuple
+    (3,4,5) !- expr
+```
+2. Variable in collection `[a,b]`, `(a,b,c)`, named non-constant element.  
+    Var in pattern is matched with any element and will be assigned with the value according to position if pattern will be matched.  
+    Assigned var can be used in the sub block of current match-case.  
+```python
+match n
+    [a] !- print(a) # array with 1 element 
+        # in case block var `a` will contain value of n[0]
+        res = a * 100
+    [a,b,c] !- # any array with 3 elements
+        #vars a,b,c with values of list elements
+        res = a + b + c 
+```
+3. Wildcard `_` (means - any value), unnamed non-constant element.  
+    Wildcard don't assign anything, unlike of var-pattern.  
+```python
+match n
+    [_] !- # any array with 1 element
+    [1,_] !- # any arrays with 2 elemnts, and n[0] == 1
+    [_,_] !- # any array with 2 elements
+    (1,_) !- the same for tuple
+```
+Combined example:
+```python
+match n
+    (1, _) !- print('tuple with 1')
+    (a, b, _) !- sum = a + b
+    [a, 22, b, _] !- res = [a, b, a + b]
+```
+
+4. `?` - optional element.  
+In case when we need match sequence one or more element is not necessary we can use question mark `?` pattern-element.  
+Matcher can ignore optional element.  
+In common case we can think about optional + non-constant (var, `_`) that it is pattern of min-max optional segment.  
+`(a, _, ?,?)` - segment witn 2-4 elements.  
+```
+nn = [[], [1], [2], [1,2], [1,2,3], [2,4], [5,6,7,8,15], [5,8,15]]
+
+for n in nn
+    match n
+        [1, ?] !- # match [1], [1,2]
+        [?] !- # match [], [2]
+        [1,?,3] !- # [1,2,3]
+        [?, 4] !- # [2,4]
+        [5,?,?,?,a,15] !- # [5,6,7,8,15], [5,8,15]; a = 8
+        _ !- 
+```
+The same applies to cases of a tuple `(a,?,_)`.  
+Uncertainty of result with optional subpatterns.  
+Optional sub-patterns can work unpredictable with same sub-values of matching data in sequence like `[1, 10, 2, 3, 10]`, matching them as `?` or const. Especially with set of `?`-s before const pattern like `?,?,?,10`.  
+Matcher tries to find a const value one-by-one in segment with such length as a whole set of question marks (before it) has + 1, but will take only first one. Then it may cause fail if the value of const pattern will be found in optional segment.  
+Keep in mind that `match` is not a full functional query language like regexp, but just simple element-by-element search machine.  
+
+5. Star `*` in list or tuple matches any sub elements with any count from 0 up to size of collection.  
+In common case `*` means 'any others' in the and of pattern.  
+Or it can be between two const values, meaning 'any but not the same as second one'. Here works the same rule as for `?` subpattern - first matching value (equal to 1-st const pattern after `*`) will close the uncertain subsequence.  
+Combinations `*` and any number of `?`-s means the same as just `*`.  
+Star as a length-independent subpattern can provoke uncertain behavior near vars or `_` subpattern. Be accurate with it.  
+For templates with optional subelements, it is important for predictable behavior to define a relationship between the variable to be assigned and some constant value or collection side (start, end).  
+```python
+
+match n
+    [1, *] !- # any list starts with 1
+    (*, 2) !- # any tuple that ends with 2
+    [31, *, 32] !- # list starts with 31 and ends with 32
+    [*, 44, *] !- # list has 44
+
+    # list has at least 4 elements,
+    # 1-st and two last will be assigned with var `a,b,c`.
+    [a, 55, *, b, c] !- ...
     
-    x -> ff(x) + bar(n, funVar)
+    # list starts with 60, has at least 3 elements after it, 
+    # and the 3rd from the end will be assigned with the var `a`
+    [60, *, a,  _, _] !- ...
 
-lamb = getLamb(3, a -> a * 5)
-
-res = lamb(2)
->> 1030013
+    [*] !- # any list
+    (*) !- # any tuple
 ```
-Experimental:  
-If def of function f1 was last expression in another function f2 than f1 will be a result of f2.  
+
+
+### 23.3 Matching dict.
+
+Base pattern is similar to regular inline constructor of dict: `{key:val, ...}`.  
+Var, value, `_` cases applicable for dicts.  
+
+1. Emplty dict:
+```python
+{} !- ...
+```
+2. Dict with 1 element:
+```python
+match x
+    {1:_} !- # numeric key, any val
+    {'name':_} !- # string key any val
+    {_:100500} !- # any key, but const val
+    {k:v} !- # local vars in key and val
+    {_:_} !- # wildcard - any key, any val, will never matched here
+```
+
+In the key position all `null` instances are equal.  
+`0`, `''` and `null` are different cases.  
+```python
+x = {null:123}
+match x
+    {0:_} !- ...
+    {null:val} !- # will matched
+```
+
+3. Dict with many subpatterns. 
+Subpatterns are defined like pairs in dict, over comma.  
+```python
+    !- {'name':nameVal, 'age':25, _:100500, a:b}
+    !- {'a':a, 'b':_, c:'ccc'}
+```
+Var and `_` have the same matching result, so `{k:v}` after `{_:_}` will never matched.  
+Order of subpatterns in dict doesn't matter.  
+```python
+{'a':_, _:b}
+# the same as
+{_:b, 'a':_}
+
+```
+Within one pattern with many parts, subpatterns have priority by predictability of result (const before any, left(key) before right(val)).  
+At first pattern looks for keys (left-part of subpattern) with const values, like `{, 'name':_,}`, if failed then tries match sub-cases with const val in right-part `{, _:'Harry',}`.  
+If pattern didn't match const cases, it will apply first pattern with key-var or wildcard `{key1:val1}`.  
+Notes.   
+    Long patterns with right-values `_:'abc'` take more time. Avoid them without necessity.  
+    Be accurate using variable for key, because position of key is undefined.  
+    It's ok if 1 var key in pattern with constantly defined others.  
+
+4. Star `*`. Means any values with any number of sub-elements including 0.  
+
+In dict pattern `*` star sub-elem matches with all elements that wasn't matched before. 
+In general It is used if we need match some elements beyond those previously defined, and with undefined number of those.  
+```python
+match n
+    {'a':b, *}  !- # 'a' key and any more elements
+    {_:_, *}    !- # one or more elements
+    {*}         !- # empty or any elements == any dict
+    _ !-        !- # here any non-dict, because after {*} case
+```
+
+5. Question mark `?` as a 'maybe' case.  
+Question mark in dict means 1 optional element.  
+The position of `?`-elements in the dict doesn't matter. Only number matters.  
+So number of q-marks means possible elements from 0 up to number.  
+In case {?,?} - 0-2 elements.  
+```python
+match d
+    {?}             !- # empty or 1 key
+    {'a':_, ?, ?}   !- # dict has key 'a' and may contain yet 1 or 2
+    {_:_, ?, ?}     !- # dict has at least 1 key but not more than 3
+    {'b':v, _:_, ?, ?}  !- # dict has from 2 up to 4 keys, one of them is 'b'
+    {?,?,?,?}       !- # only dict with 4 keys without 'b'-key will match here, less was matched above
+    {?,?,*}         !- # doesn't make sense, because equal to {*}
+```
+
+Notes.  
+    `*` and `?` doen't make sense for variable in key like `{a:b, ?,?}` because position of key is not predictable.  
+    `*` after `?` means the same as a just `*`.  
+    For better readability, it makes sense to put `?` or `*` subs in the end of pattern.  
+
+
+### 23.4 Matching struct
+Struct pattern looks like general constructor with curly brackets `Typename{...}`.  
+1. Empty brackets means that pattern matches any instances of type.  
+Child type will be matched by parent.  
+```python
+struct A
+struct B
+struct C(B)
+
+match st
+    A{} !- # match any of A
+    B{} !- # match B and C (as a child of B)
+```
+2. Fields in brackets.  
+Pattern will try match those field which has in pattern.  
+So struct pattern filters instances only by fields has used in pattern, skipping others, instead of how pattern of dict works.  
+Names of fields should be just words like in struct constructor, no vars, wilcards, etc.  
+Subpattern of fields value can be any pattern of value - const, var, collection-pattern.  
+```python
+struct A a:int
+struct B b: string
+struct C(B) c:list
+
+match st
+    A{a:val} !- # any A inst, assign value of A.a to var `val`
+    B{b:'abc'} !- # B anc C inst, by value of field `b`
+    C{b:bval} :? bval ?> ['aaa', 'bbb', 'ccc'] !- # field from parent type (and complex condition)
+    B{b:_} !- # wildcard in field-value of struct doesn't make sense, but works
+    C{c:[_,*]} !- # C with non-empty list in `c`-field
+```
+3. Pattern of any-type struct.  
+In pattern of struct we can match any instance of struct ignoring type of value.  
+Undercore `_{}` lexem instead of type name is used for that.  
+```python
+
+A a:int
+B name:string
+C name:string
+...
+match nn
+    _{a:val} !- # struct with field `a` will be matched: A
+    _{name:val} !- # with field `name`: B, C
+    _{} !- # any other structs will be matched
+    _ !- # non-struct values will reach this point
+```
+
+
+### 23.5 Multicase `|`
+Multicase is feature for combine several patterns in one executable case.  
+Operator `|` is divider in such complex expression between patterns.  
+The case will be executed if one of patterns in set is matched.  
+```python
+match n
+    1 | 2 | 3 !- # one of 1, 2, 3 is matched
+    (*) | [*] !- # any tuple or list
+
+    # 1-key dict or dict with 2 keys one of them is 'name' is matched. 
+    # a:b will be assigned by matched pattern
+    {a:b} | {'name':_, a:b} !- ...
+```
+
+### 23.6 Bool guard in case
+Case pattern can has additional `guard` - bool condition equal to `if`. 
+Guard can be added to case-condition by operator `:?` after pattern.  
+Guard will be used after pattern has matched.  
+Guard can contain assign-part, equally to `if` statement.  
+(Actually, guard is the same object as the `if`, without execution block).  
+```python
+x = someval()
+match n
+    [a, *] :? x < a !- # list pattern, val from list in guard
+    (1, b) | [2, b] :? b > 10 !- # multipattern before guard
+    {'name':name, *} :? name !- 'Alan' && 'address' ?> n !- # complex condition in guard
+    (a, b, c) :? d = a + b; c < d !- print(a, b, c, d) # assign sub-expression, var from guard uses in sub-block  
+    _ :? n != 17 !- guard with `_`
+    _ !- # other
+```
+
+### 23.7 Mixed (nested) patterns
+Multipattern can contain collections or structs.  
+```python
+struct A a1: int
+struct B(A) b1: int
+
+match n
+    [1,2,3] | (1,2,3) | {'a':_, 'b':_, 'c':_} !- # some collections
+    A{a1:1} | B{b1:2} | C{c1:'c3'} !- # some structs
+    [*] | (*) | {*}  !- # any collections
+```
+Containers can contain another containers.  
+```python
+match n
+    # dict / list / tuple
+    [(), ()] !- # top list
+    ([], []) !- # top tuple
+    [{}, {}] !- # dict in
+    [{1:()}] !- # 3-lvl, tuple is last
+    ({2:[]}) !- # 3-lvl, list is last
+    [({3:_})] !- #-lvl dict is last
+    # with structs
+    [(A{}, 11), (B{}, 22)] !- ...
+    {'a':A{}, 'b':B{}} !- ...
+```
+
+
+### 23.8 Regexp case
+String value can be matched by regular expression.  
 ```golang
-func getFuu(n)
-    func mult(x)
-        x * n
-
-f3 = getFuu(11)
-res = f3(4) # here `mult` is called
->> 44
+match n
+    re`aa|bb|cc` !- #// simple pattern 
+    re`^[houpring]{3,6}$` !- #// whole string by chars
+    re`.+`m !- #// non empty string
+    [re`\d+`, *] !- #// regexp can be a sub-element of a container-pattern
 ```
+
+### 23.9 Type matching `_::int`
+Case can be matched by a type.  
+Operator `::` is used for that.  
+Now basic types have been implemented.  
+```python
+match x
+    ::int !- # all int values
+    ::float !- # float values
+    :: bool !- ..
+    ::string !- ..
+```
+Collections can be matched by type too.  
+```python
+match data
+    ::list !- ...
+    ::dict !- ...
+    ::tuple !- ...
+```
+Var pattern or `_` can be restricted by type.  
+```python
+match n
+    a::int !- print(a)
+    a::string !- print(a)
+    _::float !- ...
+```
+Actually `::type` means the same as a pattern `_::type`.
+But in dict this two sub-elements can act differently alittle in combination with `?` or `*` sub elements.  
+
+Typed pattern can be the part of collection pattern.  
+In dict pattern typed key is found before typed val.  
+```python
+match data
+    [::int, a::int, _::float] !- # in list
+    (::string, val::float) !- # in tuple
+    {k::string : v::int} !- # in dict
+    {::string : _::list} !- # list in dict
+```
+
+### 24. Nothing yet
+
 
 ### 25.1 Regular expressions. `re`
 1. Regular expression is a native object in lisapet.  
@@ -2239,7 +2369,7 @@ etml - possible extension of html/xml template.
 *
 
 Possible features (thoughts):
-01. functions can be overloaded by types (maybe)
+01. functions can be overloaded by types (done!)
 02. operators are functions, exception: brackets () [] {}, maybe.
 10. mapping and pattern matching (done!)
 11. functions doesn't needs braces like haskell (for what?)

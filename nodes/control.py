@@ -302,9 +302,6 @@ class LoopExpr(LoopBlock):
             if isinstance(blockRes, PopupContinue):
                 ''' Nothing to do, just go to next iteration '''
                 # print(' - loop num cont ::', blockRes, type(blockRes))
-                # continue expr
-                # self.lastVal = blockRes
-                # return
             if self.postIter:
                 self.postIter.do(ctx)
 
@@ -356,8 +353,7 @@ class WhileExpr(LoopBlock):
                 break
             if isinstance(blockRes, PopupContinue):
                 # continue expr
-                # self.lastVal = blockRes
-                # return
                 ''' Nothing to do, just go to next iteration '''
+            
             self.cond.do(ctx)
 

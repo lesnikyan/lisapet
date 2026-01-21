@@ -363,33 +363,3 @@ class FormatParser:
             parts.append(bb)
         return parts
 
-
-# class StrFormatter:
-#     '''parse interpret includes, eval includes, build result line'''
-#     def subExpr(self, code:str):
-#         tlines = splitLexems(code)
-#         clines:CLine = elemStream(tlines)
-#         return line2expr(clines)
-
-#     def partsToExpr(self, parts:str|subLex)->list[Expression]:
-#         expp = []
-#         fmOpPar = FmtOptParser()
-#         for ss in parts:
-#             if isinstance(ss, subLex):
-#                 valExpr = self.subExpr(ss.expr)
-#                 format = fmOpPar.parseSuff(ss.options)
-#                 expr = ExprFormat
-#                 expp.append(expr)
-#             else:
-#                 expp.append(ValExpr(ss))
-#         rr = StrJoinExpr(expp)
-#         return rr
-
-
-# def fstring(self, src:str):
-#     ''' convers src string to expression '''
-#     fp = FormatParser()
-#     sf = StrFormatter()
-#     parts = fp.parse(src)
-#     return sf.partsToExpr(parts)
-

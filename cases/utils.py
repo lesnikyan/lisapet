@@ -2,7 +2,6 @@
 
 '''
 
-
 from lang import *
 from vars import *
 from vals import isDefConst, elem2val, isLex
@@ -20,8 +19,10 @@ unaryOperators = '- ! ~'.split(' ')
 
 SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
 
+
 def getOperPriors():
     return [raw.replace('`1`', ',') for raw in operPrior.split(',')]
+
 
 def isGetValExpr(elems:list[Elem]):
     ''' If solid  expressions 
@@ -31,8 +32,7 @@ def isGetValExpr(elems:list[Elem]):
     obr = [s for s in '([{']
     cbr = [s for s in ')]}']
     lem = len(elems)
-    # not [...], (...), {,,,}, "qwerty", +- * % ! < > / && |
-    # if lem < 1 or elems[0].type != Lt.word or isLex(elems[0], Lt.oper, obr):
+    
     if lem < 1 :
         return False
     varOpers = '([{}]).'
@@ -114,7 +114,6 @@ class OperSplitter:
         obr='([{'
         cbr = ')]}'
         backAssoc = ['/:']
-        # inBrs = [] # brackets which was opened from behind
         # print('~- OperSplitter', len(elems))
         # prels('~~ OperSplitter', elems, show=1)
         if len(elems) < 2:
@@ -189,6 +188,4 @@ class OperSplitter:
             # dprint('oper-found> unary [0 : %s]' % elems[0].text ) 
             return 0
         return -1 # debug output, won't happened in real case
-
-
 

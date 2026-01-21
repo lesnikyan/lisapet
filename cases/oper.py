@@ -7,18 +7,12 @@ from vals import isDefConst, elem2val, isLex
 
 from cases.utils import *
 from cases.tcases import *
-# from cases.funcs import CaseFunCall
 from nodes.oper_nodes import *
 from nodes.datanodes import *
 
-# from strformat import  StrFormatter
 
 class CaseAssign(SubCase):
-    
-    # def __init__(self):
-    #     self.left = None # TODO: for uni-mode 
-    #     self.right = None
-        
+
     def match(self, elems:list[Elem]) -> bool:
         '''
         abc123 = 123.123
@@ -109,7 +103,6 @@ class CaseBinOper(SubCase):
             return False
         for i in range(elen):
             el = elems[i]
-        # for el in elems:
             # skip parts in brackets: math or function calls
             if el.text == '':
                 continue
@@ -130,9 +123,7 @@ class CaseBinOper(SubCase):
             if el.text in self.opers and  el.text != '.':
                 return True
         return False
-                
-    # def expr(self, elems:list[Elem])-> tuple[Expression, Context]:
-        
+
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
         # print('#a51:', [n.text for n in elems])
@@ -165,13 +156,7 @@ class CaseBinOper(SubCase):
                     # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
                 if len(inBrs) > 0:
                     continue
-                # if el.text == ')':
-                #     inBr += 1
-                #     continue
-                # if el.text == '(':
-                #     inBr -= 1
-                # if inBr > 0:
-                #     continue
+
                 # TODO: fix unary cases, like: 5 * -3,  7 ** -2, x == ! true, (-12)
                 if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
                     # unary case found, skip current pos
@@ -182,17 +167,9 @@ class CaseBinOper(SubCase):
                     continue
                 
                 if el.text in self.priorGroups[prior]:
-                    # we found current split item
-                    # print('oper-expr>', '`%s`' % src, elemStr(elems[0:i]), '<(%s)>' % elems[i].text, elemStr(elems[i+1:]))
-                    # assigMath = '+= -= *= /= %='
-                    # if el.text in assigMath:
-                    #     opcase = CaseBinAssign()
-                    #     return opcase.split(elems)
                     exp = makeOperExp(el)
                     exp.src = src
                     return exp, [elems[0:i], elems[i+1:]]
-        # dprint('#a52:', [n.text for n in elems])
-        # return 1,[[]]
         raise InterpretErr('Matched case didnt find key Item in [%s]' % ','.join([n.text for n in elems]))
 
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:

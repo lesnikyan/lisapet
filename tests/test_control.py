@@ -374,52 +374,45 @@ class TestControl(TestCase):
             vv = Var('x', TypeInt())
             vv.set(Val(x, TypeInt()))
             ctx.addSet({'x': vv})
-            # print('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             rr = [ctx.get('res').get(), ctx.get('a').get() , ctx.get('b').get()]
             ress.append(rr)
-            # ress.append(ctx.get('a').get())
-            # print('##################t-IF1:', ctx.get('res').get(), ctx.get('dd1').get())
             # rval = ctx.get('res').get()
             rdd = ctx.get('dd1').get()
             self.assertEqual(expd[i], rdd.getVal())
-        # dprint('all:', ress)
 
     def test_while_expr(self):
         code = '''
         y = 0
         z = 2
         a = 0
-        @debug 1
+        # @debug 1
         while y < x
-            z = z + z
-            y = y + 1
+            z += 1
+            y += 2
             if y % 2 == 0
-                a = a + 1
-        res = y
+                a += 3
+        res = y + a + z
         '''
         code = norm(code[1:])
-        # dprint('!!')
-        # dprint(code)
-        # data = [0, 1, 4, 5, 10, 20, 30, 40, 100, 200]
-        data = [6]
+        data = [0, 1, 4, 200]
+        exx = [2, 8, 14, 602]
+        # data = [6]
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
         ress = []
-        for x in data:
+        for i in range(4):
+            x = data[i]
+            exv = exx[i]
             ctx = rootContext()
             vv = Var('x', TypeInt())
             vv.set(Val(x, TypeInt()))
             ctx.addSet({'x': vv})
-            # dprint('~~~~ test case: %d ~~~~' % x)
             ex.do(ctx)
             ress.append(ctx.get('res').get())
-            ress.append(ctx.get('a').get())
-            # dprint('##################t-IF1:', ctx.get('res').get())
-        # dprint('all:', ress)
-        self.fail()
-
+            self.assertEqual(exv, ctx.get('res').get().getVal())
+            # print('##################t-IF1:', ctx.get('res').get())
 
 
 if __name__ == '__main__':

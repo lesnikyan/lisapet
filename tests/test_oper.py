@@ -3,24 +3,17 @@ from unittest import TestCase, main
 from tests.utils import *
 
 from lang import Lt, Mk, CLine
+from cases.utils import *
+from context import Context
+from nodes.tnodes import Var
+from nodes.structs import *
 from parser import splitLine, splitLexems, charType, splitOper, elemStream
 from vars import *
 from vals import numLex
-
-from cases.utils import *
-
-from nodes.tnodes import Var
-# from objects.func import Function
-# from nodes.func_expr import setNativeFunc
-from nodes.structs import *
-
-from context import Context
 from tree import *
 from eval import rootContext
 
 from tests.utils import *
-
-import pdb
 
 
 class TestOper(TestCase):
@@ -134,7 +127,6 @@ class TestOper(TestCase):
         func foo()
             "function_resUlT"
         
-        
         res = [
             "" + "", '' + '', `` + ``,
             "a" + `b`,
@@ -220,21 +212,23 @@ class TestOper(TestCase):
                 iter gen [a..n][a..b], 
                 sequence gen: [x ; x <- src][a..b]
                 foo()[a..b]
-            TODO: function in expr with brackets:
             func obj in brakets: (function)(), (lambda)() 
             func ojb in collection: funcs[key]()
             func returns func: foo()()
             
             '''
         code = r'''
-        res = 0
+        res = []
         r1 = (x -> x + 10)(2)
+        res <- r1
         
         f2 = x -> x + 100
         ff = [f2]
-        # r2 = ff[0](3)
+        r2 = ff[0](3)
+        res <- r2
         
         r3 = [1..5][0:3]
+        res <- r3
         
         # print('res = ', res)
         '''
@@ -243,11 +237,11 @@ class TestOper(TestCase):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
         ex = lex2tree(clines)
-        # rCtx = rootContext()
-        # ctx = rCtx.moduleContext()
-        # ex.do(ctx)
-        # rvar = ctx.get('res')
-        # self.assertEqual(0, rvar.getVal())
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([12, 103, [1, 2, 3]], rvar.vals())
 
     def test_not_in_list(self):
         ''' '''
@@ -326,7 +320,6 @@ class TestOper(TestCase):
         rvar = ctx.get('res').get()
         exp = [11, 22, -27, 15, 30, 12, 25]
         self.assertEqual(exp, rvar.vals())
-        # SequenceExpr, CaseSemic
 
     def test_in_coll_oper(self):
         ''' val ?> list|dict|tuple 
@@ -504,17 +497,14 @@ class TestOper(TestCase):
                 continue
             tsrc, exp = sline.split('#')
             exp = int(exp.strip())
-            # dprint(exp, sline)
-            # continue
             tlines = splitLexems(tsrc)
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             pos = spl.mainOper(elems)
-            # dprint('tt `%s`' % sline, ' >>> ', pos)
             self.assertEqual(exp, pos, 'in line: %s' % sline)
 
     def test_colon_vs_other(self):
-        ''' make vars and assign vals from tuple  '''
+        ''' test priority of colon operator  '''
         code = '''
         d1 = {'a': 10 + 1}
         struct T1 bb:int
@@ -551,8 +541,6 @@ class TestOper(TestCase):
             elems = clines[0].code
             opInd = findLastBrackets(elems)
             self.assertEqual(exp, opInd, 'Error in code `%s`' % code)
-        
-
 
     def test_bool_unary(self):
         ''' test inversion bool. '''
@@ -635,17 +623,29 @@ class TestOper(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             mres = cs.match(elems)
-            # dprint('#t1 mr:', mc, mres)
+            # print('#t1 mr:', mc, mres)
     
     def test_CaseUnar_split(self):
-        data = ['- 5', '-0xa0013bc', '!ddd',  '~0x0abc', '-123456789', '-(-(-num1))', '-(-(-(-(-(-111)))))', '!(!(!(!(!((!true))))))']
+        data = [
+            ('- 5', -5), 
+            ('-0xa0013bc', -0xa0013bc), 
+            ('!ddd', False),  
+            ('~0x0abc', -2749), 
+            ('-123456789', -123456789), 
+            ('-(-(-num1))', 17), 
+            ('-(-(-(-(-(-111)))))', 111), 
+            ('!(!(!(!(!((!true))))))', True)
+        ]
         ctxData = {'ddd':True, 'num1':-17}
         cs = CaseUnar()
-        for td in  data:
+        for tcase in  data:
+            td, exv = tcase
             tlines = splitLexems(td)
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             mres = cs.match(elems)
+            # print('mres', mres)
+            self.assertTrue(mres)
             ctx = rootContext()
             def tvar(k, v):
                 vv = Var(k, TypeAny)
@@ -656,12 +656,10 @@ class TestOper(TestCase):
             # print('#tc11', td, mres)
             ex.do(ctx)
             res = ex.get()
-            # dprint(' -- #tr11',td, res.getType(), res.get())
+            self.assertEqual(exv, res.get())
+            # print(' -- #tr11',td, res.getType(), res.get())
     
     def test_CaseUnar(self):
-        
-        # dprint('##test_CaseUnar True')
-        # match true
         data = ['- 5', '-0xa0013bc', '!foo(1,2,ddd)', '!foo(bar(1,2,3, baz("aa a aa")))', '~0xabcdef0011', 
                 '~ foo(agr1, arg2)', '-(foo(2-5)+bar(7-num4))']
         
@@ -671,7 +669,8 @@ class TestOper(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             mres = cs.match(elems)
-            # dprint('#tc11', td, mres)
+            # print('#tc11', td, mres)
+            self.assertTrue(mres)
         
         # dprint('##test_CaseUnar False')
         # match false
@@ -682,41 +681,56 @@ class TestOper(TestCase):
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             mres = cs.match(elems)
-            # dprint('#tc12', td, mres)
+            # print('#tc12', td, mres)
+            self.assertFalse(mres)
     
     def test_CaseBinOper_split(self):
         ''' '''
         data = [
-            ('1+2-3 * 4 + 5', {}),
-            ('5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8', {'b':100, 'c':4, 'd':3}), # -97.54545454545455
-            ('5 + (2 - 1) * (3 - 4)/ (1)',{}),
-            # ('5 + sum([1,2,3, b, c + 3])', {})
+            ('1+2-3 * 4 + 5', {}, -4),
+            ('5 + 6 - 7*(b - c * 12 - 15) / 10 + 3 ** d - 0xe * 8', {'b':100, 'c':4, 'd':3}, -99.9),
+            ('5 + (2 - 1) * (3 - 4)/ (1)',{}, 4.0),
+            ('5 + sum([1,2,3, b, c + 31])', {'b':10, 'c':20}, 72)
         ]
-        cs = CaseBinOper()
+        fcode = '''
+        func sum(nums)
+            nums.fold(0, (p, c) -> c + p)
+        '''
+        fcode = norm(fcode[1:])
+        fex = tryParse(fcode)
         for mc in  data:
-            tlines = splitLexems(mc[0])
+            tcode, vars, exv = mc
+            rCtx = rootContext()
+            ctx = rCtx.moduleContext()
+            trydo(fex, ctx)
+            
+            tlines = splitLexems(tcode)
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
             ex = elems2expr(elems)
-            ctx = Context(None)
             
             def tvar(k, v):
-                # print('## tvar:', k, v)
                 vv = Var(k, TypeInt())
                 vv.set(Val(v, TypeInt()))
                 return vv
             
-            ctx.addSet({k: tvar(k, v) for k, v in mc[1].items()})
-            # ctx.print()
-            ex.do(ctx)
-        
+            ctx.addSet({k: tvar(k, v) for k, v in vars.items()})
+            trydo(ex, ctx)
+            res = ex.get().getVal()
+            self.assertEqual(exv, res)
 
     def test_line_assign(self):
         data = [
-            'x = 5.0', 'x = 5j2', 'x = 0xf000a', "x = '5' ", 'x = 0b10101'
+            ('x = 5.0', 5.0, TypeFloat),
+            ('x = 5j2', (5+2j), TypeComplex),
+            ('x = 0xf000a', 0xf000a, TypeInt),
+            ("x = '5' ", '5', TypeString),
+            ('x = 0b10101', 21, TypeInt),
+            ('x = [5]', [5], TypeList),
+            ('x = q -> q + 1', 'func @lambda(q)', TypeFunc),
         ]
-        results = []
-        for src in data:
+        for tcase in data:
+            src, exv, extype = tcase
             tlines = splitLexems(src)
             clines = elemStream(tlines)
             line0 = clines[0]
@@ -724,9 +738,16 @@ class TestOper(TestCase):
             ctx = Context(None)
             expr.do(ctx)
             rval = ctx.get('x')
-            results.append(rval.getVal())
-            # dprint('#a7 ===> ', res.get(), res.getType())
-        self.fail()
+            res = rval
+            if not isinstance(res.val, Function):
+                res = rval.get()
+            # results.append(rval.getVal())
+            # print('#a7 ===> ', res.get(), res.getType())
+            self.assertIsInstance(res.getType(), extype)
+            val = res.get()
+            if isinstance(val, Function):
+                val = str(val)
+            self.assertEqual(exv, val)
 
 
 if __name__ == '__main__':

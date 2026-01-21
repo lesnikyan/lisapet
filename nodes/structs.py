@@ -14,7 +14,6 @@ from nodes.expression import *
 from context import *
 from nodes.expression import ServPairExpr, defaultValOfType
 from bases.ntype import structTypeCompat
-# from nodes.func_expr import FuncDefExpr, FuncCallExpr, Function, BoundMethod
 from objects.func import Function
 
 
@@ -74,9 +73,6 @@ class StructDef(TypeStruct):
         name = func.getName()
         self.nmethods.append(name)
         # print('struct.add Method:', name)
-        # if name in self.__typeMethods:
-        #     exist = self.__typeMethods
-        #     raise EvalErr('Method `%s` already defined in type `%s`.' % (name, self.name))
         if name not in self.__typeMethods:
             self.__typeMethods[name] = func
             return
@@ -92,7 +88,7 @@ class StructDef(TypeStruct):
             exist.add(func)
     
 
-    # TODO: Think about case with same name func in child overloaded for another args
+    # TODO: Think about case with same name func in a child is overloaded for another args
     def getMethod(self, name):
         # dprint('getMeth', name)
         if not name in self.__typeMethods:
@@ -211,15 +207,11 @@ class StructDefConstrFunc(Function):
         self.block.storeRes = True # save last expr value
 
         inst = StructInstance(self.stype)
-        # fields = self.stype.getFieldsNested()
-        vals = []
         vals = [ var2val(a) for a in self.callArgs]
         # print('SCon3:', self.fields,  vals, '\n', self.argVars)
         for i in range(len(self.fields)):
-            # inst.set(fields[i][0], self.argVars[i])
             inst.set(self.fields[i][0], vals[i])
-        # if len(vals) > 0:
-        #     inst.setVals(vals)
+
         inst.initDefVals()
         self.res = inst
 
@@ -351,7 +343,6 @@ class StructDefExpr(DefinitionExpr):
             fexp.do(ctx)
             field = fexp.get()
             fname, ftype = '', TypeAny
-            # ctx.print()
             # print('@2>>', field)
             if isinstance(field, tuple) and len(field) == 2:
                 fn, ft = field
@@ -409,7 +400,6 @@ class StructConstr(Expression):
 
     def __init__(self, obj:Expression=None):
         super().__init__()
-        # self.typeName:str = typeName
         self.objExpr = obj
         self.fieldExp = []
 
@@ -430,16 +420,9 @@ class StructConstr(Expression):
         # stype = ctx.getType(self.typeName)
         if isinstance(stype, TypeVal):
             return stype.get()
-        # print('StructConstr.do1 >> ', stype)
-        # if isinstance(stype, ModuleBox):
-        #     print('ModuleBox is object', self.typeName)
-        #     mbox:ModuleBox = stype
-        #     mbox.getType()
         
 
     def do(self, ctx:Context):
-        # self.inst = None
-        # stype = ctx.getType(self.typeName)
         # print('StructConstr.do1 >> ', stype)
         # if isinstance(stype, ModuleBox):
         #     print('ModuleBox is object', self.typeName)

@@ -26,6 +26,124 @@ class TestFuncs(TestCase):
 
 
 
+    def test_tail_recursion(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func foo(a, b)
+            if a == 0
+                return b
+            foo(a - 1, b * 2)
+        
+        res <- foo(10, 1)
+        
+        func f2(a, b)
+            if a == 0
+                return b
+            f2(a - 1, b + 1)
+        
+        res <- f2(5000, 0)
+        
+        # tail recursion for a method
+        struct A a:int
+        
+        func st:A ff(a, b)
+            if a == 0
+                return b
+            st.ff(a - 1, b + st.a)
+        
+        a1 = A(3)
+        res <- a1.ff(101, 0)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        sys.setrecursionlimit(100)
+        trydo(ex, ctx)
+        sys.setrecursionlimit(1000)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        self.assertEqual([1024, 5000, 303], rvar.vals())
+
+    def test_carrying_cascade(self):
+        ''' '''
+        code = r'''
+        res = []
+        func foo(x)
+            func plus(y)
+                func f3(z)
+                    x * 100 + y * 10 + z
+        
+        func argsToList(n1,n2,n3,n4,n5)
+            [n1,n2,n3,n4,n5]
+        
+        func bar(a)
+            func f2(b)
+                func f3(c)
+                    func f4(d)
+                        func f5(e)
+                            argsToList(a, b, c, d, e)
+
+        # carrying in method
+        struct B b:string
+        
+        func bin:B triple(x)
+            func f2(y)
+                func f3(q)
+                    t = x * 100
+                    ~"{bin.b}_{t + y * 10 + q}"
+        
+        res <- foo(3)(4)(5)
+        res <- bar(11)(22)(33)(44)(55)
+        b1 = B('B')
+        res <- b1.triple(1)(2)(3)
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([345, [11, 22, 33, 44, 55], 'B_123'], rvar.vals())
+
+    def test_func_args_typed_by_list_dict(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func key_intersect(nn:list, dd:dict)
+            r = []
+            for n <- nn
+                if n ?> dd
+                    r <- dd[n]
+            r
+        
+        keys = [11, 22, 'a', 'b']
+        data = {22:220022, 'a':'Aloha!'}
+        r1 = key_intersect(keys, data)
+        res <- r1
+        
+        keys2 = [50, 17, 'abc']
+        data2 = {17:'seventeen', 'abc':'Bonjour', 'qwerty':'asdfg'}
+        res <- key_intersect(keys2, data2)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        exv = [[220022, 'Aloha!'], ['seventeen', 'Bonjour']]
+        self.assertEqual(exv, rvar.vals())
+
     def test_func_from_method(self):
         ''' test when func is returned from method and immediately called 
             obj.foo(a)(b)
@@ -46,9 +164,8 @@ class TestFuncs(TestCase):
         
         func bin:B triple(x)
             func f2(y)
-                t = x * 10000
-                q -> y * 100 + t + q
-
+                t = x * 100
+                (q, post) -> ~"{bin.b}_{t + y * 10 + q}{post}"
         
         aa = A{}
         res <-  aa.foo(2)(5)
@@ -60,7 +177,7 @@ class TestFuncs(TestCase):
         
         res <- b1.foo(3)(7)
         res <- b1.bInfo(9)(8)
-        res <- b1.triple(3)(5)(7)
+        res <- b1.triple(3)(5)(7, '_Yo')
         '''
         code = norm(code[1:])
         ex = tryParse(code)
@@ -68,7 +185,7 @@ class TestFuncs(TestCase):
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         rvar = ctx.get('res').get()
-        exv = [7, 2, 10, '11,B-1 (8, 9)', 30507]
+        exv = [7, 2, 10, '11,B-1 (8, 9)', 'B-1_357_Yo']
         self.assertEqual(exv, rvar.vals())
 
     def test_overload_func_as_arg(self):

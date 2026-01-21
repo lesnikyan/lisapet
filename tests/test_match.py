@@ -468,16 +468,23 @@ class TestMatch(TestCase):
             TypeA('fff'),
             TypeB{color:'fff', name:'Aaa', age:44}, # child with `color`
             TypeC{}, TypeC(0xff0), # alternative case with `color`
+            [Type1{}, TypeA{}], 
+            [Type1(2,3), TypeA('red')], 
+            {'tkey1': Type1(4,5)},
+            {'tkey1': Type1(6,7), 'tkey2': TypeA('green')},
         ]
         res = []
-        
         
         for n <- nn
             match n
                 _{color:cval} !- res <- [n, (cval,), 10]
                 _{} !- res <- [n, 19]
+                [_{}, _{}] !- res <- [n, 20]
+                {k1:_{}} !- res <- [n, k1, 21]
+                {k1:_{}, k2:_{}} !- res <- [n, k1, k2, 22]
+                {*} !- res <- [n, 28]
                 _ !- res <- [n, 2999]
-            # print('nres:', res)
+            # print('nres:', n)
         
         # print('res = ', res)
         '''
@@ -491,9 +498,14 @@ class TestMatch(TestCase):
         ex.do(ctx)
         
         exp = [
-            [[], 2999], [(), 2999], [{}, 2999], ['st@Type1{a: 0,b: 0}', 19], ['st@Type1{a: 10,b: 20}', 19], 
-            ['st@TypeA{color: fff}', ('fff',), 10], ['st@TypeB{color: fff,name: Aaa,age: 44}', ('fff',), 10], 
-            ['st@TypeC{color: 0}', (0,), 10], ['st@TypeC{color: 4080}', (4080,), 10]]
+            [[], 2999], [(), 2999], [{}, 28], ['st@Type1{a: 0,b: 0}', 19], ['st@Type1{a: 10,b: 20}', 19], 
+            ['st@TypeA{color: fff}', ('fff',), 10], 
+            ['st@TypeB{color: fff,name: Aaa,age: 44}', ('fff',), 10], 
+            ['st@TypeC{color: 0}', (0,), 10], ['st@TypeC{color: 4080}', (4080,), 10],
+            [['st@Type1{a: 0,b: 0}', 'st@TypeA{color: }'], 20],
+            [['st@Type1{a: 2,b: 3}', 'st@TypeA{color: red}'], 20],
+            [{'tkey1': 'st@Type1{a: 4,b: 5}'}, 'tkey1', 21], [{'tkey1': 'st@Type1{a: 6,b: 7}', 'tkey2': 'st@TypeA{color: green}'}, 'tkey1', 'tkey2', 22],
+        ]
         rvar = ctx.get('res').get()
         self.assertEqual(exp, rvar.vals())
 

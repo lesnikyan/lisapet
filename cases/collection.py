@@ -44,9 +44,6 @@ class CaseTuple(SubCase, SolidCase):
         if not ok or pos != 0:
             return False
         # print('Tuple. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
-        # prels('dict-c match', elems, show=1)
-        # if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '(') : 
-        #     return False
         cs = CaseCommas()
         return cs.match(elems[1:-1])
 
@@ -103,25 +100,6 @@ class CaseList(SubCase, SolidCase):
                 continue
             base.add(exp)
         return base
-
-
-
-# class CaseListBlock(SubCase):
-#     def match(self, elems:list[Elem]) -> bool:
-#         '''
-#         []
-#         varName = []
-#         '''
-#         return False # deprecated
-#         if len(elems) != 1:
-#             return False
-#         return isLex(elems[0], Lt.word, 'list')
-    
-#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-#         return ListConstr(byword = True), []
-
-#     def setSub(self, base:ListConstr, subs:Expression|list[Expression])->Expression:
-#         dprint('ListConstr.setSub empty: ', base, subs)
 
 
 class CaseCollectElem(SubCase, SolidCase):
@@ -273,7 +251,6 @@ class CaseDictLine(SubCase, SolidCase):
         exp = DictExpr()
         sub = elems[1:-1]
         cs = CaseCommas()
-        # cc = CaseColon()
         subs = [sub] # 1 elem
         if cs.match(sub):
             _, subs = cs.split(sub)
@@ -287,26 +264,4 @@ class CaseDictLine(SubCase, SolidCase):
                 continue
             base.add(exp)
         return base
-
-
-
-# class CaseDictBlock(SubCase):
-#     def match(self, elems:list[Elem]) -> bool:
-#         '''
-#         dict
-#         from varName = dict
-#         '''
-#         return False # deprecated
-#         # dprint('CaseDictBlock.match')
-#         if len(elems) != 1:
-#             return False
-#         return isLex(elems[0], Lt.word, 'dict')
-    
-#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-#         return DictConstr(byword=True), []
-
-#     def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
-#         dprint('CaseDictBlock.setSub empty: ', base, subs)
-
-
 
