@@ -75,7 +75,7 @@ Content:
     4. [Closures](#154-closures)
     5. [Call-chain `foo(1)(2)(3)`](#155-call-chain)
     6. [Currying cascade](#156-currying-cascade)
-    7. [Currying cascade](#157-tail-recursion)
+    7. [Tail recursion](#157-tail-recursion)
 16.
 17. 
 
@@ -1547,11 +1547,11 @@ bar(11)(22)(33)(44)(55) #  [11, 22, 33, 44, 55]
 ```
 
 ### 15.7 Tail recursion
-Classical tail recursion is recursion in which the last expression in a function is a call to itself.  
-In the LP tail recursion works if we put the returning call into a last position, literally (I'm still thinking about earlier returns). So, if interpreter detected tail recursion it will run code of such function in lightweight loop instead of increasing depth of call stack.  
+Classical tail recursion is a recursion in which the last expression in a function is a call to itself.  
+In the LP tail recursion works if we put the returning call into a last position, literally (I'm still thinking about earlier returns, but still have no idea if we need it).  
+So, if interpreter has detected tail recursion it will run code of such function in lightweight loop instead of increase depth of call stack.  
 This way we can avoid limits of python recursion.  
 Next example was tested with depth of recursion = 1 million.  
-
 ```golang
 func f2(a, b)
     if a == 0

@@ -80,46 +80,14 @@ class TestDev(TestCase):
     '''
 
 
-    def _test_dev_tail_recursion(self):
-        ''''''
-        def _foo(n, x, y):
-            r = x + y
-            if n == 0:
-                return r
-            n, x, y = n - 1, r, y
-            return _foo(n, x, y)
-        
-        def foo(x, y):
-            return _foo(x, x, y)
-            
-        def _loop(n, x, y):
-            # r, n = 0, x
-            # dx = x
-            while True:
-                r = x + y
-                if n == 0:
-                    return r
-                n, x, y = n - 1, r, y
-        
-        def loop(x, y):
-            return _loop(x, x, y)
-        
-        rfoo = foo(10, 2)
-        rloop = loop(10, 2)
-        print('tt>>', rfoo, rloop)
-        self.assertEqual(rfoo, rloop)
-
-
 
     def _test_code(self):
         ''' '''
         code = r'''
         res = []
         
-        func foo(a, b)
-            if a > 0
-                return foo(a - 1, b + 1)
-            b + 1
+        s = 'asdfg'
+        res = s[2]
         
         print('res = ', res)
         '''
@@ -154,7 +122,7 @@ class TestDev(TestCase):
         self.assertEqual([], rvar.vals())
 
 
-    def _test_print(self):
+    def _test_print_struct(self):
         ''' '''
         code = r'''
         struct A a:int

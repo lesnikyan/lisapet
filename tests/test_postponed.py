@@ -92,14 +92,14 @@ class _TestNotRun(TestCase):
                         2 !- res = 122 + ii * 1000
                         _ !- res = 123 + ii * 1000
                     3 !- if ii > 1 && ii < 4
-                            print('c2', i, res)
-                            res *= 11 * i + ii * 1000
+                        print('c2', i, res)
+                        res *= 11 * i + ii * 1000
                     4 !- for j <- [0..5]
                         print('c5', j, res)
                         res += i
                     5 !- for j = 1; j < 6; j = j + 1
-                            print('c7', j, res)
-                            res *= j
+                        print('c7', j, res)
+                        res *= j
                     _ !- res = 1001
                 rrs <- res
 
@@ -227,4 +227,34 @@ class _TestNotRun(TestCase):
     local var and function-block
     
     '''
+
+    def _test_dev_tail_recursion(self):
+        ''' DONE '''
+        def _foo(n, x, y):
+            r = x + y
+            if n == 0:
+                return r
+            n, x, y = n - 1, r, y
+            return _foo(n, x, y)
+        
+        def foo(x, y):
+            return _foo(x, x, y)
+            
+        def _loop(n, x, y):
+            # r, n = 0, x
+            # dx = x
+            while True:
+                r = x + y
+                if n == 0:
+                    return r
+                n, x, y = n - 1, r, y
+        
+        def loop(x, y):
+            return _loop(x, x, y)
+        
+        rfoo = foo(10, 2)
+        rloop = loop(10, 2)
+        print('tt>>', rfoo, rloop)
+        self.assertEqual(rfoo, rloop)
+
 
