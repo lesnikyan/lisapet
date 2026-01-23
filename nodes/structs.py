@@ -16,6 +16,7 @@ from nodes.expression import ServPairExpr, defaultValOfType
 from bases.ntype import structTypeCompat
 from objects.func import Function
 
+from bases.ntype import *
 
 class StructDef(TypeStruct):
     ''' struct definition
@@ -275,36 +276,60 @@ class StructInstance(ObjectInstance, NSContext):
         for i in range(len(vals)):
             self.set(self.vtype.fields[i], vals[i])
 
+    # def _set(self, fname:str, val:Val):
+    #     # check type
+    #     # print('StructInstance.set:', fname, val)
+    #     # print('StructInstance.set types:', self.vtype.name, '>', self.vtype.types)
+    #     if fname in self.vtype.nfields:
+    #         self.checkType(fname, val)
+    #         self.data[fname] = val
+    #         return
+    #     raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
+
     def set(self, fname:str, val:Val):
-        # check type
-        # print('StructInstance.set:', fname, val)
-        # print('StructInstance.set types:', self.vtype.name, '>', self.vtype.types)
+        ''' check type and set new value '''
         if fname in self.vtype.nfields:
-            self.checkType(fname, val)
+            val = self.checkType(fname, val)
             self.data[fname] = val
-            return
-        raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
 
     def checkType(self, fname, val:Val):
+        '''check type and resolve compatible'''
         valType = val.getType()
-        ftype = self.vtype.ntypes[fname] # class inherited of VType or inst of StructInstance
-        fclass = ftype.__class__
-        # print('Type Check ???1:', fname, ftype.__class__, '<<', valType.__class__, val)
-        if ftype == TypeAny:
-            return # ok
-        # if primitives or collections
-        if not isinstance(ftype, StructDef):
-            # print('!! Not struct!', fclass)
-            if not isinstance(valType, fclass):
-                # TODO: add compatibility check
-                # print('Str.checkType:', f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
-                raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
-            return
-        # if struct
-        # print('@ check type ', valType.name, '!=', self.vtype.name , valType.name != self.vtype.name)
-        if valType != ftype:
-            if not structTypeCompat(ftype, valType):
-                raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
+        ftype = self.vtype.ntypes[fname]
+        # dt, st = dest.getType(), val.getType()
+        dt, st = ftype, valType
+        if not equalType(dt, st):
+            # print('Struct!::!', dt, st, val)
+            comType = isCompatible(dt, st)
+            # print('OpAsgn, comType', comType)
+            if comType:
+                # convert val
+                val = resolveVal(comType, val)
+            else:
+                # print(f'\n--!-- Error during set field {self.vtype.name}.{fname}:{ftype.name} types: (:{dt} = {st})', val)
+                raise EvalErr(f'\n--!-- Error during set field {self.vtype.name}.{fname}:{ftype.name} types: (:{dt} = {st})', val)
+        return val
+
+    # def _checkType(self, fname, val:Val):
+    #     valType = val.getType()
+    #     ftype = self.vtype.ntypes[fname] # class inherited of VType or inst of StructInstance
+    #     fclass = ftype.__class__
+    #     # print('Type Check ???1:', fname, ftype.__class__, '<<', valType.__class__, val)
+    #     if ftype == TypeAny:
+    #         return # ok
+    #     # if primitives or collections
+    #     if not isinstance(ftype, StructDef):
+    #         # print('!! Not struct!', fclass)
+    #         if not isinstance(valType, fclass):
+    #             # TODO: add compatibility check
+    #             # print('Str.checkType:', f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
+    #             raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
+    #         return
+    #     # if struct
+    #     # print('@ check type ', valType.name, '!=', self.vtype.name , valType.name != self.vtype.name)
+    #     if valType != ftype:
+    #         if not structTypeCompat(ftype, valType):
+    #             raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
         
     def istr(self):
         fns = self.vtype.nfields

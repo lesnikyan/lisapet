@@ -151,7 +151,7 @@ match s
     re`\d+([a-z]+)` => rx !- res = split(s, rx)
     re`\d+([a-z]+)` => p@(x) !- 
 
-# transfer foundg roups
+# transfer found groups
     re`(\d+) (\w+)` :> a, b !- print(a, b)
 # transfer regexp rom pattern
     ptt@re`(sub)` !- res = ptt ?~ sourceString
@@ -175,6 +175,21 @@ match nn
 
     # complex type
         x :: [int], y :: {string:int}
+
+    # complex type in args/vars: do it
+        x:int|bool
+        nn:tuple|list 
+        obj:A|B
+        # same for type-pattern
+        x :: A|B
+        nn :: list|tuple
+    
+    # type-collection(to think)
+        nn:[int]
+        nn:{string:int}
+    # generic
+        nn:list[int]
+
 
 14.0.1 Multiline and singleline cases: 
 match val

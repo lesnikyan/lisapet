@@ -76,8 +76,20 @@ class TestDev(TestCase):
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
         2) extend tail-recur case for earlier returns - not sure 
-   
+        
+        TODO: fix call of method assigned to var:
+            f = inst.foo
+            f(123) # !! Eval Error: Not enough args in call of fuction `fm`. Exppected: 2, got: 1.
+        
+        TODO: var type ofor iter-loop 
+            for n:int <- nn
+        
+        BUG: ampty inherited struct
+            struct A
+            struct E(A)  # Error 
+    
     '''
+
 
 
 
@@ -86,8 +98,16 @@ class TestDev(TestCase):
         code = r'''
         res = []
         
-        s = 'asdfg'
-        res = s[2]
+        match n
+            n :: int|float !- ...
+            n :: (string|list) | n :: dict !- ...
+        
+        if x :: int|float
+            ..
+        if y :: int || z :: float
+            ..
+        if a :: int|float || b :: list|tuple
+            ..
         
         print('res = ', res)
         '''

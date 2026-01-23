@@ -119,7 +119,8 @@ Content:
 
 *
 ## Status.
-Actually it is on-dev. Most basic features and needed things is done.  
+Actually it's on-dev. Most basic features and needed things is done. Author doing something more each week.  
+Bugs still lives in there. I catching them every time. But they hides very nice.  
 Details see next, in `syntax` section.  
 As an one-hands made project (withous users) all updates are committed into dev and almost immediately merged into main branch, without version numeration.  
 Tests covers all changes whenever possible.  

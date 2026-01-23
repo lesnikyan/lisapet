@@ -48,30 +48,30 @@ class IterAssignExpr(Expression):
         self._first_iter = False
 
     def setArgs(self, target, src):
-        dprint('(iter =1)', target, )
+        # dprint('(iter =1)', target, )
         self.setTarget(target.get())
-        dprint('(iter =2)', src)
+        # dprint('(iter =2)', src)
         self.setSrc(src)
 
     def setTarget(self, vars:list[Var]|Var):
-        dprint('> IterAssignExpr setTarget1', vars)
+        # dprint('> IterAssignExpr setTarget1', vars)
         if not isinstance(vars, list):
             vars = [vars]
         if len(vars) == 1:
             vars = [Var_(), vars[0]]
         self.key = vars[0]
         self.val = vars[1]
-        dprint('> IterAssignExpr setTarget2', self.key, self.val)
+        # dprint('> IterAssignExpr setTarget2', self.key, self.val)
 
     def setSrc(self, exp:Expression):
-        dprint('> IterAssignExpr setSrc', exp)
+        # dprint('> IterAssignExpr setSrc', exp)
         self.srcExpr = exp
 
     def _start(self, ctx:Context):
         # dprint('#iter-start1 self.srcExpr', self.srcExpr)
         self.srcExpr.do(ctx) # make iter object
         iterSrc = self.srcExpr.get()
-        dprint('#iter-start2 itSrc', iterSrc)
+        # dprint('#iter-start2 itSrc', iterSrc)
         if isinstance(iterSrc, Var):
             iterSrc = iterSrc.get() # extract collection from var
         if isinstance(iterSrc, (ListVal, DictVal)):
@@ -79,12 +79,12 @@ class IterAssignExpr(Expression):
         elif isinstance(iterSrc.get(), (NIterator)):
             self.itExp = iterSrc.get()
             
-        dprint('#iter-start3 self.itExp', self.itExp)
+        # dprint('#iter-start3 self.itExp', self.itExp)
         self.itExp.start()
         self._first_iter = True
     
     def setIter(self, itExp:NIterator):
-        dprint('@# setIter', itExp)
+        # dprint('@# setIter', itExp)
         self.itExp = itExp
     
     def start(self):
@@ -95,7 +95,7 @@ class IterAssignExpr(Expression):
         return self.itExp.hasNext()
     
     def step(self):
-        dprint('@# iterAsgn-step', )
+        # dprint('@# iterAsgn-step', )
         self.itExp.step()
     
     def do(self, ctx:Context):
@@ -142,7 +142,7 @@ class IterAssignExpr(Expression):
 class IndexIterator(NIterator):
     ''' x <- iter(0, 10, 2)'''
     def __init__(self, a, b=None, c=None):
-        dprint('IndexIterator:', self, 'a=', a, 'b=', b, 'c=', c)
+        # print('IndexIterator:', self, 'a=', a, 'b=', b, 'c=', c)
         # raise DebugExpr('')
         if c is None:
             c = 1
@@ -170,14 +170,14 @@ class IndexIterator(NIterator):
 
 class SrcIterator(NIterator):
     ''' x <- [10,20,30] '''
-    def __init__(self, src:ListVal|DictVal):
+    def __init__(self, src:ListVal|DictVal|TupleVal):
         self.src = None
         match src:
-            case ListVal():
+            case ListVal() | TupleVal():
                 self.src = src.elems
             case DictVal():
                 self.src = src.data
-        # dprint('SrcIterator.__init:', src, self.src)
+        # print('SrcIterator.__init:', src, self.src)
         self._isDict = isinstance(src, DictVal)
         # self.iterFunc = self._iterList
         self._keys = None
@@ -188,6 +188,7 @@ class SrcIterator(NIterator):
 
     def start(self):
         seq = self.src
+        # print('ITER / 1', self, seq)
         if self._isDict:
             seq = list(seq.keys())
             self._keys = seq
@@ -206,7 +207,7 @@ class SrcIterator(NIterator):
         if self._isDict:
             key = self._keys[key]
             val = self.src[key]
-            dprint('Iter-dict get: key, val', key, val)
+            # dprint('Iter-dict get: key, val', key, val)
             return (raw2val(key), val)
         return self.src[key]
 
@@ -311,7 +312,7 @@ class Append(Expression):
             self.setArgs(left, right)
 
     def setArgs(self, targ:Collection, src:Var|Val):
-        dprint('Append setArgs:', targ, src)
+        # dprint('Append setArgs:', targ, src)
         self.target = targ
         self.src = src
 
@@ -474,7 +475,7 @@ class ListComprExpr(Expression):
         self.resExpr = subs[0]
         curIt = -1
         for exp in subs[1:]:
-            dprint('ListComprExpr.setInner' ,exp, type(exp), 'curIt=', curIt)
+            # dprint('ListComprExpr.setInner' ,exp, type(exp), 'curIt=', curIt)
             # if isinstance(exp, LeftArrowExpr):
             #     exp.init()
             if isinstance(exp, (LeftArrowExpr,IterAssignExpr)):
@@ -498,7 +499,7 @@ class ListComprExpr(Expression):
         if len(decl) > 0:
             for dex in decl:
                 # updating final context by current declaration expressions
-                dprint('$** doDecl', decl)
+                # dprint('$** doDecl', decl)
                 # ctx.print()
                 dex.do(ctx)
 
@@ -510,7 +511,7 @@ class ListComprExpr(Expression):
         
 
     def iterLoop(self, index, ctx:Context):
-        dprint('ListComprExpr.iterLoop %d of %d ' % (index, len(self.iterNodes)), self.iterNodes)
+        # dprint('ListComprExpr.iterLoop %d of %d ' % (index, len(self.iterNodes)), self.iterNodes)
         q='''
         [a, b, c] ; a <- aaa; a > 10;    b <- bbb; c = a + b;  b > 20;   
         '''
@@ -522,14 +523,14 @@ class ListComprExpr(Expression):
             inod.start()
         decl = self.declarations[index]
         filt = self.filter[index]
-        dprint(' $$ 1',)
+        # dprint(' $$ 1',)
         # ctx.print()
         while inod.cond():
             subCtx = Context(ctx) # ctx for sub-iter
             inod.do(subCtx) # make iterator
             self.doDecl(subCtx, decl)
             # dprint('iterLoop.. filt:', self.filter, index)
-            dprint(' $$ 2 ',)
+            # dprint(' $$ 2 ',)
             # subCtx.print()
             filt.do(subCtx)
             fcond = filt.get().get()
@@ -543,7 +544,7 @@ class ListComprExpr(Expression):
             inod.step()
 
     def do(self, ctx:Context):
-        dprint('ListComprExpr.do0')
+        # dprint('ListComprExpr.do0')
         self.res = ListVal()
         if len(self.iterNodes) == 0:
             return

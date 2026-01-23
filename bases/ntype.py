@@ -9,12 +9,33 @@ from vars import *
 from typex import TypeStruct
 
 
+def multiCompat( destT, srcT):
+    for st in destT.getSubs():
+        if isCompatible(st, srcT):
+            return st
+    return False
+
+
+def equalType(dt, st):
+    if not isinstance(dt, MultiType):
+        return dt == st
+    return dt.has(st)
+
+
 def isCompatible( destT, srcT):
+    if isinstance(destT, MultiType):
+        return multiCompat(destT, srcT)
+    
     if isinstance(destT, TypeStruct):
         # print('st?::', destT, srcT, structTypeCompat(destT, srcT))
-        return structTypeCompat(destT, srcT)
+        if structTypeCompat(destT, srcT):
+            return destT
+        return False
     # print('0?::', destT, srcT, typeCompat(destT, srcT))
-    return typeCompat(destT, srcT)
+    if typeCompat(destT, srcT):
+        return destT
+    return False
+
 
 def resolveVal( desT:VType, val:Val):
     if not isinstance(desT, TypeStruct):
@@ -29,9 +50,7 @@ def fixType( dest:Var, val:Val):
     valType = val.getType()
     if not isinstance(valType, TypeStruct):
         valType = copy.copy(valType)
-    # if not isinstance(dest.getType(), val.getType().__class__):
     if dest.getType() != val.getType():
-        # print("!!!! nooo", dest, dest.getType(), valType)
         dest.setType(valType)
 
 

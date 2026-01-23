@@ -9,12 +9,12 @@ from objects.func import Function
 
 def loop_iter(_, *args):
     beg, over, step = Val(0, None), Val(0, None), Val(1, None)
-    dprint('>>>>>>>>>>>>>>>>> loop_iter function')
+    # dprint('>>>>>>>>>>>>>>>>> loop_iter function')
     match len(args):
         case 1: over = args[0]
         case 2: beg, over = args
         case 3: beg, over, step = args
-    it = IndexIterator(beg.get(), over.get(), step.get())
+    it = IndexIterator(var2val(beg).get(), var2val(over).get(), var2val(step).get())
     return it
 
 

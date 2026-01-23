@@ -73,7 +73,6 @@ class Function(FuncInst):
         passedCount = len(args)
         # print('! argVars', ['%s'%ag for ag in self.argVars ], 'len=', len(self.argVars))
         # print('! setArgVals', ['%s'%ag for ag in args ], 'len=', passedCount)
-        # argNames = [n.getName() for n in self.argVars]
         namePassed = {k:v for k, v in named.items() if k in self.argNames} # filtering extra args
         defNamedCount = len([k for k in self.defArgs.keys() if k not in namePassed]) + len(namePassed)
         skipCount = int(self.extOrdered is not None)
@@ -82,13 +81,10 @@ class Function(FuncInst):
             #     self._name, self.argNum, len(args), defNamedCount, skipCount))
             raise EvalErr('Not enough args in call of fuction `%s`. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
-        # if self.objInst and isinstance(self.objInst, TypeStruct):
-        #     self.callArgs.append(self.objInst)
+
         inCtx = Context(self.defCtx)
         # ordCollector = []
         noMoreOrds = False
-        # func foo(a, b, nn..., c=1, d='', dd$$)
-        #      foo(1, 2, 33, 44, 55, d='qwe', xx=77, yy='FF')
         
         # loop over defined arguments
         for i in range(self.argNum):
@@ -120,7 +116,8 @@ class Function(FuncInst):
                 # print(f'Func addVals: No val for argument {self.argVars[i].getName()}')
                 raise EvalErr(f'Func addVals: No val for argument {self.argVars[i].getName()}')
             valType = val.getType()
-            if atype != valType:
+            # print('F_ARG ', args)
+            if not equalType(atype, valType):
                 if isCompatible(atype, valType):
                     # convert val
                     try:
@@ -135,13 +132,10 @@ class Function(FuncInst):
             # print('FN (%s), self.argVars[i]: ' % self._name, self.argVars[i], ' /:/', arg)
             argVar = Var(aname, atype)
             argVar.set(val)
-            # dprint('FN setArgVals-4: ', atype, aname)
             if isinstance(atype, TypeAny):
                 argVar.setType(valType)
             # print('set arg8  >> ', self.argVars[i], 'val:', val)
-            # arg.name = self.argVars[i].name
             self.callArgs.append(argVar)
-            # self.argVars[i].set(arg.get())
 
     def tailRecur(self, inCtx: Context):
         # print('tail rec')
@@ -229,8 +223,6 @@ class ResursionLoop(Block):
         return len(self.subs) - 1
 
     def doLoop(self, ctx:NSContext):
-        # prepare args
-        # TODO: fix struct instance as a 1-st arg for method call
         while True:
             super().do(ctx)
             # print('recLoop.i=', i, self.lastVal)
@@ -243,6 +235,5 @@ class ResursionLoop(Block):
             if isinstance(self.lastVal, FuncRes):
                 # print('RecLoop. return result', self.lastVal)
                 break
-        # return self.get()
             
 
