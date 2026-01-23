@@ -23,7 +23,12 @@ Content:
 1. Basic things.
     1. [vars, vals, assignment](#11-vars-vals-lists-assignment)
     2. [Context](#12-execution-context)
-    3. [Basic types](#13-numbers-strings-bool-types)
+    3. [Numeric and bool types](#13-numeric-types)
+    4. ["Strings"](#14-strings)
+    5. [""" Multiline strings """](#15-multiline-strings)
+    6. [Strict type `var:type`](#16-typed-var-expression-xtype)
+    7. [Type compatibility](#17-type-compatibility)
+    8. [Multitype expression `int|float|N`](#18-multitype-expression)
 
 2. [Code blocks and formatting.](#2-sub-blocks-code-formatting)
 
@@ -268,8 +273,7 @@ Context-object is responsible of search datatypes, variables, functions etc in c
 So we can use all local things and any things defined in all levels above: module-level - in the function, function- and module- level - in the control sub-level (for, if, match), and so on.  
 See more about visibility of things in sections of functions, closures, structs, importing.  
 
-### 1.3 Numbers, strings, bool. Types.
-1. Numeric types.  
+### 1.3 Numeric types.  
 ```python
 nums = [
     true, # bool
@@ -281,7 +285,7 @@ nums = [
     0.15]   # float
 ```
 
-2. Strings.  
+### 1.4 Strings.  
 Strings can be defined by several type of quotes.  
 ```golang
 hello = "hello somebody!"
@@ -311,7 +315,7 @@ print(`\n\t\'\" `)
 ```
 
 
-Multiline strings.
+### 1.5 Multiline strings.  
 Triple quotes is a main way to create multiline string.  
 Triple backticks work too. Thinking about escape sequences. Now it  just works like other, except warnings of wrong sequences like ``` \w \s ```.  
 ````golang
@@ -331,7 +335,7 @@ Formatting operators see in [`"%s"<<` ](#211-percent-formatting) and
 [`"~{s}"`](#212-format-by-including-expressions) formatting.
 
 
-3. Data type.  
+### 1.6 Typed var expression x:type   
 Type of variable is defined by `:` operator.  
 `varName : typeName`  
 This syntax means strict typing of variable (or functions arg)
@@ -346,7 +350,7 @@ no:bool = false
 ```
 Types such as collections, structs, functions, etc will be explaned next sections.
 
-4. Type compatibility.  
+### 1.7 Type compatibility.   
 Variable defined by `:` operator has strict type.  
 It prevents setting of new value with an inappropriate type.  
 Compatible types are converted automatically.  
@@ -360,6 +364,51 @@ b = true # 1
 ```
 The same is correct for field of struct instance and functions agrument.  
 For a structures, type of value can be a child of type of variable, but not vice versa.  
+
+
+### 1.8 Multitype expression.  
+If we need use var which should have one of several types value, we can use multi-type expression.  
+```python
+x: int | float = 1
+x = 2.5
+```
+Multitype expression can have more than 2 parts:
+```python
+x : list | tuple | dict | string  = []
+len(x) # 0
+x = (1,2)
+len(x) # 2
+x = {1:11, 2:22, 3:33}
+len(x) # 3
+x = "hello"
+len(x) # 5
+```
+Struct type is works too.  
+```golang
+struct A a:int
+struct B b:tin
+struct C c: int
+
+st: A|B|C = A{}
+st = B{}
+st = C{}
+```
+Fields can be multityped.  
+```golang
+struct A x:int|float|bool, y:list|tuple
+
+a1 = A(true, [1,2,3])
+a2 = A(1.5, ('a', 'b'))
+```
+Arguments can be multityped too.  
+```golang
+func foo(a:int|float, b:int|string)
+    (a * 10, ~"<{b}>")
+
+foo(2, 'tons') #// (20, '<tons>')
+foo(1.5, 4000) #// (15.0, '<4000>')
+```
+The same works for methods.  
 
 
 ### 2. Sub-blocks, code-formatting.

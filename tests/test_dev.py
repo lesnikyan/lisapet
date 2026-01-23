@@ -93,7 +93,7 @@ class TestDev(TestCase):
 
 
 
-    def _test_code(self):
+    def _test_multitype_match_pattern(self):
         ''' '''
         code = r'''
         res = []
@@ -108,6 +108,29 @@ class TestDev(TestCase):
             ..
         if a :: int|float || b :: list|tuple
             ..
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        # rvar = ctx.get('res').get()
+        # self.assertEqual([220022, 'Aloha!'], rvar.vals())
+
+
+    def _test_code(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func foo(a:int|float, b:int|string)
+            (a * 10, ~"<{b}>")
+        
+        print('', foo(2, 'tons'))
+        print('', foo(1.5, 4000))
         
         print('res = ', res)
         '''
