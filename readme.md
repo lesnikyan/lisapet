@@ -48,9 +48,9 @@ Content:
     6. [List features >>>](#list-features)
 
 4. Data type.
-    1. [Strict type `var:type`](#16-typed-var-expression-xtype)
-    2. [Type compatibility `x:int = true`](#17-type-compatibility)
-    3. [Multitype expression `x: int|float|N`](#18-multitype-expression)
+    1. [Strict type `var:type`](#41-typed-var-expression-xtype)
+    2. [Type compatibility `x:int = true`](#42-type-compatibility)
+    3. [Multitype expression `x: int|float|N`](#43-multitype-expression)
 
 5. `if`-statement
     1. [if - else](#5-if-statement-else)
@@ -707,16 +707,28 @@ x = 2.5
 ```
 Multitype expression can have more than 2 parts:
 ```python
-x : list | tuple | dict | string  = []
+x : list | tuple | dict | string = []
+
 len(x) # 0
+
 x = (1,2)
 len(x) # 2
+
 x = {1:11, 2:22, 3:33}
 len(x) # 3
+
 x = "hello"
 len(x) # 5
 ```
-Struct type is works too.  
+An expression of multitype can be enclosed in parentheses.  
+It can be useful for more complex expressions.  
+```python
+nums: (list|tuple) = []
+
+n:(int|float|string) ='1'
+```
+
+Struct type works too.  
 ```golang
 struct A a:int
 struct B b:tin
