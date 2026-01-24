@@ -76,39 +76,49 @@ class TestDev(TestCase):
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
         2) extend tail-recur case for earlier returns - not sure 
-   
+        
+        TODO: fix call of method assigned to var:
+            f = inst.foo
+            f(123) # !! Eval Error: Not enough args in call of fuction `fm`. Exppected: 2, got: 1.
+        
+        TODO: var type ofor iter-loop 
+            for n:int <- nn
+        
+        BUG: ampty inherited struct
+            struct A
+            struct E(A)  # Error 
+    
     '''
 
 
-    def _test_dev_tail_recursion(self):
-        ''''''
-        def _foo(n, x, y):
-            r = x + y
-            if n == 0:
-                return r
-            n, x, y = n - 1, r, y
-            return _foo(n, x, y)
-        
-        def foo(x, y):
-            return _foo(x, x, y)
-            
-        def _loop(n, x, y):
-            # r, n = 0, x
-            # dx = x
-            while True:
-                r = x + y
-                if n == 0:
-                    return r
-                n, x, y = n - 1, r, y
-        
-        def loop(x, y):
-            return _loop(x, x, y)
-        
-        rfoo = foo(10, 2)
-        rloop = loop(10, 2)
-        print('tt>>', rfoo, rloop)
-        self.assertEqual(rfoo, rloop)
 
+
+    def _test_multitype_match_pattern(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        match n
+            n :: int|float !- ...
+            n :: (string|list) | n :: dict !- ...
+        
+        if x :: int|float
+            ..
+        if y :: int || z :: float
+            ..
+        if a :: int|float || b :: list|tuple
+            ..
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        # rvar = ctx.get('res').get()
+        # self.assertEqual([220022, 'Aloha!'], rvar.vals())
 
 
     def _test_code(self):
@@ -116,10 +126,11 @@ class TestDev(TestCase):
         code = r'''
         res = []
         
-        func foo(a, b)
-            if a > 0
-                return foo(a - 1, b + 1)
-            b + 1
+        func foo(a:int|float, b:int|string)
+            (a * 10, ~"<{b}>")
+        
+        print('', foo(2, 'tons'))
+        print('', foo(1.5, 4000))
         
         print('res = ', res)
         '''
@@ -154,7 +165,7 @@ class TestDev(TestCase):
         self.assertEqual([], rvar.vals())
 
 
-    def _test_print(self):
+    def _test_print_struct(self):
         ''' '''
         code = r'''
         struct A a:int

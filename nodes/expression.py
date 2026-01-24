@@ -374,21 +374,21 @@ class TypedVarExpr(VarExpr):
         self.val = None
 
     def do(self, ctx:NSContext):
+        # print('TypedVarExpr.do-0', self.right)
         self.right.do(ctx)
         tpv = self.right.get()
         name = self.left.get().name
-        tpName = self.right.name
-        # dprint('TypedVarExpr.ctx print:')
-        # ctx.print()
-        tpInst = ctx.getType(tpName)
-        # print('TypedVarExpr.do/-1 ', ctx, '>', tpName, ':', tpInst)
+        # print('TPV:', tpv)
         tpVal = TypeAny()
-        if not tpInst:
-            tpVal = Undefined()
+        if isinstance(tpv, TypeVal):
+            tpVal = tpv.get()
         else:
-            tpVal = tpInst.get()
-        # print('TypedVarExpr.do1 ', name, 'tp:', tpv, '{%s: %s}' % (tpv.val, tpv.vtype), tpName)
-        
+            tpName = self.right.name
+            tpInst = ctx.getType(tpName)
+            if not tpInst:
+                tpVal = Undefined()
+            else:
+                tpVal = tpInst.get()
         self.val = Var(name, tpVal, strict=True)
         ctx.addVar(self.val)
 

@@ -30,6 +30,276 @@ class TestTypes(TestCase):
 
 
 
+    def test_multitype_var(self):
+        ''' a:int|bool '''
+        code = r'''
+        res = []
+        
+        x:int = 1
+        a:int|float = 1
+        res <- ('a::int', a, a :: int)
+        a = 1.2
+        res <- ('a::float', a, a :: float)
+        
+        b:int|string = true
+        res <- ('b::int', b, b::int)
+        
+        b:int|string = 'abc'
+        res <- ('b::string', b, b::string)
+        
+        # 3 types
+        c:float|bool|int = 1
+        res <- ('c1',c)
+        c = 2.5
+        res <- ('c12',c)
+        c = true
+        res <- ('c3',c)
+        
+        # 4 types
+        d : list | tuple | dict | string = [1]
+        res <- ('d1,len', d, len(d))
+        d = (1,2,3)
+        res <- ('d2,len', d, len(d))
+        d = {1:11, 2:22}
+        res <- ('d3,len', d, len(d))
+        d = "Hello multityped var!"
+        res <- ('d4,len', d, len(d))
+        
+        # struct as multitype part
+        struct A
+        struct B
+        struct C
+        struct D
+        
+        s:A|B|C|D = null
+        # res = []
+        res <- ('s0', s)
+        
+        s = A{}
+        res <- ('s1', s)
+        s = B{}
+        res <- ('s2', s)
+        s = C{}
+        res <- ('s3', s)
+        s = D{}
+        res <- ('s4', s)
+        
+        # inherited struct instance
+        struct E(A) e:int
+        
+        s = E{}
+        res <- ('s5', s)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        null = Null()
+        exv = [('a::int', 1, True), ('a::float', 1.2, True), ('b::int', 1, True), ('b::string', 'abc', True), 
+               ('c1', 1), ('c12', 2.5), ('c3', True),
+               ('d1,len', [1], 1), ('d2,len', (1, 2, 3), 3), ('d3,len', {1: 11, 2: 22}, 2),
+               ('d4,len', 'Hello multityped var!', 21),
+               ('s0', null), ('s1', 'st@A{}'), ('s2', 'st@B{}'), ('s3', 'st@C{}'), ('s4', 'st@D{}'), ('s5', 'st@E{e: 0}')]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_multitype_arg(self):
+        ''' func foo(x:int|float, ff:function|Atype) '''
+        code = r'''
+        res = []
+        
+        func f1(x:int|float)
+            x * 2
+        
+        res <- ('f1-3', f1(3))
+        
+        func f2(x:list|tuple, index:int)
+            x[index]
+        
+        res <- ('f2-[]', f2([1,2,3], 1))
+        res <- ('f2-()', f2((11,22,33), 2))
+        
+        func f3(x:int|float)
+            x / 10
+        
+        nn = [1, 2.2, 3, 4.4, 12, 25.5]
+        for n <- nn
+            r3 = f3(n)
+            res <- ('f3', ~'{n:.3f} -> {n:.3f}' )
+        
+        # struct / function as a part of multitype
+        
+        struct A a:int
+        struct B b:string
+        
+        func st:A f5()
+            ~'{st.a}'
+        
+        func st:B f5()
+            st.b
+        
+        func f4(f:A|function, x:int=0)
+            if f :: function
+                return (~'f4({x})',f(x))
+            ('f4', [f.a])
+        
+        res <- f4(x->x+2)
+        res <- f4(x->x+5, 10)
+        
+        a1:A|B = A(111)
+        b1 = B('hey')
+        
+        res <- f4(a1)
+        res <- f4(A(3))
+        
+        func f6(p:A|B)
+            '$' + p.f5()
+        
+        res <- ('A-f6', f6(a1))
+        res <- ('B-f6', f6(b1))
+        res <- ('B-f6', f6(B('word')))
+        
+        # print('res = ', res)
+        '''
+        
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('f1-3', 6), ('f2-[]', 2), ('f2-()', 33), ('f3', '100 -> 100'), ('f3', '2.200 -> 2.200'), 
+            ('f3', '300 -> 300'), ('f3', '4.400 -> 4.400'), ('f3', '120 -> 120'), ('f3', '25.500 -> 25.500'), 
+            ('f4(0)', 2), ('f4(10)', 15), ('f4', [111]), ('f4', [3]), 
+            ('A-f6', '$111'), ('B-f6', '$hey'), ('B-f6', '$word')]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_var_multitype_field(self):
+        ''' struct A a:int|list '''
+        code = r'''
+        res = []
+
+        struct C c:int|float
+        
+        c1 = C(1)
+        c11 = C{c:11}
+        c2 = C(1.2)
+        c1.c = 1
+        c11.c = 2.5
+        
+        res <- ('C(1)', c1)
+        res <- ('C(11)', c11)
+        res <- ('C(2)', c2)
+        
+        struct D d:dict|list
+        struct E e:list|tuple
+        
+        struct M m:int
+        func st:M fm(x:int)
+            st.m * 100 + x
+        
+        struct F f:function|M
+        
+        func st:F fff(x:int)
+            fu = st.f
+            if fu :: M
+                # mst:M = fu
+                return fu.fm(x)
+            fu(x)
+        
+        f1 = F(x -> x + 10)
+        # print(f1)
+        res <- ('F.\\7->', f1.fff(7))
+        
+        func ff1(x:int)
+            1000 + x
+        
+        f2 = F(ff1)
+        res <- ('F.ff1 5', f2.fff(5))
+        
+        m1 = M(2)
+        f3 = F(m1)
+        res <- ('F.M(2) 3', f3.fff(3))
+        
+        f3 = F(M(3))
+        res <- ('F(M(3)) 7', f3.fff(7))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [('C(1)', 'st@C{c: 1}'), ('C(11)', 'st@C{c: 2.5}'), ('C(2)', 'st@C{c: 1.2}'), ('F.\\7->', 17), ('F.ff1 5', 1005), ('F.M(2) 3', 203), ('F(M(3)) 7', 307)]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_var_multitype_method_arg(self):
+        ''' func st:A foo(x:list|dict) '''
+        code = r'''
+        res = []
+        
+        struct A
+        struct B b:int
+        struct C c:list|tuple
+        
+        func st:A aaa(x:int|float, b:list|tuple)
+            r = []
+            for n <- b
+                r <- x + n
+            r
+        
+        func st:B bbb(x:string|list)
+            s = x
+            if x :: list
+                s = ''.join(x)
+            [s; i <- iter(st.b)]
+        
+        func st:C ccc(x:string|int)
+            if x :: int
+                x = ~'<{x}>'
+            st.c.map(n -> n + x)
+        
+        a1 = A{}
+        
+        res <- ('A 2', a1.aaa(2, [1,2,3]))
+        res <- ('A 2', a1.aaa(2, (11, 12, 13)))
+        
+        b1 = B(2)
+        
+        res <- ('B(2) ', b1.bbb('abc'))
+        res <- ('B(2) ', b1.bbb(['Aa', 'Bb', 'Cc']))
+        
+        c1 = C(['aa','bb','cc'])
+        
+        res <- ('C(list) str', c1.ccc('yo!'))
+        res <- ('C(list) int', c1.ccc(23))
+        
+        c2 = C(('--','++','^^'))
+        
+        res <- ('C(tuple) str', c2.ccc('param'))
+        res <- ('C(tuple) int', c2.ccc(100500))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ('A 2', [3, 4, 5]), ('A 2', [13, 14, 15]), 
+            ('B(2) ', ['abc', 'abc']), ('B(2) ', ['AaBbCc', 'AaBbCc']), 
+            ('C(list) str', ['aayo!', 'bbyo!', 'ccyo!']), ('C(list) int', ['aa<23>', 'bb<23>', 'cc<23>']), 
+            ('C(tuple) str', ('--param', '++param', '^^param')), ('C(tuple) int', ('--<100500>', '++<100500>', '^^<100500>'))]
+        self.assertEqual(exv, rvar.vals())
+
     def test_func_signHash(self):
         ''''''
         TH.base = 0x1100

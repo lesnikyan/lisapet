@@ -230,16 +230,34 @@ def builtinTypes()->list[VType]:
             TypeString, TypeList, TypeDict, TypeStruct, TypeTuple, TypeFunc]
 
 
+class MultiType(VType):
+    ''' int|float, Abc|User, list|dict '''
+    
+    def __init__(self):
+        super().__init__()
+        self.subs:list[VType] = []
+        self.name = 'multitype'
+    
+    def addSubType(self, sub:VType):
+        self.subs.append(sub)
+    
+    def has(self, xtype):
+        for sub in self.subs:
+            if sub == xtype:
+                return True
+        return False
+    
+    def getSubs(self):
+        return self.subs
+
+
 def typeCompat(dest:VType, stype:VType):
     '''Check if types compatible.
     criterion: src can be converted to dest.
     '''
-    # compatList:list[VType] = []
-    # stype = src
     if stype == dest:
         return True
     sclass = stype.__class__
-    # print('dest name:', dest.name, 'stype:', stype, sclass)
     match dest.name:
         case 'any': return True
         case 'bool': return sclass in [TypeBool, TypeNull]

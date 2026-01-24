@@ -3,12 +3,6 @@
 
 NEED FIX:
 
-    -2. #DONE compatibility of struct var to null value: 
-        struct A x:int
-        a:A = null
-    -1. func foo(d:dict, nn:list)
-            # fix confuse about construct / type in func args for: dict, list
-
     1. print struct instance
         - ',' separator -> ', '
         - add quotes for strings
@@ -27,7 +21,7 @@ NEED FIX:
 # Necessary things: 
 
 1. string functions: 
-    element like list: name[0], "abc"[1]
+    # DONE take element like list: name[0], "abc"[1]
     # split() # regexp added
     # join()
     # replace() # regexp added
@@ -94,9 +88,8 @@ func A.foo(a, b)
 
 
 2.5 OpAssing:
-        # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
-        # TODO: thik about one way of assignment: (something) = (something)
-        # DONE: type reset in reassign
+    # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
+    # TODO: think about one way of assignment: (something) = (something)
 
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
 
@@ -158,7 +151,7 @@ match s
     re`\d+([a-z]+)` => rx !- res = split(s, rx)
     re`\d+([a-z]+)` => p@(x) !- 
 
-# transfer foundg roups
+# transfer found groups
     re`(\d+) (\w+)` :> a, b !- print(a, b)
 # transfer regexp rom pattern
     ptt@re`(sub)` !- res = ptt ?~ sourceString
@@ -182,6 +175,21 @@ match nn
 
     # complex type
         x :: [int], y :: {string:int}
+
+    # complex type in args/vars: do it
+        x:int|bool
+        nn:tuple|list 
+        obj:A|B
+        # same for type-pattern
+        x :: A|B
+        nn :: list|tuple
+    
+    # type-collection(to think)
+        nn:[int]
+        nn:{string:int}
+    # generic
+        nn:list[int]
+
 
 14.0.1 Multiline and singleline cases: 
 match val
@@ -305,6 +313,135 @@ func d:D f1(x, y)
     super(d).f1(x, y) # for methods only # ??
 
 
+-------------------------
+
+# Perspective things: 
+0. build.py - builder of *.et files with resulting binary files (serialized executable object).
+1. Maybe type 
+# DONE 2. default, unnecessary and named function args
+3. tail-recursion optimization
+4.1 Duck-type for structs:: func f(arg:struct{foo(int, float), bar(string)}) // ? not sure
+4.2 anonimous structs inst = struct{name: 'Abc', num: 123}; possible sugar: ${name: '', num:123}
+5. composition of functions: foo . bar : arg ;; foo . bar < arg
+6. carrying
+    foo(a,b)
+    foo2 = foo(a;) -> func.carr[foo, a] -> foo2(b)
+    foo(a;) >> | (arg2) -> foo(a, arg2) |
+    foo2(arg2) -> foo(a, arg2) 
+7. common types: (tree, queue, set, pair ) with operations: applay func to each, clone, merge, insert, fold, map, etc.
+8. ~[s, s <- "..."] gen by string: solution (1) `~` operator as a list-to-string convertor
+
+
+#== anonimous func object (multiline)
+
+foo = func (args...)
+
+
+#== works as is by native pythons functionality
+# list | string - mult *, concat +
+
+'abc' * 3 --> 'abcabcabc'
+[1,2,3] * 2 --> [1,2,3,1,2,3,1,2,3]
+
+'acb ' + 'xyz' --> 'abc xyz'
+[1,2,3] + [4,5] --> [1,2,3,4,5]
+
+
+
+#==
+# Maybe type: Nothing, Thing
+x = maybe(1) # @yep(1), (? val)
+x = nothing # @nop , (?-)
+
+
+#==
+# unary increment, decrement
+i++ # i += 1
+i-- # i -= 1
+
+
+#== store content of comments as a runtime metadata
+
+#== multiline expr
+
+#== possible sugar
+
+
+#== concat strings
+str = (
+    'Hello '
+    "new string!"
+)
+
+
+# case if: with no operator between line use && or defined default operator
+#    if (&& ..) if (|| .. ) - definition of default
+# e.g: 
+# if (||
+#     a > 5
+#     a % 2 != 0)
+#
+#
+
+
+#== Next line operator, next line after beginning, 
+# Second line starts with operator after 1 indent (like subline in block). If no indent - just new expression with unary operator (or error)
+# Next lines after 2-nd - the same indent.
+res = (long_expressions)
+    + (next-expression) * (next-expression)
+    - (3rd-line--expression)
+
+
+#== Type alising, make sense only for strict typeing mode (not implemented)
+type intN3 [int, int, int]
+type intN3 int[3]
+
+
+# unpack list using it as many vals
+func foo3(...args) -> for val <- args ...
+
+# call
+args = [1,2,3,4,5]
+foo3(args...)
+
+
+#==  func type
+func foo(a:int, b:int): int
+    a + b
+# or 
+func foo(int, int): int
+foo(a, b)
+    a + b
+
+
+#==
+# composition of functions are possible, by `.` or another
+func foo(a)
+func bar(a)
+func buz(a)
+
+buz(bar(foo(12)))
+foo . bar . buz : (12)
+foo bar buz $ 12
+foo * bar * buz(12)
+foo + bar + buz(12)
+foo ~~ bar ~~ buz : 12
+
+
+
+        TODO: partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
+        # not sure, partial usage of operator - make lambda:
+                    (2 +) =>> x -> 2 + x
+                    (-(2)) =>> x -> x - 2, or -1 # problem here
+                    underscore here looks better
+                    looks mostly as a shorten syntax of lambdas
+                    (2 + _) =>> x -> 2 + x
+                    (_ - 2) =>> x -> x - 2
+        TODO: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
+            =>> curried_foo(1)(2)(3)
+        TODO: composition foo * bar (x)
+        TODO: prevent overloading of func with default/named args or variadic list args...
+
 # -------------------------
 Not sure:
 
@@ -328,6 +465,13 @@ Not sure:
 # -------------------
 
 Fixes:
+
+    -2. #DONE compatibility of struct var to null value: 
+        struct A x:int
+        a:A = null
+    -1. # DONE func foo(d:dict, nn:list)
+            # fix confuse about construct / type in func args for: dict, list
+
     2. #DONE multi-args constructor for inherited struct type 
         A a:int
         A(a) 
@@ -340,6 +484,20 @@ Fixes:
         for k, v <- dict
     - #DONE data.keys() ; dkeys(data) # dict keys
     - #DONE for item <- ditems(data) ; for item <- data.items()  # key-val pairs from dict
+
+    # DONE: type reset in reassign
+
+---
+
+
+#== DONE Think about tail-recursion.
+Tranform tail recursion to loop.
+
+func foo(arg)
+    if expr1
+        return expr2
+    arg2 = expr3
+    foo(arg2)
 
 12.1 #DONE named args for function: func foo(name:string) # call: foo(name='Abc')
 12.2 #DONE other args in `func(a, b, other...) : foo(1, 2, 33, 44, 55, 66, 77) other = [33, 44, 55, 66, 77]
@@ -512,144 +670,6 @@ match n
 
 >>>
 
-
--------------------------
-
-# Perspective things: 
-0. build.py - builder of *.et files with resulting binary files (serialized executable object).
-1. Maybe type 
-# DONE 2. default, unnecessary and named function args
-3. tail-recursion optimization
-4.1 Duck-type for structs:: func f(arg:struct{foo(int, float), bar(string)}) // ? not sure
-4.2 anonimous structs inst = struct{name: 'Abc', num: 123}; possible sugar: ${name: '', num:123}
-5. composition of functions: foo . bar : arg ;; foo . bar < arg
-6. carrying
-    foo(a,b)
-    foo2 = foo(a;) -> func.carr[foo, a] -> foo2(b)
-    foo(a;) >> | (arg2) -> foo(a, arg2) |
-    foo2(arg2) -> foo(a, arg2) 
-7. common types: (tree, queue, set, pair ) with operations: applay func to each, clone, merge, insert, fold, map, etc.
-8. ~[s, s <- "..."] gen by string: solution (1) `~` operator as a list-to-string convertor
-
-
-#== anonimous func object (multiline)
-
-foo = func (args...)
-
-
-#== works as is by native pythons functionality
-# list | string - mult *, concat +
-
-'abc' * 3 --> 'abcabcabc'
-[1,2,3] * 2 --> [1,2,3,1,2,3,1,2,3]
-
-'acb ' + 'xyz' --> 'abc xyz'
-[1,2,3] + [4,5] --> [1,2,3,4,5]
-
-
-
-#==
-# Maybe type: Nothing, Thing
-x = maybe(1) # @yep(1), (? val)
-x = nothing # @nop , (?-)
-
-
-#==
-# unary increment, decrement
-i++ # i += 1
-i-- # i -= 1
-
-
-#== store content of comments as a runtime metadata
-
-#== multiline expr
-
-#== possible sugar
-
-
-#== concat strings
-str = (
-    'Hello '
-    "new string!"
-)
-
-
-# case if: with no operator between line use && or defined default operator
-#    if (&& ..) if (|| .. ) - definition of default
-# e.g: 
-# if (||
-#     a > 5
-#     a % 2 != 0)
-#
-#
-
-
-#== Next line operator, next line after beginning, 
-# Second line starts with operator after 1 indent (like subline in block). If no indent - just new expression with unary operator (or error)
-# Next lines after 2-nd - the same indent.
-res = (long_expressions)
-    + (next-expression) * (next-expression)
-    - (3rd-line--expression)
-
-
-#== Type alising, make sense only for strict typeing mode (not implemented)
-type intN3 [int, int, int]
-type intN3 int[3]
-
-
-# unpack list using it as many vals
-func foo3(...args) -> for val <- args ...
-
-# call
-args = [1,2,3,4,5]
-foo3(args...)
-
-
-#==  func type
-func foo(a:int, b:int): int
-    a + b
-# or 
-func foo(int, int): int
-foo(a, b)
-    a + b
-
-
-#==
-# composition of functions are possible, by `.` or another
-func foo(a)
-func bar(a)
-func buz(a)
-
-buz(bar(foo(12)))
-foo . bar . buz : (12)
-foo bar buz $ 12
-foo * bar * buz(12)
-foo + bar + buz(12)
-foo ~~ bar ~~ buz : 12
-
-
-#== Think about tail-recursion.
-Tranform tail recursion to loop.
-
-func foo(arg)
-    if expr1
-        return expr2
-    arg2 = expr3
-    foo(arg2)
-
-
-        TODO: partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
-        # not sure, partial usage of operator - make lambda:
-                    (2 +) =>> x -> 2 + x
-                    (-(2)) =>> x -> x - 2, or -1 # problem here
-                    underscore here looks better
-                    looks mostly as a shorten syntax of lambdas
-                    (2 + _) =>> x -> 2 + x
-                    (_ - 2) =>> x -> x - 2
-        TODO: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
-            =>> curried_foo(1)(2)(3)
-        TODO: composition foo * bar (x)
-        TODO: prevent overloading of func with default/named args or variadic list args...
 
 ########################### Done section ############################# 
 @#

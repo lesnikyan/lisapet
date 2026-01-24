@@ -165,23 +165,19 @@ class OpAssign(AssignExpr):
             
             if isinstance(dest, ObjectMember):
                 # struct field as left operand
-                # dest.getType()
                 destStrict = True
-                # dest.set(val)
-                # return
             else:
                 destStrict = dest.strictType()
-
-            # single var
-            # print('OpAssig: single var', dest, destStrict)
+            
             if destStrict:
                 dt, st = dest.getType(), val.getType()
-                if dt != st:
-                    # print('!::!')
-                    # check compatibility
-                    if isCompatible(dt, st):
+                if not equalType(dt, st):
+                    # print('!::!', dt, st, val)
+                    comType = isCompatible(dt, st)
+                    # print('OpAsgn, comType', comType)
+                    if comType:
                         # convert val
-                        val = resolveVal(dt, val)
+                        val = resolveVal(comType, val)
                     else:
                         # print(f'\n--!-- Trying assign val to strictly typed variable (:{dt} = {st})', dest, val)
                         raise EvalErr(f'Trying assign val with different type to strictly typed variable (:{dt} =/= {st})')
@@ -250,6 +246,7 @@ class OpMath(BinOper):
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
         # print('#bin-oper2', a, b)
+        a, b = var2val(a), var2val(b)
         
         # overloaded operators:
         over, res = self.overs(a, b)
@@ -495,11 +492,35 @@ class OpBitwise(BinOper):
         #     # TODO type??
         #     self.res = Val(False, TypeBool())
         #     return False
+        
+        if isinstance(a, TypeVal) and isinstance(b, TypeVal):
+            # multitype detected
+            # print('TYPE VAL', a, b)
+            res = self.type_or(a.getVal(), b.getVal())
+            self.res = res
+            return
+        
         res = ff[self.oper](a.getVal(), b.getVal())
         self.res = Val(res, a.getType())
 
     def bt_and(self, a, b):
         return a & b
+    
+    def type_or(self, a:TypeVal, b:TypeVal):
+        r = MultiType()
+        src = []
+        if isinstance(a, MultiType):
+            src.extend(a.getSubs())
+        else:
+            src.append(a)
+        if isinstance(b, MultiType):
+            src.extend(b.getSubs())
+        else:
+            src.append(b)
+        for sub in src:
+            r.addSubType(sub)
+        
+        return TypeVal(r)
     
     def bt_or(self, a, b):
         return a | b
@@ -660,6 +681,7 @@ class FalseOrExpr(BinOper):
     def do(self, ctx:Context):
         self.res1Exp.do(ctx)
         res1 = self.res1Exp.get()
+        # print('DDD 2', res1)
         res = None
         if self.isOk(res1):
             res = self.res1Exp.get()
