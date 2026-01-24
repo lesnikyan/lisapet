@@ -516,6 +516,7 @@ if 'c' !?> {'a':1, 'b':2} ...
 ```
 
 ### 2.8 Check type operator `::`  
+1. Simple type case.  
 If we need to check type of value we can use operator `::`  
 Left oparend is value (var, ect..), right - name of type.  
 ```python
@@ -538,6 +539,76 @@ string, list, tuple, dict,
 function
 ```
 Some types can be added in the future.  
+
+2. Struct type case.  
+Check type of structs is the same operator.  
+```golang
+
+struct A
+struct B
+struct C(B) c:int
+a1 = A{}
+c1 = C{}
+
+if a1 :: A
+    # yes
+
+if a1 :: B
+    # no
+
+if c1 :: B
+    # yes because parent in the left
+```
+
+3. Multitype cases `(A|B|list)`.  
+Multitype expressions works for `::` operator.  
+Simple type example:  
+```python
+a = 1
+a :: int|float # true
+a :: (list|dict) # false
+```
+
+Multitype of struct types.  
+```golang
+struct A a:int
+struct B b:int
+struct C(B) c:int
+
+a1 = A{}
+b1 = B{}
+c1 = C{}
+
+a1 :: A|C # true
+b1 :: A|B # true
+a1 :: (B|C) # false
+c1 :: (A|B) # true because B is a parent
+
+x = 12
+x :: (A|B|int) # true
+
+y = true
+y :: (A|B|int) # false
+```
+
+3. Type var.  
+Type or multitype can be stored into variable and used next.  
+```python
+tL = list # simple list type
+
+nn = []
+nn :: tL # true
+dd = {}
+dd :: tL # false
+
+tN = (int | float) # complex numeric type
+
+x = 1
+x :: tN # true
+
+y = false
+y :: tN # false
+```
 
 
 More about special operators in   

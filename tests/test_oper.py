@@ -329,7 +329,8 @@ class TestOper(TestCase):
         res <- (1., 'float', 1. :: float)
         res <- (x, 'int', x :: int)
         res <- (x, 'float', x :: float)
-        res <- ([], 'list', [] :: list)
+        typeL = list # type in var
+        res <- ([], 'list', [] :: typeL)
         res <- ("list", 'list', "list" :: list)
         res <- ((1,), 'tuple', (1,) :: tuple)
         res <- ({1:2}, 'dict', {1:2} :: dict)
