@@ -19,6 +19,161 @@ from tests.utils import *
 class TestOper(TestCase):
 
 
+
+    def test_type_operator_for_struct(self):
+        ''' var :: StructType|StructType|list '''
+        code = r'''
+        res = []
+        
+        struct A
+        struct B
+        struct C(B) x:int # empty inherited still need to be fixed
+        struct D
+        
+        # simple type check
+        a1 = A{}
+        res <- ('A::A', a1 :: A)
+        res <- ('A::B', a1 :: B)
+        
+        b1 = B{}
+        res <- ('B::B', b1 :: B)
+        res <- ('B::A', b1 :: A)
+        
+        c1 = C{}
+        res <- ('C::C', c1 :: C)
+        res <- ('C::A', c1 :: A)
+        res <- ('C::B', c1 :: B)
+        
+        res <- 'AB'
+        ab: A|B = null
+        res <- ab
+        ab = A{}
+        res <- ('ab :: A|D', ab, ab :: A|D)
+        ab = B{}
+        res <- ('ab :: A|D', ab, ab :: A|D)
+        
+        res <- ('C :: A|D', c1, c1 :: A|D)
+        res <- ('C :: A|B', c1, c1 :: A|B)
+        
+        # res = []
+        d1 = D{}
+        t1 = A|C
+        res <- ('A :: var(A|C)', a1, a1 :: t1)
+        res <- ('C :: var(A|C)', c1, c1 :: t1)
+        res <- ('B :: var(A|C)', b1, b1 :: t1)
+        res <- ('D :: var(A|C)', d1, d1 :: t1)
+        
+        tab = A|B
+        res <- ('C :: var(A|B)', c1, c1 :: tab) # inherited
+        res <- ('D :: var(A|B)', d1, d1 :: tab)
+        
+        
+        if a1 :: (A|B)
+            res <- 'if/1'
+            
+        if a1 :: (D|B) # no
+            res <- 'if/2'
+        
+        if d1 :: (A|D)
+            res <- 'if/3'
+        
+        # mixed 
+        if a1 :: A|int
+            res <- 'if/4'
+        
+        if 5 :: A|int
+            res <- 'if/5'
+        
+        nn = [1,2,3]
+        if nn :: A|list
+            res <- 'if/6'
+        
+        ff = x -> x + 2
+        
+        if ff :: A|function
+            res <- 'if/7'
+            
+        if a1 :: A|function
+            res <- 'if/8'
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        null = Null()
+        exv = [
+            ('A::A', True), ('A::B', False), ('B::B', True), ('B::A', False), ('C::C', True), ('C::A', False), ('C::B', True), 
+            'AB', null, ('ab :: A|D', 'st@A{}', True), ('ab :: A|D', 'st@B{}', False), 
+            ('C :: A|D', 'st@C{x: 0}', False), ('C :: A|B', 'st@C{x: 0}', True), 
+            ('A :: var(A|C)', 'st@A{}', True), ('C :: var(A|C)', 'st@C{x: 0}', True), ('B :: var(A|C)', 'st@B{}', False), 
+            ('D :: var(A|C)', 'st@D{}', False), ('C :: var(A|B)', 'st@C{x: 0}', True), ('D :: var(A|B)', 'st@D{}', False), 
+            'if/1', 'if/3', 'if/4', 'if/5', 'if/6', 'if/7', 'if/8']
+        self.assertEqual(exv, rvar.vals())
+
+    def test_multitype_type_operator(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        x = 2
+        if x :: int|float
+            res <- '2 :: int|float'
+        
+        x = 2.5
+        if x :: int|float
+            res <- '2.5 :: int|float'
+        
+        typeVal = int|bool
+        x = true
+        if x :: typeVal
+            res <- 'true :: var(int|bool)'
+        
+        x = 33
+        if x :: typeVal
+            res <- '33 :: var(int|bool)'
+        
+        
+        y = 1
+        z = 1.2
+        res <- 'y :: int || z :: float'
+        nn = {-1:1.2, 1.1: 1.1,  1.2: 2, true:[], 3:[3], 4:'aaa'}
+        for y, z <- nn
+            if y :: int || z :: float
+                res <- (y,z)
+        
+        res <- 'y :: int|bool && z :: float|string'
+        for y, z <- nn
+            if y :: int|bool && z :: float|string
+                res <- (y,z)
+        
+        res <- 'while x :: list'
+        x = [1,2,3,4,5]
+        while x :: list
+            last = x - [-1]
+            # print(x)
+            if len(x) == 0
+                x = 0
+            res <- (last, x)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            '2 :: int|float', '2.5 :: int|float', 'true :: var(int|bool)', '33 :: var(int|bool)', 
+            'y :: int || z :: float', (-1, 1.2), (1.1, 1.1), (True, []), (3, [3]), (4, 'aaa'), 
+            'y :: int|bool && z :: float|string', (-1, 1.2), (4, 'aaa'), 
+            'while x :: list', (5, []), (4, []), (3, []), (2, []), (1, 0)]
+        self.assertEqual(exv, rvar.vals())
+
     def test_code_get_string_elem(self):
         ''' test str[index] '''
         code = (r'''

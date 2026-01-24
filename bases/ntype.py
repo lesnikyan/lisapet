@@ -17,9 +17,20 @@ def multiCompat( destT, srcT):
 
 
 def equalType(dt, st):
-    if not isinstance(dt, MultiType):
-        return dt == st
-    return dt.has(st)
+    if isinstance(dt, TypeStruct):
+        if not isinstance(st, TypeStruct):
+            return False
+        if dt == st:
+            return True
+        return st.hasParent(dt)
+    
+    if isinstance(dt, MultiType):
+        for sub in dt.subs:
+            if equalType(sub, st):
+                return True
+        return False
+    return dt == st
+    # return dt.has(st)
 
 
 def isCompatible( destT, srcT):

@@ -802,8 +802,15 @@ class IsTypeExpr(BinOper):
                 return
          
         expt = rop.getVal()
-        # print('::2>', expt, lop.getType())
-        res = Val(isinstance(lop.getType(), expt.__class__), TypeBool())
+        valType = lop.getType()
+        # print('::2>', expt, valType)
+        tres = tres = equalType(expt, valType)
+        if isinstance(expt, MultiType):
+            # print('::MultiType')
+            tres = equalType(expt, valType)
+        # else:
+        #     tres = isinstance(valType, expt.__class__)
+        res = Val(tres, TypeBool())
         # print(':: 3> ', res)
         self.res = res
 

@@ -157,7 +157,11 @@ class TypeStruct(TypeContainer):
 
     def setConstr(self, cons:FuncInst):
         pass
+
     def getConstr(self):
+        pass
+
+    def hasParent(self, vtype:'TypeStruct'):
         pass
 
     def addMethod(self, name, func:FuncInst):

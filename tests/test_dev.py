@@ -92,35 +92,6 @@ class TestDev(TestCase):
 
 
 
-
-    def _test_multitype_type_operator(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        if x :: int|float
-            ..
-        if y :: int || z :: float
-            ..
-        if a :: int|float || b :: list|tuple
-            ..
-        
-        x = [1,2,3,4,5]
-        while x :: list
-            x - [-1]
-        
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # self.assertEqual([220022, 'Aloha!'], rvar.vals())
-
-
     def _test_multitype_match_pattern(self):
         ''' '''
         code = r'''
@@ -146,7 +117,8 @@ class TestDev(TestCase):
         trydo(ex, ctx)
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
-        # self.assertEqual([220022, 'Aloha!'], rvar.vals())
+        # exv = []
+        # self.assertEqual(exv, rvar.vals())
 
 
     def _test_code(self):
@@ -169,7 +141,8 @@ class TestDev(TestCase):
         trydo(ex, ctx)
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
-        # self.assertEqual([220022, 'Aloha!'], rvar.vals())
+        # exv = []
+        # self.assertEqual(exv, rvar.vals())
 
 
     def _test_barr(self):
