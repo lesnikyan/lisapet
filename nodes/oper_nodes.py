@@ -169,6 +169,7 @@ class OpAssign(AssignExpr):
             else:
                 destStrict = dest.strictType()
             
+            # print('= OpAssign/10 ', dest, val, dest.getType(), val.getType(), 'isStrict', dest.strictType())
             if destStrict:
                 dt, st = dest.getType(), val.getType()
                 if not equalType(dt, st):
@@ -178,6 +179,7 @@ class OpAssign(AssignExpr):
                     if comType:
                         # convert val
                         val = resolveVal(comType, val)
+                        # print('OpAssign. resolved/1', val)
                     else:
                         # print(f'\n--!-- Trying assign val to strictly typed variable (:{dt} = {st})', dest, val)
                         raise EvalErr(f'Trying assign val with different type to strictly typed variable (:{dt} =/= {st})')

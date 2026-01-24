@@ -30,6 +30,42 @@ class TestTypes(TestCase):
 
 
 
+
+    def test_multitype_in_braces(self):
+        ''' x: (int|float) '''
+        code = r'''
+        res = []
+        
+        x : (int|float) = 3
+        res <- x
+        x = 1.5
+        res <- x
+        
+        y : (bool|int) = true
+        res <- y
+        y = 123
+        res <- y
+        
+        nn :(list|tuple)
+        nn = null
+        res <- nn
+        nn = [2,3,4]
+        res <- nn
+        nn = (5,6,7)
+        res <- nn
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        null = Null()
+        exv = [3, 1.5, True, 123, null, [2, 3, 4], (5, 6, 7)]
+        self.assertEqual(exv, rvar.vals())
+
     def test_multitype_var(self):
         ''' a:int|bool '''
         code = r'''

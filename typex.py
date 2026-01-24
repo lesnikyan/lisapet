@@ -280,6 +280,8 @@ def converVal(dest:VType, val:Val):
             vval = 0
         if isinstance(dest, (TypeBool)):
             vval = False
+            
+    # print('converVal', vval, vtype, dest.name)
     match dest.name:
         case 'any': return val
         case 'bool': return Val(bool(vval), TypeBool())
@@ -290,7 +292,9 @@ def converVal(dest:VType, val:Val):
         case 'complex': return val
         case 'float': return Val(float(vval), TypeFloat())
         case 'int': return Val(int(vval), TypeInt())
-        # case 'list'|'dict'|'struct': return stype in [TypeNull]
+        case 'list'|'dict'|'struct':
+            if isinstance(vtype, TypeNull):
+                return val
         # case _:
     # print(f'Value conversion of unknown or incompatible dest type ({dest} << {vtype})')
     raise EvalErr(f'Value conversion of unknown or incompatible dest type ({dest} << {vtype})')

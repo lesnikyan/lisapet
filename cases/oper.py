@@ -44,7 +44,7 @@ class CaseAssign(SubCase):
         # slice
         # prels('# OpAsgn split1: ', elems)
         opInd = afterLeft(elems)
-        dprint('Assign-split opInd:', opInd, elems[opInd].text)
+        # dprint('Assign-split opInd:', opInd, elems[opInd].text)
         left = elems[:opInd]
         right = elems[opInd+1:]
         # TODO: Implement multi-assign case
@@ -62,12 +62,12 @@ class CaseAssign(SubCase):
         hsize = int (lsub  / 2) # half of size
         left = subs[:hsize]
         right = subs[hsize:]
-        dprint('CaseAssign sesubs L/R:', left, right)
+        # dprint('CaseAssign sesubs L/R:', left, right)
         tl = left
         left = []
         for tex in tl:
             if isinstance(tex, ServPairExpr):
-                dprint('pair tex =  ', tex.left, tex.right)
+                # dprint('pair tex =  ', tex.left, tex.right)
                 left.append(tex.getTypedVar())
             else:
                 left.append(tex)

@@ -167,10 +167,18 @@ class Block(Expression):
         self.storeRes = False
         self.lastVal:Var|list[Var] = None # result of last sequence, can be a list if many results: a, b, [1,2,3]
 
+    def addSub(self, sub:Expression):
+        # typed var definition
+        if isinstance(sub, ServPairExpr):
+            sub = sub.getTypedVar()
+        self.subs.append(sub)
+
     def add(self, seqs:Expression|list[Expression]):
         if not isinstance(seqs, list):
             seqs = [seqs]
-        self.subs.extend(seqs)
+        for sub in seqs:
+            self.addSub(sub)
+        # self.subs.extend(seqs)
         # print('Block.add:', type(self), '::', self.subs)
 
     def isEmpty(self):
@@ -397,7 +405,6 @@ class TypedArgExpr(TypedVarExpr):
     '''  foo(x:int = 1) '''
     
     def __init__(self, left, right):
-        # var:Var = None
         super().__init__(left, right)
         self.defVal = None
 
