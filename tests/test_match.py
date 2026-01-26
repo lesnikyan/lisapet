@@ -33,6 +33,66 @@ class TestMatch(TestCase):
 
 
 
+    def test_match_pattern_multitype_no_var(self):
+        ''' multitype in no-var pattern `::(int|B)` '''
+        code = r'''
+        res = [-111]
+        
+        struct A a:int
+        struct B b:int
+        struct C c:string
+        struct D
+        struct BB(B) bb:int
+        
+        struct AA n:int
+        struct BBB n:int
+        struct CC n:int
+        struct DD n:int
+        struct EE n:int
+        
+        struct FF n:int
+        struct GG n:int
+        struct HH n:int
+        struct JJ n:int
+        
+        nn = [1, 1.1, true, [1], (1,2), 'asd', {1:11, 2:22}, 
+            A{}, B{}, C{}, D{}, [A{}, B{}], [A{}, C{}], 
+            BB{}, (A{}, BB{}), (A{}, C{}),
+            AA{n:1}, BBB{n:2}, CC{n:3}, DD{n:4}, EE{n:5},
+            (AA(6), CC(7)), (FF(8), DD(9)),
+            FF(11), GG(12), HH(13), JJ(14),
+            AA(22), GG(24)]
+            
+        for n <- nn
+            match n
+                :: (int|float) !- res <- 1
+                n :: (A|B) !- res <- 4
+                n :: (C|bool) !- res <- 5
+                [::A, ::(B|C)] !- res <- 7
+                (::A, ::(B|C)) !- res <- 8
+                ::(AA|GG) :? n.n ?> [22,23,24] !- res <- 500 + n.n
+                ::(FF|GG) | ::(HH|JJ) !- res <- 300 + n.n
+                (::AA, ::CC) | (::FF, ::DD) !- res <- (400 + n[0].n, 400 + n[1].n)
+                :: (string|list) !- res <- 2
+                :: (dict|tuple) !- res <- 3
+                :: (string|list|D) | :: dict !- res <- 6
+                ::(AA|BBB|CC|DD|EE) !- res <- 200 + n.n
+                _ !- res <- 199
+        
+        # print('res = ', res)
+        '''
+        
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [-111, 1, 1, 5, 2, 3, 2, 3, 4, 4, 5, 6, 7, 7, 4, 8, 8,
+               201, 202, 203, 204, 205,
+               (406, 407), (408, 409), 311, 312, 313, 314, 522, 524]
+        self.assertEqual(exv, rvar.vals())
+
     def test_multitype_match_pattern(self):
         ''' '''
         code = r'''
@@ -61,7 +121,7 @@ class TestMatch(TestCase):
                 n :: (string|list|D) | n :: dict !- res <- 6
                 _ !- res <- 199
         # (int|list|bool)
-        print('res = ', res)
+        # print('res = ', res)
         '''
         
         code = norm(code[1:])

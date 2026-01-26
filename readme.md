@@ -2421,6 +2421,30 @@ match data
     {k::string : v::int} !- # in dict
     {::string : _::list} !- # list in dict
 ```
+Multitype expression is applicable for matching patterns. Including struct types, collections and functions.  
+The multitype expression may be enclosed in parentheses.  
+No-var case.  
+```python
+match n
+    :: list|tuple !- ...
+    :: (int|bool) !- ...
+    :: (A|B) !- ...
+```
+With var.  
+```python
+match n
+    a :: (int|float) !- ...
+    b :: (A|B|C) !- ...
+    c :: (dict|tuple) !- ...
+```
+Mixed and nested patterns.  
+In mixed patterns `|` operator can make some ambiguity of interpretation, so usage of parentheses will be good choice here.  
+```python
+match n
+    val ::(A|B|C) | val ::(int|float) !- ...
+    [a::(A|B|C), ::(int|float), _, b::(dict|tuple)] !- ...
+```
+
 
 ### 24. Nothing yet
 
