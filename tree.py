@@ -152,7 +152,7 @@ patternMatchCasesSolid = [
 ]
 
 patternMatchCasesCplx = [
-    MTPtGuard(), MTMultiCase(), MTTypedVal(), MTDuaColon(),
+    MTPtGuard(), MTMultiCase(), MTTypedVal(), MTDuaColon(), MTMultiTyped(),
 ]
 
 

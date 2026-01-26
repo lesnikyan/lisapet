@@ -32,6 +32,194 @@ class TestMatch(TestCase):
 
 
 
+
+    def test_match_pattern_multitype_no_var(self):
+        ''' multitype in no-var pattern `::(int|B)` '''
+        code = r'''
+        res = [-111]
+        
+        struct A a:int
+        struct B b:int
+        struct C c:string
+        struct D
+        struct BB(B) bb:int
+        
+        struct AA n:int
+        struct BBB n:int
+        struct CC n:int
+        struct DD n:int
+        struct EE n:int
+        
+        struct FF n:int
+        struct GG n:int
+        struct HH n:int
+        struct JJ n:int
+        
+        nn = [1, 1.1, true, [1], (1,2), 'asd', {1:11, 2:22}, 
+            A{}, B{}, C{}, D{}, [A{}, B{}], [A{}, C{}], 
+            BB{}, (A{}, BB{}), (A{}, C{}),
+            AA{n:1}, BBB{n:2}, CC{n:3}, DD{n:4}, EE{n:5},
+            (AA(6), CC(7)), (FF(8), DD(9)),
+            FF(11), GG(12), HH(13), JJ(14),
+            AA(22), GG(24)]
+            
+        for n <- nn
+            match n
+                :: (int|float) !- res <- 1
+                n :: (A|B) !- res <- 4
+                n :: (C|bool) !- res <- 5
+                [::A, ::(B|C)] !- res <- 7
+                (::A, ::(B|C)) !- res <- 8
+                ::(AA|GG) :? n.n ?> [22,23,24] !- res <- 500 + n.n
+                ::(FF|GG) | ::(HH|JJ) !- res <- 300 + n.n
+                (::AA, ::CC) | (::FF, ::DD) !- res <- (400 + n[0].n, 400 + n[1].n)
+                :: (string|list) !- res <- 2
+                :: (dict|tuple) !- res <- 3
+                :: (string|list|D) | :: dict !- res <- 6
+                ::(AA|BBB|CC|DD|EE) !- res <- 200 + n.n
+                _ !- res <- 199
+        
+        # print('res = ', res)
+        '''
+        
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [-111, 1, 1, 5, 2, 3, 2, 3, 4, 4, 5, 6, 7, 7, 4, 8, 8,
+               201, 202, 203, 204, 205,
+               (406, 407), (408, 409), 311, 312, 313, 314, 522, 524]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_multitype_match_pattern(self):
+        ''' '''
+        code = r'''
+        res = [0]
+        
+        struct A a:int
+        struct B b:int
+        struct C c:string
+        struct D
+        struct BB(B) bb:int
+        
+        n = A{}
+        nn = [1, 1.1, true, [1], (1,2), 'asd', {1:11, 2:22}, 
+            A{}, B{}, C{}, D{}, [A{}, B{}], [A{}, C{}], 
+            BB{}, (A{}, BB{}), (A{}, C{}),]
+            
+        for n <- nn
+            match n
+                n :: (int|float) !- res <- 1
+                n :: (A|B) !- res <- 4
+                n :: (C|bool) !- res <- 5
+                [a::A, b::(B|C)] !- res <- 7
+                (a::A, b::(B|C)) !- res <- 8
+                n :: (string|list) !- res <- 2
+                n :: (dict|tuple) !- res <- 3
+                n :: (string|list|D) | n :: dict !- res <- 6
+                _ !- res <- 199
+        # (int|list|bool)
+        # print('res = ', res)
+        '''
+        
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [0, 1, 1, 5, 2, 3, 2, 3, 4, 4, 5, 6, 7, 7, 4, 8, 8]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_novar_type_struct(self):
+        ''' :: A '''
+        code = r'''
+        res = [0]
+        
+        struct A a:int
+        struct B b:int
+        struct C c:string
+        struct D
+        struct BB(B) bb:int
+        
+        nn = [
+            A{}, B{}, C{}, D{}, BB{},
+            [A{}, B{}], [A{}, BB{}], [C{}, D{}], 
+            [C{}, C{}], [A{}, A{}], [D{}],
+        ]
+        
+        for n <- nn
+            match n
+                :: A !- res <- 10
+                :: B !- res <- 11
+                :: C | ::D !- res <- 12
+                [:: A, ::B] | [::C, ::D] !- res <- 13
+                [_{}, _{}]     !- res <- 14
+                _ !- res <- 999
+        
+        # print('res = ', res)
+        '''
+        
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [0, 10, 11, 12, 12, 11, 13, 13, 13, 14, 14, 999]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_match_pattern_type_structs(self):
+        ''' '''
+        code = r'''
+        res = [-111]
+        
+        struct A a:int
+        struct B b:int
+        struct C c:string
+        struct D
+        struct BB(B) bb:int
+        
+        nn = [
+            A{}, B{}, C('cat'), D(),
+            [A{}, B{}], (A{}, C{}), [A{}, BB{}],
+            [A{}, A{}], [D{}, D{}],[D{}, B{}],
+            {11:A{}, 22:B{}}, {33:C{}, 44:BB{}}, {34:A{}, 45:BB{}}, 
+        ]
+        
+        for n <- nn
+            match n
+                a :: A !- res <- (10 , n, a)
+                :: B !- res <- (11 , n)
+                ::C | ::D !- res <- (16 , n)
+                [a::A, b::(B)] !- res <- (12 , n, a, b)
+                (a::A, b::(C)) !- res <- (13 , n, a, b)
+                [a::D, _{}] !- res <- (15 , n, a)
+                [_{}, _{}]     !- res <- (14 , n)
+                {k1: a::A, k2: b::B} !- res <- (18, n, k1, k2, a, b)
+                ::dict !- res <- (17, n)
+                _ !- res <- (999 , n)
+
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            -111, (10, 'st@A{a: 0}', 'st@A{a: 0}'), (11, 'st@B{b: 0}'), (16, 'st@C{c: cat}'), (16, 'st@D{}'), 
+            (12, ['st@A{a: 0}', 'st@B{b: 0}'], 'st@A{a: 0}', 'st@B{b: 0}'), (13, ('st@A{a: 0}', 'st@C{c: }'), 'st@A{a: 0}', 'st@C{c: }'), 
+            (12, ['st@A{a: 0}', 'st@BB{b: 0,bb: 0}'], 'st@A{a: 0}', 'st@BB{b: 0,bb: 0}'), (14, ['st@A{a: 0}', 'st@A{a: 0}']), 
+            (15, ['st@D{}', 'st@D{}'], 'st@D{}'), (15, ['st@D{}', 'st@B{b: 0}'], 'st@D{}'), 
+            (18, {11: 'st@A{a: 0}', 22: 'st@B{b: 0}'}, 11, 22, 'st@A{a: 0}', 'st@B{b: 0}'), 
+            (17, {33: 'st@C{c: }', 44: 'st@BB{b: 0,bb: 0}'}), 
+            (18, {34: 'st@A{a: 0}', 45: 'st@BB{b: 0,bb: 0}'}, 34, 45, 'st@A{a: 0}', 'st@BB{b: 0,bb: 0}')]
+        self.assertEqual(exv, rvar.vals())
+
     def test_match_mixed_with_regexp(self):
         '''  '''
         code = r'''

@@ -58,7 +58,7 @@ class TestDev(TestCase):
         
         TODO?: class Null() -> class Null(Val)
         
-        TODO: declaration of var:type without assignment: check and fix.
+        DONE: declaration of var:type without assignment: check and fix.
         
         TODO: check type of operand for all operators
         
@@ -84,41 +84,13 @@ class TestDev(TestCase):
         TODO: var type ofor iter-loop 
             for n:int <- nn
         
-        BUG: ampty inherited struct
+        BUG: empty inherited struct
             struct A
             struct E(A)  # Error 
     
     '''
 
 
-
-
-    def _test_multitype_match_pattern(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        match n
-            n :: int|float !- ...
-            n :: (string|list) | n :: dict !- ...
-        
-        if x :: int|float
-            ..
-        if y :: int || z :: float
-            ..
-        if a :: int|float || b :: list|tuple
-            ..
-        
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # self.assertEqual([220022, 'Aloha!'], rvar.vals())
 
 
     def _test_code(self):
@@ -141,7 +113,8 @@ class TestDev(TestCase):
         trydo(ex, ctx)
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
-        # self.assertEqual([220022, 'Aloha!'], rvar.vals())
+        # exv = []
+        # self.assertEqual(exv, rvar.vals())
 
 
     def _test_barr(self):

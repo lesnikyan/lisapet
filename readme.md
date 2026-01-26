@@ -5,8 +5,8 @@ Linear Interpreter of Scripting And Processing Expression Tree.
 
 ico: Fox pet on the bicycle
 
-LISAPET is an interpretable language like python, written with python, but not a python :)  
-It was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run for the python project but without direct execution of scripts on the python interpreter (bad and unsafe way).  
+LISAPET is an interpretable language like python, written with python, but is not python :)  
+It was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run within the python project but without direct execution of script on the python interpreter (bad and unsafe way).  
 Instead of line-by-line execution, interpreter builds executable object, actually - tree of actions (expressions).  
 Than this object can be executed with some data. One or many times if need.  
 Executable tree uses context-container with working data (variables, values, types, etc).  
@@ -26,54 +26,76 @@ Content:
     3. [Numeric and bool types](#13-numeric-types)
     4. ["Strings"](#14-strings)
     5. [""" Multiline strings """](#15-multiline-strings)
-    6. [Strict type `var:type`](#16-typed-var-expression-xtype)
-    7. [Type compatibility](#17-type-compatibility)
-    8. [Multitype expression `int|float|N`](#18-multitype-expression)
+    6. [Multiline expressions](#19-multiline-expressions-if-for-math-expr)
+    7. [Code blocks and formatting.](#17-sub-blocks-code-formatting)
 
-2. [Code blocks and formatting.](#2-sub-blocks-code-formatting)
+2. Operators.  
+    1. [Math operators](#21-arithmetic-operators)
+    2. [Unary operators](#22-other-unary-operators)
+    3. [Assignent operators](#23-operators-with-assignment)
+    4. [Other classic operators](#24-other-classic-c-like-operators)
+    5. [Table of perators precedence](#25-table-of-priority-order)
+    6. [Ternary `?:` operator](#26-ternary-operator-)
+    7. [In `?>`, not in `!?>`](#27-val-in--and-val-not-in--operators)
+    8. [Check type `::`](#28-check-type-operator-)
 
-3. [`if`-statement](#3-if-statement-else)
+3. Collections.  
+    1. [List `[]`](#31-list-array)
+    2. [Tuple `(,)`](#32-tuple-val-val-val)
+    3. [Unpack `a,b = [1,2]`](#33-unpack-of-sequence-by-multi-assignment)
+    4. [Dict `{'key':val}`](#34-dict-linear-and-block-constructor)
+    5. [Collection features >>>](#collection-features)
+    6. [List features >>>](#list-features)
 
-4. [Operators. Math, bool, unary, others.](#4-operators-math-unary-others)
+4. Data type.
+    1. [Strict type `var:type`](#41-typed-var-expression-xtype)
+    2. [Type compatibility `x:int = true`](#42-type-compatibility)
+    3. [Multitype expression `x: int|float|N`](#43-multitype-expression)
 
-5. [List `[]`, tuple `(,)`, unpack `a,b = [1,2]`](#5-collections-list-array-tuple-unpack-of-sequence)
+5. `if`-statement
+    1. [if - else](#5-if-statement-else)
+    2. [if sub-expr; cond](#52-if-sub-expression)
 
-6. [Dict `{'key':val}`](#6-dict-linear-and-block-constructor)
+6. `for`-statement 
+    1. [Classic `for` loop by counter](#6-for-statement)
+    2. [`for i <- [1..5]`](#62-iterator-arrow-assign-operator--)
+    3. [`for i <- iter(n)`](#63-function-iter)
+    4. [Keywords `continue`, `break`](#64-keywords-continue-break)
 
-7. [For-statement: `for i <- [1..5]`](#7-for-statement---operator)
+7. Functions:  
+    1. [Definition and usage `func f()`](#7-function-definition-context-of-functions)  
+    2. [Definition context](#72-definition-context)  
+    3. [Type of argument `x:type`](#73-argument-type)  
+    4. [Default argument in definition `func f(x=1)`](#74-default-value-of-arguments)  
+    5. [Named argument in call `n = f(x=2)`](#75-named-arguments)  
+    6. [Variadic arguments `func f(args...)`](#76-variadic-arguments)  
+    7. [Overload of functions](#77-function-overload): a) [by count](#771-arg-count-overloading), b) [by type](#772-overload-by-arg-types)  
+    8. [Builtin functions >>>](#builtin-native-functions-and-methods)
+    9. [Functional features >>>](#functional-features)
 
-8. Functions:`func foo()`  
-    1) [Base info](#8-function-definition-context-of-functions)  
-    2) [Default arguments `func foo(x=1)`](#82-default-value-of-arguments)  
-    3) [Named arguments `n = foo(x=2)`](#83-named-arguments)  
-    4) [Variadic arguments `func foo(args...)`](#84-variadic-arguments)  
-    5) [Overload of functions](#85-function-overload)  
-
-9. Collection features:  
+8. #### Collection features:  
     1. [append operator `nums <- 15`](#91-arrow-appendset-operator--)
     2. [deletion operator `data - [key]`](#92-minus-key---key-delete-operator)
     3. [plus for lists `[] + []`](#93-list-plus---)
 
-10. Struct: 
-    1. [Definition, constructor `A{f:val}`, fields, `.` operator](#101-struct)
-    2. [Callable constructor `A(val)`](#102-constructor-function-typename)
-
-11. Struct, OOP:
-    1. [Methods `x.foo()`](#111-struct-method)
-    2. [Inheritance `A(B)`](#112-struct-inheritance-multiple-inheritance-is-allowed)
-
-12. List features:
+9. #### List features:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
     2. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
 
-13. [Multiline expressions](#13-multiline-expressions-if-for-math-expr)
-
-14. Builtin (native) functions and methods
+10. Structs `A{}` 
+    1. [Definition, constructor `A{f:val}`, fields, `.` operator](#101-struct)
+    2. [Callable constructor `A(val)`](#102-constructor-function-typename)
+    3. [Methods `x.foo()`](#111-struct-method)
+    4. [Inheritance `A(B)`](#112-struct-inheritance-multiple-inheritance-is-allowed)
+11. 
+12. 
+13.  
+14. #### Builtin (native) functions and methods
     1. [Global functions: print, iter, etc.](#141-global-native-functions)
     2. [Bind native function as a method `[1,2].join(',')`](#142-binding-method-for-type)
     3. [Methods are already bound](#143-methods--are-already-bound-to-types)
 
-15. [Functional features](#15-functional-programming-features)  
+15. #### [Functional features](#15-functional-programming-features)  
     1. [Lambdas `x -> x ** 2`](#151-lambda-functions-right-arrow--)  
     2. [high-order functions](#152-high-order-functions)
     3. [Function as object](#153-function-as-an-object)
@@ -81,16 +103,10 @@ Content:
     5. [Call-chain `foo(1)(2)(3)`](#155-call-chain)
     6. [Currying cascade](#156-currying-cascade)
     7. [Tail recursion](#157-tail-recursion)
-16.
-17. 
-
-18. Operators with bool condition.  
-    1. [Ternary `?:` operator](#181-ternary-operator-)
-    2. [In `?>`, not in `!?>`](#182-val-in--and-val-not-in--operators)
-    3. [Check type `::`](#183-check-type-operator-)
-
-19. [optimized place :) ]
-
+16.  
+17.  
+18.
+19.
 20. Inline syntax.  
     [Few-expressions block ` ; `](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
@@ -335,7 +351,395 @@ Formatting operators see in [`"%s"<<` ](#211-percent-formatting) and
 [`"~{s}"`](#212-format-by-including-expressions) formatting.
 
 
-### 1.6 Typed var expression x:type   
+### 1.6 Multiline expressions: `if`, `for`, math expr.  
+Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control statements.  
+The main way to split long line to shorten parts is use brackets.
+For comprehantion expressions it works with its square brackets (see examples).  
+For function call, `if`, `for` or math expressions we can use round brackets as usual.  
+Indents in multiline case makes code more readable.
+```python
+# func
+val = foo(a,
+    'b b b b b b b b b', bar(c) )
+
+# if
+if ( cond1
+    && cond2
+    && cond3)
+    expr...
+
+# for loop
+for ( n <-
+    [y; x <- [1..5];
+        y = x * 100 - x])
+    result <- n
+
+# math
+res = ( (a + b) * 15
+    - c * d + a ** 5
+    + e / 111)
+```
+
+
+### 1.7 Sub-blocks, code-formatting.
+Control structures, data-structures, functions, etc. have inner place with internal lines (expressions), here we call it as an expression block, child or sub-block.  
+Sub block is separated by indent with one or more whitespaces related to parent.  
+All indents should be equal.  
+First indent defines all other indents in the file.  
+Base block structures: `if`, `for`, `while`, `match-cases`, `function`.  
+```python
+if a < b
+    while x < 10
+        for i=0; i < 5; i += 1
+            # do comething
+```
+Data structures can have block version of definition (`struct`) or constructor (`dict` and `list`).  
+Some blocks also can have inline version of syntax (controls, sequence of expressions).  
+See more about inline syntax [in next sections](#20-one-line-block---operators).  
+
+
+
+### 2. Operators.
+
+### 2.1 Arithmetic operators    
+Arithmetic `+` `-` `*` `/` operators works as usual.  
+`%` - mod operator, returns remainder of division.  
+`**` - pow operator. `2 ** 3` = 8.  
+Math operators is used in math expressions, using braces if need.  
+```python
+y = 5 + x * -3
+
+# unary operator minus
+x = -2
+
+# pow
+5 ** 2 # >> 25
+
+# more complex math expressions
+b=100 
+c=4
+d=3
+res = 5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8
+```
+### 2.2 Other unary operators.  
+`!` logical NOT  
+`~` bitwise NOT (overloaded for the string as a formatting operator)  
+
+### 2.3 Operators with assignment   
+`+=` `-=` `*=` `/=` `%=` 
+```python
+x = 1
+x += 2
+```
+### 2.4 Other classic c-like operators.   
+Bitwise:  
+`&` `|` `^` `<<` `>>` `~`  
+`<<` overloaded for the string too.  
+Comparison:  
+`==` `!=` `>` `<` `>=` `<` `<=`  
+Logical:  
+`&&` `||` `!`  
+
+Others, have specific behaviour, and will be explained further:  
+`?>` `!?>` `?:` `<-` `->` `!-` `:?` `/:` `::` `=~` `?~`
+
+### 2.5 Table of priority order:
+```
+() [] {} 
+. 
+-x !x ~x 
+** 
+* / % 
++ - 
+<< >> 
+=~ ?~ /~
+< <= > >= !> ?> !?>
+== != 
+&
+^
+|
+::
+&&
+||
+?: 
+: 
+? 
+,
+<- 
+->
+= += -= *= /= %=  
+/:
+; 
+:?
+!-
+```
+
+### 2.6 Ternary operator `?:`  
+classic ternary oper `condition ? valIfTrue : elseVal`  
+```python
+x = a < b ? 10 : 20
+```
+Shortened case. value-or:  `val1 ?: va2 `  
+returns val1 if not null (zero num, empty string, list or tuple); otherwize returns val2  
+```python
+x = val1 ?: va2
+```
+
+### 2.7 Val-in `?>` and val-not-in `!?>` operators.  
+Boolean operators for check value or key in collection.  
+1. If collection `vals` contains value `a`  
+ `a ?> vals`  
+```python
+# base usage 
+val ?> collection
+
+# val for list|tuple
+if val ?> [1,2,3] ...
+if val ?> ('a', 'b', 'c') ...
+
+# key for dict
+if 'a' ?> {'a':1, 'b':2} ...
+```
+2. If collection doesn't have value `!?>`  
+`val !?> collection`
+```python
+!(val ?> nums)
+
+# the same as
+
+val !?> nums
+```
+Examples:
+```python
+if 5 !?> [1,2,3] ... # True
+if 'c' !?> {'a':1, 'b':2} ...
+```
+
+### 2.8 Check type operator `::`  
+1. Simple type case.  
+If we need to check type of value we can use operator `::`  
+Left oparend is value (var, ect..), right - name of type.  
+```python
+src = [10, 2.5 , "three", [4]]
+
+for val <- src
+    if val :: int
+        # 10 
+    if val :: float
+        # 2.5
+    if val :: string
+        # "three"
+    if val :: list
+        # [4]
+```
+Basic list of types usable in `::` operator:
+```
+int, float, bool
+string, list, tuple, dict,
+function
+```
+Some types can be added in the future.  
+
+2. Struct type case.  
+Check type of structs is the same operator.  
+```golang
+
+struct A
+struct B
+struct C(B) c:int
+a1 = A{}
+c1 = C{}
+
+if a1 :: A
+    # yes
+
+if a1 :: B
+    # no
+
+if c1 :: B
+    # yes because parent in the left
+```
+
+3. Multitype cases `(A|B|list)`.  
+Multitype expressions works for `::` operator.  
+Simple type example:  
+```python
+a = 1
+a :: int|float # true
+a :: (list|dict) # false
+```
+
+Multitype of struct types.  
+```golang
+struct A a:int
+struct B b:int
+struct C(B) c:int
+
+a1 = A{}
+b1 = B{}
+c1 = C{}
+
+a1 :: A|C # true
+b1 :: A|B # true
+a1 :: (B|C) # false
+c1 :: (A|B) # true because B is a parent
+
+x = 12
+x :: (A|B|int) # true
+
+y = true
+y :: (A|B|int) # false
+```
+
+3. Type var.  
+Type or multitype can be stored into variable and used next.  
+```python
+tL = list # simple list type
+
+nn = []
+nn :: tL # true
+dd = {}
+dd :: tL # false
+
+tN = (int | float) # complex numeric type
+
+x = 1
+x :: tN # true
+
+y = false
+y :: tN # false
+```
+
+
+More about special operators in   
+[one-line `;` `/:`](#20-one-line-block---operators),   
+[`'%'<<` percent-formatting](#211-percent-formatting), 
+[`~`string](#212-format-by-including-expressions),  
+[append `<-`](#91-arrow-appendset-operator--), 
+[`for` `<-` ](#7-for-statement---operator), 
+[lambda `->`](#15-lambda-functions-and-high-order-functions-right-arrow--),  
+[`match` `!-` `:?` `::`](#16-match-statement),  
+[regexp `=~` `?~` ](#252-regexp-match-)
+
+
+### 3. Collections.  
+LP have most calassic type of collections:  
+List aka array.  
+Tuple.  
+Dict.  
+
+### 3.1 List (array).  
+1. List, linear constructor.  
+```python
+nums = ['One', 'Two', 'Three']
+```
+
+Another syntax option (block constructor) can be useful with long values.  
+```python
+names = []
+    'Anna'
+    'Barbi'
+    'Cindy'
+    'Muxtar'
+```
+Elements of lists.
+```python
+# set / change element
+names[3] = 'Vaxtang'
+
+# read value of element
+firstName = names[0]
+```
+Negative indexes are allowed.  
+It accesses to the element by position from the end of list.  
+`[-1]` is a last element (1-st from the end).  
+```python
+nums = [1,2,3,4,5]
+print(nums[-2])
+>> 4
+```
+
+### 3.2. Tuple `(val, val, val)`.  
+
+Tuple. Few values in the parenthesis over comma.  
+Tuple is immutable.  
+```python
+vals = (1, 100, 'More numbers')
+
+# comma means that here is a constr of empty tuple, not just brackets
+val = (,)
+
+# read value by index
+print(vals[2])
+```
+Unpack values from list or tuple.
+```python
+names = ['Anatol', 'Basilev', 'Cardamon']
+n1, n2, n3 = names
+
+vals = (1, 22, 33,3)
+a, b, c = vals
+```
+
+Tuple has block contructor too.  
+```python
+data = (,)
+    11
+    'Vasya Pupkin'
+    ['a', 'b', 'c']
+data[1] # >> 'Vasya Pupkin'
+```
+
+### 3.3 Unpack of sequence by multi-assignment.   
+Multiassignment can unpack sequences to the set of variables.  
+```python
+# simple vals
+a, b, c = 1,"2",3.5
+
+# unpack tuple
+a, b, c = (1, 2, 3)
+
+# unpack list
+a, b, c = [1,2,3]
+```
+
+### 3.4. Dict. Linear and block constructor
+Dict (dictionary) is a classic key-value collection.  
+Base syntax of dict constructor is a set of pairs key:val in the curly braces.  
+```python
+# linear constr
+dd = {'a':1, 'b':2}
+```
+Block syntax for dicts.  
+```python
+# block constr
+ddd = {}
+    'a': 'a a a a a a a a a a a a a a a a a'
+    'b': 'b b b b b b b b b b b b b b b b b'
+```
+Set or get value of dict element by key.  
+```python
+u = {'name':'Vasya', 'age':22, weight:60.0}
+
+# set val by key
+u['age'] = 23
+
+# get value
+name = u['name']
+age = u['age']
+print('User:', name, age)
+
+>> User: Vasya 23
+```
+More feature of collections:
+[`<-` operator](#91-arrow-appendset-operator--),
+[`list - [key]`](#92-minus-key---key-delete-operator),
+[`[]+[]`](#93-list-plus---).
+
+
+### 4 Data typr.
+
+### 4.1 Typed var expression x:type   
 Type of variable is defined by `:` operator.  
 `varName : typeName`  
 This syntax means strict typing of variable (or functions arg)
@@ -350,7 +754,7 @@ no:bool = false
 ```
 Types such as collections, structs, functions, etc will be explaned next sections.
 
-### 1.7 Type compatibility.   
+### 4.2 Type compatibility.   
 Variable defined by `:` operator has strict type.  
 It prevents setting of new value with an inappropriate type.  
 Compatible types are converted automatically.  
@@ -366,7 +770,7 @@ The same is correct for field of struct instance and functions agrument.
 For a structures, type of value can be a child of type of variable, but not vice versa.  
 
 
-### 1.8 Multitype expression.  
+### 4.3 Multitype expression.  
 If we need use var which should have one of several types value, we can use multi-type expression.  
 ```python
 x: int | float = 1
@@ -374,16 +778,28 @@ x = 2.5
 ```
 Multitype expression can have more than 2 parts:
 ```python
-x : list | tuple | dict | string  = []
+x : list | tuple | dict | string = []
+
 len(x) # 0
+
 x = (1,2)
 len(x) # 2
+
 x = {1:11, 2:22, 3:33}
 len(x) # 3
+
 x = "hello"
 len(x) # 5
 ```
-Struct type is works too.  
+An expression of multitype can be enclosed in parentheses.  
+It can be useful for more complex expressions.  
+```python
+nums: (list|tuple) = []
+
+n:(int|float|string) ='1'
+```
+
+Struct type works too.  
 ```golang
 struct A a:int
 struct B b:tin
@@ -411,17 +827,7 @@ foo(1.5, 4000) #// (15.0, '<4000>')
 The same works for methods.  
 
 
-### 2. Sub-blocks, code-formatting.
-Control structures, data-structures, functions, etc. have inner place with internal lines (expressions), here we call it as an expression block, child or sub-block.  
-Sub block is separated by indent with one or more whitespaces related to parent.  
-All indents should be equal.  
-First indent defines all other indents in the file.  
-Base block structures: `if`, `for`, `while`, `match-cases`, `function`.  
-Data structures can have block version of definition (`struct`) or constructor (`dict` and `list`).  
-Some blocks also can have inline version of syntax (controls, sequence of expressions).  
-See more about inline syntax [in next sections](#20-one-line-block---operators).  
-
-### 3. `if`-statement, `else`
+### 5. `if`-statement, `else`
 `if` statement, comparison operators, bool operators. 
 
 `if` is a basic control operator.  
@@ -461,6 +867,7 @@ else
     y = x ** 2
     res = 10 * y
 ```
+### 5.2 if-sub-expression
 `if` statement can have sub-expression before condition.  
 Usually it uses for local assignment or initialization that have relation to condition expression only (and maybe to sub-block).  
 Subexpression should be separated by semicolon `;`  
@@ -477,191 +884,8 @@ a = 10; b = 2; (if x = a + 1; x > b /: print(a, b, x))
 ```
 See more about [inline control expressions](#20-one-line-block---operators).  
 
-### 4. Operators: math, unary, others.
-1. Arithmetic operators `+` `-` `*` `/` works as usual.  
-`%` - mod operator, returns remainder of division.  
-`**` - pow operator. `2 ** 3` = 8.
-```python
-y = 5 + x * -3
 
-# unary operator minus
-x = -2
-
-# pow
-5 ** 2 # >> 25
-
-# more complex math expressions
-b=100 
-c=4
-d=3
-res = 5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8
-```
-2. Other unary operators.  
-`!` logical NOT  
-`~` bitwise NOT (overloaded for the string as a formatting operator)  
-
-3. Operators with assignment   
-`+=` `-=` `*=` `/=` `%=` 
-```python
-x = 1
-x += 2
-```
-4. Classic c-like operators.   
-Bitwise:  
-`&` `|` `^` `<<` `>>` `~`  
-`<<` overloaded for the string too.  
-Comparison:  
-`==` `!=` `>` `<` `>=` `<` `<=`  
-Logical:  
-`&&` `||` `!`  
-
-5. Others, have specific behaviour, and will be explained further:  
-`?>` `!?>` `?:` `<-` `->` `!-` `:?` `/:` `::` `=~` `?~`
-
-More details in   
-[Bool expressions `?:` `?>` `!?>`](#181-ternary-operator-) , 
-[one-line `;` `/:`](#20-one-line-block---operators),   
-[append `<-`](#91-arrow-appendset-operator--), 
-[`for` `<-` ](#7-for-statement---operator), 
-[lambda `->`](#15-lambda-functions-and-high-order-functions-right-arrow--),  
-[`match` `!-` `:?` `::`](#16-match-statement),  
-[regexp `=~` `?~` ](#252-regexp-match-)
-[type check `::`](#183-check-type-operator-)
-
-Table of priority order:
-```
-() [] {} 
-. 
--x !x ~x 
-** 
-* / % 
-+ - 
-<< >> 
-=~ ?~ /~
-< <= > >= !> ?> !?>
-::
-== != 
-&
-^
-|
-&&
-||
-?: 
-: 
-? 
-,
-<- 
-->
-= += -= *= /= %=  
-/:
-; 
-:?
-!-
-```
-
-### 5. Collections: list (array), tuple, unpack of sequence.
-1. List, linear constructor.  
-```python
-
-nums = ['One', 'Two', 'Three']
-```
-
-List, block constructor (for long elements)
-```python
-names = []
-    'Anna'
-    'Barbi'
-    'Cindy'
-    'Muxtar'
-```
-Elements of lists.
-```python
-# set / change element
-names[3] = 'Vaxtang'
-
-# read value of element
-firstName = names[0]
-```
-Negative indexes are allowed.  
-It accesses to the element by position from the end of list.  
-`[-1]` is a last element (1-st from the end).  
-```python
-nums = [1,2,3,4,5]
-print(nums[-2])
->> 4
-```
-
-2. Tuples: `(val, val, val)`.  
-
-Tuple. Few values in the parenthesis over comma.  
-Tuple is immutable.  
-```python
-vals = (1, 100, 'More numbers')
-
-# comma means that here is a constr of empty tuple, not just brackets
-val = (,)
-
-# read value by index
-print(vals[2])
-```
-Unpack values from list or tuple.
-```python
-names = ['Anatol', 'Basilev', 'Cardamon']
-n1, n2, n3 = names
-
-vals = (1, 22, 33,3)
-a, b, c = vals
-```
-
-Tuple has block contructor too.  
-```python
-data = (,)
-    11
-    'Vasya Pupkin'
-    ['a', 'b', 'c']
-data[1] # >> 'Vasya Pupkin'
-```
-
-3. Unpack of sequence by multi-assignment.   
-Multiassignment can unpack sequences to the set of variables.  
-```python
-# simple vals
-a, b, c = 1,"2",3.5
-
-# unpack tuple
-a, b, c = (1, 2, 3)
-
-# unpack list
-a, b, c = [1,2,3]
-```
-
-### 6. Dict. Linear and block constructor
-```python
-# linear constr
-dd = {'a':1, 'b':2}
-
-# block constr
-ddd = {}
-    'a': 'a a a a a a a a a a a a a a a a a'
-    'b': 'b b b b b b b b b b b b b b b b b'
-
-# set val by key
-dd['c'] = 3
-```
-```python
-# read
-u = {'name':'Vasya', 'age':22, weight:60.0}
-print('User name:', u['name'])
-
->> User name: Vasya
-```
-More feature of collections:
-[`<-` operator](#91-arrow-appendset-operator--),
-[`list - [key]`](#92-minus-key---key-delete-operator),
-[`[]+[]`](#93-list-plus---).
-
-
-### 7. `for` statement, `<-` operator
+### 6. `for` statement
 1. Range-iterator. It works like classic C-like `for`.  
 `for` {init-expression} `;` {condition-check} `;` {post-iteration expression}
 ```python
@@ -674,7 +898,7 @@ for i=0; i < 5; i += 1
 res = y
 ```
 
-2. Iterator, arrow-assign operator `<-`  
+### 6.2 Iterator, arrow-assign operator `<-`  
 Left-arrow `<-` operator has several options.  
 Here we use left-arrow as an iterative assignment in `for` statement.  
 It looks, like we pick the element from the sequence one-by-one.
@@ -698,7 +922,7 @@ for x <- [1..10]
 for k, val <- {'a':1, 'b':2}
     ...
 ```
-3. Function `iter()`  
+### 6.3 Function `iter()`  
 ```python
 # One arg iter(last+1)
 iter(3) # >> 0,1,2
@@ -710,7 +934,7 @@ iter(1,7,2) # >> 1,3,5
 
 ```
 
-4. Keywords `continue`, `break`.  
+### 6.4 Keywords `continue`, `break`.  
 
 ```python
 r = []
@@ -726,7 +950,7 @@ for i <- [1..10]
 >> [5,6,7,8]
 ```
 
-### 8. Function definition, context of functions.
+### 7. Function definition, context of functions.
 
 1. Keyword `func`.  
 Last expression is a returning result.  
@@ -744,7 +968,7 @@ func foo(a, b, c)
 res = foo(1,2,3)
 
 ```
-2. Definition context.  
+### 7.2 Definition context.  
 Function can use nearest declaration context (actually all top-level things in module where func was declared).
 ```python
 callIndex = 0
@@ -754,7 +978,8 @@ func foo(x, y)
     callIndex += 1
     res
 ```
-3. Argument type.  
+
+### 7.3 Argument type.  
 By default arguments have most general type `any`.  
 But we can specify more strict type.  
 According to type compatibility, we can pass value with more strict type to argument with wider type, like typed vars. 
@@ -769,7 +994,8 @@ bar(1.5, 2.8) #// ok
 bar(2, 3) #// ok too
 bar('a', 'b') #// error
 ```
-### 8.2. Default value of arguments.  
+
+### 7.4 Default value of arguments.  
 Arguments of functions can have default value.  
 Default values is used if function was called without arguments that have default value.  
 Default values are possible in the end of arg list in func definition only, they should fill missing args. So it doen't make sense to declare argument without default value after at least one arg with default value.  
@@ -784,7 +1010,7 @@ foo(5) #// >> 5
 
 ```
 
-### 8.3. Named arguments.  
+### 7.5 Named arguments.  
 In function call expression named args are allowed.  
 Named argument is passed like assignment expression on the argument position in function call, name of argument as a left operand of assignment:  
 `foo(name='Bob')`  
@@ -800,7 +1026,7 @@ foo(a=10, b = foo(3,2)) #// 9
 foo(5, 2, a=10) #// 3; 10 is ignored
 ```
 
-### 8.4 Variadic arguments.  
+### 7.6 Variadic arguments.  
 Variadic arguments is a feature of function that allow pass into function different number of params, but take them in function body as a one list.  
 Most used example is a `print()` function from builtins.  
 ```golang
@@ -831,10 +1057,10 @@ f4('A-', 'a') #// ['A-a']
 f4('c=', '1', '2', '3', pref='<', post='>') #// ['<C=1>', '<C=2>', '<C=3>']
 ```
 
-### 8.5 Function overload.  
+### 7.7 Function overload.  
 C++ like overload means that we can create several functions with the same name but different list of arguments.  
 
-1. Arg count overloading.  
+### 7.7.1 Arg count overloading.  
 Simples case is overloading function by number of arguments.  
 
 Example:
@@ -855,7 +1081,7 @@ foo(3) #// >> 300
 foo(2, 6) #// >> 12
 ```
 
-2. Overload by arg types.  
+### 7.7.2 Overload by arg types.  
 If overloaded functions have the same number of args, interpreter takes function with such types which was passed in call expression.  
 ```golang
 
@@ -1259,35 +1485,6 @@ But it works, it returns list of lambdas which return generators.
 [ x -> [x .. y] ; y <- [1 .. 10]]
 ```
 
-### 13. Multiline expressions: `if`, `for`, math expr.  
-Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control statements.  
-The main way to split long line to shorten parts is use brackets.
-For comprehantion expressions it works with its square brackets (see examples).  
-For function call, `if`, `for` or math expressions we can use round brackets as usual.  
-Indents in multiline case makes code more readable.
-```python
-# func
-val = foo(a,
-    'b b b b b b b b b', bar(c) )
-
-# if
-if ( cond1
-    && cond2
-    && cond3)
-    expr...
-
-# for loop
-for ( n <-
-    [y; x <- [1..5];
-        y = x * 100 - x])
-    result <- n
-
-# math
-res = ( (a + b) * 15
-    - c * d + a ** 5
-    + e / 111)
-```
-
 ### 14. Builtin functions:  
 ### 14.1 Global native functions
 Include native (python) function as an builtin function.  
@@ -1628,71 +1825,6 @@ a1 = A(3)
 res <- a1.ff(1001, 0) # 3003
 ```
 
-
-### 18.1 Ternary operator `?:`  
-classic ternary oper `condition ? valIfTrue : elseVal`  
-```python
-x = a < b ? 10 : 20
-```
-Shortened case. value-or:  `val1 ?: va2 `  
-returns val1 if not null (zero num, empty string, list or tuple); otherwize returns val2  
-```python
-x = val1 ?: va2
-```
-
-### 18.2 Val-in `?>` and val-not-in `!?>` operators.  
-Boolean operators for check value or key in collection.  
-1. If collection `vals` contains value `a`  
- `a ?> vals`  
-```python
-# base usage 
-val ?> collection
-
-# val for list|tuple
-if val ?> [1,2,3] ...
-if val ?> ('a', 'b', 'c') ...
-
-# key for dict
-if 'a' ?> {'a':1, 'b':2} ...
-```
-2. If collection doesn't have value `!?>`  
-`val !?> collection`
-```python
-!(val ?> nums)
-
-# the same as
-
-val !?> nums
-```
-Examples:
-```python
-if 5 !?> [1,2,3] ... # True
-if 'c' !?> {'a':1, 'b':2} ...
-```
-
-### 18.3 Check type operator `::`  
-If we need to check type of value we can use operator `::`  
-Left oparend is value (var, ect..), right - name of type.  
-```python
-src = [10, 2.5 , "three", [4]]
-
-for val <- src
-    if val :: int
-        # 10 
-    if val :: float
-        # 2.5
-    if val :: string
-        # "three"
-    if val :: list
-        # [4]
-```
-Basic list of types usable in `::` operator:
-```
-int, float, bool
-string, list, tuple, dict,
-function
-```
-Some types can be added in the future.  
 
 ### 19. Free place :)  
 
@@ -2289,6 +2421,30 @@ match data
     {k::string : v::int} !- # in dict
     {::string : _::list} !- # list in dict
 ```
+Multitype expression is applicable for matching patterns. Including struct types, collections and functions.  
+The multitype expression may be enclosed in parentheses.  
+No-var case.  
+```python
+match n
+    :: list|tuple !- ...
+    :: (int|bool) !- ...
+    :: (A|B) !- ...
+```
+With var.  
+```python
+match n
+    a :: (int|float) !- ...
+    b :: (A|B|C) !- ...
+    c :: (dict|tuple) !- ...
+```
+Mixed and nested patterns.  
+In mixed patterns `|` operator can make some ambiguity of interpretation, so usage of parentheses will be good choice here.  
+```python
+match n
+    val ::(A|B|C) | val ::(int|float) !- ...
+    [a::(A|B|C), ::(int|float), _, b::(dict|tuple)] !- ...
+```
+
 
 ### 24. Nothing yet
 

@@ -480,6 +480,7 @@ def var2val(var:Var|Val):
     ''' Convert Var to Val instance  '''
     # print('var2val 1 :', var, type(var), var.__class__)
     var = valFrom(var)
+    
     if isinstance(var, (ObjectElem)):
         var = var.get()
     if isinstance(var, (Val, Collection, Regexp, StringVal)):
