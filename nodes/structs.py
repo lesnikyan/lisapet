@@ -177,7 +177,11 @@ class StructDef(TypeStruct):
         return id(self) == id(value)
 
     def __str__(self):
-        return 'type struct %s{}' % self.name
+        return 'StructType %s{}' % self.name
+    
+    def __repr__(self):
+        fields = ', '.join( f"{tt}:{self.ntypes[tt].name}" for tt in self.nfields)
+        return 'Type-%s{%s}' % (self.name,fields)
 
 
 

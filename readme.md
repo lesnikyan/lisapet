@@ -5,8 +5,8 @@ Linear Interpreter of Scripting And Processing Expression Tree.
 
 ico: Fox pet on the bicycle
 
-LISAPET is an interpretable language like python, written with python, but not a python :)  
-It was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run for the python project but without direct execution of scripts on the python interpreter (bad and unsafe way).  
+LISAPET is an interpretable language like python, written with python, but is not python :)  
+It was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run within the python project but without direct execution of script on the python interpreter (bad and unsafe way).  
 Instead of line-by-line execution, interpreter builds executable object, actually - tree of actions (expressions).  
 Than this object can be executed with some data. One or many times if need.  
 Executable tree uses context-container with working data (variables, values, types, etc).  

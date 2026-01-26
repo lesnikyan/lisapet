@@ -93,6 +93,7 @@ class MCType(MatchingPattern):
         xtype = self.xtype.get()
         # print('MCType', val, val.getType(), ' :: ', xtype, xtype.get())
         return valHasType(val, xtype)
+        # return equalType(var2val(val), xtype)
 
 
 class MCTypedElem(MatchingPattern):
@@ -104,15 +105,19 @@ class MCTypedElem(MatchingPattern):
         super().__init__(src)
         self.xtype:Expression = typeExpr # expected type
         self.left = left
+        # print('MCTypedElem/init', left, typeExpr)
     
     def do(self, ctx:Context):
+        # print('MCTypedElem/do', self.left, self.xtype)
         self.xtype.do(ctx)
         self.left.do(ctx)
         
     def match(self, val:Val):
         xtype = self.xtype.get()
         # print('tem.match1:', xtype, val)
-        if not valHasType(val, xtype):
+        typeRes = valHasType(val, xtype)
+        # print('tem.typeRes:', typeRes)
+        if not typeRes:
             return False
         return self.left.match(val)
 

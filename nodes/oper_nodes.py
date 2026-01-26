@@ -765,12 +765,15 @@ class CtrlSubExpr(Expression):
         return self.control
 
 def valHasType(val:Val|Var, typeVal:TypeVal):
-    lop = var2val(val)
-    rop = var2val(typeVal)
-    expt = rop.getVal()
-    if not isinstance(rop, TypeVal):
+    val = var2val(val)
+    dt = var2val(typeVal).get()
+    # expt = rop.getVal()
+    # if not isinstance(dt, TypeVal):
+    if not isinstance(dt, VType):
         raise EvalErr("Incorrect right operand of `::` operator.")
-    return isinstance(lop.getType(), expt.__class__)
+    # print('valHasType', dt, val.getType())
+    return equalType(dt, val.getType())
+    # return isinstance(lop.getType(), expt.__class__)
 
 
 class IsTypeExpr(BinOper):

@@ -92,33 +92,45 @@ class TestDev(TestCase):
 
 
 
-    def _test_multitype_match_pattern(self):
+    def test_multitype_match_pattern_no_var(self):
         ''' '''
         code = r'''
-        res = []
+        res = [0]
         
-        match n
-            n :: int|float !- ...
-            n :: (string|list) | n :: dict !- ...
+        struct A a:int
+        struct B b:int
+        struct C c:string
+        struct D
+        struct BB(B) bb:int
         
-        if x :: int|float
-            ..
-        if y :: int || z :: float
-            ..
-        if a :: int|float || b :: list|tuple
-            ..
-        
+        n = A{}
+        nn = [1, 1.1, true, [1], (1,2), 'asd', {1:11, 2:22}, 
+            A{}, B{}, C{}, D{}, [A{}, B{}], [A{}, C{}], 
+            BB{}, (A{}, BB{}), (A{}, C{}),]
+            
+        for n <- nn
+            match n
+                :: (int|float) !- res <- 1
+                # n :: (A|B) !- res <- 4
+                # n :: (C|bool) !- res <- 5
+                # [a::A, b::(B|C)] !- res <- 7
+                # (a::A, b::(B|C)) !- res <- 8
+                # n :: (string|list) !- res <- 2
+                # n :: (dict|tuple) !- res <- 3
+                # n :: (string|list|D) | n :: dict !- res <- 6
+                _ !- res <- 199
+        # (int|list|bool)
         print('res = ', res)
         '''
+        
         code = norm(code[1:])
         ex = tryParse(code)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # exv = []
-        # self.assertEqual(exv, rvar.vals())
+        rvar = ctx.get('res').get()
+        exv = [0, 1, 1, 5, 2, 3, 2, 3, 4, 4, 5, 6, 7, 7, 4, 8, 8]
+        self.assertEqual(exv, rvar.vals())
 
 
     def _test_code(self):

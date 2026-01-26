@@ -17,6 +17,7 @@ def multiCompat( destT, srcT):
 
 
 def equalType(dt, st):
+    # print('equalType', dt, st)
     if isinstance(dt, TypeStruct):
         if not isinstance(st, TypeStruct):
             return False

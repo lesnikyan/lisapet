@@ -8,7 +8,7 @@ from nodes.control import *
 from nodes.match_patterns import *
 
 from cases.tcases import *
-from cases.oper import CaseBrackets
+from cases.oper import CaseBrackets, CaseBinOper, CaseVar
 from cases.collection import *
 from cases.structs import *
 from cases.operwords import CaseRegexp
@@ -89,7 +89,7 @@ _base_types = "int,float,bool,string,list,tuple,dict,struct,function".split(',')
 class MTDuaColon(MTCase):
     ''' :: type  '''
     def match(self, elems:list[Elem])-> bool:
-        return len(elems) == 2 and isLex(elems[0], Lt.oper, '::') and isLex(elems[1], Lt.word, _base_types)
+        return len(elems) == 2 and isLex(elems[0], Lt.oper, '::') and elems[1].type == Lt.word
     
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
@@ -104,7 +104,13 @@ class MTTypedVal(MTCase):
         abc :: int
         123 :: float
     '''
+    
+    # def __init__(self):
+        # super().__init__()
+        # self.typeOper = IsTypeExpr()
+    
     def match(self, elems:list[Elem])-> bool:
+        
         if len(elems) != 3:
             # no combo types
             return False
@@ -112,7 +118,7 @@ class MTTypedVal(MTCase):
             return False
         if not isLex(elems[1], Lt.oper, '::'):
             return False
-        return isLex(elems[2], Lt.word, _base_types)
+        return elems[2].type == Lt.word
     
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
@@ -124,6 +130,114 @@ class MTTypedVal(MTCase):
             raise EvalErr("No correct left for MTTyped")
         left = leftCase.expr(lelem)
         return MCTypedElem(left, typeExpr, src=elems)
+
+
+class MTMultiTyped(MTCase):
+    '''
+        n :: A | B
+        _ :: int|float
+        abc :: A|B
+        n :: list|dict|tuple
+        n :: (A|B|int)
+    '''
+    
+    def findColons(self, elems):
+        operInd = -1
+        for i in range(2):
+            if isLex(elems[i], Lt.oper, '::'):
+                operInd = i
+                break
+        return operInd
+    
+    # def hasSubExpr(self):
+    #     return True
+    
+    def match(self, elems:list[Elem])-> bool:
+        if len(elems) < 4:
+            return False
+        operInd = self.findColons(elems)
+        if operInd < 0:
+            return False
+        
+        # check left if has: xx :: ...
+        if operInd > 0 and elems[0].type not in [Lt.word, Lt.num]:
+            return False
+        typeElems = elems[operInd+1:]
+        # has brackets (A | B)
+        if isLex(elems[operInd+1], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')'):
+            # print('$2', elemStr(typeElems))
+            if isSolidExpr(elems[operInd+1:]):
+                typeElems = typeElems[1:-1]
+                # print('$3', elemStr(typeElems))
+        # A | B | C
+        elen = len(typeElems)
+        for i in range(elen):
+            n = typeElems[i]
+            # print('6>>', n.text)
+            if i % 2 == 0 and n.type != Lt.word:
+                # print('MT1', i, elemStr(typeElems), n.text)
+                return False
+            elif i % 2 == 1 and not isLex(n, Lt.oper, '|'):
+                # print('MT2', i, elemStr(typeElems), n.text)
+                return False
+        # print('Ok')
+        return True
+
+    def splitTypes(self, elems):
+        # print('MT splitTypes', elemStr(elems))
+        # len elems should be odd
+        # iters = (len(elems)-1)/2
+        # cBin = CaseBinOper()
+        cases = [CaseBrackets(), CaseBinOper(), CaseVar()]
+        subs = elems
+        exp = None
+        # while subs:
+        # print('MT splitTypes.loop1')
+        for cs in cases:
+            if cs.match(subs):
+                if cs.sub():
+                    rexp, rsubs = cs.split(subs)
+                    # print('$1>>', rexp, rsubs)
+                    # subs = rsubs
+                    if rsubs:
+                        inExps = []
+                        for rs in rsubs:
+                            sexp = self.splitTypes(rs)
+                            inExps.append(sexp)
+                        # print('$2>>', rexp, inExps)
+                        rexp = cs.setSub(rexp, inExps)
+                    return rexp
+                    # exp = rexp
+                else:
+                    return cs.expr(subs)
+                    # subs = None
+            # exp, subs = cBin.split(subs)
+            # subs = 
+        # print('--$3', elemStr(elems))
+        return None
+
+    # def split(self, elems:list[Elem])-> tuple[Expression, list[Elem]]:
+    def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
+        ''' return base expression, Sub(elems) '''
+        # tname = elems[2].text
+        # print()
+        operInd = self.findColons(elems)
+        typeElems = elems[operInd+1:]
+        typeCase = self.splitTypes(typeElems)
+        if not typeCase:
+            raise EvalErr("No correct left for MTTyped")
+        # typeExpr = VarExpr(Var(tname, TypeAny()))
+        lelem = elems[:1]
+        leftCase = findCase(lelem)
+        if not leftCase:
+            raise EvalErr("No correct left for MTTyped")
+        left = leftCase.expr(lelem)
+        return MCTypedElem(left, typeCase, src=elems)
+    
+    # def setSub(self, base:MCTypedElem, sub:Expression)->Expression:
+    #     print('MCTypedElem.setSub', base, sub)
+    #     base.xtype = sub
+    #     return base
 
 
 class MT_Other(MTCase, CaseVar_):
@@ -458,7 +572,7 @@ class MTFail(MTCase):
 
 
 pMListInnerCases:list[MTCase] = [
-    MTMultiCase(), MTTypedVal(), MTDuaColon(),
+    MTMultiCase(), MTTypedVal(), MTDuaColon(), MTMultiTyped(),
     MTVal(), MTE_(), MTVar(), MTString(), MTRegexp(),
     MTEStar(),  MTEQMark(), MTColPair(),
     MTList(), MTTuple(), MTDict(), MTStruct(), 

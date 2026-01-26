@@ -178,6 +178,7 @@ class CaseBinOper(SubCase):
         '''
         dprint('oper-bin seSub', base, subs)
         base.setArgs(subs[0], subs[1])
+        return base
 
 
 def makeOperExp(elem:Elem)->OperCommand:
