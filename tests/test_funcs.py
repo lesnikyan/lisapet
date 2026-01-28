@@ -687,9 +687,9 @@ class TestFuncs(TestCase):
         func foo(a:int, b:string, c:string)
             r = -100
             match a
-                0 !- r = ~'-{b}'
-                1 !- r = ~'{b}:{c}'
-                _ !- r = [b]+[c ; i <- iter(a)]
+                0 /: r = ~'-{b}'
+                1 /: r = ~'{b}:{c}'
+                _ /: r = [b]+[c ; i <- iter(a)]
             r
         
         # 4 args
@@ -1695,9 +1695,9 @@ class TestFuncs(TestCase):
             r = 1
             # print(m,k)
             match k - m
-                1 !- r += m
-                2 !- r = 2 * (k + m)
-                _ !- k * 10 + m
+                1 /: r += m
+                2 /: r = 2 * (k + m)
+                _ /: k * 10 + m
             r
         
         func f2(m, k)
@@ -1934,9 +1934,9 @@ class TestFuncs(TestCase):
         c = 5
         res = 0
         match c
-            1 !- res = 10
-            2 !- res = c * 2
-            _ !- res = 100
+            1 /: res = 10
+            2 /: res = c * 2
+            _ /: res = 100
 
         f1 = x -> x ** 2
         f2 = (x, y) -> x * y

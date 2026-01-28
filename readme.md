@@ -119,7 +119,7 @@ Content:
 22. [Import modules](#22-import-modules)
 
 23. Match-statement
-    1. [Match, cases, `!-`](#23-match-statement)
+    1. [Match, cases, /:`](#23-match-statement)
     2. [List and tuple `[0,x,_,?,*]` `(_,?,*)`](#232-matching-list-and-tuple)
     3. [Dict pattern `{'a':a, _:_, *}`](#233-matching-dict)
     4. [Struct pattern `N{ }`, `_{ }`](#234-matching-struct)
@@ -441,7 +441,7 @@ Logical:
 `&&` `||` `!`  
 
 Others, have specific behaviour, and will be explained further:  
-`?>` `!?>` `?:` `<-` `->` `!-` `:?` `/:` `::` `=~` `?~`
+`?>` `!?>` `?:` `<-` `->` `:?` `/:` `::` `=~` `?~`
 
 ### 2.5 Table of priority order:
 ```
@@ -468,10 +468,9 @@ Others, have specific behaviour, and will be explained further:
 <- 
 ->
 = += -= *= /= %=  
-/:
-; 
+;
 :?
-!-
+/:
 ```
 
 ### 2.6 Ternary operator `?:`  
@@ -618,7 +617,7 @@ More about special operators in
 [append `<-`](#91-arrow-appendset-operator--), 
 [`for` `<-` ](#7-for-statement---operator), 
 [lambda `->`](#15-lambda-functions-and-high-order-functions-right-arrow--),  
-[`match` `!-` `:?` `::`](#16-match-statement),  
+[`match` `/:` `:?` `::`](#16-match-statement),  
 [regexp `=~` `?~` ](#252-regexp-match-)
 
 
@@ -2066,35 +2065,52 @@ $ py -m run -p "tests" \
 
 
 ### 23. match-statement.  
-`match` keyword  
-`!-` case-operator  
-Each case starts a new block.
-Case-block can be in the same line (not for control statements).  
-Now:  
-Just simple case with value-equal has been implemented  
-Control statements (`if`, `for`, `match`, `while` ) should be started in next line (with indent).
+`match` keyword  .
+The `match` statement implements a pattern matching functionality.  
+In the block of `match` we have sub-expressions (`cases`). Each case have its own `pattern` and executable block.  
+If the pattern was matched with the value from `match` statement then executable block will evaluate.  
+Each `case` starts a new block. We don't use additional keyword or operator for identification of `case`. Any sub-expression in the `match` (indented from `match`-s level) is a `case`.  
+Case-block can be written in the one line (not for control statements).  
+Control statements (`if`, `for`, `match`, `while` ) in the `case` block is started in next line (with indent).  
+The main indent-block syntax.  
 ```python
-# value|template !- expressions
-# _ !- expr # default case
+match n
+    pattern1
+        sub-expr
+    patter2
+        sub-expr
+    _
+        default-expr
+```
+The inline-block operator `/:` separates pattern and sub-block in one-line `case`.  
+```python
+match n
+    pattern /: sub-expression
+    pattern /: sub-expression
+    _ /: default-expression
+```
 
+```python
 a, b, r1 = 4, 3, 0
 
 match a
-    1  !- r1 = 100 # one-line case block
-    10 !- r1 = 200
-    b  !- b = a * 1000
-        r1 = [a, b]
-    20 !-
+    1  /: r1 = 100 # one-line case block
+    10 /: r1 = 200 # value-pattern
+    # var-pattern (no check, just assign a to b)
+    x  /: c = x * 1000 
+        r1 = [c, x]
+    # sub-control
+    20
         if a > b
             r1 = 5
-    _  !- r1 = -2
+    _  /: r1 = -2
 ```
-TODO: types, struct (type, fields, constructor), collections (size, some vals), sub-condition, Maybe-cases
+TODO: Maybe-cases, result from `match` (?)
 
 ### 23.2 Matching list and tuple.
 List or tuple can be matched by special collection-patterns. They look similar to regular collections, but have some special features.  
 ```python
-[?, 12, b, _, *] !- ...
+[?, 12, b, _, *] /: ...
 ```
 In collection patterns we can use several types of sub-expressions. They can be combined.  
 
@@ -2102,20 +2118,20 @@ In collection patterns we can use several types of sub-expressions. They can be 
 ```python
 match n
     # list
-    [1,2,3] !- expr
+    [1,2,3] /: expr
     
     # tuple
-    (3,4,5) !- expr
+    (3,4,5) /: expr
 ```
 2. Variable in collection `[a,b]`, `(a,b,c)`, named non-constant element.  
     Var in pattern is matched with any element and will be assigned with the value according to position if pattern will be matched.  
     Assigned var can be used in the sub block of current match-case.  
 ```python
 match n
-    [a] !- print(a) # array with 1 element 
+    [a] /: print(a) # array with 1 element 
         # in case block var `a` will contain value of n[0]
         res = a * 100
-    [a,b,c] !- # any array with 3 elements
+    [a,b,c] /: # any array with 3 elements
         #vars a,b,c with values of list elements
         res = a + b + c 
 ```
@@ -2123,17 +2139,17 @@ match n
     Wildcard don't assign anything, unlike of var-pattern.  
 ```python
 match n
-    [_] !- # any array with 1 element
-    [1,_] !- # any arrays with 2 elemnts, and n[0] == 1
-    [_,_] !- # any array with 2 elements
-    (1,_) !- the same for tuple
+    [_] /: # any array with 1 element
+    [1,_] /: # any arrays with 2 elemnts, and n[0] == 1
+    [_,_] /: # any array with 2 elements
+    (1,_) /: the same for tuple
 ```
 Combined example:
 ```python
 match n
-    (1, _) !- print('tuple with 1')
-    (a, b, _) !- sum = a + b
-    [a, 22, b, _] !- res = [a, b, a + b]
+    (1, _) /: print('tuple with 1')
+    (a, b, _) /: sum = a + b
+    [a, 22, b, _] /: res = [a, b, a + b]
 ```
 
 4. `?` - optional element.  
@@ -2141,17 +2157,17 @@ In case when we need match sequence one or more element is not necessary we can 
 Matcher can ignore optional element.  
 In common case we can think about optional + non-constant (var, `_`) that it is pattern of min-max optional segment.  
 `(a, _, ?,?)` - segment witn 2-4 elements.  
-```
+```python
 nn = [[], [1], [2], [1,2], [1,2,3], [2,4], [5,6,7,8,15], [5,8,15]]
 
 for n in nn
     match n
-        [1, ?] !- # match [1], [1,2]
-        [?] !- # match [], [2]
-        [1,?,3] !- # [1,2,3]
-        [?, 4] !- # [2,4]
-        [5,?,?,?,a,15] !- # [5,6,7,8,15], [5,8,15]; a = 8
-        _ !- 
+        [1, ?] /: # match [1], [1,2]
+        [?] /: # match [], [2]
+        [1,?,3] /: # [1,2,3]
+        [?, 4] /: # [2,4]
+        [5,?,?,?,a,15] /: # [5,6,7,8,15], [5,8,15]; a = 8
+        _ /: 
 ```
 The same applies to cases of a tuple `(a,?,_)`.  
 Uncertainty of result with optional subpatterns.  
@@ -2168,21 +2184,21 @@ For templates with optional subelements, it is important for predictable behavio
 ```python
 
 match n
-    [1, *] !- # any list starts with 1
-    (*, 2) !- # any tuple that ends with 2
-    [31, *, 32] !- # list starts with 31 and ends with 32
-    [*, 44, *] !- # list has 44
+    [1, *] /: # any list starts with 1
+    (*, 2) /: # any tuple that ends with 2
+    [31, *, 32] /: # list starts with 31 and ends with 32
+    [*, 44, *] /: # list has 44
 
     # list has at least 4 elements,
     # 1-st and two last will be assigned with var `a,b,c`.
-    [a, 55, *, b, c] !- ...
+    [a, 55, *, b, c] /: ...
     
     # list starts with 60, has at least 3 elements after it, 
     # and the 3rd from the end will be assigned with the var `a`
-    [60, *, a,  _, _] !- ...
+    [60, *, a,  _, _] /: ...
 
-    [*] !- # any list
-    (*) !- # any tuple
+    [*] /: # any list
+    (*) /: # any tuple
 ```
 
 
@@ -2191,18 +2207,18 @@ match n
 Base pattern is similar to regular inline constructor of dict: `{key:val, ...}`.  
 Var, value, `_` cases applicable for dicts.  
 
-1. Emplty dict:
+1. Empty dict:
 ```python
-{} !- ...
+{} /: ...
 ```
 2. Dict with 1 element:
 ```python
 match x
-    {1:_} !- # numeric key, any val
-    {'name':_} !- # string key any val
-    {_:100500} !- # any key, but const val
-    {k:v} !- # local vars in key and val
-    {_:_} !- # wildcard - any key, any val, will never matched here
+    {1:_} /: # numeric key, any val
+    {'name':_} /: # string key any val
+    {_:100500} /: # any key, but const val
+    {k:v} /: # local vars in key and val
+    {_:_} /: # wildcard - any key, any val, will never matched here
 ```
 
 In the key position all `null` instances are equal.  
@@ -2210,21 +2226,21 @@ In the key position all `null` instances are equal.
 ```python
 x = {null:123}
 match x
-    {0:_} !- ...
-    {null:val} !- # will matched
+    {0:_} /: ...
+    {null:val} /: # will matched
 ```
 
 3. Dict with many subpatterns. 
 Subpatterns are defined like pairs in dict, over comma.  
 ```python
-    !- {'name':nameVal, 'age':25, _:100500, a:b}
-    !- {'a':a, 'b':_, c:'ccc'}
+    {'name':nameVal, 'age':25, _:100500, a:b} /: ...
+    {'a':a, 'b':_, c:'ccc'} /: ...
 ```
 Var and `_` have the same matching result, so `{k:v}` after `{_:_}` will never matched.  
 Order of subpatterns in dict doesn't matter.  
 ```python
 {'a':_, _:b}
-# the same as
+# the same match as
 {_:b, 'a':_}
 
 ```
@@ -2242,10 +2258,10 @@ In dict pattern `*` star sub-elem matches with all elements that wasn't matched 
 In general It is used if we need match some elements beyond those previously defined, and with undefined number of those.  
 ```python
 match n
-    {'a':b, *}  !- # 'a' key and any more elements
-    {_:_, *}    !- # one or more elements
-    {*}         !- # empty or any elements == any dict
-    _ !-        !- # here any non-dict, because after {*} case
+    {'a':b, *}  /: # 'a' key and any more elements
+    {_:_, *}    /: # one or more elements
+    {*}         /: # empty or any elements == any dict
+    _           /: # here any non-dict, because after {*} case
 ```
 
 5. Question mark `?` as a 'maybe' case.  
@@ -2255,12 +2271,12 @@ So number of q-marks means possible elements from 0 up to number.
 In case {?,?} - 0-2 elements.  
 ```python
 match d
-    {?}             !- # empty or 1 key
-    {'a':_, ?, ?}   !- # dict has key 'a' and may contain yet 1 or 2
-    {_:_, ?, ?}     !- # dict has at least 1 key but not more than 3
-    {'b':v, _:_, ?, ?}  !- # dict has from 2 up to 4 keys, one of them is 'b'
-    {?,?,?,?}       !- # only dict with 4 keys without 'b'-key will match here, less was matched above
-    {?,?,*}         !- # doesn't make sense, because equal to {*}
+    {?}             /: # empty or 1 key
+    {'a':_, ?, ?}   /: # dict has key 'a' and may contain yet 1 or 2
+    {_:_, ?, ?}     /: # dict has at least 1 key but not more than 3
+    {'b':v, _:_, ?, ?}  /: # dict has from 2 up to 4 keys, one of them is 'b'
+    {?,?,?,?}       /: # only dict with 4 keys without 'b'-key will match here, less was matched above
+    {?,?,*}         /: # doesn't make sense, because equal to {*}
 ```
 
 Notes.  
@@ -2279,8 +2295,8 @@ struct B
 struct C(B)
 
 match st
-    A{} !- # match any of A
-    B{} !- # match B and C (as a child of B)
+    A{} /: # match any of A
+    B{} /: # match B and C (as a child of B)
 ```
 2. Fields in brackets.  
 Pattern will try match those field which has in pattern.  
@@ -2293,11 +2309,11 @@ struct B b: string
 struct C(B) c:list
 
 match st
-    A{a:val} !- # any A inst, assign value of A.a to var `val`
-    B{b:'abc'} !- # B anc C inst, by value of field `b`
-    C{b:bval} :? bval ?> ['aaa', 'bbb', 'ccc'] !- # field from parent type (and complex condition)
-    B{b:_} !- # wildcard in field-value of struct doesn't make sense, but works
-    C{c:[_,*]} !- # C with non-empty list in `c`-field
+    A{a:val} /: # any A inst, assign value of A.a to var `val`
+    B{b:'abc'} /: # B anc C inst, by value of field `b`
+    C{b:bval} :? bval ?> ['aaa', 'bbb', 'ccc'] /: # field from parent type (and complex condition)
+    B{b:_} /: # wildcard in field-value of struct doesn't make sense, but works
+    C{c:[_,*]} /: # C with non-empty list in `c`-field
 ```
 3. Pattern of any-type struct.  
 In pattern of struct we can match any instance of struct ignoring type of value.  
@@ -2309,10 +2325,10 @@ B name:string
 C name:string
 ...
 match nn
-    _{a:val} !- # struct with field `a` will be matched: A
-    _{name:val} !- # with field `name`: B, C
-    _{} !- # any other structs will be matched
-    _ !- # non-struct values will reach this point
+    _{a:val} /: # struct with field `a` will be matched: A
+    _{name:val} /: # with field `name`: B, C
+    _{} /: # any other structs will be matched
+    _ /: # non-struct values will reach this point
 ```
 
 
@@ -2322,12 +2338,12 @@ Operator `|` is divider in such complex expression between patterns.
 The case will be executed if one of patterns in set is matched.  
 ```python
 match n
-    1 | 2 | 3 !- # one of 1, 2, 3 is matched
-    (*) | [*] !- # any tuple or list
+    1 | 2 | 3 /: # one of 1, 2, 3 is matched
+    (*) | [*] /: # any tuple or list
 
     # 1-key dict or dict with 2 keys one of them is 'name' is matched. 
     # a:b will be assigned by matched pattern
-    {a:b} | {'name':_, a:b} !- ...
+    {a:b} | {'name':_, a:b} /: ...
 ```
 
 ### 23.6 Bool guard in case
@@ -2339,12 +2355,12 @@ Guard can contain assign-part, equally to `if` statement.
 ```python
 x = someval()
 match n
-    [a, *] :? x < a !- # list pattern, val from list in guard
-    (1, b) | [2, b] :? b > 10 !- # multipattern before guard
-    {'name':name, *} :? name !- 'Alan' && 'address' ?> n !- # complex condition in guard
-    (a, b, c) :? d = a + b; c < d !- print(a, b, c, d) # assign sub-expression, var from guard uses in sub-block  
-    _ :? n != 17 !- guard with `_`
-    _ !- # other
+    [a, *] :? x < a /: # list pattern, val from list in guard
+    (1, b) | [2, b] :? b > 10 /: # multipattern before guard
+    {'name':name, *} :? name /: 'Alan' && 'address' ?> n /: # complex condition in guard
+    (a, b, c) :? d = a + b; c < d /: print(a, b, c, d) # assign sub-expression, var from guard uses in sub-block  
+    _ :? n != 17 /: guard with `_`
+    _ /: # other
 ```
 
 ### 23.7 Mixed (nested) patterns
@@ -2354,23 +2370,23 @@ struct A a1: int
 struct B(A) b1: int
 
 match n
-    [1,2,3] | (1,2,3) | {'a':_, 'b':_, 'c':_} !- # some collections
-    A{a1:1} | B{b1:2} | C{c1:'c3'} !- # some structs
-    [*] | (*) | {*}  !- # any collections
+    [1,2,3] | (1,2,3) | {'a':_, 'b':_, 'c':_} /: # some collections
+    A{a1:1} | B{b1:2} | C{c1:'c3'} /: # some structs
+    [*] | (*) | {*}  /: # any collections
 ```
 Containers can contain another containers.  
 ```python
 match n
     # dict / list / tuple
-    [(), ()] !- # top list
-    ([], []) !- # top tuple
-    [{}, {}] !- # dict in
-    [{1:()}] !- # 3-lvl, tuple is last
-    ({2:[]}) !- # 3-lvl, list is last
-    [({3:_})] !- #-lvl dict is last
+    [(), ()] /: # top list
+    ([], []) /: # top tuple
+    [{}, {}] /: # dict in
+    [{1:()}] /: # 3-lvl, tuple is last
+    ({2:[]}) /: # 3-lvl, list is last
+    [({3:_})] /: #-lvl dict is last
     # with structs
-    [(A{}, 11), (B{}, 22)] !- ...
-    {'a':A{}, 'b':B{}} !- ...
+    [(A{}, 11), (B{}, 22)] /: ...
+    {'a':A{}, 'b':B{}} /: ...
 ```
 
 
@@ -2378,10 +2394,10 @@ match n
 String value can be matched by regular expression.  
 ```golang
 match n
-    re`aa|bb|cc` !- #// simple pattern 
-    re`^[houpring]{3,6}$` !- #// whole string by chars
-    re`.+`m !- #// non empty string
-    [re`\d+`, *] !- #// regexp can be a sub-element of a container-pattern
+    re`aa|bb|cc` /: #// simple pattern 
+    re`^[houpring]{3,6}$` /: #// whole string by chars
+    re`.+`m /: #// non empty string
+    [re`\d+`, *] /: #// regexp can be a sub-element of a container-pattern
 ```
 
 ### 23.9 Type matching `_::int`
@@ -2390,24 +2406,24 @@ Operator `::` is used for that.
 Now basic types have been implemented.  
 ```python
 match x
-    ::int !- # all int values
-    ::float !- # float values
-    :: bool !- ..
-    ::string !- ..
+    ::int /: # all int values
+    ::float /: # float values
+    :: bool /: ..
+    ::string /: ..
 ```
 Collections can be matched by type too.  
 ```python
 match data
-    ::list !- ...
-    ::dict !- ...
-    ::tuple !- ...
+    ::list /: ...
+    ::dict /: ...
+    ::tuple /: ...
 ```
 Var pattern or `_` can be restricted by type.  
 ```python
 match n
-    a::int !- print(a)
-    a::string !- print(a)
-    _::float !- ...
+    a::int /: print(a)
+    a::string /: print(a)
+    _::float /: ...
 ```
 Actually `::type` means the same as a pattern `_::type`.
 But in dict this two sub-elements can act differently alittle in combination with `?` or `*` sub elements.  
@@ -2416,33 +2432,33 @@ Typed pattern can be the part of collection pattern.
 In dict pattern typed key is found before typed val.  
 ```python
 match data
-    [::int, a::int, _::float] !- # in list
-    (::string, val::float) !- # in tuple
-    {k::string : v::int} !- # in dict
-    {::string : _::list} !- # list in dict
+    [::int, a::int, _::float] /: # in list
+    (::string, val::float) /: # in tuple
+    {k::string : v::int} /: # in dict
+    {::string : _::list} /: # list in dict
 ```
 Multitype expression is applicable for matching patterns. Including struct types, collections and functions.  
 The multitype expression may be enclosed in parentheses.  
 No-var case.  
 ```python
 match n
-    :: list|tuple !- ...
-    :: (int|bool) !- ...
-    :: (A|B) !- ...
+    :: list|tuple /: ...
+    :: (int|bool) /: ...
+    :: (A|B) /: ...
 ```
 With var.  
 ```python
 match n
-    a :: (int|float) !- ...
-    b :: (A|B|C) !- ...
-    c :: (dict|tuple) !- ...
+    a :: (int|float) /: ...
+    b :: (A|B|C) /: ...
+    c :: (dict|tuple) /: ...
 ```
 Mixed and nested patterns.  
 In mixed patterns `|` operator can make some ambiguity of interpretation, so usage of parentheses will be good choice here.  
 ```python
 match n
-    val ::(A|B|C) | val ::(int|float) !- ...
-    [a::(A|B|C), ::(int|float), _, b::(dict|tuple)] !- ...
+    val ::(A|B|C) | val ::(int|float) /: ...
+    [a::(A|B|C), ::(int|float), _, b::(dict|tuple)] /: ...
 ```
 
 

@@ -147,12 +147,13 @@ class VarExpr_(VarExpr):
 
 class DebugExpr(Expression):
     def __init__(self, txt):
-        dprint('**** DEBUG__init:', txt)
+        # dprint('**** DEBUG__init:', txt)
         super().__init__()
         self.val = txt
     
     def do(self, ctx:NSContext):
-        dprint(" $$$ >>> >>> DEBUG: ", self.val)
+        ''''''
+        print(" $$$ >>> >>> DEBUG: ", self.val)
 
 
 class ControlExpr(Expression):
@@ -195,7 +196,6 @@ class Block(Expression):
             return
         lastInd = 0
         # print('!! Block.do', self.storeRes)
-        self.lastVal = None
         for i in range(self.linesIter()):
             # print('!! Block.iter ', i, self.subs[i])
             expr = self.subs[i]
@@ -208,7 +208,7 @@ class Block(Expression):
             # lineRes = None
             lineRes = expr.get()
             if isinstance(lineRes, FuncRes):
-                # dprint(' - return::', lineRes)
+                # print(' - return::', expr, lineRes)
                 self.lastVal = lineRes
                 return
             if isinstance(lineRes, (PopupBreak, PopupContinue)):
@@ -452,7 +452,7 @@ class SequenceExpr(Expression):
     def getVals(self, ctx:NSContext):
         res = []
         for sub in self.subs:
-            dprint('SEQ getTuple:', sub)
+            # dprint('SEQ getTuple:', sub)
             sub.do(ctx)
             res.append(sub.get())
         return res
