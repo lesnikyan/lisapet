@@ -544,7 +544,7 @@ class TestStructs(TestCase):
             Book{title:'Blue, blue sky', author:'Ani Arabesquin', pages:200, prod: Product{price:20., amount:2222}}
             Book{title:'Silver sword of small town', author:'Arnold Whiteshvartz', pages:300, prod: Product{price:20., amount:3333}}
 
-        @debug 123321
+        # @debug 123321
         books[0].prod.price *= 1.1
         func printBook(book)
             print(book.title, book.author, book.pages, book.prod.price)
@@ -570,7 +570,7 @@ class TestStructs(TestCase):
         code='''
         struct A nname:string
         a = A {nname:'AAAAA'}
-        @debug field assign
+        # @debug field assign
         a.nname = 'AA2222'
         # print(a.nname)
         
@@ -629,7 +629,7 @@ class TestStructs(TestCase):
         code='''
         res = []
         struct Sex id:int
-        @debug =1
+        # @debug =1
         male = Sex{id:1}
         female= Sex{id:2}
         # print(male)

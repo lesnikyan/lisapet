@@ -33,6 +33,55 @@ class TestMatch(TestCase):
 
 
 
+    def test_refactored_match_case_blocks(self):
+        ''' check refactored sub-block of match-case, test fixed return from if in loop'''
+        code = r'''
+        res = []
+        
+        struct A
+        
+        func fbase(n)
+            match n
+                # indent block
+                ::int # some comment
+                    x  = 1
+                    return x
+                
+                # inline block
+                ::bool /: x = 2; return x
+                
+                # /: but indent (it's ok)
+                {_:_} /:
+                    y = 3
+                    return y
+                
+                # block with sub control
+                p::(tuple|list)
+                    r4 = []
+                    for x <- p
+                        r4 <- x
+                        if len(r4) >= 3
+                            return (4, r4, p)
+                # default
+                _ /: return 5
+            -1000
+        
+        nn = [1, true, [1,2,3], (3,4,5), {4:44}, 1.5, [100]]
+        
+        for k <- nn
+            res <- fbase(k)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [1, 2, (4, [1, 2, 3], [1, 2, 3]), (4, [3, 4, 5], (3, 4, 5)), 3, 5, -1000]
+        self.assertEqual(exv, rvar.vals())
+
     def test_match_pattern_multitype_no_var(self):
         ''' multitype in no-var pattern `::(int|B)` '''
         code = r'''
@@ -65,19 +114,19 @@ class TestMatch(TestCase):
             
         for n <- nn
             match n
-                :: (int|float) !- res <- 1
-                n :: (A|B) !- res <- 4
-                n :: (C|bool) !- res <- 5
-                [::A, ::(B|C)] !- res <- 7
-                (::A, ::(B|C)) !- res <- 8
-                ::(AA|GG) :? n.n ?> [22,23,24] !- res <- 500 + n.n
-                ::(FF|GG) | ::(HH|JJ) !- res <- 300 + n.n
-                (::AA, ::CC) | (::FF, ::DD) !- res <- (400 + n[0].n, 400 + n[1].n)
-                :: (string|list) !- res <- 2
-                :: (dict|tuple) !- res <- 3
-                :: (string|list|D) | :: dict !- res <- 6
-                ::(AA|BBB|CC|DD|EE) !- res <- 200 + n.n
-                _ !- res <- 199
+                :: (int|float) /: res <- 1
+                n :: (A|B) /: res <- 4
+                n :: (C|bool) /: res <- 5
+                [::A, ::(B|C)] /: res <- 7
+                (::A, ::(B|C)) /: res <- 8
+                ::(AA|GG) :? n.n ?> [22,23,24] /: res <- 500 + n.n
+                ::(FF|GG) | ::(HH|JJ) /: res <- 300 + n.n
+                (::AA, ::CC) | (::FF, ::DD) /: res <- (400 + n[0].n, 400 + n[1].n)
+                :: (string|list) /: res <- 2
+                :: (dict|tuple) /: res <- 3
+                :: (string|list|D) | :: dict /: res <- 6
+                ::(AA|BBB|CC|DD|EE) /: res <- 200 + n.n
+                _ /: res <- 199
         
         # print('res = ', res)
         '''
@@ -111,15 +160,15 @@ class TestMatch(TestCase):
             
         for n <- nn
             match n
-                n :: (int|float) !- res <- 1
-                n :: (A|B) !- res <- 4
-                n :: (C|bool) !- res <- 5
-                [a::A, b::(B|C)] !- res <- 7
-                (a::A, b::(B|C)) !- res <- 8
-                n :: (string|list) !- res <- 2
-                n :: (dict|tuple) !- res <- 3
-                n :: (string|list|D) | n :: dict !- res <- 6
-                _ !- res <- 199
+                n :: (int|float) /: res <- 1
+                n :: (A|B) /: res <- 4
+                n :: (C|bool) /: res <- 5
+                [a::A, b::(B|C)] /: res <- 7
+                (a::A, b::(B|C)) /: res <- 8
+                n :: (string|list) /: res <- 2
+                n :: (dict|tuple) /: res <- 3
+                n :: (string|list|D) | n :: dict /: res <- 6
+                _ /: res <- 199
         # (int|list|bool)
         # print('res = ', res)
         '''
@@ -152,12 +201,12 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                :: A !- res <- 10
-                :: B !- res <- 11
-                :: C | ::D !- res <- 12
-                [:: A, ::B] | [::C, ::D] !- res <- 13
-                [_{}, _{}]     !- res <- 14
-                _ !- res <- 999
+                :: A /: res <- 10
+                :: B /: res <- 11
+                :: C | ::D /: res <- 12
+                [:: A, ::B] | [::C, ::D] /: res <- 13
+                [_{}, _{}]     /: res <- 14
+                _ /: res <- 999
         
         # print('res = ', res)
         '''
@@ -191,16 +240,16 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                a :: A !- res <- (10 , n, a)
-                :: B !- res <- (11 , n)
-                ::C | ::D !- res <- (16 , n)
-                [a::A, b::(B)] !- res <- (12 , n, a, b)
-                (a::A, b::(C)) !- res <- (13 , n, a, b)
-                [a::D, _{}] !- res <- (15 , n, a)
-                [_{}, _{}]     !- res <- (14 , n)
-                {k1: a::A, k2: b::B} !- res <- (18, n, k1, k2, a, b)
-                ::dict !- res <- (17, n)
-                _ !- res <- (999 , n)
+                a :: A /: res <- (10 , n, a)
+                :: B /: res <- (11 , n)
+                ::C | ::D /: res <- (16 , n)
+                [a::A, b::(B)] /: res <- (12 , n, a, b)
+                (a::A, b::(C)) /: res <- (13 , n, a, b)
+                [a::D, _{}] /: res <- (15 , n, a)
+                [_{}, _{}]     /: res <- (14 , n)
+                {k1: a::A, k2: b::B} /: res <- (18, n, k1, k2, a, b)
+                ::dict /: res <- (17, n)
+                _ /: res <- (999 , n)
 
         # print('res = ', res)
         '''
@@ -241,27 +290,27 @@ class TestMatch(TestCase):
         ]
         for nn <- nns
             match nn
-                [re`[a-d]+`] | (re`[qwerty]+`) !- res <- (nn, 1)
-                [re`[\d+]+`] | (re`[0-3]+`) | [re`0x[0-9a-f]{2,}`] !- res <- (nn, 2)
-                [re`^[\d+]+$`, re`.+`] | (re`^[a-z]+$`, re`^[^\s]+$`)  !- res <- (nn, 3)
-                [re`[w-z]+`] | (re`[w-z]+`) | {re`[w-z]+`:_}  !- res <- (nn, 4)
-                {re`.+`:1} !- res <- (nn, 5)
-                {re`0x[\d0-f]+$`:_} !- res <- (nn, 51)
-                {re`^Red.+$`: a:: string, re`^Green.+$`: b:: string} !- res <- (nn, (a, b), 52)
-                [re'Napo.+'] | ({re`Napo[a-z]+\d+` : ::int}, re`\w+@\w+\.\w`) !- res <- (nn, 61)
+                [re`[a-d]+`] | (re`[qwerty]+`) /: res <- (nn, 1)
+                [re`[\d+]+`] | (re`[0-3]+`) | [re`0x[0-9a-f]{2,}`] /: res <- (nn, 2)
+                [re`^[\d+]+$`, re`.+`] | (re`^[a-z]+$`, re`^[^\s]+$`)  /: res <- (nn, 3)
+                [re`[w-z]+`] | (re`[w-z]+`) | {re`[w-z]+`:_}  /: res <- (nn, 4)
+                {re`.+`:1} /: res <- (nn, 5)
+                {re`0x[\d0-f]+$`:_} /: res <- (nn, 51)
+                {re`^Red.+$`: a:: string, re`^Green.+$`: b:: string} /: res <- (nn, (a, b), 52)
+                [re'Napo.+'] | ({re`Napo[a-z]+\d+` : ::int}, re`\w+@\w+\.\w`) /: res <- (nn, 61)
                 
-                B{b1:re`\d+`} !- res <- (nn, 71)
-                B{a1:re`^[a-f]+$`} !- res <- (nn, 72)
-                A{a1:re`<(?:html|div|span)>`} !- res <- [nn, 73]
-                _{a1:re`g+`} !- res <- (nn, 74)
-                B{} !- res <- (nn, 701)
-                A{} !- res <- (nn, 702)
-                [A{a1:re`x+`}] !- res <- (nn, 75)
+                B{b1:re`\d+`} /: res <- (nn, 71)
+                B{a1:re`^[a-f]+$`} /: res <- (nn, 72)
+                A{a1:re`<(?:html|div|span)>`} /: res <- [nn, 73]
+                _{a1:re`g+`} /: res <- (nn, 74)
+                B{} /: res <- (nn, 701)
+                A{} /: res <- (nn, 702)
+                [A{a1:re`x+`}] /: res <- (nn, 75)
                 
-                [*] !- res <- (nn, 881)
-                (*) !- res <- (nn, 882)
-                {*}  !- res <- (nn, 883)
-                _ !- res <- (nn, 999)
+                [*] /: res <- (nn, 881)
+                (*) /: res <- (nn, 882)
+                {*}  /: res <- (nn, 883)
+                _ /: res <- (nn, 999)
         
         # print('>>\n')
         # for n <- res /: print('', (n,))
@@ -314,46 +363,46 @@ class TestMatch(TestCase):
         ]
         for nn <- nns
             match nn
-                [x, a::int] !- res <- (nn, (x, a), '[int, int]', 11)
-                [::string, b :: string] !- res <- (nn, (b,), '[string, string]', 12)
-                [::bool, ::int, ::float] !- res <- (nn, '[bool, int, float]', 13)
-                [a::float, b :: string, c :: bool] !- res <- (nn, (a,b,c), '[float, string, bool]', 14)
+                [x, a::int] /: res <- (nn, (x, a), '[int, int]', 11)
+                [::string, b :: string] /: res <- (nn, (b,), '[string, string]', 12)
+                [::bool, ::int, ::float] /: res <- (nn, '[bool, int, float]', 13)
+                [a::float, b :: string, c :: bool] /: res <- (nn, (a,b,c), '[float, string, bool]', 14)
                 
-                [a::tuple] !- res <- (nn, (a,), '[tuple]', 15)
-                [::string, ::tuple] !- res <- (nn, '[strn, tuple]', 16)
+                [a::tuple] /: res <- (nn, (a,), '[tuple]', 15)
+                [::string, ::tuple] /: res <- (nn, '[strn, tuple]', 16)
                 
-                (::int) !- res <- (nn, '(int)', 20)
-                (x::bool) !- res <- (nn, ('x:', x), '(bool)', 21)
-                (::int, ::float, ::bool) !- res <- (nn, '(int, float, bool)', 22)
-                (a::int, b::float, c::bool, d::string) !- res <- (nn, '(int, float, bool, string)', 23)
-                (a::string, b::string) !- res <- (nn, 'strn, strn', 24)
-                [a :: tuple, b::list] !- res <- (nn, [a, b], '(tuple, list)', 25)
-                (a::string, b::list) !- res <- (nn, '(strn, list)', 26)
-                (::list) !- res <- (nn, '(list)', 27)
+                (::int) /: res <- (nn, '(int)', 20)
+                (x::bool) /: res <- (nn, ('x:', x), '(bool)', 21)
+                (::int, ::float, ::bool) /: res <- (nn, '(int, float, bool)', 22)
+                (a::int, b::float, c::bool, d::string) /: res <- (nn, '(int, float, bool, string)', 23)
+                (a::string, b::string) /: res <- (nn, 'strn, strn', 24)
+                [a :: tuple, b::list] /: res <- (nn, [a, b], '(tuple, list)', 25)
+                (a::string, b::list) /: res <- (nn, '(strn, list)', 26)
+                (::list) /: res <- (nn, '(list)', 27)
                 
-                {key::string : vv::int} !- res <- (nn, (key, vv), '{}', 30)
-                {k :: int : 'c1'} !- res <- (nn, '{k::int : "c1" }', 31)
-                {15 : b::int} !- res <- (nn, (b,), '{15: b::int}', 32)
-                {a : ::int} !- res <- (nn, (a,), '{a:int}', 33)
+                {key::string : vv::int} /: res <- (nn, (key, vv), '{}', 30)
+                {k :: int : 'c1'} /: res <- (nn, '{k::int : "c1" }', 31)
+                {15 : b::int} /: res <- (nn, (b,), '{15: b::int}', 32)
+                {a : ::int} /: res <- (nn, (a,), '{a:int}', 33)
                 
-                {::int : 14, _: :: int} !- res <- (nn, '{}', 34)
-                {::string : ::string, ::int : ::int} !- res <- (nn, '{}', 35)
-                {11:v1, ::int : v2} !- res <- (nn, (v1, v2), '{11:v1, int:v2}', 36)
-                {a::string : b::string, c::int : d::int, 15:17} !- 
+                {::int : 14, _: :: int} /: res <- (nn, '{}', 34)
+                {::string : ::string, ::int : ::int} /: res <- (nn, '{}', 35)
+                {11:v1, ::int : v2} /: res <- (nn, (v1, v2), '{11:v1, int:v2}', 36)
+                {a::string : b::string, c::int : d::int, 15:17}
                     res <- (nn, (a, b, c, d), '{a::string : b::string, c::int : d::int, 15:17}', 37)
-                {a: ::list} !- res <- (nn, (a,), '{}', 37)
-                {a: b::tuple} !- res <- (nn, '{}', 38)
-                {a: b::dict} !- res <- (nn, (a, b,), '{}', 39)
-                {a::int : b::dict, c: {'q':d}} !- res <- (nn, (a, b, c, d), '{}', 391)
-                {a::string : f1::function} !- 
+                {a: ::list} /: res <- (nn, (a,), '{}', 37)
+                {a: b::tuple} /: res <- (nn, '{}', 38)
+                {a: b::dict} /: res <- (nn, (a, b,), '{}', 39)
+                {a::int : b::dict, c: {'q':d}} /: res <- (nn, (a, b, c, d), '{}', 391)
+                {a::string : f1::function} /: 
                     b = f1(5)
                     res <- ('f1', (a, b,), '{a::string : f1::function}', 40)
                 
-                [f1::function, f2::function, f3::function] !- 
+                [f1::function, f2::function, f3::function] /: 
                     rr = [f(11) ; f <- [f1, f2, f3]]
                     res <- ('f,f,f', rr, '[f1::function, f2::function, f3::function]', 41)
                 
-                _ !- res <- (nn, 999)
+                _ /: res <- (nn, 999)
         
         # print('>>\n')
         # for n <- res /: print(n)
@@ -383,7 +432,7 @@ class TestMatch(TestCase):
         self.assertEqual(expv, rvar.vals())
 
     def test_match_case_by_typed_vals(self):
-        ''' test match var :: int !- '''
+        ''' test match var :: int /: '''
         code = r'''
         res = []
         
@@ -399,17 +448,17 @@ class TestMatch(TestCase):
         ]
         for nn <- nns
             match nn
-                a::int !- res <- (nn, 'int', 11)
-                a::float !- res <- (nn, 'float', 12)
-                a::bool !- res <- (nn, 'bool', 13)
-                a::string !- res <- (nn, 'string', 21)
-                a:: list !- res <- (nn, 'list', 22)
-                a:: dict !- res <- (nn, 'dict', 23)
-                a:: tuple !- res <- (nn, 'tuple', 24)
-                a:: function !- 
+                a::int /: res <- (nn, 'int', 11)
+                a::float /: res <- (nn, 'float', 12)
+                a::bool /: res <- (nn, 'bool', 13)
+                a::string /: res <- (nn, 'string', 21)
+                a:: list /: res <- (nn, 'list', 22)
+                a:: dict /: res <- (nn, 'dict', 23)
+                a:: tuple /: res <- (nn, 'tuple', 24)
+                a:: function 
                     fres = [nn(x) ; x <- [17, 20]]
                     res <- (fres, 'function', 25)
-                _ !- res <- (nn, 999)
+                _ /: res <- (nn, 999)
         
         # print(res)
         # for n <- res /: print(n)
@@ -429,7 +478,7 @@ class TestMatch(TestCase):
         self.assertEqual(expv, rvar.vals())
 
     def test_match_case_by_type_simple(self):
-        ''' test match ::int !- '''
+        ''' test match ::int /: '''
         code = r'''
         res = []
         
@@ -445,17 +494,17 @@ class TestMatch(TestCase):
         ]
         for nn <- nns
             match nn
-                ::int !- res <- (nn, 'int', 11)
-                ::float !- res <- (nn, 'float', 12)
-                ::bool !- res <- (nn, 'bool', 13)
-                ::string !- res <- (nn, 'string', 21)
-                :: list !- res <- (nn, 'list', 22)
-                :: dict !- res <- (nn, 'dict', 23)
-                :: tuple !- res <- (nn, 'tuple', 24)
-                :: function !- 
+                ::int /: res <- (nn, 'int', 11)
+                ::float /: res <- (nn, 'float', 12)
+                ::bool /: res <- (nn, 'bool', 13)
+                ::string /: res <- (nn, 'string', 21)
+                :: list /: res <- (nn, 'list', 22)
+                :: dict /: res <- (nn, 'dict', 23)
+                :: tuple /: res <- (nn, 'tuple', 24)
+                :: function
                     fres = [nn(x) ; x <- [7, 10]]
                     res <- (fres, 'function', 25)
-                _ !- res <- (nn, 999)
+                _ /: res <- (nn, 999)
         
         # print(res)
         '''
@@ -499,37 +548,37 @@ class TestMatch(TestCase):
         
         for nn <- nns
             match nn
-                [(), ()] !- res <- (nn, 1)
-                ([], []) !- res <- (nn, 2)
-                [{}, {}] !- res <- (nn, 3)
-                ({}, {}) !- res <- (nn, 4)
+                [(), ()] /: res <- (nn, 1)
+                ([], []) /: res <- (nn, 2)
+                [{}, {}] /: res <- (nn, 3)
+                ({}, {}) /: res <- (nn, 4)
                 
-                [(1), (*)] !- res <- (nn, 5)
-                ([3], [*]) !- res <- (nn, 6)
-                [{5:5}, {*}] !- res <- (nn, 7)
-                ({7:7}, {*}) !- res <- (nn, 8)
+                [(1), (*)] /: res <- (nn, 5)
+                ([3], [*]) /: res <- (nn, 6)
+                [{5:5}, {*}] /: res <- (nn, 7)
+                ({7:7}, {*}) /: res <- (nn, 8)
                 
-                {1:[], 2:[]} !- res <- (nn, 9)
-                {1:(), 2:()} !- res <- (nn, 10)
+                {1:[], 2:[]} /: res <- (nn, 9)
+                {1:(), 2:()} /: res <- (nn, 10)
                 
-                [{1:[(), ()], 2:[(), ()]}, {3:[(), ()], 4:[(), ()]}] !- res <- (nn, 11)
-                [{1:()}] !- res <- (nn, 12)
-                ({1:[]}) !- res <- (nn, 13)
-                [{1:_}] !- res <- (nn, 41)
-                [({1:_})] !- res <- (nn, 42)
-                ([{1:_}]) !- res <- (nn, 43)
+                [{1:[(), ()], 2:[(), ()]}, {3:[(), ()], 4:[(), ()]}] /: res <- (nn, 11)
+                [{1:()}] /: res <- (nn, 12)
+                ({1:[]}) /: res <- (nn, 13)
+                [{1:_}] /: res <- (nn, 41)
+                [({1:_})] /: res <- (nn, 42)
+                ([{1:_}]) /: res <- (nn, 43)
                 
-                [A{a1:11}, _] !- res <- (nn, 14)
-                [A{a1:11}] !- res <- (nn, 141)
-                (A{a1:11}) !- res <- (nn, 142)
-                [(A{}, 11), (B{}, 22)] !- res <- (nn, 143)
-                ([A{}, B{}], [B{}, C{}]) !- res <- (nn, 15)
-                {'a':A{}, 'b':B{}} !- res <- (nn, 16)
+                [A{a1:11}, _] /: res <- (nn, 14)
+                [A{a1:11}] /: res <- (nn, 141)
+                (A{a1:11}) /: res <- (nn, 142)
+                [(A{}, 11), (B{}, 22)] /: res <- (nn, 143)
+                ([A{}, B{}], [B{}, C{}]) /: res <- (nn, 15)
+                {'a':A{}, 'b':B{}} /: res <- (nn, 16)
                 
-                [*] !- res <- (nn, 917)
-                (*) !- res <- (nn, 918)
-                {*} !- res <- (nn, 919)
-                _ !- res <- (nn, 999)
+                [*] /: res <- (nn, 917)
+                (*) /: res <- (nn, 918)
+                {*} /: res <- (nn, 919)
+                _ /: res <- (nn, 999)
         
         # print(res)
         '''
@@ -571,13 +620,13 @@ class TestMatch(TestCase):
         ]
         for nn <- nns
             match nn
-                false !- res <- (nn, -100)
-                # 0 | null | false | "" | [] !- res <- (nn, 0)
-                0 | null | "" | [] !- res <- (nn, 0)
-                [1,2,3] | (1,2,3) | {'a':_, 'b':_, 'c':_} !- res <- (nn, 1)
-                A{a1:1} | B{b1:2} | C{c1:'c3'} !- res <- (nn, 2)
-                [*] | (*) | {*}  !- res <- (nn, 888)
-                _ !- res <- (nn, 999)
+                false /: res <- (nn, -100)
+                # 0 | null | false | "" | [] /: res <- (nn, 0)
+                0 | null | "" | [] /: res <- (nn, 0)
+                [1,2,3] | (1,2,3) | {'a':_, 'b':_, 'c':_} /: res <- (nn, 1)
+                A{a1:1} | B{b1:2} | C{c1:'c3'} /: res <- (nn, 2)
+                [*] | (*) | {*}  /: res <- (nn, 888)
+                _ /: res <- (nn, 999)
         
         # print(res)
         '''
@@ -611,13 +660,13 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                re`a|b|c` !- res <- [n, 1] 
-                re`[def]+$` !- res <- [n, 2] 
-                re`([a-z]+\:[0-9]+)` !- res <- [n, 3] 
-                re`^[houpring]{3,6}$` !- res <- [n, 4] 
-                re`[0-9]+` !- res <- [n, 5] 
-                re`.+` !- res <- [n, 999] 
-                _ !- res <- [n, 2999]
+                re`a|b|c` /: res <- [n, 1] 
+                re`[def]+$` /: res <- [n, 2] 
+                re`([a-z]+\:[0-9]+)` /: res <- [n, 3] 
+                re`^[houpring]{3,6}$` /: res <- [n, 4] 
+                re`[0-9]+` /: res <- [n, 5] 
+                re`.+` /: res <- [n, 999] 
+                _ /: res <- [n, 2999]
             # print('nres:', res)
         # 
         # print('res = ', res)
@@ -665,13 +714,13 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                _{color:cval} !- res <- [n, (cval,), 10]
-                _{} !- res <- [n, 19]
-                [_{}, _{}] !- res <- [n, 20]
-                {k1:_{}} !- res <- [n, k1, 21]
-                {k1:_{}, k2:_{}} !- res <- [n, k1, k2, 22]
-                {*} !- res <- [n, 28]
-                _ !- res <- [n, 2999]
+                _{color:cval} /: res <- [n, (cval,), 10]
+                _{} /: res <- [n, 19]
+                [_{}, _{}] /: res <- [n, 20]
+                {k1:_{}} /: res <- [n, k1, 21]
+                {k1:_{}, k2:_{}} /: res <- [n, k1, k2, 22]
+                {*} /: res <- [n, 28]
+                _ /: res <- [n, 2999]
             # print('nres:', n)
         
         # print('res = ', res)
@@ -727,24 +776,24 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                Type1{b:0} !- res <- [n, 10]
-                Type1{a:10, b:20} !- res <- [n, 11]
-                Type1{a:10} !- res <- [n, 12]
-                Type1{} !- res <- [n, 19]
-                TypeA{color:'fff'} !- res <- [n, 23]
-                TypeB{name:name, age:22} !- res <- [n, (name), 21]
-                TypeB{color:''} !- res <- [n, 27]
-                TypeB{name:name, color:color} !- res <- [n, (name, color), 28]
-                TypeA{color:_} !- res <- [n, 29]
-                TypeC{nums:[]} !- res <- [n, 30]
-                TypeC{nums:[331]} !- res <- [n, 31]
-                TypeC{nums:[a, b, c]} !- res <- [n, (a,b,c), 32]
-                TypeD{fd:{'a':aval,*}} !- res <- [n, (aval,), 41]
-                TypeD{fl:[a, b, *]} !- res <- [n, (a,b), 42]
-                TypeD{ft:(a), fd:{b:c}, fl:[d]} !- res <- [n, (a,b,c,d), 43]
-                TypeD{ft:(a,*)} !- res <- [n, (a,), 44]
-                TypeD{} !- res <- [n, 49]
-                _ !- res <- [n, 2999]
+                Type1{b:0} /: res <- [n, 10]
+                Type1{a:10, b:20} /: res <- [n, 11]
+                Type1{a:10} /: res <- [n, 12]
+                Type1{} /: res <- [n, 19]
+                TypeA{color:'fff'} /: res <- [n, 23]
+                TypeB{name:name, age:22} /: res <- [n, (name), 21]
+                TypeB{color:''} /: res <- [n, 27]
+                TypeB{name:name, color:color} /: res <- [n, (name, color), 28]
+                TypeA{color:_} /: res <- [n, 29]
+                TypeC{nums:[]} /: res <- [n, 30]
+                TypeC{nums:[331]} /: res <- [n, 31]
+                TypeC{nums:[a, b, c]} /: res <- [n, (a,b,c), 32]
+                TypeD{fd:{'a':aval,*}} /: res <- [n, (aval,), 41]
+                TypeD{fl:[a, b, *]} /: res <- [n, (a,b), 42]
+                TypeD{ft:(a), fd:{b:c}, fl:[d]} /: res <- [n, (a,b,c,d), 43]
+                TypeD{ft:(a,*)} /: res <- [n, (a,), 44]
+                TypeD{} /: res <- [n, 49]
+                _ /: res <- [n, 2999]
             # print('nres:', res)
         # 
         # print('res = ', res)
@@ -771,7 +820,7 @@ class TestMatch(TestCase):
         '''
         post-guard in matching case
         match n
-            pattern :? guard !- ...
+            pattern :? guard /: ...
         '''
         code = '''
         nn = [
@@ -784,16 +833,16 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                101 :? 2 > 3 !- res <- [n, 'n0'] # should be skipped
-                101 :? 2 < 3 !- res <- [n, 'n1']
-                [a, b] :? a > b !- res <- [n, (a, b), 'n2']
-                (a, _) | [_,a] :? a > 2 !- res <- [n, (a, ), 'n3']
-                [*] | (*) :? 7 ?> n !- res <- [n, 'n7']
-                {*} :? len(n) > 1 !- res <- [n, 'n52']
-                {a:b} :? b > 8 !- res <- [n, (a, b), 'n51']
-                1 |2 |3 :? n ?> [2, 3]  !- res <- [n, 'n61']
-                (a, b, c) :? d = 16; c < d !- res <- [n, (a, b, c, d), 'n53']
-                _  !- res <- [n, 999]
+                101 :? 2 > 3 /: res <- [n, 'n0'] # should be skipped
+                101 :? 2 < 3 /: res <- [n, 'n1']
+                [a, b] :? a > b /: res <- [n, (a, b), 'n2']
+                (a, _) | [_,a] :? a > 2 /: res <- [n, (a, ), 'n3']
+                [*] | (*) :? 7 ?> n /: res <- [n, 'n7']
+                {*} :? len(n) > 1 /: res <- [n, 'n52']
+                {a:b} :? b > 8 /: res <- [n, (a, b), 'n51']
+                1 |2 |3 :? n ?> [2, 3]  /: res <- [n, 'n61']
+                (a, b, c) :? d = 16; c < d /: res <- [n, (a, b, c, d), 'n53']
+                _  /: res <- [n, 999]
         
         # print(res)
         '''
@@ -806,16 +855,18 @@ class TestMatch(TestCase):
         rvar = ctx.get('res').get()
         exp = [[101, 'n1'], [2, 'n61'], [3, 'n61'], [4, 999], 
             [[11, 12], (12,), 'n3'], [[4, 3], (4, 3), 'n2'], [(5, 1), (5,), 'n3'], 
-            [{1: 11}, (1, 11), 'n51'], [{2: 22, 222: 222}, 'n52'], [{3: 33, 33: 333, 333: 3333}, 'n52']
+            [(1, 7, 5), 'n7'], [[1, 2, 1, 2, 1, 2, 7], 'n7'], 
+            [{1: 11}, (1, 11), 'n51'], [{2: 22, 222: 222}, 'n52'], [{3: 33, 33: 333, 333: 3333}, 'n52'],
+            [(1, 2, 3), (1, 2, 3, 16), 'n53'], [(11, 12, 15), (11, 12, 15, 16), 'n53']
         ]
-        # self.assertEqual(exp, rvar.vals())
+        self.assertEqual(exp, rvar.vals())
 
     def test_multicase_simple(self):
         '''
         Multipattern as set of cases:
         each of sub case is valid
         match n
-            1 | 2 | 3 !- ...
+            1 | 2 | 3 /: ...
         '''
         code = '''
         nn = [
@@ -829,13 +880,13 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                1 !- res <- [n, 11]
-                2 | 3 !- res <- [n, 22]
-                4 | 5 | 6 !- res <- [n, 33]
-                (_) | [_] | {_:_} !- res <- [n, 101]
-                (a, *) | [a, *] | {a:_, _:_} !- res <- [n, (a,), 102]
-                {*} | 4444 !- res <- [n, 103]
-                _  !- res <- [n, 999]
+                1 /: res <- [n, 11]
+                2 | 3 /: res <- [n, 22]
+                4 | 5 | 6 /: res <- [n, 33]
+                (_) | [_] | {_:_} /: res <- [n, 101]
+                (a, *) | [a, *] | {a:_, _:_} /: res <- [n, (a,), 102]
+                {*} | 4444 /: res <- [n, 103]
+                _  /: res <- [n, 999]
         
         # print(res)
         '''
@@ -866,14 +917,14 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                [*, 2]   !- res <- [n, 1021]
-                (*, 2)   !- res <- [n, 21]
-                (?, *, 41, ?, *, 42, ?, *)   !- res <- [n, 41]
-                (a, _, ?,  9, *, b, c, 19, _, ?, *, d)   !- res <- [n, (a, b, c, d), 91]
-                (a, _, ?,  9, *, b, c, 19, _, ?, *)   !- res <- [n, (a, b, c), 92]
-                [*]      !- res <- [n, 1099]
-                (*)      !- res <- [n, 99]
-                _ !- res <- [n, 5999]
+                [*, 2]   /: res <- [n, 1021]
+                (*, 2)   /: res <- [n, 21]
+                (?, *, 41, ?, *, 42, ?, *)   /: res <- [n, 41]
+                (a, _, ?,  9, *, b, c, 19, _, ?, *, d)   /: res <- [n, (a, b, c, d), 91]
+                (a, _, ?,  9, *, b, c, 19, _, ?, *)   /: res <- [n, (a, b, c), 92]
+                [*]      /: res <- [n, 1099]
+                (*)      /: res <- [n, 99]
+                _ /: res <- [n, 5999]
             # print(res)
         # 
         # print('res = ', res)
@@ -923,21 +974,21 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                [*, 2]   !- res <- [n, 21]
-                [?, *, 3, *]   !- res <- [n, 31]
-                [?, *, 41, ?, *, 42, ?, *]   !- res <- [n, 41]
-                [_, 5, *]   !- res <- [n, 51]
-                [*, _, 5]   !- res <- [n, 52]
-                [5, *]   !- res <- [n, 53]
-                [_, ?, 6, *, 61]   !- res <- [n, 61]
+                [*, 2]   /: res <- [n, 21]
+                [?, *, 3, *]   /: res <- [n, 31]
+                [?, *, 41, ?, *, 42, ?, *]   /: res <- [n, 41]
+                [_, 5, *]   /: res <- [n, 51]
+                [*, _, 5]   /: res <- [n, 52]
+                [5, *]   /: res <- [n, 53]
+                [_, ?, 6, *, 61]   /: res <- [n, 61]
                 
-                [a, *, 7, *]   !- res <- [n,a, 71]
-                [*, a, _, 8, b, *]   !- res <- [n, (a, b), 81]
-                [a, _, ?,  9, *, b, c, 19, _, ?, *, d]   !- res <- [n, (a, b, c, d), 91]
-                [a, _, ?,  9, *, b, c, 19, _, ?, *]   !- res <- [n, (a, b, c), 92]
+                [a, *, 7, *]   /: res <- [n,a, 71]
+                [*, a, _, 8, b, *]   /: res <- [n, (a, b), 81]
+                [a, _, ?,  9, *, b, c, 19, _, ?, *, d]   /: res <- [n, (a, b, c, d), 91]
+                [a, _, ?,  9, *, b, c, 19, _, ?, *]   /: res <- [n, (a, b, c), 92]
                 
-                [*]      !- res <- [n, 99]
-                _ !- res <- [n, 5999]
+                [*]      /: res <- [n, 99]
+                _ /: res <- [n, 5999]
             # print(res)
         # 
         # print('res = ', res)
@@ -984,19 +1035,19 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                (?, 2) !- res <- [n, 22]
-                (?, 5,?) !- res <- [n, 53]
-                (_, 5, ?) !- res <- [n, 54]
-                (5, ?, ?) !- res <- [n, 55]
-                (?) !- res <- [n, 11]
-                (1, ?, 3) !- res <- [n, 31]
-                (1, ?, ?, ?, 5) !- res <- [n, 51]
-                (3,_,?) !- res <- [n, 32]
-                (?, ?, ?, ?, a, 6) !- res <- [n, a, 61]
-                (x, ?, ?, 4, ?, b, 7) !- res <- [n, (x,b), 71]
-                (x, ?, ?, ?, a, b, 7) !- res <- [n, (x,a,b), 72]
-                (x, ?, 7) !- res <- [n, (x), 73]
-                _ !- res <- [n, 3999]
+                (?, 2) /: res <- [n, 22]
+                (?, 5,?) /: res <- [n, 53]
+                (_, 5, ?) /: res <- [n, 54]
+                (5, ?, ?) /: res <- [n, 55]
+                (?) /: res <- [n, 11]
+                (1, ?, 3) /: res <- [n, 31]
+                (1, ?, ?, ?, 5) /: res <- [n, 51]
+                (3,_,?) /: res <- [n, 32]
+                (?, ?, ?, ?, a, 6) /: res <- [n, a, 61]
+                (x, ?, ?, 4, ?, b, 7) /: res <- [n, (x,b), 71]
+                (x, ?, ?, ?, a, b, 7) /: res <- [n, (x,a,b), 72]
+                (x, ?, 7) /: res <- [n, (x), 73]
+                _ /: res <- [n, 3999]
             # print(res)
         # 
         # print('res = ', res)
@@ -1038,19 +1089,19 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                [?, 2] !- res <- [n, 22]
-                [?, 5,?] !- res <- [n, 53]
-                [_, 5, ?] !- res <- [n, 54]
-                [5, ?, ?] !- res <- [n, 55]
-                [?] !- res <- [n, 11]
-                [1, ?, 3] !- res <- [n, 31]
-                [1, ?, ?, ?, 5] !- res <- [n, 51]
-                [3,_,?] !- res <- [n, 32]
-                [?, ?, ?, ?, a, 6] !- res <- [n, a, 61]
-                [x, ?, ?, 4, ?, b, 7] !- res <- [n, (x,b), 71]
-                [x, ?, ?, ?, a, b, 7] !- res <- [n, (x,a,b), 72]
-                [x, ?, 7] !- res <- [n, (x), 73]
-                _ !- res <- [n, 3999]
+                [?, 2] /: res <- [n, 22]
+                [?, 5,?] /: res <- [n, 53]
+                [_, 5, ?] /: res <- [n, 54]
+                [5, ?, ?] /: res <- [n, 55]
+                [?] /: res <- [n, 11]
+                [1, ?, 3] /: res <- [n, 31]
+                [1, ?, ?, ?, 5] /: res <- [n, 51]
+                [3,_,?] /: res <- [n, 32]
+                [?, ?, ?, ?, a, 6] /: res <- [n, a, 61]
+                [x, ?, ?, 4, ?, b, 7] /: res <- [n, (x,b), 71]
+                [x, ?, ?, ?, a, b, 7] /: res <- [n, (x,a,b), 72]
+                [x, ?, 7] /: res <- [n, (x), 73]
+                _ /: res <- [n, 3999]
             # print(res)
         # 
         # print('res = ', res)
@@ -1099,17 +1150,17 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                {'a':_, ?} !- res <- [n, 12]
-                {'b':v, ?} !- res <- [n, 13]
-                {?} !- res <- [n, 11] # put here because it will eat empty and 1-pair cases
-                {_:v, ?} !- res <- [n, 14] #  2-pairs and longer will reach here
-                {'a':v, ?,?} !- res <- [n, 15] # a + possible 2
-                {'b':v, ?,?, 'c':_} !- res <- [n, 16]
-                {'a':v, ?,?,?,?} !- res <- [n, 17] # a + possible 4 elems
-                {'a':v, *} !- res <- [n, 18] # a + more than 4 elems
-                {'a':v, ?,?,?,?, *} !- res <- [n, 19] # the same as prev
-                {*} !- res <- [n, 20]
-                _ !- res <- [n, 3999]
+                {'a':_, ?} /: res <- [n, 12]
+                {'b':v, ?} /: res <- [n, 13]
+                {?} /: res <- [n, 11] # put here because it will eat empty and 1-pair cases
+                {_:v, ?} /: res <- [n, 14] #  2-pairs and longer will reach here
+                {'a':v, ?,?} /: res <- [n, 15] # a + possible 2
+                {'b':v, ?,?, 'c':_} /: res <- [n, 16]
+                {'a':v, ?,?,?,?} /: res <- [n, 17] # a + possible 4 elems
+                {'a':v, *} /: res <- [n, 18] # a + more than 4 elems
+                {'a':v, ?,?,?,?, *} /: res <- [n, 19] # the same as prev
+                {*} /: res <- [n, 20]
+                _ /: res <- [n, 3999]
         # 
         # print('res = ', res)
         '''
@@ -1150,15 +1201,15 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                {'a':v} !- res <- [n, 12]
-                {'a':v1, 'b': v2, *} !- res <- [n, 21]
-                {'a':v1, 'c': v2, *} !- res <- [n, 22]
-                {'a':v, *} !- res <- [n, 23]
-                {k:v, _:_, _:_, *} !- res <- [n, 24]
-                {k:v} !- res <- [n, 25]
-                {k:'_n1', *} !- res <- [n, 26]
-                {*} !- res <- [n, 30]
-                _ !- res <- [n, 3999]
+                {'a':v} /: res <- [n, 12]
+                {'a':v1, 'b': v2, *} /: res <- [n, 21]
+                {'a':v1, 'c': v2, *} /: res <- [n, 22]
+                {'a':v, *} /: res <- [n, 23]
+                {k:v, _:_, _:_, *} /: res <- [n, 24]
+                {k:v} /: res <- [n, 25]
+                {k:'_n1', *} /: res <- [n, 26]
+                {*} /: res <- [n, 30]
+                _ /: res <- [n, 3999]
         
         # print('res = ', res)
         '''
@@ -1195,20 +1246,20 @@ class TestMatch(TestCase):
         for n <- nn
             # print('nn:', n)
             match n
-                {'bb':v} !- res <- [n, v, 18]
-                {k:'33'} !- res <- [n, 19]
-                {k:v} !- res <- [n, (k,v), 21]
-                {'aa':v1, 'bb':v2} !- res <- [n, (v1, v2), 22]
-                {'aa':v1, _:v2} !- res <- [n, 23]
-                {_:v1, 'ee':v2} !- res <- [n, (v1,v2), 25]
-                {'77': val, _:_} !- res <- [n, 27]
-                {a:b, c:d} !- res <- [n, 28]
-                {'a1':v1, 'a2':v2, _:v3} !- res <- [n, 31]
-                {'b2':v2, 'b3':v3, _:v1} !- res <- [n, 32]
-                {'c3':v3, k2:'222', k1:v1} !- res <- [n, 33]
-                {a:'__1', b:c, _:_} !- res <- [n, 335] # doubtful case, value of key in dict is not unique
-                {a:b, c:d, e:f} !- res <- [n, 36]
-                _ !- res <- [n, 2999]
+                {'bb':v} /: res <- [n, v, 18]
+                {k:'33'} /: res <- [n, 19]
+                {k:v} /: res <- [n, (k,v), 21]
+                {'aa':v1, 'bb':v2} /: res <- [n, (v1, v2), 22]
+                {'aa':v1, _:v2} /: res <- [n, 23]
+                {_:v1, 'ee':v2} /: res <- [n, (v1,v2), 25]
+                {'77': val, _:_} /: res <- [n, 27]
+                {a:b, c:d} /: res <- [n, 28]
+                {'a1':v1, 'a2':v2, _:v3} /: res <- [n, 31]
+                {'b2':v2, 'b3':v3, _:v1} /: res <- [n, 32]
+                {'c3':v3, k2:'222', k1:v1} /: res <- [n, 33]
+                {a:'__1', b:c, _:_} /: res <- [n, 335] # doubtful case, value of key in dict is not unique
+                {a:b, c:d, e:f} /: res <- [n, 36]
+                _ /: res <- [n, 2999]
             # print('nres:', res)
         # 
         # print('res = ', res)
@@ -1242,14 +1293,14 @@ class TestMatch(TestCase):
         for n <- nn
             # print('nn:', n)
             match n
-                {0:_} !- res <- [n, 19]
-                {'':_} !- res <- [n, 20]
-                {' ':_} !- res <- [n, 21]
-                {'_':v} !- res <- [n, (v,), 22]
-                {k:v} !- res <- [n, (k,v), 23]
-                {null:v, _:_} !- res <- [n, 25]
-                {'':v, _:_} !- res <- [n, 26]
-                _ !- res <- [n, 2999]
+                {0:_} /: res <- [n, 19]
+                {'':_} /: res <- [n, 20]
+                {' ':_} /: res <- [n, 21]
+                {'_':v} /: res <- [n, (v,), 22]
+                {k:v} /: res <- [n, (k,v), 23]
+                {null:v, _:_} /: res <- [n, 25]
+                {'':v, _:_} /: res <- [n, 26]
+                _ /: res <- [n, 2999]
             # print('nres:', res)
         # 
         # print('res = ', res)
@@ -1281,16 +1332,16 @@ class TestMatch(TestCase):
         for n <- nn
             # print('nn:', n)
             match n
-                () !- res <- [n, 11]
-                [] !- res <-   [n, 12]
-                {} !- res <- [n, 13]
-                {1:_} !- res <- [n, 16] # num key
-                {'aa':_} !- res <- [n, 17] # str key
-                {k:'33'} !- res <- [n, 19] # key va and str val
-                {_:_} !- res <- [n, 21] # any : any
-                {'aa':v1, _:_} !- res <- [n, 23] # 2 pairs
-                {'a1':v1, 'a2':v2, _:v3} !- res <- [n, 31] # 3 pairs, 2 key vals
-                _ !- res <- [n, 2999]
+                () /: res <- [n, 11]
+                [] /: res <-   [n, 12]
+                {} /: res <- [n, 13]
+                {1:_} /: res <- [n, 16] # num key
+                {'aa':_} /: res <- [n, 17] # str key
+                {k:'33'} /: res <- [n, 19] # key va and str val
+                {_:_} /: res <- [n, 21] # any : any
+                {'aa':v1, _:_} /: res <- [n, 23] # 2 pairs
+                {'a1':v1, 'a2':v2, _:v3} /: res <- [n, 31] # 3 pairs, 2 key vals
+                _ /: res <- [n, 2999]
             # print('nres:', res)
         # 
         # print('res = ', res)
@@ -1324,16 +1375,16 @@ class TestMatch(TestCase):
         for n <- nn
             # print('nn:', n)
             match n
-                () !- res <- [n, 11]
-                (2) !- res <- [n, 11]
-                (a) !- res <-   [n, (a,), 12]
-                (_) !- res <- [n, 19] # shouldn't be used because prev
-                (a,2) !- res <- [n, (a,), 13]
-                (a,b) !- res <- [n, (a,b), 14]
-                (a,_,3) !- res <- [n, (a,), 21]
-                (a,b,22) !- res <- [n, (a,b), 222]
-                (a,b,c) !- res <- [n, (a,b,c), 26]
-                _ !- res <- [n, 2999]
+                () /: res <- [n, 11]
+                (2) /: res <- [n, 11]
+                (a) /: res <-   [n, (a,), 12]
+                (_) /: res <- [n, 19] # shouldn't be used because prev
+                (a,2) /: res <- [n, (a,), 13]
+                (a,b) /: res <- [n, (a,b), 14]
+                (a,_,3) /: res <- [n, (a,), 21]
+                (a,b,22) /: res <- [n, (a,b), 222]
+                (a,b,c) /: res <- [n, (a,b,c), 26]
+                _ /: res <- [n, 2999]
             # print('nres:', res)
         # 
         # print('res = ', res)
@@ -1372,16 +1423,16 @@ class TestMatch(TestCase):
         for n <- nn
             # print('nn:', n)
             match n
-                [] !- res <- [n, 11]
-                [a] !- res <-   [n, (a,), 12]
-                [_] !- res <- [n, 19] # shouldn't be used because prev
-                [a,2] !- res <- [n, (a,), 13]
-                [a,b] !- res <- [n, (a,b), 14]
-                [a,_,1] !- res <- [n, (a,), 23]
-                [a,_,3] !- res <- [n, (a,), 23]
-                [a,b,22] !- res <- [n, (a,b), 23]
-                [a,b,c] !- res <- [n, (a,b,c), 26]
-                _ !- res <- [n, 2999]
+                [] /: res <- [n, 11]
+                [a] /: res <-   [n, (a,), 12]
+                [_] /: res <- [n, 19] # shouldn't be used because prev
+                [a,2] /: res <- [n, (a,), 13]
+                [a,b] /: res <- [n, (a,b), 14]
+                [a,_,1] /: res <- [n, (a,), 23]
+                [a,_,3] /: res <- [n, (a,), 23]
+                [a,b,22] /: res <- [n, (a,b), 23]
+                [a,b,c] /: res <- [n, (a,b,c), 26]
+                _ /: res <- [n, 2999]
             # print('nres:', res)
         # 
         # print('res = ', res)
@@ -1416,17 +1467,17 @@ class TestMatch(TestCase):
         for n <- nn
             # print('nn:', n)
             match n
-                # 1 !- 1
-                () !- res <- [n, 101]
-                (1) !- res <-   [n, 102]
-                (1,7) !- res <- [n, 103]
-                (_) !- res <- [n, 201]
-                (1,_) !- res <- [n, 202]
-                (_,2) !- res <- [n, 203]
-                (_,_) !- res <- [n, 204]
-                (1,_,7) !- res <- [n, 205]
-                (_,_,_) !- res <- [n, 206]
-                _ !- res <- [n, 20999]
+                # 1 /: 1
+                () /: res <- [n, 101]
+                (1) /: res <-   [n, 102]
+                (1,7) /: res <- [n, 103]
+                (_) /: res <- [n, 201]
+                (1,_) /: res <- [n, 202]
+                (_,2) /: res <- [n, 203]
+                (_,_) /: res <- [n, 204]
+                (1,_,7) /: res <- [n, 205]
+                (_,_,_) /: res <- [n, 206]
+                _ /: res <- [n, 20999]
 
             # print('nres:', res)
 
@@ -1464,18 +1515,18 @@ class TestMatch(TestCase):
         for n <- nn
             # print('nn:', n)
             match n
-                [] !- res <- [n, 11]
-                ['1'] !- res <-   [n, 12]
-                ['a'] !- res <- [n, 13]
-                ['bb'] !- res <- [n, 14]
-                ['','',''] !- res <- [n, 15]
-                ['a','bb'] !- res <- [n, 16]
-                ['aa','cc'] !- res <- [n, 17]
-                ['aaa','_'] !- res <- [n, 18]
-                ['a',_] !- res <- [n, 19]
-                [a, b] !- res <- [n, (a,b), 20]
-                [_] !- res <- [n, 21]
-                _ !- res <- [n, 2999]
+                [] /: res <- [n, 11]
+                ['1'] /: res <-   [n, 12]
+                ['a'] /: res <- [n, 13]
+                ['bb'] /: res <- [n, 14]
+                ['','',''] /: res <- [n, 15]
+                ['a','bb'] /: res <- [n, 16]
+                ['aa','cc'] /: res <- [n, 17]
+                ['aaa','_'] /: res <- [n, 18]
+                ['a',_] /: res <- [n, 19]
+                [a, b] /: res <- [n, (a,b), 20]
+                [_] /: res <- [n, 21]
+                _ /: res <- [n, 2999]
             # print('nres:', res)
         # 
         # print('res = ', res)
@@ -1511,17 +1562,17 @@ class TestMatch(TestCase):
         for n <- nn
             # print('nn:', n)
             match n
-                # 1 !- 1
-                [] !- res <- [n, 11]
-                [1] !- res <-   [n, 12]
-                [1,7] !- res <- [n, 13]
-                [_] !- res <- [n, 21]
-                [1,_] !- res <- [n, 22]
-                [_,2] !- res <- [n, 23]
-                [_,_] !- res <- [n, 24]
-                [1,_,7] !- res <- [n, 25]
-                [_,_,_] !- res <- [n, 26]
-                _ !- res <- [n, 2999]
+                # 1 /: 1
+                [] /: res <- [n, 11]
+                [1] /: res <-   [n, 12]
+                [1,7] /: res <- [n, 13]
+                [_] /: res <- [n, 21]
+                [1,_] /: res <- [n, 22]
+                [_,2] /: res <- [n, 23]
+                [_,_] /: res <- [n, 24]
+                [1,_,7] /: res <- [n, 25]
+                [_,_,_] /: res <- [n, 26]
+                _ /: res <- [n, 2999]
             # print('nres:', res)
         # 
         # print('res = ', res)
@@ -1551,13 +1602,13 @@ class TestMatch(TestCase):
         
         for s <- ss
             match s
-                '' !-      res <- [s, 1]
-                ' ' !-      res <- [s, 2]
-                'aaa' !-   res <- [s, 3]
-                'b' !-     res <- [s, 4]
-                'bcd' !-   res <- [s, 5]
-                '123' !-   res <- [s, 123]
-                _ !-
+                '' /:      res <- [s, 1]
+                ' ' /:      res <- [s, 2]
+                'aaa' /:   res <- [s, 3]
+                'b' /:     res <- [s, 4]
+                'bcd' /:   res <- [s, 5]
+                '123' /:   res <- [s, 123]
+                _ /:
                     res <- [s, 1000]
         
         # print('res = ', res)
@@ -1585,9 +1636,9 @@ class TestMatch(TestCase):
         
         for n <- nn
             match n
-                1 !- res <- [n,111]
-                2 !- res <- [n,222]
-                _ !- res <- [n,999]
+                1 /: res <- [n,111]
+                2 /: res <- [n,222]
+                _ /: res <- [n,999]
         
         # print('res = ', res)
         '''
@@ -1612,10 +1663,10 @@ class TestMatch(TestCase):
         r1 = 0
         b = 3
         match a
-            1  !- r1 = 100
-            10 !- r1 = 200
-            b  !- r1 = 300
-            _  !- r1 = -2
+            1  /: r1 = 100
+            10 /: r1 = 200
+            b  /: r1 = 300
+            _  /: r1 = -2
         '''
         code = norm(code[1:])
         tlines = splitLexems(code)
@@ -1640,28 +1691,29 @@ class TestMatch(TestCase):
             res = 1
             t = i + 10
             match i
-                1 !- res = 10
-                2 !- 
+                1 /: res = 10
+                2
                     if res > 0 && res < 4
                         # print('c2', i, res)
                         res *= 11 * i
-                3 !- res = foo2(x -> x ** 2)
-                4 !- f = x -> x * 12
+                3 /: res = foo2(x -> x ** 2)
+                4 /: f = x -> x * 12
                     res = f(i)
-                5 !- res = foo2(ff) + i
-                6 !- 
+                5 /: res = foo2(ff) + i
+                6 
                     for j <- [0..5]
                         # print('c5', j, res)
                         res += i
-                7 !- 
+                # unnecessary operator /: before explicit block by indent
+                7 /:
                     for j = 1; j < 6; j = j + 1
                         # print('c7', j, res)
                         res *= j
-                8 !- 
+                8
                     if c= t + 100; c > 110 && t > 4
                         # print('c2', i, res)
                         res = c
-                _ !- res = 1001
+                _ /: res = 1001
             rrs <- res
 
         # print('rrs = ', rrs)
@@ -1676,51 +1728,52 @@ class TestMatch(TestCase):
         self.assertEqual([1001, 10, 22, 121, 48, 115, 37, 120, 118], rvar.vals())
 
 
-    def test_CaseMatchSub_match(self):
-        cs = CaseMatchCase()
-        rrs = []
-        def checkRes(code, exp):
-            dprint('$$ run test ------------------')
-            dprint('CODE:','\n'+code)
-            # code = lines[0]
-            tlines = splitLexems(code)
-            clines:CLine = elemStream(tlines)
-            elems = clines[0].code
-            res = cs.match(elems)
-            dprint('#tt >>> ', code, res)
-            msg = 'Tried use code: %s' % code
-            if exp:
-                self.assertTrue(res, msg)
-            else:
-                self.assertFalse(res, msg)
+    # deprecated by refactoring of match cases
+    # def _test_CaseMatchSub_match(self):
+    #     cs = CaseMatchCase()
+    #     rrs = []
+    #     def checkRes(code, exp):
+    #         dprint('$$ run test ------------------')
+    #         dprint('CODE:','\n'+code)
+    #         # code = lines[0]
+    #         tlines = splitLexems(code)
+    #         clines:CLine = elemStream(tlines)
+    #         elems = clines[0].code
+    #         res = cs.match(elems)
+    #         dprint('#tt >>> ', code, res)
+    #         msg = 'Tried use code: %s' % code
+    #         if exp:
+    #             self.assertTrue(res, msg)
+    #         else:
+    #             self.assertFalse(res, msg)
             
-        src = ''''
-        val !- expr
-        123 !- a + b
-        234 !- r = 2 + 3
-        3 !- res = 4
-        user(123) !- res
-        '''
-        src = norm(src[1:].rstrip())
-        data = src.splitlines()
-        for code in data:
-            if code.strip() == '':
-                continue
-            checkRes(code, True)
+    #     src = ''''
+    #     val /: expr
+    #     123 /: a + b
+    #     234 /: r = 2 + 3
+    #     3 /: res = 4
+    #     user(123) /: res
+    #     '''
+    #     src = norm(src[1:].rstrip())
+    #     data = src.splitlines()
+    #     for code in data:
+    #         if code.strip() == '':
+    #             continue
+    #         checkRes(code, True)
         
-        src = ''''
-        val 123 -> expr
-        1,2,3 -> a + b
-        x <- src
-        -> expr ...
-        user(123) + 0 -> res
-        '''
-        src = norm(src[1:].rstrip())
-        data = src.splitlines()
-        for code in data:
-            if code.strip() == '':
-                continue
-            checkRes(code, False)
+    #     src = ''''
+    #     val 123 -> expr
+    #     1,2,3 -> a + b
+    #     x <- src
+    #     -> expr ...
+    #     user(123) + 0 -> res
+    #     '''
+    #     src = norm(src[1:].rstrip())
+    #     data = src.splitlines()
+    #     for code in data:
+    #         if code.strip() == '':
+    #             continue
+    #         checkRes(code, False)
 
 
 if __name__ == '__main__':

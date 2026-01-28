@@ -167,7 +167,7 @@ class MatchExpr(ControlBlock):
         self.match = exp
     
     def do(self, ctx:Context):
-        # print('Match.do1')
+        self.lastVal = None
         self.match.do(ctx)
         self.doCases(ctx)
 
@@ -206,21 +206,20 @@ class LoopIterExpr(LoopBlock):
     # def setIter(self, iter:IterAssignExpr):
     def setIter(self, iter:LeftArrowExpr):
         # raise EvalErr('LoopIterExpr setIter: ', iter)
-        dprint('LoopExpr.setIter', iter)
+        # dprint('LoopExpr.setIter', iter)
         self._origIter = iter
 
     def add(self, exp:Expression):
-        dprint('LoopExpr.add', exp)
+        # dprint('LoopExpr.add', exp)
         self.block.add(exp)
 
     def do(self, ctx:Context):
+        self.lastVal = None
         subCtx = Context(ctx)
         if isinstance(self._origIter, LeftArrowExpr):
-            dprint('For iter')
-            # subCtx.print()
+            # print('For iter')
             self._origIter.init(subCtx)
             if isinstance(self._origIter.expr, IterAssignExpr):
-                # self._origIter = self.iter
                 self.iter = self._origIter.expr
         self.iter.start()
         while self.iter.cond():
@@ -234,15 +233,11 @@ class LoopIterExpr(LoopBlock):
                 return
             if isinstance(blockRes, PopupBreak):
                 # break expr
-                # print(' - loop list stop ::', blockRes, type(blockRes))
                 self.lastVal = None
                 break
             if isinstance(blockRes, PopupContinue):
                 ''' Nothing to do, just go to next iteration '''
-                # print(' - loop list cont ::', blockRes, type(blockRes))
                 # continue expr
-                # self.lastVal = blockRes
-                # return
             self.iter.step()
 
 

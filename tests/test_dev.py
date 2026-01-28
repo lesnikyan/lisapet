@@ -87,22 +87,20 @@ class TestDev(TestCase):
         BUG: empty inherited struct
             struct A
             struct E(A)  # Error 
-    
+        
+        TODO: inspect and resolve MatchPtrCase to avoid use tree.raw2done if not needed anymore
     '''
 
 
 
-
-    def _test_code(self):
-        ''' '''
+    def _test_struct_inheritance_without_own_fields(self):
+        ''' when child struct don't define fields `struct B(A)` '''
         code = r'''
         res = []
         
-        func foo(a:int|float, b:int|string)
-            (a * 10, ~"<{b}>")
-        
-        print('', foo(2, 'tons'))
-        print('', foo(1.5, 4000))
+        struct A a:int
+        # struct B b:int
+        struct C(A)
         
         print('res = ', res)
         '''
@@ -114,6 +112,86 @@ class TestDev(TestCase):
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
         # exv = []
+        # self.assertEqual(exv, rvar.vals())
+
+
+    def _test_code(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func foo(a:int|float, b:int|string)
+            (a * 10, ~"<{b}>")
+        
+        ff = [(a, b) -> a <- b]
+        nn = []
+        ff[-1](nn, 5)
+        ff[-1](nn, 6)
+        print(nn)
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        # rvar = ctx.get('res').get()
+        # exv = []
+        # self.assertEqual(exv, rvar.vals())
+
+
+    def _test_match_last_expr_of_case_as_result(self):
+        ''' if `match` is a last expression in function. 
+            each sub-case of match will return result of their last expression'''
+        code = r'''
+        res = []
+        
+        func fsubRes(n)
+            # Last expression is a result
+            match n
+                # indent block
+                ::int # some comment
+                    x  = 1
+                    x
+                
+                # inline block
+                ::bool /: x = 2; x
+                
+                # /: but indent (it's ok)
+                {_:_} /:
+                    y = 3
+                    y
+                
+                # block with sub control
+                p::(tuple|list)
+                    r4 = []
+                    for x <- p
+                        r4 <- x
+                        if len(r4) >= 3
+                        # in if/else must use `return`
+                            return (4, r4, p)
+                    -1000
+                # default
+                _ /: 5
+            # end of function
+            
+        nn = [1, true, [1,2,3], (3,4,5), {4:44}, 1.5, [100,200]]
+        
+        for k <- nn
+            res <- fbase(k)
+            
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        # rvar = ctx.get('res').get()
+        # exv = [1, 2, (4, [1, 2, 3], [1, 2, 3]), (4, [3, 4, 5], (3, 4, 5)), 3, 5, -2000]
         # self.assertEqual(exv, rvar.vals())
 
 
