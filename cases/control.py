@@ -76,20 +76,12 @@ class CaseMatchCase(SubCase):
                 case2 !- expr
         '''
 
-    def match(self, elems:list[Elem]) -> bool:
-        '''
-        expr !- expr '''
-        if len(elems) < 2:
-            return False
-
-        main = OperSplitter().mainOper(elems)
-        # print('CaseMatchCase elems[main]', elems[main].text, main)
-        return isLex(elems[main], Lt.oper, '!-')
-
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         arrInd = OperSplitter().mainOper(elems)
         exp = MatchPtrCase()
-        subs = [elems[:arrInd], elems[arrInd+1:]]
+        subs = [elems, []]
+        if isLex(elems[arrInd], Lt.oper, '/:'):
+            subs = [elems[:arrInd], elems[arrInd+1:]]
         return exp, subs
 
     def setSub(self, base:MatchPtrCase, subs:list[Expression])->Expression:
@@ -111,7 +103,7 @@ class CaseMatchPattern(SubCase):
             return False
 
         main = OperSplitter().mainOper(elems)
-        dprint('CaseMatchCase elems[main]', elems[main].text, main)
+        # dprint('CaseMatchCase elems[main]', elems[main].text, main)
         return isLex(elems[main], Lt.oper, '!-')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
@@ -144,9 +136,8 @@ class CaseFor(BlockCase, SubCase):
             case 1: exp = LoopIterExpr()
             case 2|3: exp = LoopExpr()
             case _ :pass
-        dprint('# CaseFor.split-', len(elems),  exp, 'len-subs=', len(subs))
-        # for ees in subs:
-        #     prels('>>', ees)
+        # dprint('# CaseFor.split-', len(elems),  exp, 'len-subs=', len(subs))
+        # for ees in subs: prels('>>', ees)
         return exp, subs
     
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
@@ -157,12 +148,12 @@ class CaseFor(BlockCase, SubCase):
             # iterator case
             case 1 if isinstance(base, LoopIterExpr):
                 base.setIter(subs[0])
-                dprint('(=1)', subs[0] )
+                # dprint('(=1)', subs[0] )
             # pre, cond
             case 2 if isinstance(base, LoopExpr): base.setExpr(pre=subs[0], cond=subs[1])
             # init, cond, post
             case 3 if isinstance(base, LoopExpr): base.setExpr(init=subs[0], cond=subs[1], post=subs[2])
-        dprint('# CaseFor.setSub-', base)
+        # dprint('# CaseFor.setSub-', base)
         return base
 
 class CaseIf(BlockCase, SubCase):

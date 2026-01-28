@@ -229,7 +229,6 @@ class CaseString(CaseVal, SolidCase):
         # print('StrCase:', elems, ' strlen=', len(elems))
         if len(elems) != 1:
             return False
-        # if elems[0].type in [Lt.text, Lt.mttext]:
         if elems[0].type in [Lt.text]:
             return True
         return False
@@ -263,13 +262,6 @@ class CaseMString(ExpCase):
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
         res = []
-        # i = -1
-        # if elems[0].text[:3] in ' """ ``` \'\'\' ':
-        #     elems[0].text = elems[0].text[3:]
-        # for el in elems:
-        #     i += 1
-        #     if el.type == Lt.mttext:
-        #         res.append(el.text)
         val = elems[0].text[3:-3]
         res = MString(val, elems[0].text[:3])
         return res
@@ -295,12 +287,7 @@ class CaseVar_(ExpCase, SolidCase):
         value won't assigned
     '''
     def match(self, elems:list[Elem]) -> bool:
-        # if len(elems) > 1:
-        #     return False
-        # if elems[0].type == Lt.word and elems[0].text == '_':
         return len(elems) > 1 and isLex(elems[0], Lt.word, '_')
-        #     return True
-        # return False
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value from context by var name'''

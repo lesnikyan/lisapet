@@ -125,7 +125,7 @@ expCaseSolids:list[ExpCase] = [
     ]
 
 expCaseList:list[ExpCase] = [ 
-    CaseEmpty(), CaseComment(), CaseDebug(),
+    CaseEmpty(), CaseDebug(), #CaseComment(),
     CaseUnclosedBrackets(),
     CaseImport(),
     CaseInlineSub(),
@@ -236,48 +236,53 @@ def makeExpr(expCase:ExpCase, elems:list[Elem])->Expression:
         return complexExpr(expCase, elems)
     return simpleExpr(expCase, elems)
 
-def elems2expr(elems:list[Elem])->Expression:
+def subBtContext(blockContext:Expression):
+    match blockContext:
+        case MatchExpr():
+            return CaseMatchCase()
+    return None
+
+def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     # print('#elems2expr:', [(n.text, Lt.name(n.type)) for n in elems])
-    # print('/n#elems2expr/1::', ' '.join(["'%s'"%n.text for n in elems]))
+    # print('/n# elems2expr/1::', ' '.join(["'%s'"%n.text for n in elems]), 'bContext:', blockContext)
     
-    # checkSolid:
-    if isSolidExpr(elems):
+    foundCase = None
+    
+    # check context-dependent
+    if blockContext:
+        foundCase = subBtContext(blockContext)
+    
+    # check Solid:
+    if not foundCase and isSolidExpr(elems):
         # print('elems2expr/isSolidExpr', expCaseSolids)
         for expCase in expCaseSolids:
-            # print('#elems2expr/2:', type(expCase).__name__, (elems))
-            # print('#elems2expr/12:', type(expCase).__name__)
             if expCase.match(elems):
-                # print('CaseSl found::', expCase.__class__.__name__, '', elemStr(elems), '\n')
-                expr = makeExpr(expCase, elems)
-                if isinstance(expr, CtrlSubExpr):
-                    # print('#elems2expr/3 ', expr)
-                    expr = expr.toControl()
-                # print('\n#EL2EX . expr:', expr, '', elemStr(elems))
-                return expr
+                foundCase = expCase
+                break
     
-    # print('elems2expr/other')
-    for expCase in getCases():
-        # print('#elems2expr/2:', type(expCase).__name__, (elems))
-        # print('#elems2expr/2:', type(expCase).__name__)
-        if expCase.match(elems):
-            # print('CaseOt found::', expCase.__class__.__name__, '', elemStr(elems), '\n')
-            # print('Case found::', expCase.__class__.__name__)
-            expr = makeExpr(expCase, elems)
-            if isinstance(expr, CtrlSubExpr):
-                # print('#elems2expr/3 ', expr)
-                expr = expr.toControl()
-            # print('\n#EL2EX . expr:', expr, '', elemStr(elems))
-            return expr
+    # check non-Solid
+    if not foundCase:
+        for expCase in getCases():
+            if expCase.match(elems):
+                foundCase = expCase
+                break
+    
+    if foundCase:
+        expr = makeExpr(foundCase, elems)
+        if isinstance(expr, CtrlSubExpr):
+            expr = expr.toControl()
+        # print('\n#EL2EX . expr:', expr, '', elemStr(elems))
+        return expr
     # print('tree:DEBUG: No current ExprCase for `%s` ' % ''.join([n.text for n in elems]))
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
 
 
-def line2expr(cline:CLine)-> Expression:
+def line2expr(cline:CLine, blockContext:Expression=None)-> Expression:
     ''' '''
     # types: assign, just value, definition, definition content (for struct), operator, func call, control (for, if, func, match, case), 
     try:
         # print('>> line2expr 1:', ''.join([n.text for n in cline.code]))
-        expr = elems2expr(cline.code)
+        expr = elems2expr(cline.code, blockContext)
         # print('>> line2expr 2:', expr)
         expr.src = cline
         return expr
@@ -306,7 +311,6 @@ def raw2done(parent:Expression, raw:RawCase)->Expression:
             # one-line case
             res.add(raw.right)
         return res
-    # lambdas ...
 
 
 
@@ -322,6 +326,7 @@ def lex2tree(src:list[CLine]) -> Block:
     i = -1
 
     unclosed = None
+    unclosedCase = CaseUnclosedBrackets()
     prev = root # expr of prev line
     expr = root
     indent = src[0].indent
@@ -338,53 +343,36 @@ def lex2tree(src:list[CLine]) -> Block:
         if len(cline.code) == 0:
             continue
         
-        # code = cline.code
         if unclosed is not None:
             unclosed.add(cline.code, cline.src)
-            # code = unclosed.elems
             # updated cline for unclosed
             cline = CLine(unclosed.src, unclosed.elems, unclosed.indent)
-            # prels('unclosed: ', unclosed.elems)
-        
         else:
             if caseComment.match(cline.code):
                 # nothing for comment now
                 continue
         
-        # get expression
-        prev = expr
-        expr = line2expr(cline) # >>>>>>>>>>>>>>>>>>> Expression 
-        
-        # print( '$ind=',  indent, '; prevIndent=', prevIndent)
-        
-        if isinstance(expr, UnclosedExpr):
+        if unclosedCase.match(cline.code):
             # Start processing unclosed expressions
+            expr = unclosedCase.expr(cline.code)
             expr.init(cline)
             if unclosed is None:
                 unclosed = expr
-                # unclosed.indent = indent
             continue
         else:
             if unclosed is not None:
                 unclosed = None
         
-        if isinstance(expr, CaseComment):
-            # nothing for comment now
-            continue
-        
+        # print( '$ind=',  indent, '; prevIndent=', prevIndent)
         prevIndent = indent
         if unclosed is None:
             indent = cline.indent
         else:
             indent = unclosed.indent
-
-        if isinstance(expr, CtrlSubExpr):
-            expr = expr.toControl()
         
         # print('lex2tree-2 expr:', repr(expr), 'prev:', repr(prev), 
             #   '; \n ^^ parents:', [repr(n) for n in parents], repr(curBlock), ('in=',  indent, '; pin=', prevIndent))
         goBack = False # if we move back from nected block
-        # goBack = indent < curInd #  and (isinstance(expr, ElseExpr) and not expr.hasIf())
         goBack = indent < prevIndent
         goDeep = indent > prevIndent
         prevPar = []
@@ -394,36 +382,47 @@ def lex2tree(src:list[CLine]) -> Block:
                 # print('------', i, repr(parents[-1]), repr(curBlock))
                 prevPar.append(curBlock)
                 curBlock = parents.pop()
+        
+        # resolve block by indent
+        prev = expr
+        if goDeep and prev.add:
+            # start new block
+            # print('! goDeep', repr(curBlock), repr(prev), repr(expr),'is ELSE?:', isinstance(prev, (ElseExpr)))
+            if not isinstance(prev, (ElseExpr)):
+                parents.append(curBlock)
+                curBlock = prev
+                
+        # prep blockContext
+        blockContext = None
+        if not unclosed:
+            if isinstance(curBlock, MatchExpr):
+                blockContext = curBlock
+        
+        # get expression
+        expr = line2expr(cline, blockContext) # >>>>>>>>>>>>>>>>>>> Expression 
+        
+        # if isinstance(expr, CaseComment):
+        #     # nothing for comment now
+        #     continue
 
+        # if isinstance(expr, CtrlSubExpr):
+        #     expr = expr.toControl()
         
         if isinstance(expr, ElseExpr): # else | else if ..
             if not prevPar or not isinstance(prevPar[-1], (IfExpr,ElsFold)):
                 raise EvalErr('Incorrect `else` block after non-`if`')
             parents.append(curBlock)
             curBlock = prevPar[-1]
-            # print('in Else:', repr(curBlock), repr(expr))
             curBlock.toElse(expr)
             if isinstance(curBlock, IfExpr):
                 # ELSE statement
                 curBlock = ElsFold(curBlock)
-                # print('    Else-1', repr(curBlock))
-        
             if expr.hasIf(): # else if ..
-                # print('    Else-2', repr(curBlock), repr(expr))
                 curBlock.setNext(expr)
             continue
-            
-        if goDeep and prev.add:
-            # start new block
-            # print('! goDeep', repr(curBlock), repr(prev), repr(expr),'is ELSE?:', isinstance(prev, (ElseExpr)))
-            # prev.toBlock()
-            if not isinstance(prev, (ElseExpr)):
-                parents.append(curBlock)
-                curBlock = prev
 
         if isinstance(expr, RawCase):
             expr = raw2done(curBlock, expr)
-            # print('>> after raw:', expr)
         
         # if 1-line block
         if isinstance(expr, SequenceExpr):
