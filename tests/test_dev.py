@@ -93,6 +93,27 @@ class TestDev(TestCase):
 
 
 
+    def _test_struct_inheritance_without_own_fields(self):
+        ''' when child struct don't define fields `struct B(A)` '''
+        code = r'''
+        res = []
+        
+        struct A a:int
+        # struct B b:int
+        struct C(A)
+        
+        print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        # rvar = ctx.get('res').get()
+        # exv = []
+        # self.assertEqual(exv, rvar.vals())
+
 
     def _test_code(self):
         ''' '''
