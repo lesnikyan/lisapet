@@ -848,7 +848,9 @@ class CaseExpr(ControlBlock):
     
     def do(self, ctx:Context):
         ''' body of sub-block '''
+        self.lastVal = None
         if self.expect.extCtx:
             ctx = self.expect.extCtx
         self.block.do(ctx)
         self.lastVal = self.block.get()
+        # print('CaseExpr.res val', self.lastVal)
