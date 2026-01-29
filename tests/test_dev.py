@@ -52,26 +52,37 @@ class TestDev(TestCase):
         DONE: fix parsing of struct.field with brackets:
             calling func, returned from method: stru.method()()
             collection in collection in field: stru.field[0][1]
+        
+        DONE: empty inherited struct
+            struct A
+            struct E(A)  # Error 
+            
+        DONE: add overloaded constructors, 
+        # custom 
+        # Rejected: default (at least empty) 
+            ##-- Looks like we don't need default empty callable constr. 
+            ## basic constr{} is enough
+        
+        DONE: declaration of var:type without assignment: check and fix.
 
-        TODO:? add shoren alias for the struct: stru A a:int
+        TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
         
         TODO?: class Null() -> class Null(Val)
         
-        DONE: declaration of var:type without assignment: check and fix.
+        TODO: inspect and resolve MatchPtrCase to avoid use tree.raw2done if not needed anymore
         
         TODO: check type of operand for all operators
         
         TODO: overload: 
-            add overloaded constructors, custom and default (at least empty)
             test overloading for imported functions, 
-            override o overload:
+            override of overload:
                 Think about case with same name func in a child is overloaded for another args
             overloaded methods of imported structs
             # done: struct type args in overloaded func, 
             # done: test methods with compatiple types
         
-        TODO bug: Sequence  match and split if brackets in quotes: (1, '[', ']')
+        BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
         
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
@@ -84,35 +95,9 @@ class TestDev(TestCase):
         TODO: var type ofor iter-loop 
             for n:int <- nn
         
-        BUG: empty inherited struct
-            struct A
-            struct E(A)  # Error 
-        
-        TODO: inspect and resolve MatchPtrCase to avoid use tree.raw2done if not needed anymore
     '''
 
 
-
-    def _test_struct_inheritance_without_own_fields(self):
-        ''' when child struct don't define fields `struct B(A)` '''
-        code = r'''
-        res = []
-        
-        struct A a:int
-        # struct B b:int
-        struct C(A)
-        
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # exv = []
-        # self.assertEqual(exv, rvar.vals())
 
 
     def _test_code(self):
@@ -120,14 +105,6 @@ class TestDev(TestCase):
         code = r'''
         res = []
         
-        func foo(a:int|float, b:int|string)
-            (a * 10, ~"<{b}>")
-        
-        ff = [(a, b) -> a <- b]
-        nn = []
-        ff[-1](nn, 5)
-        ff[-1](nn, 6)
-        print(nn)
         
         print('res = ', res)
         '''

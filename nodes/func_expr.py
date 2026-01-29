@@ -77,6 +77,14 @@ class FuncCallExpr(CallExpr):
             args.append(objInst)
         
         args, named = self.doArgs(args, ctx)
+                
+        # Case with func in var
+        if isinstance(func, Var):
+            func = func.get()
+        if isinstance(func, TypeVal):
+            tVal = func.getVal()
+            if isinstance(tVal, TypeStruct):
+                func = tVal.getConstr()
 
         # Case with overloaded function
         if isinstance(func, FuncOverSet):
@@ -88,14 +96,6 @@ class FuncCallExpr(CallExpr):
             if not func:
                 errMsg = f"Can't find overloaded function {self.name} with args = ({','.join([f'{n.__class__.__name__}' for n in callArgTypes])}) "
                 raise EvalErr(errMsg)
-                
-        # Case with func in var
-        if isinstance(func, Var):
-            func = func.get()
-        if isinstance(func, TypeVal):
-            tVal = func.getVal()
-            if isinstance(tVal, TypeStruct):
-                func = tVal.getConstr()
         
         self.func = func
         # print('#3# func-call do05: ', self.name, 'F:', func)

@@ -31,6 +31,92 @@ class TestStructs(TestCase):
 
 
 
+    def test_struct_overload_constructor(self):
+        ''' when child struct don't define fields `struct B(A)` '''
+        code = r'''
+        res = []
+        
+        struct A a:int
+        struct B b:int
+        struct C(A)
+        struct D(A, B) d:int, e:float
+        
+        # custom: just any options, one or more
+        # 1st custom constructor replaces default
+        # if we have defined custom constr with different signature than default 
+        # we have to define another with full set of args, like default had
+        
+        func B()
+            B{}
+        
+        func B(a:int)
+            B{b:a}
+        
+        func B(a,b,c)
+            B{b: a*1000 + b * 100 + c}
+        
+        
+        func D()
+            D{}
+        
+        func D(a, b)
+            D{a:a, b:b}
+        
+        func D(a, b, d, e)
+            D{a:a, b:b, d:d, e:e}
+        
+        
+        res <- [A(1)]
+        res <- [A{}]
+        res <- [B(2)]
+        res <- [B()]
+        res <- [B(1,2,3)]
+        # res <- [C(11)]
+        res <- [D()]
+        res <- [D(33,44)]
+        res <- [D(33,44,55,66)]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            ['st@A{a: 1}'], ['st@A{a: 0}'], ['st@B{b: 2}'], ['st@B{b: 0}'], ['st@B{b: 1203}'], 
+            ['st@D{b: 0,a: 0,d: 0,e: 0}'], ['st@D{b: 44,a: 33,d: 0,e: 0}'], ['st@D{b: 44,a: 33,d: 55,e: 66.0}']]
+        self.assertEqual(exv, rvar.vals())
+
+    def test_struct_inheritance_without_own_fields(self):
+        ''' when child struct don't define fields `struct B(A)` '''
+        code = r'''
+        res = []
+        
+        struct A a:int
+        struct B b:int
+        struct C(A)
+        struct D(A, B) d:int, e:float
+        
+        
+        res <- [A(1)]
+        res <- [B(2)]
+        res <- [C(11)]
+        res <- [D(33,44, 55, 6.6)]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        exv = [['st@A{a: 1}'], ['st@B{b: 2}'], ['st@C{a: 11}'], ['st@D{b: 44,a: 33,d: 55,e: 6.6}']]
+        self.assertEqual(exv, rvar.vals())
+
     def test_inherined_struct_callable_constr(self):
         ''' '''
         code = r'''
@@ -461,7 +547,7 @@ class TestStructs(TestCase):
         trydo(ex, ctx)
         inst = ctx.get('aa').get()
         self.assertIsInstance(inst, StructInstance)
-        self.assertEqual('Atype{name: Vasya,num: 20,sub: Btype{title: BBBBB}}', str(inst))
+        self.assertEqual('Atype{name: Vasya,num: 20,sub: st@Btype{title: BBBBB}}', str(inst))
         
 
     def test_struct_block(self):
@@ -647,7 +733,7 @@ class TestStructs(TestCase):
         trydo(ex, ctx)
         exv = [
             ['a', 'st@Sex{id: 1}'], ['b', 'st@Sex{id: 2}'], 
-            ['c', 'st@User{name: Catod,age: 25,sex: Sex{id: 1},phone: 123-45-67}']]
+            ['c', 'st@User{name: Catod,age: 25,sex: st@Sex{id: 1},phone: 123-45-67}']]
         rvar = ctx.get('res').get()
         self.assertEqual(exv, rvar.vals())
 

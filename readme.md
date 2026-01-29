@@ -1235,7 +1235,7 @@ numeric = 0, string = "", bool = false.
 ### 10.2 Constructor-function `TypeName()`.  
 We can use callable constructor instead of direct set of name:values in the curvy brackets.  
 There are two cases of such way.  
-1. Magic default constructor. It takes passed arguments in the amount of fields that struct type has, and makes instance using passed args in the same order as it was defined in the struct. We have nothing to do before usage, just define the struct type.  
+1. "Magic" default constructor. It takes passed arguments in the amount of fields that struct type has, and makes instance using passed args in the same order as it was defined in the struct. We have nothing to do before usage, just define the struct type.  
 ```golang
 
 struct User
@@ -1279,7 +1279,28 @@ c = C(11, 20.05, "Hello!")
 
 #//>> st@C{a: 11, b: 20.05, c: 'Hello!'}
 ```
+4. Overloaded constructors.  
+We can overload constructor of struct like other function.  
+First custom constructor replaces default one.  
+If we have defined custom constructor with different signature than default,
+we have to define another with full set of args, like default has.  
+```golang
+struct A a:int
+struct B(A) b:int
 
+func B()
+    B{}
+
+func B(b)
+    B{b:b}
+
+func B(b, a)
+    B{a:a, b:b}
+
+B() # >> B{a:0:b:0}
+B(1) # >> B{a:0, b:1}
+B(2,3) # >> B{a:3, b:2}
+```
 
 ### 11.1 Struct method.  
 
@@ -1288,6 +1309,7 @@ Method can be declared after declaration of struct type.
 The main attribute of method is a variable typed by struct type, between `func` keyword and name of function:  
 `func var:TypeName myMethod({args})`
 This variable will be an istance of struct in the body of method.  
+Method can be overloaded if need.  
 ```golang
 #// definition
 struct A a1:int
@@ -1296,10 +1318,18 @@ struct A a1:int
 func a:A plusA1(x:int)
     a.a1 += x
 
-#// call
+#// method overload
+func a:A plusA1(nums:list)
+    x = 0
+    for n <- nums
+        x += n
+    a.a1 += x
 aa = A{} #// default val of A.a1 is 0
 
+
+#// call
 aa.plusA1(5) #// set aa.a1 to 5
+aa.plusA1([1,2,3,4,5]) #// + 15
 ```
 
 ### 11.2 Struct inheritance. Multiple inheritance is allowed.

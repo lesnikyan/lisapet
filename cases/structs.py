@@ -45,24 +45,27 @@ class CaseStructDef(SubCase):
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         typeName = elems[1].text
-        # prels('CaseStructDef.split', elems)
+        # prels('CaseStructDef.split', elems, show=1)
         # struct B(A,C)
         superNames = []
         subStart = 2
         if len(elems) > 2 and isLex(elems[2], Lt.oper, '('):
             # we have super-struct here
-            brInd = bracketsPart(elems[2:])
-            # dprint('Strc.split, brInd: ', brInd, elems[brInd+1].text)
-            superPart = elems[3:brInd+1]
-            # prels('CaseStructDef.split supers:', superPart)
+            brInd = firstBrackets(elems)
+            # print('brInd$1',brInd)
+            brOpen, brClose = brInd
+            # print('Strc.split, brInd: ', brInd, elems[brOpen+1].text)
+            superPart = elems[brOpen+1: brClose]
+            # print('SDF.split supers: {%s}' % elemStr(superPart))
             _, spl = CaseCommas().split(superPart)
             # dprint('## spl:', [(n) for n in spl])
             superNames = [elemStr(n) for n in spl]
             # dprint('## superNames:', superNames)
-            subStart = brInd+2
+            subStart = brClose+1
             
         
         sub = elems[subStart:]
+        # print('stru fields: {=%s=}'% elemStr(sub))
         exp = StructDefExpr(typeName, src=elems)
         exp.setSuper(superNames)
         subs = []

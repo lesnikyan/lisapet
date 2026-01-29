@@ -157,6 +157,19 @@ def bracketsPart(elems:list[Elem])->int:
     return res
 
 
+def firstBrackets(elems:list[Elem]):
+    ''' For 1-lvl brackets only '''
+    elen = len(elems)
+    a, b = -1, -1
+    for i in range(elen):
+        if isLex(elems[i], Lt.oper, '('):
+            a = i
+            continue
+        if isLex(elems[i], Lt.oper, ')'):
+            b = i
+            break
+    return a, b
+
 
 class ExpCase:
     ''' '''
