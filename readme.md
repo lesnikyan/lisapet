@@ -1,17 +1,19 @@
 
 # LISAPET
-Linear Interpreter of Scripting And Processing Expression Tree.  
+
+LISAPET is an object-oriented interpretable language with functional elements.   
+Syntax is similar to mix of Python, Golang and some functional langs. It's written with python.  
+
+Name: Linear Interpreter of Scripting And Processing Expression Tree.  
 (LP, this code, miniscript)
+possible ico: Fox pet on the bicycle
 
-ico: Fox pet on the bicycle
-
-LISAPET is an interpretable language like python, written with python, but is not python :)  
-It was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run within the python project but without direct execution of script on the python interpreter (bad and unsafe way).  
+LP was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run within the python project but without direct execution of native python code on the python interpreter (bad and unsafe way).  
 Instead of line-by-line execution, interpreter builds executable object, actually - tree of actions (expressions).  
-Than this object can be executed with some data. One or many times if need.  
-Executable tree uses context-container with working data (variables, values, types, etc).  
-Utility `run.py` can run LP code from file or string in console with the set of arguments (see Usage section).  
-Another way - call parser and interpreter manually from your code and run built object with context. It's way to embed Lisapet into your own project (no examples here, see `run.py`).  
+Than this object can be executed with some data. Once or many times, if needed.  
+Executable tree uses internal [Context](#12-execution-context)-container with working data (variables, values, types, etc).  
+Utility `run.py` can run LP code from file or string in console with the set of arguments (see [Usage](#usage) section).  
+Another way - call parser and interpreter manually from your code and run built object with context. It's the way to embed Lisapet into your own project (no examples here, see `run.py` and all tests in /`tests` dir).  
 
 --------------------------------------------------------
 --------------------------------------------------------
@@ -34,7 +36,7 @@ Content:
     2. [Unary operators](#22-other-unary-operators)
     3. [Assignent operators](#23-operators-with-assignment)
     4. [Other classic operators](#24-other-classic-c-like-operators)
-    5. [Table of perators precedence](#25-table-of-priority-order)
+    5. [Table of operators precedence](#25-table-of-priority-order)
     6. [Ternary `?:` operator](#26-ternary-operator-)
     7. [In `?>`, not in `!?>`](#27-val-in--and-val-not-in--operators)
     8. [Check type `::`](#28-check-type-operator-)
@@ -83,13 +85,12 @@ Content:
     2. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
 
 10. Structs `A{}` 
-    1. [Definition, constructor `A{f:val}`, fields, `.` operator](#101-struct)
+    1. [Definition of `struct`, base constructor `A{a:b}`, fields](#101-struct)
     2. [Callable constructor `A(val)`](#102-constructor-function-typename)
-    3. [Methods `x.foo()`](#111-struct-method)
-    4. [Inheritance `A(B)`](#112-struct-inheritance-multiple-inheritance-is-allowed)
-11. 
-12. 
-13.  
+    3. [Methods `x.foo()`](#103-struct-method)
+    4. [Inheritance `struct B(A)`](#104-struct-inheritance-multiple-inheritance-is-allowed)
+    5. [Method as an object with instance-related context](#105-instance-related-context-of-method)  
+
 14. #### Builtin (native) functions and methods
     1. [Global functions: print, iter, etc.](#141-global-native-functions)
     2. [Bind native function as a method `[1,2].join(',')`](#142-binding-method-for-type)
@@ -99,14 +100,11 @@ Content:
     1. [Lambdas `x -> x ** 2`](#151-lambda-functions-right-arrow--)  
     2. [high-order functions](#152-high-order-functions)
     3. [Function as object](#153-function-as-an-object)
-    4. [Closures](#154-closures)
+    4. [Closures](#154-closures) 
     5. [Call-chain `foo(1)(2)(3)`](#155-call-chain)
     6. [Currying cascade](#156-currying-cascade)
     7. [Tail recursion](#157-tail-recursion)
-16.  
-17.  
-18.
-19.
+    
 20. Inline syntax.  
     [Few-expressions block ` ; `](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
@@ -118,7 +116,7 @@ Content:
 
 22. [Import modules](#22-import-modules)
 
-23. Match-statement
+23. `match`-statement
     1. [Match, cases, /:`](#23-match-statement)
     2. [List and tuple `[0,x,_,?,*]` `(_,?,*)`](#232-matching-list-and-tuple)
     3. [Dict pattern `{'a':a, _:_, *}`](#233-matching-dict)
@@ -1302,7 +1300,7 @@ B(1) # >> B{a:0, b:1}
 B(2,3) # >> B{a:3, b:2}
 ```
 
-### 11.1 Struct method.  
+### 10.3 Struct method.  
 
 Struct can have methods.  
 Method can be declared after declaration of struct type.  
@@ -1332,7 +1330,7 @@ aa.plusA1(5) #// set aa.a1 to 5
 aa.plusA1([1,2,3,4,5]) #// + 15
 ```
 
-### 11.2 Struct inheritance. Multiple inheritance is allowed.
+### 10.4 Struct inheritance. Multiple inheritance is allowed.
 ```golang
 #// parent types
 struct Aaaa a1: int, a2: string
@@ -1364,6 +1362,28 @@ struct C(A, B) c:list #// C.a is int
 struct D(B, A) d:dict #// D.a is string
 
 ```
+
+### 10.5 Instance-related context of method.  
+If we store or pass method in some expression then we can call it using internal context of struct instance.  
+```golang
+struct A a:int
+
+func st:A foo(x:int)
+    st.a + x
+
+a1 = A(100)
+
+#// call from var
+f1 = a1.foo
+f1(5) # >> 105
+
+#// call from elem of list
+fns = [a1.foo]
+fns[0](7) # >> 107 
+```
+More examples in tests.  
+See also section [functional features](#15-functional-programming-features)
+
 
 
 ### 12.1 List features: slice, iteration generator, `tolist()`.
@@ -1596,7 +1616,7 @@ res = nums.reverse() # >> [3,2,1]
 ```
 See `eval.py` for more examples.
 
-### 14.3 Methods  are already bound to types
+### 14.3 Methods are already bound to types
 1. `list`:  
     .map(`function`)  
     .fold(any, `function`)
@@ -1751,9 +1771,9 @@ func foo5(f)
 res = foo5(y -> y * 3)(33)
 ```
 
-
 ### 15.4 Closures.  
-Lambdas can use things defined in the function where lambda was defined,  
+- Definition-related context.   
+Lambdas or internal functions can use things defined in the function where they was defined,  
 including another lambdas passed into a parent function.
 ```golang
 func getLamb(n, ff)
@@ -1769,6 +1789,7 @@ lamb = getLamb(3, a -> a * 5)
 res = lamb(2)
 >> 1030013
 ```
+
 
 ### 15.5 Call chain. 
 We can make chain of calls returning func from func.
