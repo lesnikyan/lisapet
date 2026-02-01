@@ -31,13 +31,7 @@ import pdb
 class TestDev(TestCase):
 
 
-    # TODO: type of struct field: list, dict, bool, any
-
     '''
-        # user defined types
-        struct ABC a: int, b: int
-        abc = ABC{a:1, b:2}
-        res <- type(abc)
         
         DONE: check TypeMString if need. If not then Convert to TypeString
         # print(type(""" """))
@@ -52,26 +46,63 @@ class TestDev(TestCase):
         DONE: fix parsing of struct.field with brackets:
             calling func, returned from method: stru.method()()
             collection in collection in field: stru.field[0][1]
+        
+        DONE: empty inherited struct
+            struct A
+            struct E(A)  # Error 
+            
+        DONE: add overloaded constructors, 
+        # custom 
+        # Rejected: default (at least empty) 
+            ##-- Looks like we don't need default empty callable constr. 
+            ## basic constr{} is enough
+        
+        DONE: declaration of var:type without assignment: check and fix.
+        
+        DONE:
+            - instance of struct in method call
+                >> f =  obj.foo
+                >> bar(obj.foo)
+                >> [obj.foo], {'f': obj.foo}
+                >> flist <- obj.foo; fdict <- ('f', obj.foo)
+                >> return obj.foo
+                # if func as an value of field
+                >> obj.foo = x -> x + 2
+                # if method of A is a value of a field of B
+                struct A ; func st:A foo().. ; struct B f:function; 
+                a1 = A{}; b1 = B{}; b1.f = a1.foo;
+            -/-  deprecated:
+                # == alternatives: -> get method,
+                a1->foo(); f = a1->foo; b1.f = a1->foo; b1.f() # ??? 
+                # other get method operators
+                a1@foo() 
+                # call func of type, instance as arg
+                A.foo(a1); A(a1).foo; <a1>foo(); a1.A.foo()
+                f = a1.func(foo)
 
-        TODO:? add shoren alias for the struct: stru A a:int
+        TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
         
         TODO?: class Null() -> class Null(Val)
         
-        DONE: declaration of var:type without assignment: check and fix.
+        TODO:  user defined types
+            struct ABC a: int, b: int
+            abc = ABC{a:1, b:2}
+            res <- type(abc)
+        
+        TODO: inspect and resolve MatchPtrCase to avoid use tree.raw2done if not needed anymore
         
         TODO: check type of operand for all operators
         
         TODO: overload: 
-            add overloaded constructors, custom and default (at least empty)
             test overloading for imported functions, 
-            override o overload:
+            override of overload:
                 Think about case with same name func in a child is overloaded for another args
             overloaded methods of imported structs
             # done: struct type args in overloaded func, 
             # done: test methods with compatiple types
         
-        TODO bug: Sequence  match and split if brackets in quotes: (1, '[', ']')
+        BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
         
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
@@ -84,35 +115,13 @@ class TestDev(TestCase):
         TODO: var type ofor iter-loop 
             for n:int <- nn
         
-        BUG: empty inherited struct
-            struct A
-            struct E(A)  # Error 
+        TODO: type of struct field: list, dict, bool, any
         
-        TODO: inspect and resolve MatchPtrCase to avoid use tree.raw2done if not needed anymore
+        TODO: to think about things that is not obvious:
+            - instance of function inside function itself
+            - additional properties of function as an object
     '''
 
-
-
-    def _test_struct_inheritance_without_own_fields(self):
-        ''' when child struct don't define fields `struct B(A)` '''
-        code = r'''
-        res = []
-        
-        struct A a:int
-        # struct B b:int
-        struct C(A)
-        
-        print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # exv = []
-        # self.assertEqual(exv, rvar.vals())
 
 
     def _test_code(self):
@@ -120,14 +129,6 @@ class TestDev(TestCase):
         code = r'''
         res = []
         
-        func foo(a:int|float, b:int|string)
-            (a * 10, ~"<{b}>")
-        
-        ff = [(a, b) -> a <- b]
-        nn = []
-        ff[-1](nn, 5)
-        ff[-1](nn, 6)
-        print(nn)
         
         print('res = ', res)
         '''

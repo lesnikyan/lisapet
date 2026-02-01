@@ -8,6 +8,7 @@ from nodes.expression import *
 from nodes.structs import StructInstance, StructConstr
 from bases.ntype import *
 from nodes.base_oper import *
+from objects.func import ObjMethod
 
 
 class ObjectMember(ObjectElem):
@@ -45,13 +46,14 @@ class ObjectMember(ObjectElem):
                 val = self.object.get(self.member)
                 # print('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
                 if isinstance(val, (StructInstance, Val)):
-                    # dprint('membrr get struct')
+                    # print('membrr get struct')
                     return val
                 return val.get()
             # print('Obj55Mem')
             if self.object.vtype.hasMethod(self.member):
-                # print('ObjectMember (checkMethod), get :: obj, member, val: ', self.object, self.member)
-                return self.getTypeMethod()
+                # print('ObjectMember (checkMethod), get :: obj, method-name: ', self.object, self.member)
+                meth = self.getTypeMethod()
+                return ObjMethod(sob, meth)
         else:
             # try to find bound method
             # print('Obj5Mem.get others')

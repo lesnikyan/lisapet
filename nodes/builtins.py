@@ -5,7 +5,7 @@
 
 from nodes.iternodes import *
 from nodes.structs import StructInstance
-from objects.func import Function
+from objects.func import Function, ObjMethod
 
 def loop_iter(_, *args):
     beg, over, step = Val(0, None), Val(0, None), Val(1, None)
@@ -20,6 +20,7 @@ def loop_iter(_, *args):
 
 def getVal(arg):
     v = arg
+    # print('getVal:', v)
     if isinstance(arg, Var):
         v = arg.get()
     if isinstance(v, (ListVal, TupleVal)):
@@ -32,6 +33,8 @@ def getVal(arg):
         # v = [getVal(e) for e in v.vals()]
     # elif isinstance(v, StructInstance):
     #     v = v.istr()
+    elif isinstance(v, (Function, FuncOverSet, ObjMethod)):
+        v = str(v)
     elif isinstance(v, Val):
         v = v.getVal()
     return v
@@ -125,7 +128,7 @@ def buit_print(ctx:Context,*args):
     # ctx.print(forsed=1)
     for n in args:
         # print('b-print:::', n, n.__class__.__name__)
-        if isinstance(n, (Function)):
+        if isinstance(n, (Function, FuncOverSet)):
             pargs.append(str(n))
             continue
         v = getVal(n)

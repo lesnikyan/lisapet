@@ -31,6 +31,58 @@ class TestTypes(TestCase):
 
 
 
+    def test_dtruct_field_types_bool_collections_any(self):
+        ''' type of struct field: list, dict, bool, any '''
+        code = r'''
+        res = [-111]
+        
+        struct A nn:list
+        
+        res <- A([1,2,3])
+        
+        struct B dd: dict
+        
+        res <- B({11:22})
+        
+        struct C c: bool
+        
+        res <- C(true)
+        res <- C(false)
+        
+        struct D d
+        struct DD d:any
+        
+        res <- D(123)
+        res <- D(12.3)
+        res <- D([1,2,3])
+        res <- D({1:23})
+        res <- D(A([4,5]))
+        
+        res <- DD(123)
+        res <- DD(12.3)
+        res <- DD([1,2,3])
+        res <- DD({1:23})
+        res <- DD(A([4,5]))
+        
+        res <- D(D(D(D(D(D(null))))))
+        
+        res = res.map(x -> tostr(x))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            '-111', 'st@A{nn: [1, 2, 3]}', 'st@B{dd: {11: 22}}', 'st@C{c: True}', 'st@C{c: False}', 
+            'st@D{d: 123}', 'st@D{d: 12.3}', 'st@D{d: [1, 2, 3]}', 'st@D{d: {1: 23}}', 
+            'st@D{d: st@A{nn: [4, 5]}}', 'st@DD{d: 123}', 'st@DD{d: 12.3}', 'st@DD{d: [1, 2, 3]}', 
+            'st@DD{d: {1: 23}}', 'st@DD{d: st@A{nn: [4, 5]}}', 'st@D{d: st@D{d: st@D{d: st@D{d: st@D{d: st@D{d: null{0}}}}}}}']
+        self.assertEqual(exv, rvar.vals())
+
     def test_multitype_in_braces(self):
         ''' x: (int|float) '''
         code = r'''

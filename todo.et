@@ -77,9 +77,6 @@ func A.foo(a, b)
     from(json_str): data_obj
 
 
-2.3.1 Check type of struct instance>> var :: TypeName
-2.3.2 Check match type of struct instance>> _::TypeName
-
 
 2.4 TODO: More types:  
     byte, common numeric,
@@ -489,6 +486,10 @@ Fixes:
 
 ---
 
+
+
+2.3.1 # DONE Check type of struct instance>> var :: TypeName
+2.3.2 # DONE Check match type of struct instance>> _::TypeName
 
 #== DONE Think about tail-recursion.
 Tranform tail recursion to loop.

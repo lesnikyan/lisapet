@@ -47,7 +47,24 @@ class StructDef(TypeStruct):
         return self._th
 
     def setConstr(self, cons:FuncInst):
-        self.__constr = cons
+        # print('Str.add constr', self.__constr)
+        if self.__constr is None:
+            self.__constr = cons
+        # change default to first custom
+        if isinstance(self.__constr, StructDefConstrFunc):
+            self.__constr = cons
+        # print('StrDef. new cosnstr:', cons)
+        
+        exist = self.__constr
+        if isinstance(exist, FuncInst):
+            # start overloading
+            overSet = FuncOverSet(self.name)
+            overSet.add(exist)
+            overSet.add(cons)
+            self.__constr = overSet
+            return
+        elif isinstance(exist, FuncOverSet):
+            exist.add(cons)
     
     def getConstr(self):
         return self.__constr
@@ -337,7 +354,18 @@ class StructInstance(ObjectInstance, NSContext):
         
     def istr(self):
         fns = self.vtype.nfields
-        vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
+        ffs = []
+        for f in fns:
+            mem = self.get(f)
+            v = ''
+            if not isinstance(mem, FuncInst):
+                v = mem.get()
+            else:
+                v = str(mem)
+            
+            ffs.append('%s: %s' % (f, v))
+        # vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
+        vals = ','.join(ffs)
         return vals
 
     def __str__(self):
@@ -469,8 +497,9 @@ class StructConstr(Expression):
 
             if isinstance(expRes, tuple) and len(expRes) == 2:
                 fname, val = expRes
-                # print('Strc.do >> ', expRes, fname, val)
-                var2val(val)
+                # print('Strc.f1 >> ', fname, val)
+                val = var2val(val)
+                # print('Strc.f2 >> ', expRes, fname, val)
                 inst.set(fname, val)
             else:
                 raise EvalErr('Struct def error: field expression returns incorrect result: %s ' % expRes)

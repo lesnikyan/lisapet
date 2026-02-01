@@ -2,12 +2,12 @@
 from collections.abc import  Callable
 
 from vars import *
+from bases.ntype import *
 from nodes.expression import *
 from nodes.keywords import *
-from bases.ntype import *
 from nodes.base_oper import AssignExpr
 from nodes.oper_dot import ObjectMember
-from objects.func import Function
+from objects.func import Function, ObjMethod
 
 import inspect
 
@@ -51,33 +51,59 @@ class FuncCallExpr(CallExpr):
                 
             valExp.do(ctx) # val or vaiable
             arg = valExp.get()
-            if isinstance(arg, Var):
+            if isinstance(arg, (Var, ObjectMember, CollectElem)):
                 arg = arg.get()
             # print('func-call do2:', valExp, arg)
             args.append(arg)
         return args, named
 
-    def do(self, ctx: Context):
+    def takeFunc(self, ctx: Context):
         args:list[Var] = []
-        
         # Get function object
         self.funcExpr.do(ctx)
         func:Function|FuncOverSet = self.funcExpr.get()
+        # Here and next we can get one of: 
+        # Var, Function, NFunc, BoundMethod, FuncOverSet, ObjectMember, ObjMethod
+        
+        # Case with func in var
+        if isinstance(func, Var):
+            func = func.get()
         # print(f'\nF() expr:', self.funcExpr, 'func:', func )
         
         objInst = None
+        
         # Case of calling member of object / module
         if isinstance(func, ObjectMember):
-            obj:ObjectMember = func
+            objMem:ObjectMember = func
+            objInst = objMem.object
             memVal = func.get(ctx)
-            # print('objMem val=', memVal)
+            # print('objMember val=', memVal, memVal.__class__)
             func = memVal
-            # print('F.do: ObjectMember', obj, func)
-            objInst = obj.getInst()
+            # print('F.func: ObjectMember', obj, func)
+        
+        # ObjMethod can be found by any expr: 
+        method:ObjMethod = None
+        #   1) obj.member, 2) var/arg, 3) collection elem, func call result,   
+        if isinstance(func, ObjMethod):
+            # method but not a function object in the field of struct
+            method = func
+            obj = method.obj
+            # print('F.func: ObjectMember', obj, method)
+            # next we need Function to resolve overload case
+            func = method.func
+            objInst = method.obj
+            args.append(objInst)
+        
+        if isinstance(func, BoundMethod):
+            method = func
             args.append(objInst)
         
         args, named = self.doArgs(args, ctx)
-
+        if isinstance(func, TypeVal):
+            tVal = func.getVal()
+            if isinstance(tVal, TypeStruct):
+                func = tVal.getConstr()
+        
         # Case with overloaded function
         if isinstance(func, FuncOverSet):
             # overloaded set
@@ -88,29 +114,33 @@ class FuncCallExpr(CallExpr):
             if not func:
                 errMsg = f"Can't find overloaded function {self.name} with args = ({','.join([f'{n.__class__.__name__}' for n in callArgTypes])}) "
                 raise EvalErr(errMsg)
-                
-        # Case with func in var
-        if isinstance(func, Var):
-            func = func.get()
-        if isinstance(func, TypeVal):
-            tVal = func.getVal()
-            if isinstance(tVal, TypeStruct):
-                func = tVal.getConstr()
+            
+        if not isinstance(func, Function):
+            raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
         
+        func.objInst = objInst
+        return func, args, named
+
+    def do(self, ctx: Context):
+        
+        # self.func = func
+        func, args, named = self.takeFunc(ctx)
         self.func = func
         # print('#3# func-call do05: ', self.name, 'F:', func)
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
-        if not isinstance(self.func, Function):
-            raise EvalErr(f'Function `{self.name}` can`t be found in current context.')
-        self.func.objInst = objInst
+        # if objInst:
+        #     func = ObjMethod(objInst, func)
+        # self.func.objInst = objInst
+        # print('F.call.do/1', func, args, named)
         self.func.setArgVals(args, named)
         callCtx = Context(None)
-        # if len(inspect.stack(0)) > 40 :
+        # if len(inspect.stack(0)) > 40 : # debug stop by stack depth
         #     print('len(inspect.stack(0)) >>> ', len(inspect.stack(0)))
         #     raise EvalErr(f'DEBUG {self.name}')
         
         self.func.do(callCtx)
         self.res = self.func.get()
+        self.func.objInst = None
 
     def get(self):
         # print('F.get', self.name, '=', self.func.get())
