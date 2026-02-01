@@ -33,57 +33,20 @@ class TestDev(TestCase):
 
     '''
         
-        DONE: check TypeMString if need. If not then Convert to TypeString
-        # print(type(""" """))
-        # print((""" a s d""").split(' '))
-        
-        # think about escapes in triple-backticks strings
-        #   unary backtick tested in test_parsing_string_backtiks
-            mres = ``` \\n \\t \\ \\s \\w ```
-
-        DONE: test overloading with type function, as function and any.
-        
-        DONE: fix parsing of struct.field with brackets:
-            calling func, returned from method: stru.method()()
-            collection in collection in field: stru.field[0][1]
-        
-        DONE: empty inherited struct
-            struct A
-            struct E(A)  # Error 
-            
-        DONE: add overloaded constructors, 
-        # custom 
-        # Rejected: default (at least empty) 
-            ##-- Looks like we don't need default empty callable constr. 
-            ## basic constr{} is enough
-        
-        DONE: declaration of var:type without assignment: check and fix.
-        
-        DONE:
-            - instance of struct in method call
-                >> f =  obj.foo
-                >> bar(obj.foo)
-                >> [obj.foo], {'f': obj.foo}
-                >> flist <- obj.foo; fdict <- ('f', obj.foo)
-                >> return obj.foo
-                # if func as an value of field
-                >> obj.foo = x -> x + 2
-                # if method of A is a value of a field of B
-                struct A ; func st:A foo().. ; struct B f:function; 
-                a1 = A{}; b1 = B{}; b1.f = a1.foo;
-            -/-  deprecated:
-                # == alternatives: -> get method,
-                a1->foo(); f = a1->foo; b1.f = a1->foo; b1.f() # ??? 
-                # other get method operators
-                a1@foo() 
-                # call func of type, instance as arg
-                A.foo(a1); A(a1).foo; <a1>foo(); a1.A.foo()
-                f = a1.func(foo)
 
         TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
         
-        TODO?: class Null() -> class Null(Val)
+        TODO:? to think about things that is not obvious:
+            - instance of function inside function itself
+            - additional properties of function as an object
+        
+        TODO:? class Null() -> class Null(Val)
+        
+        TODO: 
+            think about escapes in triple-backticks strings
+            unary backtick tested in test_parsing_string_backtiks
+            mres = ``` \\n \\t \\ \\s \\w ```
         
         TODO:  user defined types
             struct ABC a: int, b: int
@@ -108,18 +71,8 @@ class TestDev(TestCase):
         1) tail optimization by func name, during interpretation (before add to ctx)
         2) extend tail-recur case for earlier returns - not sure 
         
-        TODO: fix call of method assigned to var:
-            f = inst.foo
-            f(123) # !! Eval Error: Not enough args in call of fuction `fm`. Exppected: 2, got: 1.
-        
         TODO: var type ofor iter-loop 
             for n:int <- nn
-        
-        TODO: type of struct field: list, dict, bool, any
-        
-        TODO: to think about things that is not obvious:
-            - instance of function inside function itself
-            - additional properties of function as an object
     '''
 
 

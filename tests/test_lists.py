@@ -19,6 +19,39 @@ from tree import *
 class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
+
+    def test_string_slice(self):
+        ''' test slice of string "abcdef"[1:3] '''
+        code = r'''
+        res = []
+        
+        s1 = "qwerty"
+        res <- s1[1:4]
+        
+        res <- '0123456789'[2:6]
+        res <- '0123456789'[:5]
+        res <- '0123456789'[4:]
+        
+        ss = ['01234567']
+        
+        func foo()
+            '012345'
+        
+        res <-ss[0][2:5]
+        
+        res <- foo()[1:3]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = ['wer', '2345', '01234', '456789', '234', '12']
+        self.assertEqual(exv, rvar.vals())
+
     def test_refactored_block_constr(self):
         ''' test refactored multiline collections constructors []\\n, {}\\n, (,)\\n '''
         code = r'''

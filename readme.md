@@ -104,7 +104,7 @@ Content:
     5. [Call-chain `foo(1)(2)(3)`](#155-call-chain)
     6. [Currying cascade](#156-currying-cascade)
     7. [Tail recursion](#157-tail-recursion)
-    
+
 20. Inline syntax.  
     [Few-expressions block ` ; `](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
@@ -1945,6 +1945,13 @@ py -m run -c \
 
 
 ### 21 String features  
+
+- Slice.  
+Slice expression works for string too.  
+```python
+s = "abcdefg"
+s[2:5] # >> 'cde'
+```
 
 - String formatting.
 There are two syntax implementations.  
