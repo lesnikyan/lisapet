@@ -93,11 +93,14 @@ class FuncInst(Objective):
     '''function object is stored in context, callable, returns result '''
 
     def __init__(self):
-        super().__init__(None, TypeFunc)
+        super().__init__(None, TypeFunc())
 
     def getName(self):
         pass
-
+    
+    def setArgVals(self, args:list[Var], named:dict={}):
+        pass
+    
     def do(self, ctx: 'Context'):
         pass
     

@@ -32,6 +32,9 @@ class FuncOverSet:
         self.name = name
         self.overs = {}
 
+    def getName(self):
+        return self.name
+
     def add(self, func:FuncInst):
         # put by count
         count = func.argCount()
@@ -64,6 +67,7 @@ class FuncOverSet:
         '''
         :param argSet: like [int, float, string]
         '''
+        # print('#1', argSet)
         count = len(argSet)
         # print('44#>>', count, count in self.overs, self.overs.keys())
         if count not in self.overs:

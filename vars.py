@@ -483,15 +483,12 @@ def var2val(var:Var|Val):
     
     if isinstance(var, (ObjectElem)):
         var = var.get()
-    if isinstance(var, (Val, Collection, Regexp, StringVal)):
+    if isinstance(var, (Val, Collection, Regexp, StringVal, FuncInst)):
         return var
-    # print('var2val 2 :', var)
-    # print('var2val 2 :', var, 'vv:', var.val)
-    tp = var.getType()
     val = var.getVal()
-    # print('var2val 3 :', val, tp)
-    if isinstance(val, (Val, Collection, FuncInst, ObjectInstance)):
+    if isinstance(val, (Val, Collection, ObjectInstance, FuncInst)):
         return val
+    tp = var.getType()
     return Val(val, tp)
 
 def str2list(val):

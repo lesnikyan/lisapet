@@ -26,6 +26,172 @@ class TestFuncs(TestCase):
 
 
 
+    def test_method_as_function_object(self):
+        ''' obj.method as an object / value 
+            to store in container, return, assign to var or field 
+            and then call '''
+        code = r'''
+        res = []
+        func f1(a,b)
+            a+b
+        
+        res <- f1(100,2)
+        
+        struct A a:int
+        struct B f:function
+        
+        func st:A faa(x:int)
+            st.a + x
+        
+        # overload method
+        func st:A faa(x:int, y:int)
+            st.a + x * y
+        
+        a1 = A{a:200}
+        res <- a1.faa(3)
+        fa1 = a1.faa
+        res <- fa1(4)
+        
+        ff2 = a1.faa
+        res <- ff2(31)
+        
+        # a.method -> b.member
+        b1 = B(a1.faa)
+        res <- b1.f(5)
+        
+        # call overloaded
+        a2 = A{a:300}
+        b2 = B{f:a2.faa}
+        res <- b2.f(3,7)
+        
+        b3 = B(f1)
+        res <- b3.f(400,33)
+        
+        # lambda -> b.member
+        b4 = B(x -> x * 10)
+        res <- b4.f(51)
+        
+        # a.method -> var -> b.member
+        a3 = A(600)
+        ff3 = a3.faa
+        res <- ff3(11)
+        
+        b4 = B(ff3)
+        res <- b4.f(22)
+        res <- b4.f(3, 11)
+        
+        # a.method from func() -> member
+        # a) method from outer obj
+        a5 = A(700)
+        func getFaa()
+            a5.faa
+        
+        b5 = B(getFaa())
+        res <- b5.f(1)
+        res <- b5.f(5,7)
+        
+        # b) method of obj from closure
+        func getFaa2()
+            a5 = A(800)
+            a5.faa
+        
+        b6 = B(getFaa2())
+        res <- b6.f(1)
+        res <- b6.f(5,7)
+        
+        # lambda from member
+        b7 = B(b4.f)
+        res <- b7.f(1)+ 2000
+        res <- b7.f(5,7) + 2000
+        
+        # [a.method] -> b.member
+        aas = [A(900), A(950)]
+        for an <- aas
+            # res <- an.faa
+            bn = B(an.faa)
+            res <- bn.f(23)
+            res <- bn.f(3,4)
+        
+        # [B(a.faa) ; n <- [..]; A(n)]
+        aas2 = [B(ann.faa) ; x <- [1..3]; ann = A(x * 100 + 5000) ]
+        for bn <- aas2
+            res <- bn.f(14)
+            res <- bn.f(3,9)
+        
+        # method from lambda
+        a8 = A(1000)
+        lam8 = st -> st.faa
+        b8 = B(lam8(a8))
+        res <- b8.f(37)
+        res <- b8.f(4,9)
+        
+        struct C aaa:A
+        
+        func st:C getA()
+            st.aaa
+            
+        func st:C getFaa()
+            st.aaa.faa
+        
+        # method from obj in obj
+        a9 = A(1100)
+        c9 = C(a9)
+        # by field
+        b9 = B(c9.aaa.faa)
+        res <- b9.f(43)
+        res <- b9.f(6,7)
+        # by member from method
+        b91 = B(c9.getA().faa)
+        res <- b9.f(47)
+        res <- b9.f(6,8)
+        # by method
+        b92 = B(c9.getFaa())
+        res <- b92.f(51)
+        res <- b92.f(4, 13)
+        
+        # mixed inheritance
+        struct Abc(A,B)
+        abc1 = Abc{a:1200}
+        abc1.f = abc1.faa
+        
+        c11 = C(abc1)
+        
+        # A
+        res <- abc1.faa(1)
+        res <- abc1.faa(1,2)
+        # B
+        res <- abc1.f(4)
+        res <- abc1.f(2,3)
+        # C
+        res <- c11.getA().faa(7)
+        res <- c11.getA().faa(2,5)
+        res <- c11.getFaa()(17)
+        res <- c11.getFaa()(3,5)
+        
+        # B from C
+        b11 = B(c11.getA().faa)
+        res <- b11.f(19) 
+        res <- b11.f(4,5) 
+        
+        b12 = B(c11.getFaa())
+        res <- b12.f(29) 
+        res <- b12.f(4,7) 
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            102, 203, 204, 231, 205, 321, 433, 510, 611, 622, 633, 701, 735, 801, 835, 
+            2601, 2635, 923, 912, 973, 962, 5114, 5127, 5214, 5227, 5314, 5327, 
+            1037, 1036, 1143, 1142, 1147, 1148, 1151, 1152, 
+            1201, 1202, 1204, 1206, 1207, 1210, 1217, 1215, 1219, 1220, 1229, 1228]
+        self.assertEqual(exv, rvar.vals())
+
     def test_tail_recursion(self):
         ''' '''
         code = r'''

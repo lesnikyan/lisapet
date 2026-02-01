@@ -31,13 +31,7 @@ import pdb
 class TestDev(TestCase):
 
 
-    # TODO: type of struct field: list, dict, bool, any
-
     '''
-        # user defined types
-        struct ABC a: int, b: int
-        abc = ABC{a:1, b:2}
-        res <- type(abc)
         
         DONE: check TypeMString if need. If not then Convert to TypeString
         # print(type(""" """))
@@ -64,11 +58,37 @@ class TestDev(TestCase):
             ## basic constr{} is enough
         
         DONE: declaration of var:type without assignment: check and fix.
+        
+        DONE:
+            - instance of struct in method call
+                >> f =  obj.foo
+                >> bar(obj.foo)
+                >> [obj.foo], {'f': obj.foo}
+                >> flist <- obj.foo; fdict <- ('f', obj.foo)
+                >> return obj.foo
+                # if func as an value of field
+                >> obj.foo = x -> x + 2
+                # if method of A is a value of a field of B
+                struct A ; func st:A foo().. ; struct B f:function; 
+                a1 = A{}; b1 = B{}; b1.f = a1.foo;
+            -/-  deprecated:
+                # == alternatives: -> get method,
+                a1->foo(); f = a1->foo; b1.f = a1->foo; b1.f() # ??? 
+                # other get method operators
+                a1@foo() 
+                # call func of type, instance as arg
+                A.foo(a1); A(a1).foo; <a1>foo(); a1.A.foo()
+                f = a1.func(foo)
 
         TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
         
         TODO?: class Null() -> class Null(Val)
+        
+        TODO:  user defined types
+            struct ABC a: int, b: int
+            abc = ABC{a:1, b:2}
+            res <- type(abc)
         
         TODO: inspect and resolve MatchPtrCase to avoid use tree.raw2done if not needed anymore
         
@@ -95,8 +115,12 @@ class TestDev(TestCase):
         TODO: var type ofor iter-loop 
             for n:int <- nn
         
+        TODO: type of struct field: list, dict, bool, any
+        
+        TODO: to think about things that is not obvious:
+            - instance of function inside function itself
+            - additional properties of function as an object
     '''
-
 
 
 

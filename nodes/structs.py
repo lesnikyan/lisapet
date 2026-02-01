@@ -354,7 +354,18 @@ class StructInstance(ObjectInstance, NSContext):
         
     def istr(self):
         fns = self.vtype.nfields
-        vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
+        ffs = []
+        for f in fns:
+            mem = self.get(f)
+            v = ''
+            if not isinstance(mem, FuncInst):
+                v = mem.get()
+            else:
+                v = str(mem)
+            
+            ffs.append('%s: %s' % (f, v))
+        # vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
+        vals = ','.join(ffs)
         return vals
 
     def __str__(self):
@@ -486,8 +497,9 @@ class StructConstr(Expression):
 
             if isinstance(expRes, tuple) and len(expRes) == 2:
                 fname, val = expRes
+                # print('Strc.f1 >> ', fname, val)
                 val = var2val(val)
-                # print('Strc.do >> ', expRes, fname, val)
+                # print('Strc.f2 >> ', expRes, fname, val)
                 inst.set(fname, val)
             else:
                 raise EvalErr('Struct def error: field expression returns incorrect result: %s ' % expRes)

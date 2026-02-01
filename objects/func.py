@@ -40,6 +40,8 @@ class Function(FuncInst):
         self.res = None
         self.argNames = []
         self.extOrdered = None
+        # TODO: think about cover-object Method (instance, function)
+        # for more correct worck with method of object 
         self.objInst = None #  for methods
         # print('Fuu.init', self)
 
@@ -149,13 +151,7 @@ class Function(FuncInst):
             # print('Fu.do:', arg)
             ctx.addVar(arg)
 
-    def do(self, ctx: Context):
-        self.res = None
-        self.block.storeRes = True # save last expr value
-        inCtx = Context(self.defCtx) # inner context, empty new for each call
-        
-        # trying to detect tail recursion
-        lastExpr = self.block.subs[-1]
+    def checkTailSame(self,  ctx: Context, lastExpr:Expression):
         isTail = False
         if isinstance(lastExpr, CallExpr):
             # print('F.do last callExpr', self, 'name:', lastExpr.name)
@@ -178,6 +174,37 @@ class Function(FuncInst):
                 if rfunc == self:
                     # print('-- same fn:', rname, rfunc)
                     isTail = True
+        return isTail
+
+    def do(self, ctx: Context):
+        self.res = None
+        self.block.storeRes = True # save last expr value
+        inCtx = Context(self.defCtx) # inner context, empty new for each call
+        
+        # trying to detect tail recursion
+        lastExpr = self.block.subs[-1]
+        isTail = self.checkTailSame(ctx, lastExpr)
+        # if isinstance(lastExpr, CallExpr):
+        #     # print('F.do last callExpr', self, 'name:', lastExpr.name)
+        #     # if method
+        #     ''
+        #     lastName = lastExpr.name
+        #     if self.objInst and lastExpr.name.find('.') > -1:
+        #         lastName = lastExpr.name.split('.')[-1]
+        #         # print('Method of', self.objInst, lastName, 'self.getName()', self.getName(), self.getName() == lastName)
+        #         # print('method',' lastName `%s` self.getName() `%s`' % (lastName, self.getName()), self.getName() == lastName)
+        #     if self.getName() == lastName:
+        #         rname = lastName
+        #         rfunc = None
+        #         # print('same name', rname, rfunc)
+        #         if self.objInst and isinstance(self.objInst, ObjectInstance):
+        #             stype = self.objInst.vtype
+        #             rfunc = stype.getMethod(rname)
+        #         else:
+        #             rfunc = self.defCtx.get(rname)
+        #         if rfunc == self:
+        #             # print('-- same fn:', rname, rfunc)
+        #             isTail = True
         
         self.fillArgs(inCtx)
         if isTail:
@@ -237,3 +264,38 @@ class ResursionLoop(Block):
                 break
             
 
+
+
+
+class ObjMethod(FuncInst):
+    
+    def __init__(self, inst:Val, func:FuncInst, src=None):
+        super().__init__()
+        self.obj = inst
+        self.func = func
+        self._name = func.getName()
+
+    def getName(self):
+        return self.func.getName()
+    
+    def setArgVals(self, args:list[Var], named:dict={}):
+        return self.func.setArgVals(args, named)
+
+    def do(self, ctx: 'Context'):
+        return self.func.do(ctx)
+    
+    def get(self)->Var:
+        return self.func.get()
+    
+    def argCount(self)->int:
+        return self.func.argCount()
+    
+    def argTypes(self)->list:
+        return self.func.argTypes()
+    
+    @classmethod
+    def sigHash(cc, argTypes:list[VType]):
+        return '~'.join([at.hash() for at in argTypes])
+
+    def __str__(self):
+        return 'ObjMethod(%s.%s)' % (str(self.obj.vtype), self.getName())
