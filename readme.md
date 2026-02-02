@@ -58,14 +58,14 @@ Content:
     1. [if - else](#5-if-statement-else)
     2. [if sub-expr; cond](#52-if-sub-expression)
 
-6. `for`-statement 
-    1. [Classic `for` loop by counter](#6-for-statement)
-    2. [`for i <- [1..5]`](#62-iterator-arrow-assign-operator--)
+6. `while`, `for`-statement 
+    1. [Classic `for` loop by counter](#6-while-for-statement)
+    2. [`for i <- [1..5]`](#62-for-iterator-arrow-assign-operator--)
     3. [`for i <- iter(n)`](#63-function-iter)
     4. [Keywords `continue`, `break`](#64-keywords-continue-break)
 
 7. Functions:  
-    1. [Definition and usage `func f()`](#7-function-definition-context-of-functions)  
+    1. [Definition and usage `func f()`](#7-function-definition-return)  
     2. [Definition context](#72-definition-context)  
     3. [Type of argument `x:type`](#73-argument-type)  
     4. [Default argument in definition `func f(x=1)`](#74-default-value-of-arguments)  
@@ -882,57 +882,94 @@ a = 10; b = 2; (if x = a + 1; x > b /: print(a, b, x))
 See more about [inline control expressions](#20-one-line-block---operators).  
 
 
-### 6. `for` statement
-1. Range-iterator. It works like classic C-like `for`.  
-`for` {init-expression} `;` {condition-check} `;` {post-iteration expression}
+### 6. `while`, `for` statement
+
+1. Statement `while` is similar to other C-like langs.  
+
 ```python
-for i=0; i < 5; i += 1
-    y = y + 2
-    for j=-3; j <= 0; j += 1
-        a = a - j ** 2
-        if a % 2 == 0
-            b = b + 1
-res = y
+
+n = true
+nn = [1,2,3,4,5,6,7,8,9]
+c = 0
+r = 0
+while  c < 5
+    r += nn[c]
+    c += 1
+print(r) # >> 15
 ```
 
-### 6.2 Iterator, arrow-assign operator `<-`  
+2. `for` statement can be used with several waya.  
+Classic c-like range-loop by counter with increment or decrement.  
+`for` {init-expression} `;` {condition-check} `;` {post-iteration expression}
+```python
+# nested `for`
+for i=0; i < 4; i += 1
+    s = ""
+    for j=0; j < 10; j += 1
+        s = "%s %d" << (s, j)
+    print("Line ", i, ", columns:", s)
+```
+output:  
+```
+Line  0 , columns:  0 1 2 3 4 5 6 7 8 9
+Line  1 , columns:  0 1 2 3 4 5 6 7 8 9
+Line  2 , columns:  0 1 2 3 4 5 6 7 8 9
+Line  3 , columns:  0 1 2 3 4 5 6 7 8 9
+```
+
+### 6.2 `for` Iterator, arrow-assign operator `<-`  
 Left-arrow `<-` operator has several options.  
 Here we use left-arrow as an iterative assignment in `for` statement.  
-It looks, like we pick the element from the sequence one-by-one.
+It looks, like we pick the element from the sequence one-by-one.  
+- Iteration by `iter()` builtin function.  
 ```python
-# by function iter
 arr = [1,2,3]
 r = 0
 for i <- iter(3)
     r = r + arr[i]
-
+```
+- Iteration by list.  
+```python
 # by array
 for n <- [1,2,3]
     r += n
-
-# by number-generator
+```
+- Iteration by number-sequence generator.  
+```python
 # Generator [start .. last]
 for x <- [1..10]
     r += x
-
-# by dict
-for k, val <- {'a':1, 'b':2}
-    ...
 ```
+- Iteration by dict.  
+Loop-assigning arrow operator assigns a key and a value in each iteration.  
+Note: Unlike ordered sequences, iterating by dict doesn't guarantee order.  
+```python
+dd = {'a':1, 'b':2}
+for key, val <- dd
+    print("%s = %d" << (key, val))
+```
+
 ### 6.3 Function `iter()`  
+Function `iter` can be used with several sets of arguments.  
+`iter(start, [last+1 [, step]])`  
+1 arg - means 1) count of numbers from `0`.  
+2 args - means 1) starting number, 2) number after last.  
+3 args - means 1,2) like before, 3) step of counter.  
 ```python
 # One arg iter(last+1)
 iter(3) # >> 0,1,2
 
-# more args iter(start, last+1 [, step])
+# 2 args
 iter(1, 5) # >> 1,2,3,4
 
+# args
 iter(1,7,2) # >> 1,3,5
-
 ```
 
 ### 6.4 Keywords `continue`, `break`.  
-
+Classic `break` and `continue`.  
+`continue` stops current iteration and goes to next.  
+`break` stops current iteration and whole loop.  
 ```python
 r = []
 for i <- [1..10]
@@ -946,12 +983,37 @@ for i <- [1..10]
 
 >> [5,6,7,8]
 ```
+Also any loop can be stopped by the keyword `return`, see in the `function` section.  
 
-### 7. Function definition, context of functions.
+### 7. Function definition, return.
 
-1. Keyword `func`.  
+1. Keyword `func` starts definition of function.  
+Word before brackets is a name of function we will use it next for call of function.  
+In the brackets we can define arguments - variables that will be used in the functions body.  
+Next indented block is a body of function.  
 Last expression is a returning result.  
-Keyword `return` allowed to. 
+```golang 
+func foo()
+    1
+```
+2. Function call.  
+Function is called by its name (or some additional ways) using parentheses after name.  
+We can pass value of arguments in parentheses.  
+```golang
+func foo()
+    1
+
+#// call
+foo()
+
+func bar(a,b)
+    a + b
+
+#// call
+bar(2,3) # >> 5
+```
+3. Keyword `return`.  
+Also result can be retuned by keyword `return`, in any place of function body.  
 ```python
 # definition
 func foo(a, b, c)
@@ -967,7 +1029,7 @@ res = foo(1,2,3)
 ```
 ### 7.2 Definition context.  
 Function can use nearest declaration context (actually all top-level things in module where func was declared).
-```python
+```golang
 callIndex = 0
 
 func foo(x, y)

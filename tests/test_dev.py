@@ -73,6 +73,9 @@ class TestDev(TestCase):
         
         TODO: var type ofor iter-loop 
             for n:int <- nn
+    
+        TODO: test and fix string + string, string += string
+    
     '''
 
 
