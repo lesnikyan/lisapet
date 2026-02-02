@@ -247,7 +247,7 @@ class OpMath(BinOper):
         # print('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
-        # print('#bin-oper2', a, b)
+        # print('#bin-oper2', self.oper, a, '|', b)
         a, b = var2val(a), var2val(b)
         
         # overloaded operators:
@@ -343,7 +343,7 @@ class OpMath(BinOper):
         args = tuple(n.getVal() for n in b.rawVals())
         tpl = a.getVal()
         # dprint('tpl % args: ', tpl % args)
-        return Val(tpl % args, TypeString)
+        return StringVal(tpl % args)
 
     def normalize(self, val:Val):
         # print('O-nod.normalize', val)

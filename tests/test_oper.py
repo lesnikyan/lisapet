@@ -20,6 +20,44 @@ class TestOper(TestCase):
 
 
 
+    def test_string_plus(self):
+        ''' fixed bug: 
+            result of ` "" << val `
+            wasn't a StringVal but Val
+            '''
+        code = r'''
+        res = []
+        s = "abc"
+        res <- s + s
+        
+        res <- s + " efg"
+        res <- 'xyz ' + s
+        res <- "qwe" + 'rty'
+        res <- """triple " """ + s
+        
+        a = "123"
+        a += "456"
+        res <- a
+        
+        c = ""
+        cc = '='
+        for i <- [1..5]
+            c += ~'<{i}>'
+            cc += '%d=' << i
+        res <- c
+        res <- cc
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = ['abcabc', 'abc efg', 'xyz abc', 'qwerty', 'triple " abc', '123456', '<1><2><3><4><5>', '=1=2=3=4=5=']
+        self.assertEqual(exv, rvar.vals())
+
     def test_type_operator_for_struct(self):
         ''' var :: StructType|StructType|list '''
         code = r'''

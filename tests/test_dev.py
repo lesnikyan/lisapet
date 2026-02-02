@@ -33,6 +33,8 @@ class TestDev(TestCase):
 
     '''
         
+    
+        DONE: test and fix string + string, string += string
 
         TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
@@ -71,12 +73,11 @@ class TestDev(TestCase):
         1) tail optimization by func name, during interpretation (before add to ctx)
         2) extend tail-recur case for earlier returns - not sure 
         
-        TODO: var type ofor iter-loop 
+        TODO: var type in for-loop 
             for n:int <- nn
     
-        TODO: test and fix string + string, string += string
-    
     '''
+
 
 
 
@@ -84,7 +85,6 @@ class TestDev(TestCase):
         ''' '''
         code = r'''
         res = []
-        
         
         print('res = ', res)
         '''

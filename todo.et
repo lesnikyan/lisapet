@@ -327,10 +327,8 @@ func d:D f1(x, y)
     foo2(arg2) -> foo(a, arg2) 
 7. common types: (tree, queue, set, pair ) with operations: applay func to each, clone, merge, insert, fold, map, etc.
 8. ~[s, s <- "..."] gen by string: solution (1) `~` operator as a list-to-string convertor
-
-
+9.
 #== anonimous func object (multiline)
-
 foo = func (args...)
 
 
@@ -363,7 +361,6 @@ i-- # i -= 1
 
 #== possible sugar
 
-
 #== concat strings
 str = (
     'Hello '
@@ -395,9 +392,12 @@ type intN3 int[3]
 
 
 # unpack list using it as many vals
-func foo3(...args) -> for val <- args ...
+    # def
+func foo3(args...)
+    for val <- args
+        ...
 
-# call
+    # call
 args = [1,2,3,4,5]
 foo3(args...)
 
