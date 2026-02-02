@@ -66,7 +66,7 @@ class TestTypes(TestCase):
         
         res <- D(D(D(D(D(D(null))))))
         
-        res = res.map(x -> tostr(x))
+        res = res.map(tostr)
         
         # print('res = ', res)
         '''

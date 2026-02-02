@@ -142,6 +142,7 @@ class SliceExpr(Expression, CollectElem):
         self.varExpr:Expression = None
         self.beginExpr = None
         self.closeExpr = None
+        self.res = None
         
     def setVarExpr(self, exp:Expression):
         self.varExpr = exp
@@ -162,21 +163,26 @@ class SliceExpr(Expression, CollectElem):
         # dprint('SliceExpr.do1', target, '::', target.getType())
         if isinstance(target.getType(), (TypeIterator)):
             target = target.getVal()
-        if isinstance(target, Var):
-            target = target.getVal()
+        else:
+            target = var2val(target)
         self.target = target
+        # if isinstance(target, Var):
+        #     target = target.getVal()
+        # self.target = target
+        
         # dprint('SliceExpr.do2', target, '::')
         self.beginExpr.do(ctx)
         self.closeExpr.do(ctx)
         if isinstance(self.closeExpr, NothingExpr):
             self.closeExpr = ValExpr(Val(self.target.len(), TypeInt()))
         # dprint('## self.target', self.target)
+        beg, end = self.beginExpr.get(), self.closeExpr.get()
+        res = self.target.getSlice(beg.get(), end.get())
+        self.res = res
 
     def get(self)->Var:
-        beg, end = self.beginExpr.get(), self.closeExpr.get()
         # dprint('Slice:', beg.get(), end.get())
-        res = self.target.getSlice(beg.get(), end.get())
-        return res
+        return self.res
 
 
 class TupleExpr(CollectionExpr):

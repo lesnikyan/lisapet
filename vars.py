@@ -368,6 +368,12 @@ class StringVal(ValSequence):
     def len(self)->int:
         return len(self.val)
 
+    def getSlice(self, beg, end):
+        if beg < 0 or end > len(self.val):
+            raise EvalErr('indexes of List slice are out of range [%d : %d] with len = %d' % (beg, end, len(self.val)))
+        res =  self.val[beg: end]
+        return StringVal(res)
+
 
 class Regexp(Val):
 
