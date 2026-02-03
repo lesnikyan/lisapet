@@ -127,8 +127,6 @@ Content:
     8. [Regexp case ```re`abc` ```](#238-regexp-case)
     9. [Type pattern `::`](#239-type-matching-_int)
 
-24. [(Your AD can be here :-)]
-
 25. Regular expression:
     1. [Base syntax ```re`[abc]`i```](#251-regular-expressions-re)
     2. [match `=~`](#252-regexp-match-)
@@ -948,6 +946,32 @@ dd = {'a':1, 'b':2}
 for key, val <- dd
     print("%s = %d" << (key, val))
 ```
+#### More special cases:  
+- List of lists or tuples tuples.  
+If we doing loop by list of sequences with same size, like list of tuples `(x, x)` we can assign values of inner sequence into local var immediately.  
+Number of variables should be the same as a number values in current sub-sequence.  
+```python
+nn = [(1,2,3), (4,5,6)]
+for a,b,c <- nn
+    print(a,b,c)
+```
+```
+1 2 3
+4 5 6
+```
+- Dict element as a tuple.  
+If we want to assign key, value of dict element to one tuple we just use one variable instead of two.  
+```python
+dd = {'a':1, 'b':2}
+for item <- dd
+    print(item)
+```
+```
+('a', 1)
+('b', 2)
+```
+
+
 
 ### 6.3 Function `iter()`  
 Function `iter` can be used with several sets of arguments.  
@@ -2013,6 +2037,22 @@ Slice expression works for string too.
 ```python
 s = "abcdefg"
 s[2:5] # >> 'cde'
+```
+
+- Concatenation.  
+Two strings is joined by `+` operator.  
+```python
+# string lexems
+'qwe' + "rty" # >> 'qwerty'
+
+# with var
+s = "abc"
+s + 'de' # >> 'abcde'
+
+# plus-assign
+
+a = "123"
+a += "45" # >> "12345"
 ```
 
 - String formatting.

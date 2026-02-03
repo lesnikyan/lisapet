@@ -39,39 +39,30 @@ class NIterator:
 class IterAssignExpr(Expression):
     ''' target <- iter|collection '''
     def __init__(self):
-        # self.assignExpr:Expression = None
         self.itExp:NIterator = None # right part, iterator
         self.srcExpr:CollectionExpr = None # right part, collection constructor, func(), var
-        # local vars in: key, val <- iterExpr
-        self.key:Var = None
-        self.val:Var = None
+        self.loopVars = []
         self._first_iter = False
 
     def setArgs(self, target, src):
-        # dprint('(iter =1)', target, )
+        # print('setArgs', target, , src)
         self.setTarget(target.get())
-        # dprint('(iter =2)', src)
         self.setSrc(src)
 
     def setTarget(self, vars:list[Var]|Var):
-        # dprint('> IterAssignExpr setTarget1', vars)
+        # print('> IterAssignExpr setTarget1', vars)
         if not isinstance(vars, list):
             vars = [vars]
         if len(vars) == 1:
-            vars = [Var_(), vars[0]]
-        self.key = vars[0]
-        self.val = vars[1]
-        # dprint('> IterAssignExpr setTarget2', self.key, self.val)
+            vars = [vars[0]]
+        self.loopVars = vars
 
     def setSrc(self, exp:Expression):
-        # dprint('> IterAssignExpr setSrc', exp)
         self.srcExpr = exp
 
     def _start(self, ctx:Context):
-        # dprint('#iter-start1 self.srcExpr', self.srcExpr)
         self.srcExpr.do(ctx) # make iter object
         iterSrc = self.srcExpr.get()
-        # dprint('#iter-start2 itSrc', iterSrc)
         if isinstance(iterSrc, Var):
             iterSrc = iterSrc.get() # extract collection from var
         if isinstance(iterSrc, (ListVal, DictVal)):
@@ -79,7 +70,6 @@ class IterAssignExpr(Expression):
         elif isinstance(iterSrc.get(), (NIterator)):
             self.itExp = iterSrc.get()
             
-        # dprint('#iter-start3 self.itExp', self.itExp)
         self.itExp.start()
         self._first_iter = True
     
@@ -98,46 +88,61 @@ class IterAssignExpr(Expression):
         # dprint('@# iterAsgn-step', )
         self.itExp.step()
     
+    def varsInit(self, ctx):
+        self._first_iter = False
+        for vv in self.loopVars:
+            # print(' first iter1 >>', vv)
+            if not vv or isinstance(vv, Var_):
+                continue
+            if isinstance(vv, VarUndefined):
+                vv = Var(vv.name, TypeAny())
+            # print(' first iter2 >>', vv)
+            ctx.addVar(vv)
+    
     def do(self, ctx:Context):
         ''' put vals into LOCAL context '''
+        
+        if self._first_iter:
+            self.varsInit(ctx)
+            
         # print('IterAssignExpr.do', self.itExp, self.key, self.val)
         
         val = self.itExp.get()
         # print('IterAssignExpr.do2 val=', val)
-        key = Var_()
-        if isinstance(val, tuple):
-            key, val = val
-        k, v = self.key, self.val
-        # print('IterAssignExpr.do1 >>>>', k, v)
-        if self._first_iter:
-            self._first_iter = False
-            for vv in [self.key, self.val]:
-                # print(' first iter1 >>', vv)
-                if not vv or isinstance(vv, Var_):
-                    continue
-                if isinstance(vv, VarUndefined):
-                    vv = Var(vv.name, val.getType())
-                # print(' first iter2 >>', vv)
-                ctx.addVar(vv)
-        # val = self.itExp.get()
-        # print('IterAssignExpr.do2 val=', val, val.getType())
-        # key = Var_()
-        # if isinstance(val, tuple):
-        #     key, val = val
-        # k, v = self.key, self.val
-        # TODO: right way set values to local vars key, val
-        # print('IterAssignExpr.do3', key, val)
-        # print('IterAssignExpr.do4', k, v)
-        if key and not isinstance(key, Var_):
-            kvar = Var(k.name, key.getType())
-            kvar.set(key)
-            ctx.update(k.name, kvar) 
-        vvar = Var(v.name, val.getType())
-        vvar.set(val)
-        ctx.update(v.name, vvar)
-        # print('>>> ctx:')
-        # ctx.print(forsed=1)
+        valSet = []
+        
+        if isinstance(val, (TupleVal, ListVal)):
+            valSet = val.elems
+        
+        largLen = len(self.loopVars)
+        
+        if largLen == 2 and isinstance(val, tuple):
+            # dict elem here, need to unpack
+            valSet = val
+        elif largLen == 1:
+            if isinstance(val, tuple):
+                # dict elem, convert to TupleVal
+                valSet = TupleVal(elems=[n for n in val])
+            else:
+                # whole data into 1 var
+                valSet = val
+            valSet = [valSet]
 
+        vlen = len(valSet)
+        # print('$1>>', vlen, valSet)
+        if vlen != largLen:
+            raise EvalErr(f"Arrow assign has different left {largLen} and right {vlen} count of elements.")
+
+        for i in range(largLen):
+            arg = self.loopVars[i]
+            if isinstance(arg, Var_):
+                continue
+            elem = valSet[i]
+            # print('for <- arg, val', i , '>>', arg, elem)
+            varName = arg.name
+            nvar = Var(varName, elem.getType())
+            nvar.set(elem)
+            ctx.update(varName, nvar)
 
 class IndexIterator(NIterator):
     ''' x <- iter(0, 10, 2)'''
@@ -338,7 +343,7 @@ class Append(Expression):
 
 
 class LeftArrowExpr(BinOper):
-    ''' '''
+    ''' a <- b '''
 
     def __init__(self, src = ''):
         super().__init__(None, src)
@@ -366,16 +371,19 @@ class LeftArrowExpr(BinOper):
         # left expression defines type of case
         self.leftExpr.do(ctx)
         # print('..')
-        # print('Arr <- init1 ltArg', self.leftExpr)
-        ltArg = Var_()
+        # print('Arr <- init1', self.leftExpr, self.rightExpr)
+        ltArg = None
         if isinstance(self.leftExpr, SequenceExpr):
             if self.leftExpr.getDelim() == ',':
-                # comma-separated sequence, can interpret as tuple
+                # comma-separated sequence, can interpret as a tuple
                 # print('Arr <- init011', 'comma-separated sequence')
-                # use 2 first vars for key-val of dict
-                # TODO: change to multival assignmens
+                # deprecate:  use 2 first vars for key-val of dict
+                # 1 var for list - value for elem from list/tuple
+                # 2 for dict - key,val
+                # 1 for dict - tuple (key, val) to assign 
+                # 2 or more for list - unpack current elem into vars [(,,), (,,)]
                 ltVals = self.leftExpr.getVals(ctx)
-                ltArg = ltVals[:2]
+                ltArg = ltVals
         else:
             ltArg  = self.leftExpr.get()
         
@@ -387,23 +395,27 @@ class LeftArrowExpr(BinOper):
         if isinstance(ltArg, Var) and isinstance(ltArg.getType(), (TypeList, TypeDict)):
             # print('Arr <-2 init ltArg', ltArg.getType())
             ltArg = var2val(ltArg)
-        if not isinstance(ltArg, list) and isinstance(ltArg, (ListVal, DictVal)):
-            # append case
+            
+        # append case: ListVal/DictVal <- val
+        # if not isinstance(ltArg, list) and isinstance(ltArg, (ListVal, DictVal)):
+        if isinstance(ltArg, (ListVal, DictVal)):
             if rtArg :
                 rtArg = var2val(rtArg)
             self.expr = Append(ltArg, rtArg)
             return
 
+        # next - iterator case
         if isinstance(rtArg, Var):
             rtArg = rtArg.get() # extract collection from var
         # print('Arr <- init4 rtArg:', rtArg)
+        # print('Arr <- init4 ltArg:', ltArg)
         itExp = None
         if isinstance(rtArg, (Collection)):
             itExp = SrcIterator(rtArg)
         elif isinstance(rtArg.get(), (NIterator)):
             itExp = rtArg.get()
         
-        # print('Arr<- init5 itExp:', itExp)
+        # print('Arr<- init5 ltArg, rtArg:', ltArg, rtArg)
         if isinstance(itExp, NIterator):
             # iter case
             self.expr = IterAssignExpr()
