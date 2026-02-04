@@ -61,8 +61,13 @@ class TestDev(TestCase):
         
         TODO: overload: 
             test overloading for imported functions, 
+                should we disallow overolading function in another module?
+                looks like overloading is a feature within one module
             override of overload:
-                Think about case with same name func in a child is overloaded for another args
+                Think about case with same name func in a child is overloaded for another args in parent
+                    1) child method will override all overloaded or
+                    2) child method will add and shoud find func by signature in all parent tree or
+                    3) disallow override overloaded func name
             overloaded methods of imported structs
             # done: struct type args in overloaded func, 
             # done: test methods with compatiple types
@@ -75,9 +80,11 @@ class TestDev(TestCase):
         
         TODO: var type in for-loop 
             for n:int <- nn
-    
+        
+        TODO: unified multi-assignment in for-loop
+            nn = [(1,2,3), ...]
+            for a,b,c <-nn 
     '''
-
 
 
 

@@ -685,6 +685,8 @@ class TestLists(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+        self.fail()
+        # and next >>
 
     def test_list_gen_sub_assignment(self):
         ''' list generator  '''
@@ -961,15 +963,6 @@ class TestLists(TestCase):
         ''' for n <- [1,2,3] 
             for n <- arrVar
         '''
-        # code = '''
-        # for n <- [1,2,3]
-        #     print('-----------------', n)
-        # '''
-        # code = '''
-        # nn = [1,2,3]
-        # for n <- nn
-        #     print(n)
-        # '''
         code = '''
         func sum(nums)
             res = 0
@@ -983,8 +976,10 @@ class TestLists(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        dprint('$$ run test ------------------')
+        # dprint('$$ run test ------------------')
         exp.do(ctx)
+        
+        self.fail()
 
 
     def test_array_set(self):
@@ -1002,10 +997,10 @@ class TestLists(TestCase):
         clines:CLine = elemStream(tlines)
         exp = lex2tree(clines)
         ctx = rootContext()
-        dprint('$$ run test ------------------')
+        # dprint('$$ run test ------------------')
         exp.do(ctx)
         res = ctx.get('res')
-        dprint('# tt>> ', res)
+        # dprint('# tt>> ', res)
 
     def test_array(self):
         data = [
@@ -1027,7 +1022,7 @@ class TestLists(TestCase):
             dprint('~~~~ test case: %s ~~~~' % code)
             ex.do(ctx)
             rr = [ctx.get('res').get() , ctx.get('r').get()]
-            dprint('Test res = ', rr)
+            # dprint('Test res = ', rr)
 
     def test_array_expr(self):
         data = [
