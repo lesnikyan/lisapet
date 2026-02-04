@@ -1934,18 +1934,18 @@ Classical tail recursion is a recursion in which the last expression in a functi
 In the LP tail recursion works if we put the returning call into a last position, literally (I'm still thinking about earlier returns, but still have no idea if we need it).  
 So, if interpreter has detected tail recursion it will run code of such function in lightweight loop instead of increase depth of call stack.  
 This way we can avoid limits of python recursion.  
-Next example was tested with depth of recursion = 1 million.  
+Next example was tested with depth of recursion = 10 millions.  
 ```golang
 func f2(a, b)
     if a == 0
         return b
     f2(a - 1, b + 1)
 
-f2(10**6, 0) # 1000000
+f2(10**6, 0) # 10000000
 ```
 (bad idea for such slow engine :))  
 ```
->> Ran 1 test in 30.307s 
+>> Ran 1 test in 314.170s 
 ```
 It works for method of struct too.  
 
