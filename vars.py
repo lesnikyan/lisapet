@@ -19,6 +19,9 @@ class Var_(Var):
         self.vtype:VType = TypeNull()
         self.val = None
 
+    def __str__(self):
+        return '<_>'
+
 
 class VarUndefined(Var):
     def __init__(self, name):

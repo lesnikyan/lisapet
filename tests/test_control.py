@@ -30,6 +30,81 @@ from tests.utils import *
 class TestControl(TestCase):
 
 
+    def test_for_arrow_multival(self):
+        ''' test arrow-assign `a <- b` 
+            unpack and multiassign if several vars in left: a,b,c <- data
+            no unpack if 1 var: n <- data
+        '''
+        code = r'''
+        res = []
+        
+        # nn = [(1,2,3), (4,5,6)]
+        nnT = [(x, x+2, x+3); i <- [2..5]; x = i * 4]
+        
+        # @debug !123
+        
+        # unpack tuple to vars
+        for a,b,c <- nnT
+            s = ~'{a:02d}:{b:02d}:{c:02d}'
+            res <- s
+        
+        # list of tuples, no unpack
+        for elem <- nnT
+            res <- elem
+        
+        nnL = [[x, x+3, x+5]; i <- [2..5]; x = i * 10]
+        # unpack list to vars
+        for a,b,c <- nnL
+            s = ~'{a:02d}:{b:02d}:{c:02d}'
+            res <- s
+        
+        # list of lists, no unpack
+        for elem <- nnL
+            res <- elem
+        
+        nn2 = [1,2,3,4,5]
+        # iter by list
+        for n <- nn2
+            res <- 'nn2_%d' <<n
+        
+        dd = {1:11, 2:22}
+        
+        # iter by dict, assigning key, val
+        for k, v <- dd
+            res <- ~'dd_{k},{v}'
+        
+        # iter by dict, assigning pair of (key, val)
+        for elem <- dd
+            res <- 'dd_(%d,%d)' << elem
+        
+        # unpack list in generator
+        src = [[1,2], [3,4]]
+        nums = [ x ; sub <- src ; x <- sub]
+        res <- ('nums', nums)
+        
+        # iter by tuple
+        tt = (1,2,3,4,5)
+        for n <- tt
+            res <- ~'tt_{n}'
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            '08:10:11', '12:14:15', '16:18:19', '20:22:23', 
+            (8, 10, 11), (12, 14, 15), (16, 18, 19), (20, 22, 23), 
+            '20:23:25', '30:33:35', '40:43:45', '50:53:55', 
+            [20, 23, 25], [30, 33, 35], [40, 43, 45], [50, 53, 55], 
+            'nn2_1', 'nn2_2', 'nn2_3', 'nn2_4', 'nn2_5', 
+            'dd_1,11', 'dd_2,22', 'dd_(1,11)', 'dd_(2,22)', 
+            ('nums', [1, 2, 3, 4]), 'tt_1', 'tt_2', 'tt_3', 'tt_4', 'tt_5']
+        self.assertEqual(exv, rvar.vals())
+
     def test_inline_controls(self):
         ''' for /: if /: '''
         code = r'''

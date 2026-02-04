@@ -156,6 +156,7 @@ class CaseFor(BlockCase, SubCase):
         # dprint('# CaseFor.setSub-', base)
         return base
 
+
 class CaseIf(BlockCase, SubCase):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
