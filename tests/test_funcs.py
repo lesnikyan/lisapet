@@ -194,6 +194,16 @@ class TestFuncs(TestCase):
 
     def test_tail_recursion(self):
         ''' '''
+        _ = '''
+        # code of 10-million depth of tail recursion
+        
+        func foo(a, b)
+            if a == 0
+                return b
+            foo(a - 1, b + 1)
+
+        res <- foo(10**7, 0)
+        '''
         code = r'''
         res = []
         
