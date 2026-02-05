@@ -3,6 +3,7 @@ Base expression objects.
 '''
 from collections.abc import  Callable
 
+from bases.ntype import equalType, isCompatible
 from vars import *
 from typex import *
 from context import *

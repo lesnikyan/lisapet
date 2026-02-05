@@ -134,7 +134,7 @@ expCaseList:list[ExpCase] = [
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(),  
     CaseMatchCase(),
     CaseArgExtraList(), CaseArgExtraDict(),
-    CaseStructBlockDef(), CaseStructDef(),
+    CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
     CaseLambda(), 
     CaseSemic(), CaseBinOper(), CaseCommas(),
     # CaseTuple(),

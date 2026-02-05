@@ -426,6 +426,43 @@ class Regexp(Val):
         return ListVal(elems=rvals)
 
 
+
+
+class EnumItem(Val):
+    def __init__(self, name, val):
+        super().__init__(val, TypeInt())
+        self.name = name
+
+
+class Enum(Container):
+    
+    def __init__(self, name):
+        # super().__init__(None)
+        self.name = name
+        self.items = []
+        self.imap = {}
+    
+    def add(self, item:EnumItem):
+        index = len(self.items)
+        self.items.append(item)
+        self.imap[item.name] = index
+    
+    def getItem(self, name):
+        if name not in self.imap:
+            raise EvalErr(f"Enum {self.name} doesn't have item {name}")
+        return self.items[self.imap[name]]
+    
+    def getNames(self):
+        ''' get list of all names'''
+        
+    def getVals(self):
+        ''' get list of all vals '''
+    
+    def toDict(self):
+        ''' DictVal {Name: val} '''
+
+
+
 class FuncBinder(FuncSpace):
     '''
     Binds functions to the type like method to struct definition

@@ -285,6 +285,21 @@ enum Color: int
 match color
     Color.Red !- ...
 
+25.2 named group of funcs and consts 
+
+group Math
+    P = 3.141592653589793
+    E = 2.718281828459045
+
+    func f1(a, b)
+        a + b
+
+    func bar(x) 
+        x ** 2
+
+print(Math.P)
+
+print(Math.f1(2,3))
 
 26. anonimous struct
 

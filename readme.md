@@ -84,12 +84,17 @@ Content:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
     2. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
 
-10. Structs `A{}` 
+10. #### Structs `A{}` 
     1. [Definition of `struct`, base constructor `A{a:b}`, fields](#101-struct)
     2. [Callable constructor `A(val)`](#102-constructor-function-typename)
     3. [Methods `x.foo()`](#103-struct-method)
     4. [Inheritance `struct B(A)`](#104-struct-inheritance-multiple-inheritance-is-allowed)
     5. [Method as an object with instance-related context](#105-instance-related-context-of-method)  
+
+11. #### `enum` statement  
+    1. [Definition](#111-enum-definition)
+    2. [Usage](#112-enum-usage)
+    3. [Matching (int dev) >>>](#23-match-statement)
 
 14. #### Builtin (native) functions and methods
     1. [Global functions: print, iter, etc.](#141-global-native-functions)
@@ -1471,6 +1476,74 @@ More examples in tests.
 See also section [functional features](#15-functional-programming-features)
 
 
+### 11.1 Enum definition  
+Enum is an enumerated set of constant values with readable names.  
+It can be used as a nice alternative of global vars or string values to manage command flow.  
+Items of enum is integers only.  
+- Definition is made by keyword `enum` with name next.  
+```java
+enum Abc a, b, c, d, e, f, g, h
+
+print(Abc.f) # >> 5
+```
+- Enum can be defined by block definition.  
+```python
+enum Colors
+    black = 0x0
+    blue = 0xff
+    green = 0xff00
+    red = 0xff0000
+    orange = 0xff8800
+    yellow = 0xffff00
+    white = 0xffffff
+
+print( ~"red is {Colors.red:06x}")
+# >> 'red is ff0000'
+print( ~"blue num = {Colors.blue}")
+# >> 'blue num = 255'
+```
+
+### 11.2 Enum usage.  
+- Usage in conditions.  
+
+```python
+enum Num zero, one, two, three, four, five  
+
+nn = [0,1,2,3,4,5,6,7]
+
+n = nn[i]
+
+# as arg of condition
+if n < Num.two
+    print('too small ', n)
+else if n == Num.three
+    print('Nice!')
+else if n ?> [Num.two, Num.four]
+    print('it`s ok ', n)
+else
+    print('too big ', n)
+```
+As value in expressions.  
+```python
+# val for var
+x = Num.one
+
+# as arg
+foo (x:int)
+    print(x)
+
+foo(Num.two)
+
+# dict key
+
+dd = {Num.one : '1', Num.five: '5'}
+
+# as vals for gen
+for n <- [Num.one .. Num.five]
+    print(n)
+```
+
+- Pattern matching - in dev
 
 ### 12.1 List features: slice, iteration generator, `tolist()`.
 ```python
