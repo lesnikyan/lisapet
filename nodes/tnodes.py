@@ -7,6 +7,8 @@ from lang import *
 from vars import *
 from nodes.expression import *
 from context import Context, ModuleContext
+from nodes.base_oper import AssignExpr
+
 
 # Expression
 
@@ -121,5 +123,86 @@ class ImportExpr(Expression):
         # 2.1 Add aliases
         for alias, orig in aliases.items():
             ctx.addAlias(alias, orig)
+
+
+class EnumDef(Expression):
+    
+    def __init__(self, name, src = ''):
+        super().__init__(None, src)
+        self.name = name
+        self.items = []
+
+    def add(self, item:Expression):
+        # print('enum.add', item)
+        self.items.append(item)
+
+    def fillEnum(self, ctx):
+        enum = Enum(self.name)
+        prev = -1
+        for exitem in self.items:
+            # print('Enum.do/1:', exitem)
+            prev += 1
+            val = prev
+            name = ''
+            match exitem:
+                case VarExpr():
+                    name = exitem.name
+                case AssignExpr():
+                    exitem.do(ctx)
+                    ival = exitem.get()
+                    prev = var2val(ival).getVal()
+                    val = prev
+                    name = exitem.left.name
+            # ival can be var or assign expr
+            # print('Enum.do/2:', val, name)
+            item = EnumItem(name, val) # Val(val, TypeInt())
+            enum.add(item)
+        return enum
+
+    def do(self, ctx:Context):
+        enum:Enum = self.fillEnum(ctx)
+        ctx.addEnum(enum)
+
+
+# Future cases 
+
+_Any = TypeAny()
+
+class PossiblyConstSet(Val):
+    ''' val set like enum but for other types:
+        bool, string, float, tuple, regexp, ...thinking
+    '''
+    def __init__(self, name, etype=None, src = ''):
+        super().__init__(None, src)
+        self.name = name
+        if etype is None:
+            etype = TypeAny()
+        self.type = etype
+        self.items = []
+
+    def checkType(self, dtype:VType, itype:VType):
+        # typeCompat
+        if equalType(dtype, itype) or equalType(dtype, _Any):
+            return True
+        return isCompatible(dtype, itype)
+
+class ConstSetExpr(Expression):
+    
+    def __init__(self, name, typeExpr=None, src = ''):
+        super().__init__(None, src)
+        self.name = name
+        self.typeExpr = typeExpr
+        self.items = []
+        
+    def do(self, ctx:Context):
+        etype = None
+        if self.typeExpr:
+            self.typeExpr.do(ctx)
+            rtype = self.typeExpr.get()
+            print('Enum.do type:', rtype)
+            if isinstance(rtype, TypeVal):
+                etype = rtype
+        if not etype:
+            etype = TypeAny()
 
 

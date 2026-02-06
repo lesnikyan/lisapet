@@ -30,8 +30,49 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
-
-
+    def test_enum_matching(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        struct A a:int
+        
+        enum Nums one=1, two, three, four, five, x17=17
+        x = Nums.one
+        # print(Nums.one, x)
+        # @debug 1
+        nn = [0, 1, 2, 3, 4, 5, [1, 2], A(17)]
+        for n <- nn
+            match n
+                # simple elem from enu as const value
+                Nums.one /: res <- ('one', n)
+                Nums.two /: res <- ('two', n)
+                
+                # multicase pattern
+                Nums.three | Nums.four
+                    res <- ('3|4', n)
+                # in guard
+                _ :? n == Nums.five
+                    res <- ('N5', n)
+                # sub pattern
+                [Nums.one, Nums.two]
+                    res <- ('[n1, n2]', n)
+                A{a:Nums.x17}
+                    res <- ('A{17}', n)
+                # any elem from enum
+                _ /: res <- ('_', n)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        exv = [('_', 0), ('one', 1), ('two', 2), ('3|4', 3), ('3|4', 4), ('N5', 5), ('[n1, n2]', [1, 2]), ('A{17}', 'st@A{a: 17}')]
+        self.assertEqual(exv, rvar.vals())
 
     def test_refactored_match_case_blocks(self):
         ''' check refactored sub-block of match-case, test fixed return from if in loop'''

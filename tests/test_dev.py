@@ -34,7 +34,11 @@ class TestDev(TestCase):
     '''
         
     
-        DONE: test and fix string + string, string += string
+        DONE: test and fix string + string, string += string << val
+        
+        DONE: unified multi-assignment in for-loop
+            nn = [(1,2,3), ...]
+            for a,b,c <-nn 
 
         TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
@@ -61,14 +65,15 @@ class TestDev(TestCase):
         
         TODO: overload: 
             test overloading for imported functions, 
-                should we disallow overolading function in another module?
+                should we disallow overloading function in another module?
                 looks like overloading is a feature within one module
+            (? do we need) overloaded methods of imported structs
+            
             override of overload:
                 Think about case with same name func in a child is overloaded for another args in parent
                     1) child method will override all overloaded or
                     2) child method will add and shoud find func by signature in all parent tree or
                     3) disallow override overloaded func name
-            overloaded methods of imported structs
             # done: struct type args in overloaded func, 
             # done: test methods with compatiple types
         
@@ -78,12 +83,36 @@ class TestDev(TestCase):
         1) tail optimization by func name, during interpretation (before add to ctx)
         2) extend tail-recur case for earlier returns - not sure 
         
-        TODO: var type in for-loop 
+        TODO:? var type in for-loop 
             for n:int <- nn
         
-        TODO: unified multi-assignment in for-loop
-            nn = [(1,2,3), ...]
-            for a,b,c <-nn 
+        TODO: group - static block for set of const vals and functions. 
+            Like extended enum and struct
+        
+        TODO: string methods: upper, lower
+        TODO: list|tuple methods: sort, filter
+        TODO: minimal lambda:
+            x -> x
+            x -> 0
+        
+        DONE: enum as a static set of named values
+            enum Color  Red, Green, Blue # >> 0,1,2
+            enum Color:int  Red 5, Green 10, Blue # >> 5, 10, 11
+            enum Alphabet a:1, b, c, d, e, f
+            # block
+            enum Color: int
+                Red: 0xf00
+                Green: 0x0f0
+                Blue: 0x00f
+            thoughts:
+                enum (enumerable) is just static numeric set, but not a set of any other data types
+                we need additional static/const type set: conset, valset, const, etc. (?)
+
+        DONE: match n / case: Enum.val1 /: print('val1', n)
+        TODO: Enum.name(11)
+        TODO: Enum.value(name)
+        TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
+        TODO: 22 ?> Enum # after methods
     '''
 
 
@@ -93,7 +122,7 @@ class TestDev(TestCase):
         code = r'''
         res = []
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         ex = tryParse(code)

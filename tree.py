@@ -134,7 +134,7 @@ expCaseList:list[ExpCase] = [
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(),  
     CaseMatchCase(),
     CaseArgExtraList(), CaseArgExtraDict(),
-    CaseStructBlockDef(), CaseStructDef(),
+    CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
     CaseLambda(), 
     CaseSemic(), CaseBinOper(), CaseCommas(),
     # CaseTuple(),
@@ -148,7 +148,7 @@ expCaseList:list[ExpCase] = [
 
 patternMatchCasesSolid = [
     MT_Other(),
-    MTVal(), MTString(), MTRegexp(), MTList(), MTTuple(), MTDict(), MTStruct(), 
+    MTVal(), MTString(), MTRegexp(), MTList(), MTTuple(), MTDict(), MTStruct(), MTObjMember(),
 ]
 
 patternMatchCasesCplx = [
@@ -176,6 +176,7 @@ def mtCases(elems:list[Elem], cases: list[ExpCase], parent:ExpCase=None)->Matchi
             if mtCase.hasSubExpr():
                 pattr, subElems = mtCase.split(elems)
                 subExp = elems2expr(subElems)
+                # print('$3>', subExp)
                 pattr = mtCase.setSub(pattr, subExp)
             else:
                 pattr = mtCase.expr(elems)
