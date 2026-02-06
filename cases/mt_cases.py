@@ -84,6 +84,34 @@ class MTVar(MTCase,CaseVar):
         ptt = MCSubVar(vexpr)
         return ptt
 
+
+class MTObjMember(MTCase,CaseDotName):
+    ''' MyEnum.name '''    
+    
+    
+    def match(self, elems:list[Elem]) -> bool:
+        ''' '''
+        if len(elems) != 3:
+            return False
+        return super().match(elems)
+        # ln = len(elems)
+        # if ln < 3:
+        #     return False
+        # return isField(elems)
+    
+    def expr(self, elems:list[Elem])-> Expression:
+        ''' Value from context by var name'''
+
+        ename = elems[2].text
+        objExpr = VarExpr(Var(elems[0].text, TypeAny()))
+        member = VarExpr(Var(ename, TypeAny()))
+        expr = OperDot(member)
+        # print('MT.dot:setObj', objExpr)
+        expr.setObj(objExpr)
+        ptt = MCObjMember(expr)
+        return ptt
+
+
 _base_types = "int,float,bool,string,list,tuple,dict,struct,function".split(',')
 
 class MTDuaColon(MTCase):
@@ -403,7 +431,7 @@ class CommaSeparatedSequence(MTContr):
         res = []
         for sp in subPats:
             # print('sp:', type(sp))
-            if isinstance(sp, (MCContr, MCStruct, MCType, MCTypedElem, MCRegexp)):
+            if isinstance(sp, (MCContr, MCStruct, MCType, MCTypedElem, MCRegexp, MCObjMember)):
                 sp = MCSubCover(sp)
             res.append(sp)
         return res
@@ -562,7 +590,7 @@ class MTFail(MTCase):
 
 pMListInnerCases:list[MTCase] = [
     MTMultiCase(), MTTypedVal(), MTDuaColon(), MTMultiTyped(),
-    MTVal(), MTE_(), MTVar(), MTString(), MTRegexp(),
+    MTVal(), MTE_(), MTVar(), MTString(), MTRegexp(), MTObjMember(),
     MTEStar(),  MTEQMark(), MTColPair(),
     MTList(), MTTuple(), MTDict(), MTStruct(), 
 ]

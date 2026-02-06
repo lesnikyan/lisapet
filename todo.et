@@ -285,7 +285,12 @@ enum Color: int
 match color
     Color.Red !- ...
 
-25.2 named group of funcs and consts 
+25.2 named group of funcs and consts
+    have own definition block
+    have own context (sub related to module)
+    Think about internal context of group, how function can get access to vals
+    should it be like static class or namespace?
+    should allow making sub-groups?
 
 group Math
     P = 3.141592653589793

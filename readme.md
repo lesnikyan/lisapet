@@ -94,7 +94,7 @@ Content:
 11. #### `enum` statement  
     1. [Definition](#111-enum-definition)
     2. [Usage](#112-enum-usage)
-    3. [Matching (int dev) >>>](#23-match-statement)
+    3. [Matching >>>](#2310-enum-elements)
 
 14. #### Builtin (native) functions and methods
     1. [Global functions: print, iter, etc.](#141-global-native-functions)
@@ -1543,7 +1543,8 @@ for n <- [Num.one .. Num.five]
     print(n)
 ```
 
-- Pattern matching - in dev
+- Pattern matching.  
+[See `match` section](#2310-enum-elements)
 
 ### 12.1 List features: slice, iteration generator, `tolist()`.
 ```python
@@ -2693,6 +2694,26 @@ match n
     val ::(A|B|C) | val ::(int|float) /: ...
     [a::(A|B|C), ::(int|float), _, b::(dict|tuple)] /: ...
 ```
+
+### 23.10 Enum elements
+Enum elements works equally to const int value.  
+```python
+
+enum N a=1, b, c, d, e, f
+
+struct A a:int
+
+nn = [1,2,3,4,5, [3,2,1], A(5)]
+
+for n <- nn
+    match n
+        # simple val
+        N.a /: # 1
+        N.b | N.d /: # 2, 4
+        [N.c, *] /: [3,2,1]
+        A{a: N.e} /: # A{5}
+```
+
 
 
 ### 24. Nothing yet

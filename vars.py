@@ -438,6 +438,7 @@ class Enum(Container):
     
     def __init__(self, name):
         # super().__init__(None)
+        self.vtype = TypeEnum()
         self.name = name
         self.items = []
         self.imap = {}
@@ -460,7 +461,9 @@ class Enum(Container):
     
     def toDict(self):
         ''' DictVal {Name: val} '''
-
+    
+    def __str__(self):
+        return f"enum {self.name}"
 
 
 class FuncBinder(FuncSpace):

@@ -165,10 +165,12 @@ class OperDot(BinOper):
             sub = self.membExpr.get()
             name = sub.get()
 
+        # print('$OM/1', objVal)
         inst:StructInstance = objVal
         if isinstance(inst, ObjectMember):
             inst = inst.get()
 
+        # print('$OM/2', inst)
         # dprint('OperDot.do2 <inst =', inst, 'name=', name ,'>')
         self.val = ObjectMember(inst, name)
         # print('OperDot.do5 fin field =', self.val)

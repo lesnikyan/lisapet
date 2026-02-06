@@ -639,6 +639,7 @@ class CaseDotName(SubCase, SolidCase):
     def setSub(self, base:OperDot, subs:Expression|list[Expression])->Expression: 
         ''' '''
         objExpr = subs[0]
+        # print('O.dot:setSub', objExpr)
         base.setObj(objExpr)
 
 
