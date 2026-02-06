@@ -90,7 +90,7 @@ class CaseLambda(CaseFuncDef):
     ''' args -> expr '''
     
     def match(self, elems:list[Elem]) -> bool:
-        if len(elems) < 4:
+        if len(elems) < 3:
             return False
 
         main = OperSplitter().mainOper(elems)

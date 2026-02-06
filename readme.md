@@ -1808,7 +1808,7 @@ res = 'Hello dear friend'.split(' ').map(w -> ~"<t>{w}</t>").join('^')
 Here are some features that make Lisapet also a functional programming language.  
 
 ### 15.1 Lambda functions. Right-arrow `->`.
-Right-arrow is an operator for definition lambda-function.  
+- Right-arrow is an operator for definition lambda-function.  
 Arrow separates arguments and body of function.  
 One argement can be defined without brackets. For more then one we need put args into brackets.  
 ```python
@@ -1822,13 +1822,37 @@ f2 = (x, y, z) -> (x + y) * z
 f1(5) # 50
 f2(3,4,5) # 35
 ```
-We can put inline-block in brackets and use it as a lambdas body.  
+- Minimal lambdas.  
+In some cases we just need to return value.  
+```python
+
+f1 = x -> x
+f1(11) # >> 11
+
+f2 = x -> 1
+f2(2) # >> 1
+
+f3 = _ -> 12
+f3(128) # >> 12
+
+# closure
+func g(a)
+    _ -> a
+
+f4 = g(10)
+f4(111) # >> 10
+f4(555) # >> 10
+
+
+```
+
+- We can put inline-block in brackets and use it as a lambdas body.  
 ```python
 ff = x -> (a = 100; b = x * 10; a + (b * x))
 r = ff(3)
 >> 190
 ```
-The same as a multiline expression.  
+- The same as a multiline expression.  
 ```python
 ff = x -> (
     a = 100; # can use comments here

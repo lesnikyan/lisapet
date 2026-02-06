@@ -39,6 +39,27 @@ class TestDev(TestCase):
         DONE: unified multi-assignment in for-loop
             nn = [(1,2,3), ...]
             for a,b,c <-nn 
+        
+        DONE: enum as a static set of named values
+            enum Color  Red, Green, Blue # >> 0,1,2
+            enum Color:int  Red 5, Green 10, Blue # >> 5, 10, 11
+            enum Alphabet a:1, b, c, d, e, f
+            # block
+            enum Color: int
+                Red: 0xf00
+                Green: 0x0f0
+                Blue: 0x00f
+            thoughts:
+                enum (enumerable) is just static numeric set, but not a set of any other data types
+                we need additional static/const type set: conset, valset, const, etc. (?)
+
+        DONE: match n / case: Enum.val1 /: print('val1', n)
+        
+        # features for for `enum` - not sure
+            TODO: Enum.name(11)
+            TODO: Enum.value(name)
+            TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
+            TODO: 22 ?> Enum # after methods
 
         TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
@@ -91,28 +112,11 @@ class TestDev(TestCase):
         
         TODO: string methods: upper, lower
         TODO: list|tuple methods: sort, filter
+        
         TODO: minimal lambda:
             x -> x
             x -> 0
         
-        DONE: enum as a static set of named values
-            enum Color  Red, Green, Blue # >> 0,1,2
-            enum Color:int  Red 5, Green 10, Blue # >> 5, 10, 11
-            enum Alphabet a:1, b, c, d, e, f
-            # block
-            enum Color: int
-                Red: 0xf00
-                Green: 0x0f0
-                Blue: 0x00f
-            thoughts:
-                enum (enumerable) is just static numeric set, but not a set of any other data types
-                we need additional static/const type set: conset, valset, const, etc. (?)
-
-        DONE: match n / case: Enum.val1 /: print('val1', n)
-        TODO: Enum.name(11)
-        TODO: Enum.value(name)
-        TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
-        TODO: 22 ?> Enum # after methods
     '''
 
 

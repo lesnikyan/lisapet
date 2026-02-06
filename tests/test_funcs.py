@@ -26,6 +26,54 @@ class TestFuncs(TestCase):
 
 
 
+    def test_minimal_lambda(self):
+        '''
+        x -> x
+        _ -> 2
+        '''
+        code = r'''
+        res = []
+        
+        func foo(fn, x)
+            fn(x)
+        
+        f1 = x -> x
+        res <- foo(f1, 11)
+        
+        f2 = x -> 2
+        res <- foo(f2, 1)
+        
+        res <- foo(x -> x, 3)
+        
+        res <- foo(x -> 5, 2)
+        
+        f3 = _ -> 10
+        res <- foo(f3, 7)
+        
+        res <- foo(_ -> 100, 6)
+        
+        func g(a)
+            _ -> a
+        
+        f4 = g(20)
+        res <- f4(1)
+        
+        res <- foo(f4, 11) + 1000
+        
+        res <- foo(g(30), 22)
+        
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [11, 2, 3, 5, 10, 100, 20, 1020, 30]
+        self.assertEqual(exv, rvar.vals())
+
     def test_method_as_function_object(self):
         ''' obj.method as an object / value 
             to store in container, return, assign to var or field 
