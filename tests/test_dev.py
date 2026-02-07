@@ -32,28 +32,8 @@ class TestDev(TestCase):
 
 
     '''
-        
-    
-        DONE: test and fix string + string, string += string << val
-        
-        DONE: unified multi-assignment in for-loop
-            nn = [(1,2,3), ...]
-            for a,b,c <-nn 
-        
-        DONE: enum as a static set of named values
-            enum Color  Red, Green, Blue # >> 0,1,2
-            enum Color:int  Red 5, Green 10, Blue # >> 5, 10, 11
-            enum Alphabet a:1, b, c, d, e, f
-            # block
-            enum Color: int
-                Red: 0xf00
-                Green: 0x0f0
-                Blue: 0x00f
-            thoughts:
-                enum (enumerable) is just static numeric set, but not a set of any other data types
-                we need additional static/const type set: conset, valset, const, etc. (?)
-
-        DONE: match n / case: Enum.val1 /: print('val1', n)
+  _<-od
+ (+a)(-b)
         
         # features for for `enum` - not sure
             TODO: Enum.name(11)
@@ -98,8 +78,6 @@ class TestDev(TestCase):
             # done: struct type args in overloaded func, 
             # done: test methods with compatiple types
         
-        BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
-        
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
         2) extend tail-recur case for earlier returns - not sure 
@@ -109,13 +87,22 @@ class TestDev(TestCase):
         
         TODO: group - static block for set of const vals and functions. 
             Like extended enum and struct
+
+        21.1 Multi-reading in loop:
+            put at right part one more collections, so assign more var in left: 
+            aa = [1,2,3]
+            dd = {11:1, 22:2, 33:3}
+            for i, x, key, val <- iter(3), aa, dd
+                print(i, x, key, val)
+
+        BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
+        
+        TODO: list... unpack list/tuple into function 
+        nums = [1,2,3]
+        foo(nums...)
         
         TODO: string methods: upper, lower
         TODO: list|tuple methods: sort, filter
-        
-        TODO: minimal lambda:
-            x -> x
-            x -> 0
         
     '''
 

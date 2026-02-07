@@ -7,16 +7,7 @@ NEED FIX:
         - ',' separator -> ', '
         - add quotes for strings
 
-    4. multiassign in: 
-        # python-like immediate assign: not sure. 
-        for var1, var2,.. <- src
-        # auto-unpack tuples, could be resolved by next reassign: a, b = n 
-        for n <- [(1,2), (3,4), ] # but easy to use
-
     5. test and fix escape sequences like '\\'
-
-    6. test and fix simplest lambbda in case: lambda as arg: 
-        foo(x -> x, [1,2,3])
 
 # Necessary things: 
 
@@ -61,8 +52,8 @@ func A.foo(a, b)
     1) #DONE bind builtin functions: dict:keys,items, intersect,diff; string:slice,join,split; list:merge,intersect,diff; 
     2) #DONE call builtin method: 'aa bb cc'.split(' '); text.split(re`\s+`)
     # Not sure we need next parts because 2 classes of types already implemented:
-    # 1) builtin type: with type-bound methods
-    # 2) structs: with regular methods
+    #   1) builtin type: with type-bound methods
+    #   2) structs: with regular methods
     3) user-defined binding: func val:list foo(arg:int)
     4) test user-defined 
 
@@ -131,13 +122,54 @@ catch crit
 
 12 Functions: 
     - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but :: thinkable
-    - unused/unnamed var `_` for function args foo(_, x), multiple assignment `for key, _ <- dict`:: thinkable
+    - unused/unnamed var `_` for function args foo(_, x), 
 
     # type-groups: 
         numeric, bool, string, list, tuple, dict, struct, function, regexp, [set, maybe, tree, ...]
 
 
 13. Interfaces as a some list of method signatures.
+
+
+
+
+14.0.1 # DONE Multiline and singleline cases: 
+match val
+    ptr /: x = 1; res = 2 + x
+    ptr2
+        y = 2
+        res = 2 + y
+
+
+14.0.2 Last expression is a result of match
+
+func foo(a)
+    match a
+        ptr1
+            b = 2 + a
+            b
+        _ /: a + a
+
+
+14.0.3 Last result of if-else, if `if` is a last block in func
+    func foo(a, b)
+        if a < b
+            a
+        eise if b < 0
+            a + b
+        else
+            b
+
+
+# unpack list using it as many vals
+    # def
+    func foo3(args...)
+        for val <- args
+            ...
+
+    # call
+    args = [1,2,3,4,5]
+    foo3(args...)
 
 
 14.9.2 think about transfer matched regexp to sub-expression 
@@ -174,7 +206,7 @@ match nn
         x:int|bool
         nn:tuple|list 
         obj:A|B
-        # same for type-pattern
+    # DONE same for type-pattern
         x :: A|B
         nn :: list|tuple
     
@@ -187,60 +219,30 @@ match nn
     # generic
         nn:list[int]
 
-
-14.0.1 Multiline and singleline cases: 
-match val
-    ptr /: x = 1; res = 2 + x
-    ptr2
-        y = 2
-        res = 2 + y
-
-
-14.0.2 Last expression is a result of match
-
-func foo(a)
-    match a
-        ptr1
-            b = 2 + a
-            b
-        _ /: a + a
-
-
-14.5 extended case of `?>` 'has values'
-    thinking, not sure:
-    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
-    [* 12, 15] !- has values in such
-    [? 12, 15] !- can have values
-    [?> 12, 15] !- has values in any order
-    (1,2,3) ??> nums # any of: ?,?,2,?,?
-    (1,2,3) *?> nums # all in any order: 2,?,3,?,1
-    (1,2,3) =?> nums # all in the same order: 1,?,2,3,?
-
-
 15.2 regexp operators
 # replace
-(re`\s`i : `-`) /~ 'source string abc'
-re`\s`i >> "-" /~ 'source string abc'
-re`\s`i / "-" /~ 'source string abc'
-'source string abc' <= (re`\s`i /~ ,'-')
-'source string abc' -+ (re`\s`i /~ ,'-')
+    (re`\s`i : `-`) /~ 'source string abc'
+    re`\s`i >> "-" /~ 'source string abc'
+    re`\s`i / "-" /~ 'source string abc'
+    'source string abc' <= (re`\s`i /~ ,'-')
+    'source string abc' -+ (re`\s`i /~ ,'-')
 
 # split 
-- overloaded `/`
-'source string' / re`\s+`
-# str-str split
-'source string abc' / ' '
+    - overloaded `/`
+    'source string' / re`\s+`
+    # str-str split
+    'source string abc' / ' '
 
 
 16.1 Overload operators
-Add API for overload operators.
-1. exist operators
-def overlod(operator, leftType, ritghType=Any, handler)
-..
-handler = ...
-overload('>>', TypeAny, TypeList, handler)
+    Add API for overload operators.
+    1. exist operators
+    def overlod(operator, leftType, ritghType=Any, handler)
+    ..
+    handler = ...
+    overload('>>', TypeAny, TypeList, handler)
 
-2. new operators by python (not sure) 
+    2. new operators by python (not sure) 
 
 
 21.1 reading iterator. read values from sequence in the loop iteration like 
@@ -248,12 +250,17 @@ overload('>>', TypeAny, TypeList, handler)
         it should init iterator and save instance in first call, then call next() method in each iteration
         it should have reset() method
         # sugar: val <= src // ?
+    2) solution: put at right part one more collections, so assign more var in left: 
+        aa = [1,2,3]
+        dd = {11:1, 22:2, 33:3}
+        for i, x, key, val <- iter(3), aa, dd
+            print(x, key, val)
+    3) solution: extend iter(), not sure
+        for a, b, c <- iters(list1, list2, list3)
 
 22.1 overload += to avoid copying original list.
     // Looks too complex in current implementation where x += y is the x = (x + y)
     // may be possible if refactor to call left.do() before right.do()
-    possible solution:
-    for a, b, c <- iters(list1, list2, list3)
 
 23. Common filesystem-location of installed libraries for importing (not sure we need it now).  
 
@@ -269,21 +276,6 @@ Thinking
 # for
 (@ i <- [] /: print(i))
 (@ i=0; i < 5; i += 1 /: print(i))
-
-25. enum
-default values is int from 1: 1,2,3...
-# inline
-enum Color  Red, Green, Blue # >> 1,2,3
-enum Color:int  Red 5, Green 10, Blue # >> 5, 10, 11
-# block
-enum Color: int
-    Red 0xf00
-    Green 0x0f0
-    Blue 0x00f
-
-# usage
-match color
-    Color.Red !- ...
 
 25.2 named group of funcs and consts
     have own definition block
@@ -306,15 +298,6 @@ print(Math.P)
 
 print(Math.f1(2,3))
 
-26. anonimous struct
-
-struct {name: 'Bob', age: 25}
-
-#shortened sugar:
-# ${name: 'Bob', age: 25}
-# ~{ name: 'Bob', age: 25}
-# {s name: 'Bob', age: 25}
-_{s name: 'Bob', age: 25}
 
 27. parents method and direct parent
 # thoughts about OOP
@@ -411,17 +394,6 @@ type intN3 [int, int, int]
 type intN3 int[3]
 
 
-# unpack list using it as many vals
-    # def
-func foo3(args...)
-    for val <- args
-        ...
-
-    # call
-args = [1,2,3,4,5]
-foo3(args...)
-
-
 #==  func type
 func foo(a:int, b:int): int
     a + b
@@ -446,28 +418,35 @@ foo ~~ bar ~~ buz : 12
 
 
 
-        TODO: partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
-        # not sure, partial usage of operator - make lambda:
-                    (2 +) =>> x -> 2 + x
-                    (-(2)) =>> x -> x - 2, or -1 # problem here
-                    underscore here looks better
-                    looks mostly as a shorten syntax of lambdas
-                    (2 + _) =>> x -> 2 + x
-                    (_ - 2) =>> x -> x - 2
-        TODO: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
-            =>> curried_foo(1)(2)(3)
-        TODO: composition foo * bar (x)
-        TODO: prevent overloading of func with default/named args or variadic list args...
+TODO: partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
+# not sure, partial usage of operator - make lambda:
+            (2 +) =>> x -> 2 + x
+            (-(2)) =>> x -> x - 2, or -1 # problem here
+            underscore here looks better
+            looks mostly as a shorten syntax of lambdas
+            (2 + _) =>> x -> 2 + x
+            (_ - 2) =>> x -> x - 2
+TODO: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
+    =>> curried_foo(1)(2)(3)
+TODO: composition foo * bar (x)
+TODO: prevent overloading of func with default/named args or variadic list args...
 
 # -------------------------
 Not sure:
 
-14.2 maybe refactor !- as a start-line operator? with explicit indent for any sub-expressions. Not sure.
-    match x
-        !- 1
-            expr
-        !- 2
-            expr
+26. anonimous struct - not sure mow.
+Idea was make thing object in JS.
+But we have dict - flexible container with keys.
+and struct - container with fixed structure (obviuosly).
+Why we need anonimous struct like obj in JS?
+
+struct {name: 'Bob', age: 25}
+
+#shortened sugar:
+# ${name: 'Bob', age: 25}
+# ~{ name: 'Bob', age: 25}
+# {s name: 'Bob', age: 25}
+_{s name: 'Bob', age: 25}
 
 14.2 Looks like multi-if will be more useful:
     if
@@ -478,6 +457,19 @@ Not sure:
         a < b /: expr3 # same line block
         _
             expr4
+
+
+
+14.5 extended case of `?>` 'has values'
+    thinking, not sure:
+    X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
+    [* 12, 15] !- has values in such
+    [? 12, 15] !- can have values
+    [?> 12, 15] !- has values in any order
+    (1,2,3) ??> nums # any of: ?,?,2,?,?
+    (1,2,3) *?> nums # all in any order: 2,?,3,?,1
+    (1,2,3) =?> nums # all in the same order: 1,?,2,3,?
+
 
 # -------------------
 
@@ -504,8 +496,45 @@ Fixes:
 
     # DONE: type reset in reassign
 
+    4. # DONE multiassign in: 
+        # python-like immediate assign: not sure. 
+        for var1, var2,.. <- src
+        # auto-unpack tuples, could be resolved by next reassign: a, b = n 
+        for n <- [(1,2), (3,4), ] # but easy to use
+
+    6. # DONE test and fix simplest lambbda in case: lambda as arg: 
+        foo(x -> x, [1,2,3])
+
 ---
 
+
+# DONE
+        
+    
+        DONE: test and fix string + string, string += string << val
+        
+        DONE: unified multi-assignment in for-loop
+            nn = [(1,2,3), ...]
+            for a,b,c <-nn 
+        
+        DONE: minimal lambda:
+            x -> x
+            x -> 0
+        
+        DONE: enum as a static set of named values
+            enum Color  Red, Green, Blue # >> 0,1,2
+            enum Color:int  Red 5, Green 10, Blue # >> 5, 10, 11
+            enum Alphabet a:1, b, c, d, e, f
+            # block
+            enum Color: int
+                Red: 0xf00
+                Green: 0x0f0
+                Blue: 0x00f
+            thoughts:
+                enum (enumerable) is just static numeric set, but not a set of any other data types
+                we need additional static/const type set: conset, valset, const, etc. (?)
+
+        DONE: match n / case: Enum.val1 /: print('val1', n)
 
         DONE: check TypeMString if need. If not then Convert to TypeString
         # print(type(""" """))
@@ -555,6 +584,14 @@ Fixes:
         DONE: fix call of method assigned to var:
             f = inst.foo
             f(123) # !! Eval Error: Not enough args in call of fuction `fm`. Exppected: 2, got: 1.
+
+
+14.2 #NOT-ACTUAL maybe refactor !- as a start-line operator? with explicit indent for any sub-expressions. Not sure.
+    match x
+        !- 1
+            expr
+        !- 2
+            expr
 
 2.3.1 # DONE Check type of struct instance>> var :: TypeName
 2.3.2 # DONE Check match type of struct instance>> _::TypeName
