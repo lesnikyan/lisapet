@@ -32,9 +32,14 @@ class TestDev(TestCase):
 
 
     '''
+  _<-od
+ (+a)(-b)
         
-    
-        DONE: test and fix string + string, string += string
+        # features for for `enum` - not sure
+            TODO: Enum.name(11)
+            TODO: Enum.value(name)
+            TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
+            TODO: 22 ?> Enum # after methods
 
         TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
@@ -61,29 +66,55 @@ class TestDev(TestCase):
         
         TODO: overload: 
             test overloading for imported functions, 
-                should we disallow overolading function in another module?
+                should we disallow overloading function in another module?
                 looks like overloading is a feature within one module
+            (? do we need) overloaded methods of imported structs
+            
             override of overload:
                 Think about case with same name func in a child is overloaded for another args in parent
                     1) child method will override all overloaded or
                     2) child method will add and shoud find func by signature in all parent tree or
                     3) disallow override overloaded func name
-            overloaded methods of imported structs
             # done: struct type args in overloaded func, 
             # done: test methods with compatiple types
-        
-        BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
         
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
         2) extend tail-recur case for earlier returns - not sure 
         
-        TODO: var type in for-loop 
+        TODO:? var type in for-loop 
             for n:int <- nn
         
-        TODO: unified multi-assignment in for-loop
-            nn = [(1,2,3), ...]
-            for a,b,c <-nn 
+        TODO: group - static block for set of const vals and functions. 
+            Like extended enum and struct
+
+        TODO: 21.1 Multi-reading in loop:
+            put at right part one more collections, so assign more var in left: 
+            aa = [1,2,3]
+            dd = {11:1, 22:2, 33:3}
+            for i, x, key, val <- iter(3), aa, dd
+                print(i, x, key, val)
+        
+        TODO: add type `glif` - 1 multibyte symbol
+        
+        TODO: add bytes.
+            bb = [00 01 fa d8]
+            [pref num num num]; pref in: x, d, b, o
+            
+        BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
+        
+        TODO: list... unpack list/tuple into function 
+        nums = [1,2,3]
+        1) insert to list
+        nn2 = [10, 11, nums...] # >> [10,11,1,2,3]
+        2) insert to tuple
+        tt2 = (nums...) # >> (1,2,3)
+        3) func args
+        foo(nums...)
+        
+        TODO: string methods: upper, lower
+        TODO: list|tuple methods: sort, filter
+        
     '''
 
 
@@ -93,7 +124,7 @@ class TestDev(TestCase):
         code = r'''
         res = []
         
-        print('res = ', res)
+        # print('res = ', res)
         '''
         code = norm(code[1:])
         ex = tryParse(code)

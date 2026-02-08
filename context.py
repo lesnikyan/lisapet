@@ -18,6 +18,7 @@ class Context(NSContext):
     def __init__(self, parent:'Context'=None):
         self.vars:dict = dict()
         self.types:dict[str, TypeProperty] = {}
+        self.enums:dict[str, ConstSet] = {}
         self.funcs:dict[str,FuncInst] = {}
         self.upper:Context = parent # upper level context
 
@@ -38,6 +39,11 @@ class Context(NSContext):
                 return ctx
             ctx = ctx.upper
         
+
+    def addEnum(self, enum:ConstSet):
+        if enum.name in self.enums:
+            raise EvalErr(f"Trying to registed enum {enum.name} that is already exists.")
+        self.enums[enum.name] = enum
 
     def addType(self, tp:VType):
         # print('ctx.addType: ', tp, '::', type(tp), tp.get())
@@ -137,7 +143,7 @@ class Context(NSContext):
         return res
 
     def findIn(self, name):
-        src = self
+        src:Context = self
         # print('## --- ', name,  src, '\n', src.vars)
         if name in src.vars:
             return src.vars[name]
@@ -148,6 +154,8 @@ class Context(NSContext):
             # if src.funcs[name].__class__.__name__ != 'NFunc':
             #     print('CTX.find func:`%s`' % name, '::', src.funcs[name])
             return src.funcs[name]
+        if name in src.enums:
+            return src.enums[name]
 
         return None
 

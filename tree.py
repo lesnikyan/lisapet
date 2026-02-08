@@ -124,31 +124,33 @@ expCaseSolids:list[ExpCase] = [
     CaseBrackets()
     ]
 
-expCaseList:list[ExpCase] = [ 
-    CaseEmpty(), CaseDebug(), #CaseComment(),
+expCaseList:list[ExpCase] = [
+    CaseEmpty(), CaseDebug(),
     CaseUnclosedBrackets(),
     CaseImport(),
-    CaseInlineSub(),
     CaseFuncDef(), CaseMathodDef(),
-    # CaseBreak(), CaseContinue(), CaseRegexp(),
+    CaseInlineSub(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(),  
     CaseMatchCase(),
     CaseArgExtraList(), CaseArgExtraDict(),
-    CaseStructBlockDef(), CaseStructDef(),
-    CaseLambda(), 
+    CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
+    CaseLambda(),
     CaseSemic(), CaseBinOper(), CaseCommas(),
+    CaseMString(), CaseUnar(StrFormatter()),
+    
+    #CaseComment(),
+    # CaseBreak(), CaseContinue(), CaseRegexp(),
     # CaseTuple(),
     # CaseDictBlock(), CaseListBlock(), 
     # CaseListGen(),
     # CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), 
     # CaseFunCall(), CaseStructConstr(), 
-    CaseMString(), CaseUnar(StrFormatter()),
     # CaseVar_(), CaseVal(), CaseString(), CaseVar(), CaseBrackets() 
 ]
 
 patternMatchCasesSolid = [
     MT_Other(),
-    MTVal(), MTString(), MTRegexp(), MTList(), MTTuple(), MTDict(), MTStruct(), 
+    MTVal(), MTString(), MTRegexp(), MTList(), MTTuple(), MTDict(), MTStruct(), MTObjMember(),
 ]
 
 patternMatchCasesCplx = [
@@ -176,6 +178,7 @@ def mtCases(elems:list[Elem], cases: list[ExpCase], parent:ExpCase=None)->Matchi
             if mtCase.hasSubExpr():
                 pattr, subElems = mtCase.split(elems)
                 subExp = elems2expr(subElems)
+                # print('$3>', subExp)
                 pattr = mtCase.setSub(pattr, subExp)
             else:
                 pattr = mtCase.expr(elems)
@@ -268,6 +271,7 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
                 break
     
     if foundCase:
+        # print('elems2expr/nn:', repr(foundCase), '', elemStr(elems))
         expr = makeExpr(foundCase, elems)
         if isinstance(expr, CtrlSubExpr):
             expr = expr.toControl()

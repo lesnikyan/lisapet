@@ -54,6 +54,12 @@ class ObjectMember(ObjectElem):
                 # print('ObjectMember (checkMethod), get :: obj, method-name: ', self.object, self.member)
                 meth = self.getTypeMethod()
                 return ObjMethod(sob, meth)
+        elif isinstance(sob, Enum):
+            # print('Enum. get')
+            enum:Enum = sob
+            item = enum.getItem(self.member)
+            # print('enum.item:', item)
+            return item
         else:
             # try to find bound method
             # print('Obj5Mem.get others')
@@ -159,10 +165,12 @@ class OperDot(BinOper):
             sub = self.membExpr.get()
             name = sub.get()
 
+        # print('$OM/1', objVal)
         inst:StructInstance = objVal
         if isinstance(inst, ObjectMember):
             inst = inst.get()
 
+        # print('$OM/2', inst)
         # dprint('OperDot.do2 <inst =', inst, 'name=', name ,'>')
         self.val = ObjectMember(inst, name)
         # print('OperDot.do5 fin field =', self.val)

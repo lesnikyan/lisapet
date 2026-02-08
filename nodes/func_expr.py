@@ -33,7 +33,8 @@ class FuncCallExpr(CallExpr):
     def doArgs(self, args:list, ctx: Context):
         named = {}
         for exp in self.argExpr:
-            # print('-- #1#',self.name,' func-call do2 exp=: ', exp)
+            # print('F.call() #1#',self.name,' do2 exp=: ', exp)
+            
             if isinstance(exp, AssignExpr):
                 varExp = exp.left # arg name
                 if not isinstance(varExp, VarExpr):
@@ -51,8 +52,19 @@ class FuncCallExpr(CallExpr):
                 
             valExp.do(ctx) # val or vaiable
             arg = valExp.get()
+            
+            
+            if isinstance(exp, ArgExtList):
+                vv = var2val(arg)
+                # print('$1', vv)
+                for n in vv.elems:
+                    # self.obj.addVal(var2val(n))
+                    args.append(var2val(n))
+                continue
+            
             if isinstance(arg, (Var, ObjectMember, CollectElem)):
                 arg = arg.get()
+            
             # print('func-call do2:', valExp, arg)
             args.append(arg)
         return args, named
@@ -122,15 +134,10 @@ class FuncCallExpr(CallExpr):
         return func, args, named
 
     def do(self, ctx: Context):
-        
-        # self.func = func
         func, args, named = self.takeFunc(ctx)
         self.func = func
         # print('#3# func-call do05: ', self.name, 'F:', func)
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
-        # if objInst:
-        #     func = ObjMethod(objInst, func)
-        # self.func.objInst = objInst
         # print('F.call.do/1', func, args, named)
         self.func.setArgVals(args, named)
         callCtx = Context(None)
@@ -215,11 +222,13 @@ class FuncDefExpr(ObjDefExpr, Block):
         argCtx = Context(ctx)
         for arg in self.argVars:
             # print('FDef.do#1', arg)
-            argType = TypeAny()
-            aName = arg.name
+            # argType = TypeAny()
+            # aName = arg.name
             if isinstance(arg, TypedArgExpr):
                 arg.do(argCtx)
-                
+            # print('-> addArg', arg.get(), arg.defVal)
+            # if isinstance(arg, ArgExtList):
+            #     arg = arg.expr.get()
             func.addArg(arg.get(), arg.defVal)
         func.block = Block()
         # build inner block of function

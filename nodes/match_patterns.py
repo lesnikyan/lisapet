@@ -120,6 +120,32 @@ class MCTypedElem(MatchingPattern):
         if not typeRes:
             return False
         return self.left.match(val)
+    
+    
+class MCObjMember(MatchingPattern):
+    ''' const value from:
+        field / member of enum / set(not implemented yet) 
+        Names.first
+    '''
+    def __init__(self, memberExpr:Expression,  src=None):
+        super().__init__(src)
+        self.expr = memberExpr
+        
+    def do(self, ctx:Context):
+        # eval and get const expression
+        self.expr.do(ctx)
+    
+    def match(self, val:Val):
+        # if not scalar or string
+        # print('MCObjMember match', 'expr:', self.expr, val)
+        # var2val(self.expr.get())
+        # TODO: think about compatibility of non-integers
+        vtype = val.getType()
+        if not isinstance(vtype, (TypeInt, TypeNull, TypeBool)):
+            return False
+        exp = self.expr.get()
+        # print('$ 1:', exp.object, var2val(self.expr.get()))
+        return exp.getVal() == val.getVal()
 
 
 class MCElem(MatchingPattern):

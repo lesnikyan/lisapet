@@ -88,6 +88,11 @@ class TypeRegexp(VType):
     th = TH.mk()
     
 
+class TypeEnum(VType):
+    name='enum'
+    _defVal = None
+    th = TH.mk()
+
 
 class FuncInst(Objective):
     '''function object is stored in context, callable, returns result '''
@@ -116,6 +121,10 @@ class FuncInst(Objective):
     @classmethod
     def sigHash(cc, argTypes:list[VType]):
         return '~'.join([at.hash() for at in argTypes])
+
+
+class ConstSet(TypeContainer):
+    ''' enum, etc '''
 
 
 class TypeModule:

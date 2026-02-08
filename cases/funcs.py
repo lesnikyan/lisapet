@@ -15,19 +15,35 @@ from cases.structs import MethodDefExpr
 from cases.utils import OperSplitter
 
 
-class CaseArgExtraList(ExpCase):
+class CaseArgExtraList(SubCase):
     ''' varname... '''
     def match(self, elems:list[Elem]) -> bool:
-        if len(elems) != 2:
+        if len(elems) < 2:
             return False
-        if elems[0].type == Lt.word and isLex(elems[1], Lt.oper, '...'):
+        if not isSolidExpr(elems[:-1]):
+            return False
+        # print('CaseArgExtraList', isSolidExpr(elems[:-1]), elemStr(elems[:-1]))
+        # print('$2 ', )
+        if isLex(elems[-1], Lt.oper, '...'):
             return True
         return False
     
-    def expr(self, elems:list[Elem])-> Expression:
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+    # def expr(self, elems:list[Elem])-> Expression:
         ''' Value from context by var name'''
-        expr = ArgExtList(ArgSetOrd(elems[0].text))
-        return expr
+        avar = None
+        subs = []
+        if len(elems) == 2:
+            avar = VarExpr(ArgSetOrd(elems[0].text))
+        else:
+            subs = [elems[:-1]]
+        # dirty huck here. avar can be arg in def,  and val in call
+        expr = ArgExtList(avar)
+        return expr, subs
+
+    def setSub(self, base:ArgExtList, subs:Expression|list[Expression])->Expression:
+        if subs:
+            base.setSub(subs[0])
 
 
 class CaseArgExtraDict(ExpCase):
@@ -90,7 +106,7 @@ class CaseLambda(CaseFuncDef):
     ''' args -> expr '''
     
     def match(self, elems:list[Elem]) -> bool:
-        if len(elems) < 4:
+        if len(elems) < 3:
             return False
 
         main = OperSplitter().mainOper(elems)

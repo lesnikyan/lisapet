@@ -79,23 +79,19 @@ class CaseStructDef(SubCase):
             # raise XDebug('')
         return exp, subs
 
-    def pairNorn(self, pair:ServPairExpr):
-        # field, vtype = pair.get()
-        # patch for list,dict
-        # print('pairNorm', pair.left, pair.right)
-        # print('pairNorm', vtype, vtype.__class__)
-        if isinstance(pair.right, (ListConstr, DictConstr)):
-            # type parsed as block-constructor
-            match pair.right:
-                case ListConstr(): pair.right = VarExpr(VarUndefined('list'))
-                case DictConstr(): pair.right = VarExpr(VarUndefined('dict'))
-        return pair
+    # def pairNorn(self, pair:ServPairExpr):
+    #     # if isinstance(pair.right, (ListConstr, DictConstr)):
+    #     #     # type parsed as block-constructor
+    #     #     match pair.right:
+    #     #         case ListConstr(): pair.right = VarExpr(VarUndefined('list'))
+    #     #         case DictConstr(): pair.right = VarExpr(VarUndefined('dict'))
+    #     return pair
 
     def setSub(self, base:StructDefExpr, subs:list[Expression])->Expression:
         # print('CaseStructDef setSub', base, subs)
         for exp in subs:
-            if isinstance(exp, ServPairExpr):
-                exp = self.pairNorn(exp)
+            # if isinstance(exp, ServPairExpr):
+            #     exp = self.pairNorn(exp)
             base.add(exp)
         return base
 
@@ -106,7 +102,6 @@ class CaseStructBlockDef(SubCase):
         struct TypeName
             ...
         '''
-        # dprint('CaseDictBlock.match')
         if len(elems) != 2:
             return False
         return isLex(elems[0], Lt.word, 'struct') and elems[1].type == Lt.word
@@ -116,8 +111,8 @@ class CaseStructBlockDef(SubCase):
         exp.toBlock()
         return exp, subs
 
-    def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
-        # dprint('CaseDictBlock.setSub empty: ', base, subs)
+    def setSub(self, base:CaseStructDef, subs:Expression|list[Expression])->Expression:
+        # dprint('CaseStructBlockDef.setSub empty: ', base, subs)
         return base
 
 

@@ -6,7 +6,7 @@ Eval tree nodes: operators.
 
 
 from nodes.base_oper import *
-from nodes.datanodes import ListConstr, DictConstr
+# from nodes.datanodes import ListConstr, DictConstr
 from nodes.expression import *
 from bases.ntype import *
 from lang import *
@@ -434,9 +434,10 @@ class OpCompare(BinOper):
         self.right.do(ctx)
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
-        dprint('( %s )' % self.oper,  self.left, self.right)
-        # dprint('#--OpCompare.do2',  a, b)
-        dprint(' ( %s )' % self.oper,  a.getVal(), b.getVal())
+        a, b = var2val(a), var2val(b)
+        # print('( %s )' % self.oper,  self.left, self.right)
+        # print('#--OpCompare.do2',  a, b)
+        # print(' ( %s )' % self.oper,  a.getVal(), b.getVal())
         # dprint('#--OpCompare.do3',  a.getType(), b.getType())
         type = a.getType()
         if type != b.getType():
@@ -787,9 +788,9 @@ class IsTypeExpr(BinOper):
         lop = var2val(self.left.get())
         
         # print(':: expr:', self.right)
-        if isinstance(self.right, (ListConstr, DictConstr)) and self.right.byword:
-            tname = self.right.tname
-            self.right = VarExpr(Var(tname, TypeAny()))
+        # if isinstance(self.right, (ListConstr, DictConstr)) and self.right.byword:
+        #     tname = self.right.tname
+        #     self.right = VarExpr(Var(tname, TypeAny()))
         self.right.do(ctx)
         rop = var2val(self.right.get())
         
