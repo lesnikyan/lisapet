@@ -131,6 +131,43 @@ catch crit
 13. Interfaces as a some list of method signatures.
 
 
+t.1.1
+
+        TODO: add type `glif` - one readable symbol
+            glif should represent any-bytes length symbol, starting ASCII to eastern hieroglyphs
+            solution: symbol or 1-elem string right after backslash \N \'N'
+                \`汉`; \'A'
+                \汉 , \A , \x45 , \' ' , \'\' , \'\'' , \"'" , \\n , \'\n'   
+                \0  \1  \A  \z  
+                \' '  \'  \`'`  \+  \-  \=   \:  
+            sequence - just string: `汉字`
+            methods:
+                tostring - put glif in string
+                tobytes - make object `bytes` joining all bytes of glifs
+                string.glifes() -> list of glifs
+t1.2
+        TODO: add bytes.
+            bb = [00 01 fa d8]
+            bb = [^ 00 01 fa d8]
+            bb = &[00 01 fa d8]            
+            bb = [x 00 01 fa d8]
+            b0 = [x 0a] # hex bytes
+            b0 = [d 10] # decimal bytes
+            b0 = [b 10] # bin bytes
+            bX = [11 00 fe] # default - hex
+            b8 = [o 11 22 70] # octa bytes
+            [00] # no spaces - list
+            [0f] -?
+            [x] list
+            [x 0] bytes
+            [0 0] bytes hex
+            [b 0 1] bytes bin
+            Methods bound: 
+                list() # get list of bytes
+                string(encoding=UTF) # convert to string
+                intlist() # group by 4 bytes anf convert to list of integers
+                glifs(encoding=UTF) # interpret bytes as glifs
+                generator by byts [b ; b <- [01 ff 0d]]
 
 
 14.0.1 # DONE Multiline and singleline cases: 
