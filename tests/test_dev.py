@@ -88,17 +88,28 @@ class TestDev(TestCase):
         TODO: group - static block for set of const vals and functions. 
             Like extended enum and struct
 
-        21.1 Multi-reading in loop:
+        TODO: 21.1 Multi-reading in loop:
             put at right part one more collections, so assign more var in left: 
             aa = [1,2,3]
             dd = {11:1, 22:2, 33:3}
             for i, x, key, val <- iter(3), aa, dd
                 print(i, x, key, val)
-
+        
+        TODO: add type `glif` - 1 multibyte symbol
+        
+        TODO: add bytes.
+            bb = [00 01 fa d8]
+            [pref num num num]; pref in: x, d, b, o
+            
         BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
         
         TODO: list... unpack list/tuple into function 
         nums = [1,2,3]
+        1) insert to list
+        nn2 = [10, 11, nums...] # >> [10,11,1,2,3]
+        2) insert to tuple
+        tt2 = (nums...) # >> (1,2,3)
+        3) func args
         foo(nums...)
         
         TODO: string methods: upper, lower

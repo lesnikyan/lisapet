@@ -102,7 +102,6 @@ class CaseStructBlockDef(SubCase):
         struct TypeName
             ...
         '''
-        # dprint('CaseDictBlock.match')
         if len(elems) != 2:
             return False
         return isLex(elems[0], Lt.word, 'struct') and elems[1].type == Lt.word
@@ -112,8 +111,8 @@ class CaseStructBlockDef(SubCase):
         exp.toBlock()
         return exp, subs
 
-    def setSub(self, base:DictConstr, subs:Expression|list[Expression])->Expression:
-        # dprint('CaseDictBlock.setSub empty: ', base, subs)
+    def setSub(self, base:CaseStructDef, subs:Expression|list[Expression])->Expression:
+        # dprint('CaseStructBlockDef.setSub empty: ', base, subs)
         return base
 
 

@@ -20,6 +20,150 @@ class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
 
+    def test_triple_dots_unpack_to_args(self):
+        ''' '''
+        code = r'''
+        res = [-1001]
+        
+        nn = [1,2,3]
+        
+        func foo(args...)
+            # print(0, args...)
+            r = []
+            for n <- args
+                r <- n + 100
+            r
+        
+        func bar(args...)
+            [n ; n <- args]
+        
+        rr =  foo(nn...,)
+        res <- rr
+        
+        tt = foo(nn..., -20)
+        res <- tt
+        
+        tt = foo(-10, nn...,)
+        res <- tt
+        
+        mm = ['a','b','c']
+        
+        # two unpacks
+        res <- bar(-8, nn..., mm...)
+        
+        struct A a:int
+        
+        func st:A faa(args...)
+            [(st.a, n) ; n <- args]
+            
+        a1 = A(12)
+        res <- a1.faa(nn...)
+        
+        a2 = A(3)
+        res <- a2.faa(11, 22, nn...)
+        
+        a3 = A(4)
+        res <- a3.faa(5, nn..., mm...)
+        
+        res <- bar([nn..., 17]...)
+        
+        func baz()
+            [10, 20, 30]
+        
+        res <- bar(baz()...)
+        
+        res <- bar(baz()...)
+        
+        res <- [baz()..., 333]
+        
+        res <- bar([baz()...]..., 444)
+        
+        func f5(a,b,c,d,e)
+            [100500, a, b, c, d, e]
+        
+        nn5 = [1,2,3,4,5]
+        res <- f5(nn5...)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            -1001, [101, 102, 103], [101, 102, 103, 80], [90, 101, 102, 103], [-8, 1, 2, 3, 'a', 'b', 'c'], 
+            [(12, 1), (12, 2), (12, 3)], [(3, 11), (3, 22), (3, 1), (3, 2), (3, 3)], 
+            [(4, 5), (4, 1), (4, 2), (4, 3), (4, 'a'), (4, 'b'), (4, 'c')], 
+            [1, 2, 3, 17], [10, 20, 30], [10, 20, 30], [10, 20, 30, 333], [10, 20, 30, 444],
+            [100500, 1, 2, 3, 4, 5]]
+        self.assertEqual(exv, rvar.vals())
+
+
+    def test_triple_dots_unpack_to_list(self):
+        ''' '''
+        code = r'''
+        res = [-1002]
+        
+        nn = [1,2,3,4,5]
+        
+        tt = [nn..., 22]
+        res <- tt
+        
+        tt = [11, nn...,]
+        res <- tt
+        
+        res <- [nn...]
+        
+        mm = [33, 44]
+        res <- [nn..., mm...]
+        
+        kk = [[55,66]]
+        res <- [nn..., mm..., tt..., kk[0]..., 222]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [-1002, [1, 2, 3, 4, 5, 22], [11, 1, 2, 3, 4, 5], [1, 2, 3, 4, 5], 
+               [1, 2, 3, 4, 5, 33, 44], [1, 2, 3, 4, 5, 33, 44, 11, 1, 2, 3, 4, 5, 55, 66, 222]]
+        self.assertEqual(exv, rvar.vals())
+
+
+    def test_triple_dots_unpack_to_tuple(self):
+        ''' '''
+        code = r'''
+        res = [-1003]
+        
+        nn = [1,2,3,4,5]
+        
+        tt = (nn..., 22)
+        res <- tt
+        
+        tt = (11, nn...,)
+        res <- tt
+        
+        res <- (nn...,)
+        
+        res <- (tt..., tt..., 777)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [-1003, (1, 2, 3, 4, 5, 22), (11, 1, 2, 3, 4, 5), (1, 2, 3, 4, 5), 
+               (11, 1, 2, 3, 4, 5, 11, 1, 2, 3, 4, 5, 777)]
+        self.assertEqual(exv, rvar.vals())
+
     def test_string_slice(self):
         ''' test slice of string "abcdef"[1:3] '''
         code = r'''

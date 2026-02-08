@@ -6,7 +6,7 @@ Eval tree nodes: operators.
 
 
 from nodes.base_oper import *
-from nodes.datanodes import ListConstr, DictConstr
+# from nodes.datanodes import ListConstr, DictConstr
 from nodes.expression import *
 from bases.ntype import *
 from lang import *
@@ -788,9 +788,9 @@ class IsTypeExpr(BinOper):
         lop = var2val(self.left.get())
         
         # print(':: expr:', self.right)
-        if isinstance(self.right, (ListConstr, DictConstr)) and self.right.byword:
-            tname = self.right.tname
-            self.right = VarExpr(Var(tname, TypeAny()))
+        # if isinstance(self.right, (ListConstr, DictConstr)) and self.right.byword:
+        #     tname = self.right.tname
+        #     self.right = VarExpr(Var(tname, TypeAny()))
         self.right.do(ctx)
         rop = var2val(self.right.get())
         

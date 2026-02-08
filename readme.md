@@ -79,6 +79,7 @@ Content:
     1. [append operator `nums <- 15`](#91-arrow-appendset-operator--)
     2. [deletion operator `data - [key]`](#92-minus-key---key-delete-operator)
     3. [plus for lists `[] + []`](#93-list-plus---)
+    4. [Triple dots `[]...`](#94-triple-dots)
 
 9. #### List features:
     1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
@@ -1289,6 +1290,60 @@ nums += [7,8,9]
 
 >> [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
+
+### 9.4 Triple dots.
+(Case of func def with argument with triple dots see in [`func` section](#76-variadic-arguments))  
+- In case where expression, var or more complex  solid espression ends with triple dots happets some syntax sugar.  
+Expressions before should return `list` or `tuple`.  
+Triple dots after collection unpack elements of colliction and 'puts' them into place where it was used.  
+There 2 main cases: function call or constructor of sequence.  
+- Funcation call:
+```golang
+
+#// with triple dots arg
+func foo(a, args...)
+    [a + n ; n <- args]
+
+#// with many ordinar args
+func bar(a,b,c,d,e,f)
+    [0, a, b, c, d, e]
+
+#// call
+
+nn = [1,2,3,4,5]
+
+foo(5, nn...) # >> [5, 10, 15, 20, 25]
+
+bar(nn...) # >> [0, 1, 2, 3, 4, 5]
+```
+- In collections:
+```golang
+
+nn = [1,2,3,4,5]
+
+tt = (11,22,33)
+
+r1 = [10, 20, nn...] # >> [10, 20, 1, 2, 3, 4, 5]
+
+r2 = (15, tt...) # >> (15, 11, 22, 33)
+```
+Triple dot expressions can be used several time in `list` / `tuple` constructor.
+- Complex example:
+```golang
+
+nn = [1,2,3,4,5]
+tt = (11,22,33)
+pp = [[110, 111], []]
+
+func get()
+    [7,8,9]
+
+res = [nn..., tt..., get()..., pp[0]...]
+# >> [1,2,3,4,5, 11,22,33, 7,8,9, 110,111]
+
+```
+
+
 
 ### 10.1 Struct.  
 Struct is a basic complex datatype.  

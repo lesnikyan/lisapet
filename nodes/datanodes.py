@@ -30,28 +30,67 @@ class ListExpr(CollectionExpr):
 
     def do(self, ctx:Context):
         self.listObj = ListVal()
-        # print('## ListExpr.do1 self.listObj:', self.listObj, 'size:', len(self.valsExprList))
         for exp in self.valsExprList:
             exp.do(ctx)
             v = exp.get()
-            # print('-=ListExpr.do1', exp, ' : : ', v, type(v))
+            # vv = [v]
+            # print('ListExpr#2', exp,  v)
+            if isinstance(exp, ArgExtList):
+                vv = var2val(v)
+                # print('$1', vv.elems)
+                for n in vv.elems:
+                    self.listObj.addVal(var2val(n))
+                continue
             val = var2val(v)
-            # print('ListExpr.do2', val, type(val))
             self.listObj.addVal(val)
-        # dprint('## ListExpr.do2 self.listObj:', self.listObj)
 
     def get(self):
         # dprint('## ListExpr.get self.listObj:', self.listObj)
         return self.listObj
 
 
-class ListConstr(MultilineVal, ListExpr):
-    ''' list '''
-    tname = 'list'
 
-    def __init__(self, byword = False):
+
+class TupleExpr(CollectionExpr):
+    ''' res = (a, b, c); res = a, b, c '''
+
+    def __init__(self):
         super().__init__()
-        self.byword = byword
+        self.valsExpr:list[Expression] = []
+        self.obj:TupleVal = None
+
+    def add(self, exp:Expression):
+        ''' add next elem of list'''
+        # print('TupExp.add', exp)
+        self.valsExpr.append(exp)
+
+    def do(self, ctx:Context):
+        self.obj = TupleVal()
+        for exp in self.valsExpr:
+            exp.do(ctx)
+            v = exp.get()
+            # vv = [v]
+            # print('tuple#2', exp,  v)
+            if isinstance(exp, ArgExtList):
+                vv = var2val(v)
+                # print('$1', vv.elems)
+                for n in vv.elems:
+                    self.obj.addVal(var2val(n))
+                continue
+            self.obj.addVal(var2val(v))
+
+    def get(self):
+        return self.obj
+
+
+
+# class ListConstr(MultilineVal, ListExpr):
+#     ''' list '''
+#     tname = 'list'
+
+#     def __init__(self, byword = False):
+#         super().__init__()
+#         self.byword = byword
 
 
 
@@ -84,16 +123,16 @@ class DictExpr(CollectionExpr):
         return self.data
 
 
-class DictConstr(MultilineVal, DictExpr):
-    ''' dict '''
-    tname = 'dict'
+# class DictConstr(MultilineVal, DictExpr):
+#     ''' dict '''
+#     tname = 'dict'
 
-    # def __init__(self):
-    #     super().__init__()
+#     # def __init__(self):
+#     #     super().__init__()
 
-    def __init__(self, byword = False):
-        super().__init__()
-        self.byword = byword
+#     def __init__(self, byword = False):
+#         super().__init__()
+#         self.byword = byword
 
 class CollectElemExpr(Expression, CollectElem):
     
@@ -183,28 +222,3 @@ class SliceExpr(Expression, CollectElem):
     def get(self)->Var:
         # dprint('Slice:', beg.get(), end.get())
         return self.res
-
-
-class TupleExpr(CollectionExpr):
-    ''' res = (a, b, c); res = a, b, c '''
-
-    def __init__(self):
-        super().__init__()
-        self.valsExpr:list[Expression] = []
-        self.obj:TupleVal = None
-
-    def add(self, exp:Expression):
-        ''' add next elem of list'''
-        # print('TupExp.add', exp)
-        self.valsExpr.append(exp)
-
-    def do(self, ctx:Context):
-        self.obj = TupleVal()
-        for exp in self.valsExpr:
-            exp.do(ctx)
-            v = exp.get()
-            # print('tuple#2', v)
-            self.obj.addVal(var2val(v))
-
-    def get(self):
-        return self.obj

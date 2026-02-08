@@ -119,8 +119,33 @@ class ArgSetNamed:
 
 
 class ArgExtList(ArgExpr):
-    def __init__(self, var:Var):
+    '''
+    dualistic object
+    1) arg... in func definition
+    2) expr... in func call
+    '''
+    def __init__(self, var:Var|Expression):
+        self.defVal = []
+        self.name = ''
+        expr = var
+        if not var:
+            expr = VarExpr_()
+            var = Var_()
+        elif isinstance(var, VarExpr):
+            self.name = var.get().getName()
         super().__init__(var)
+        self.expr = expr
+    
+    def setSub(self, sub:Expression):
+        self.expr = sub
+    
+    def do(self, ctx:NSContext):
+        # newVal = ctx.get(self.name)
+        self.expr.do(ctx)
+        self.val = self.expr.get()
+    
+    def get(self):
+        return self.expr.get()
 
 
 class ArgExtDict(ArgExpr):
