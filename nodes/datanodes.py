@@ -163,7 +163,7 @@ class CollectElemExpr(Expression, CollectElem):
     def set(self, val:Var):
         ''' '''
         key = self.keyExpr.get()
-        if not isinstance(self.target, Collection):
+        if not isinstance(self.target, (Collection, BytesVal)):
             raise EvalErr("Bad collection instance for setVal")
         self.target.setVal(key, val)
 

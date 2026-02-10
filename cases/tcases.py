@@ -3,6 +3,7 @@ ExpCases here for exec tree
 '''
 
 import os
+import re
 
 from lang import *
 from vars import *
@@ -706,7 +707,7 @@ class CaseGenConstSet(SubCase):
         typeExpr = None
         # If enum has type of elem
         if len(elems) > 3 and isLex(elems[2], Lt.oper, ':'):
-            print('$1:', elems[2].text)
+            # print('$1:', elems[2].text)
             cv = CaseVar()
             typeElems = elems[3:4]
             if not cv.match(typeElems):
@@ -717,6 +718,65 @@ class CaseGenConstSet(SubCase):
         sub = elems[subStart:]
         #...
     
-    
 
+class CaseBytes(ExpCase, SolidCase):
+    ''' hex numbers in [ ]
+        [01 0a a0 ff] 
+        maybe:
+        [01 02 {var} 04] - thinking
+    '''
+    
+    def __init__(self):
+        super().__init__()
+        self.nrx = re.compile(r'[0-9a-f]{1,2}', re.I) 
+    
+    # def isInsertion(self, elems):
+    #     if 
+
+    def match(self, elems:list[Elem], min3=0) -> bool:
+        ''' '''
+        ln = len(elems)
+        min = 4 - min3
+        if ln < min:
+            return False
+        if not isLex(elems[0], Lt.oper, '[') and not isLex(elems[-1], Lt.oper, ']'):
+            return False
+        okTypes = (Lt.num, Lt.word)
+        for n in elems[1:-1]:
+            # print('', n.text, Lt.name(n.type))
+            if not (n.type in okTypes and self.nrx.match(n.text)):
+                return False
+        return True
+
+
+    def expr(self, elems:list[Elem])-> Expression:
+        bb = bytearray2()
+        for n in elems[1: -1]:
+            bb.append(int(n.text, 16))
+        # var2val
+        bexp = BytesExpr(bb)
+        return bexp
+
+
+
+class CaseBytesExplicit(CaseBytes):
+    def __init__(self):
+        super().__init__()
+        self.xre = re.compile(r'0[bxbd]')
+    
+    def match(self, elems:list[Elem]) -> bool:
+        if len(elems) < 3:
+            return False
+        if not isLex(elems[1], Lt.oper, '[') and not isLex(elems[-1], Lt.oper, ']'):
+            return False
+        
+        if elems[0].type != Lt.num:
+            return False
+        if len(elems[0].text) != 2 or not self.xre.match(elems[0].text):
+            return False
+        # print('$5:', elemStr(elems), Lt.name(elems[0].type))
+        return super().match(elems[1:], 2)
+    
+    def expr(self, elems:list[Elem])-> Expression:
+        return super().expr(elems[1:])
 

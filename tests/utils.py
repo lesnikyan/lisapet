@@ -65,3 +65,14 @@ def tryParse(code):
     except Exception as ex:
         print('\n!! Common Error', ex.args)
         raise ex
+
+
+def resRepr(src):
+    from nodes.builtins import pstr
+    rr = []
+    for n in src:
+        if isinstance(n, (bytearray2, bytearray, bytes)):
+            n = str(n)
+        rr.append(n)
+    return rr
+

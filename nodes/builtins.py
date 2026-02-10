@@ -21,6 +21,8 @@ def loop_iter(_, *args):
 def getVal(arg):
     v = arg
     # print('getVal:', v)
+    # if isinstance(v, (BytesVal)):
+    #     return v
     if isinstance(arg, Var):
         v = arg.get()
     if isinstance(v, (ListVal, TupleVal)):
@@ -79,8 +81,7 @@ def tostr(arg):
     # print('\n_tostr1:::', arg, '>>', v, v.__class__.__name__)
     # if isinstance(v, str):
     #     rval = esc_str(v)
-        
-    
+
     if isinstance(v, (list, tuple, dict)):
         # [1, 2, 'a', [3, 'b']]
         #
@@ -110,6 +111,8 @@ def tostr(arg):
         rval = str(v).lower()
     elif isinstance(v, (int, float, Function)):
         rval = str(v)
+    elif isinstance(v, (bytearray)):
+        rval = '0x[%s]' % ' '.join([f'{b:02x}' for b in v])
     # print('_tosrt9:', arg, ':', rval)
     return rval
 
@@ -120,7 +123,15 @@ def built_tostr(_, arg):
     rval = tostr(arg)
     # print('_tostr3::', rval, rval.__class__.__name__)
     return StringVal(rval)
-    
+
+
+def pstr(v):
+    # if isinstance(v, (bytearray)):
+    #     return '0x[%s]' % ' '.join([f'{b:02x}' for b in v])
+    if isinstance(v, (Val|Var)):
+        return str(v)
+    return v
+
 
 def buit_print(ctx:Context,*args):
     pargs = []
@@ -131,7 +142,12 @@ def buit_print(ctx:Context,*args):
         if isinstance(n, (Function, FuncOverSet)):
             pargs.append(str(n))
             continue
+        # print('$1 ', n)
         v = getVal(n)
+        # print('$2 ', v)
+        if isinstance(v, (list)):
+            v = [pstr(e) for e in v]
+        # raise EvalErr('')
         if isinstance(v, StructInstance):
             v = v.istr()
         pargs.append(v)

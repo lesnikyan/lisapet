@@ -133,6 +133,7 @@ class OpAssign(AssignExpr):
             val = resSet[i]
             
             val = self.readVal(val)
+            # print('$1', val)
             valType = val.getType()
             if isinstance(left[i], CollectElem):
                 ''' '''

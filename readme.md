@@ -46,8 +46,9 @@ Content:
     2. [Tuple `(,)`](#32-tuple-val-val-val)
     3. [Unpack `a,b = [1,2]`](#33-unpack-of-sequence-by-multi-assignment)
     4. [Dict `{'key':val}`](#34-dict-linear-and-block-constructor)
-    5. [Collection features >>>](#collection-features)
-    6. [List features >>>](#list-features)
+    5. [bytes `0x[00 ff]`](#)
+    6. [Collection features >>>](#collection-features)
+    7. [List features >>>](#list-features)
 
 4. Data type.
     1. [Strict type `var:type`](#41-typed-var-expression-xtype)
@@ -736,6 +737,60 @@ More feature of collections:
 [`<-` operator](#91-arrow-appendset-operator--),
 [`list - [key]`](#92-minus-key---key-delete-operator),
 [`[]+[]`](#93-list-plus---).
+
+
+### 3.5 Bytes.  
+Bytes is a sequence of byte (array of bytes).  
+`bytes` is a mutable type, we can add bytes or change them by index.  
+- Declaration.  
+`bytes` declaration looks simiar to list, but without commas.  
+The prefix before the square brackets determines how the numbers inside them are interpreted,  
+`0x` for hex.  
+```python
+# full syntax
+bb = 0x[01 00 10 f0 ff]
+
+# 1 byte sequence
+b1 = 0x[01]
+
+# empty
+b0 = 0x[]
+```
+If sequence have more than 1 byte we can skip the prefix `0x`.  
+Square brackets and numbers separated by spaces is enough to identify byte set.  
+Numbers are interpreted as hex in such case.  
+```python
+bb = [00 01 02 f0]
+```
+- Usage.  
+In common cases usage of `bytes` object looks similar to list.  
+```python
+bb = [01 02 03 04]
+
+# read
+print(bb[1], bb[-1]) 
+# >> 1 4
+
+# iteration
+nn = []
+for n in bb
+    nn <- n
+
+print(nn)
+# >> [1, 2, 3, 4]
+```
+Append  to bytes.  
+```python
+bb = 0x[]
+for i <- iter(16)
+    b <- i
+
+bb[3] = 0xa5
+
+print(bb)
+# >> 0x[00 01 02 a5 04 05 06 07 08 09 0a 0b 0c 0d e0 0f]
+```
+
 
 
 ### 4 Data typr.

@@ -28,6 +28,7 @@ from libs.regexp import *
 import pdb
 
 
+            
 class TestDev(TestCase):
 
 
@@ -35,11 +36,21 @@ class TestDev(TestCase):
   _<-od
  (+a)(-b)
         
-        # features for for `enum` - not sure
-            TODO: Enum.name(11)
-            TODO: Enum.value(name)
-            TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
-            TODO: 22 ?> Enum # after methods
+        
+        DONE: list... unpack list/tuple into function 
+        nums = [1,2,3]
+        1) insert to list
+        nn2 = [10, 11, nums...] # >> [10,11,1,2,3]
+        2) insert to tuple
+        tt2 = (nums...) # >> (1,2,3)
+        3) func args
+        foo(nums...)
+
+    # features for for `enum` - not sure
+        TODO: Enum.name(11)
+        TODO: Enum.value(name)
+        TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
+        TODO: 22 ?> Enum # after methods
 
         TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
@@ -97,27 +108,72 @@ class TestDev(TestCase):
         
         TODO: add type `glif` - 1 multibyte symbol
         
+        TODO: add byte: int/4, unsigned
+            x:byte = 1 / 0-255
+            x:byte = 0xff ; auto casting
+            x:byte= intVal % 0x100
+            #  optional: explicit byte value
+            x = &01; 8xff; 8b100; &0xff; |xf0; 8d255
+            0xff; 0b10000001
+        
         TODO: add bytes.
+        bytes - sequence of bytes, mutable (instead of string)
+            # implementstion:
+                1) pythons `bytes` inside
+            # declarations:
             bb = [00 01 fa d8]
             [pref num num num]; pref in: x, d, b, o
-            
+            [x ff 00 da]; [b 01010101 10000000 11111111]; [d 0 1 255]
+            # usage:
+            bb = [f0 01 05 21]
+            b = bb[0] # >> get first byte
+            bb[-1] = 22 # set last byte
+            bb2 = bb[2:3] # get slice - copy part of bytes
+            methods:
+            bb.map(x -> x & 0xf0) # applay lambda to each byte in sequence
+            bb.string(encode='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
+        
+        TODO: bytes: add other num bases: bin 0b[10], oct 0o[17], dec 0d[19]
+        
+        TODO: bytes construcor - add len arg for fill by 0
+            0x[len=10] # 10 bytes
+            0x[] * 10 # 10 bytes
+
+        TODO: think about type casting by colon; type in left
+            x:int = int: true
+        
         BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
         
-        TODO: list... unpack list/tuple into function 
-        nums = [1,2,3]
-        1) insert to list
-        nn2 = [10, 11, nums...] # >> [10,11,1,2,3]
-        2) insert to tuple
-        tt2 = (nums...) # >> (1,2,3)
-        3) func args
-        foo(nums...)
+        TODO: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
+            // byte(int), bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
         
         TODO: string methods: upper, lower
         TODO: list|tuple methods: sort, filter
         
+        TODO: add assertion to cases in test_lists
+        
     '''
 
 
+
+    def _test_bytes_builtin_methods(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        bb = [10 0d 00 ff]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        # rvar = ctx.get('res').get()
+        # exv = []
+        # self.assertEqual(exv, rvar.vals())
 
     def _test_code(self):
         ''' '''
@@ -132,9 +188,10 @@ class TestDev(TestCase):
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # exv = []
-        # self.assertEqual(exv, rvar.vals())
+        rvar = ctx.get('res').get()
+        exv = []
+        resv = resRepr(rvar.vals())
+        self.assertEqual(exv, resv)
 
 
     def _test_match_last_expr_of_case_as_result(self):
@@ -240,6 +297,3 @@ class TestDev(TestCase):
         self.assertEqual(0, rvar.getVal())
 
 
-
-if __name__ == '__main__':
-    main()

@@ -27,9 +27,13 @@ NEED FIX:
     tostr([a..b]) # gen obj
     
     decode(from bytes) / encode (to bytes) 
-    
+
+
+
 
 1.01 import python-implemented modules from /libs
+
+
 
 1.02 container of functions aka namespace or static methods. 
 # call
@@ -44,18 +48,26 @@ group A
 func A.foo(a, b)
     ..
 
+-- named group of funcs and consts
+    have own definition block
+    have own context (sub related to module)
+    Think about internal context of group, how function can get access to vals
+    should it be like static class or namespace?
+    should allow making sub-groups?
 
-1.2 method sugar
-    #  method-like syntax for base types
-    func val:string encode(encoding='utf-8')
-        ... # do something
-    1) #DONE bind builtin functions: dict:keys,items, intersect,diff; string:slice,join,split; list:merge,intersect,diff; 
-    2) #DONE call builtin method: 'aa bb cc'.split(' '); text.split(re`\s+`)
-    # Not sure we need next parts because 2 classes of types already implemented:
-    #   1) builtin type: with type-bound methods
-    #   2) structs: with regular methods
-    3) user-defined binding: func val:list foo(arg:int)
-    4) test user-defined 
+group Math
+    P = 3.141592653589793
+    E = 2.718281828459045
+
+    func f1(a, b)
+        a + b
+
+    func bar(x) 
+        x ** 2
+
+print(Math.P)
+
+print(Math.f1(2,3))
 
 
 2.0 module math
@@ -70,8 +82,8 @@ func A.foo(a, b)
 
 
 2.4 TODO: More types:  
-    byte, common numeric,
-    common struct, implemented struct
+    byte, common numeric (numb, numer),
+    common struct (?), implemented struct
     Maybe (Some, Nothing).
 
 
@@ -121,7 +133,7 @@ catch crit
     2) executive tree (prepared exec file)
 
 12 Functions: 
-    - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but :: thinkable
+    - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but thinkable
     - unused/unnamed var `_` for function args foo(_, x), 
 
     # type-groups: 
@@ -140,10 +152,11 @@ t.1.1
                 \汉 , \A , \x45 , \' ' , \'\' , \'\'' , \"'" , \\n , \'\n'   
                 \0  \1  \A  \z  
                 \' '  \'  \`'`  \+  \-  \=   \:  
+                n:glif = 'A' # is ok
             sequence - just string: `汉字`
             methods:
                 tostring - put glif in string
-                tobytes - make object `bytes` joining all bytes of glifs
+                tobytes - make object `bytes` joining all bytes of glif
                 string.glifes() -> list of glifs
 t1.2
         TODO: add bytes.
@@ -313,27 +326,6 @@ Thinking
 # for
 (@ i <- [] /: print(i))
 (@ i=0; i < 5; i += 1 /: print(i))
-
-25.2 named group of funcs and consts
-    have own definition block
-    have own context (sub related to module)
-    Think about internal context of group, how function can get access to vals
-    should it be like static class or namespace?
-    should allow making sub-groups?
-
-group Math
-    P = 3.141592653589793
-    E = 2.718281828459045
-
-    func f1(a, b)
-        a + b
-
-    func bar(x) 
-        x ** 2
-
-print(Math.P)
-
-print(Math.f1(2,3))
 
 
 27. parents method and direct parent
@@ -1160,3 +1152,19 @@ for i <- iter(20, 30)
     check and fix cases: list + list, string + string
 
 22.2 # DONE check string
+
+
+
+1.2 #DONE method sugar
+    1) #DONE bind builtin functions: dict:keys,items, intersect,diff; string:slice,join,split; list:merge,intersect,diff; 
+    2) #DONE call builtin method: 'aa bb cc'.split(' '); text.split(re`\s+`)
+    # Not sure we need next parts because 2 classes of types already implemented:
+    #   1) builtin type: with type-bound methods
+    #   2) structs: with regular methods
+    3) user-defined binding: func val:list foo(arg:int)
+    #  method-like syntax for base types
+    func val:string encode(encoding='utf-8')
+        ... # do something
+    4) test user-defined 
+
+
