@@ -12,6 +12,47 @@ class TestBytes(TestCase):
     
 
 
+    def test_bytes_slice(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        bb = [ff 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f]
+        
+        res <- bb[7:]
+        
+        res <- bb[:4]
+        
+        res <- bb[:]
+        
+        res <- bb[10:-1]
+        
+        a,b = 5,8
+        res <- bb[a:b]
+        
+        res <- 0x[1 2 3 4 5 6 7 8][1:4]
+        
+        res <- 0b[1 10 11 100 101 110 111 1000][-4:-1]
+        
+        res <- 0d[1 2 3 4 5 6 7 8][:]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            '0x[06 07 08 09 0a 0b 0c 0d 0e 0f]', 
+            '0x[ff 00 01 02]', 
+            '0x[ff 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f]',
+            '0x[09 0a 0b 0c 0d 0e]', '0x[04 05 06]',
+            '0x[02 03 04]', '0x[05 06 07]', '0x[01 02 03 04 05 06 07 08]']
+        resv = resRepr(rvar.vals())
+        self.assertEqual(exv, resv)
+
     def test_bytes_other_num_bases(self):
         ''' 0x[10] 0b[10], 0o[10], 0d[10] '''
         code = r'''

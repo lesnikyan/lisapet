@@ -187,14 +187,15 @@ class SliceExpr(Expression, CollectElem):
         #     target = target.getVal()
         # self.target = target
         
-        # dprint('SliceExpr.do2', target, '::')
+        # print('SliceExpr.do2', target, ':')
         self.beginExpr.do(ctx)
         self.closeExpr.do(ctx)
         if isinstance(self.closeExpr, NothingExpr):
             self.closeExpr = ValExpr(Val(self.target.len(), TypeInt()))
         # dprint('## self.target', self.target)
-        beg, end = self.beginExpr.get(), self.closeExpr.get()
+        beg, end = var2val(self.beginExpr.get()), var2val(self.closeExpr.get())
         res = self.target.getSlice(beg.get(), end.get())
+        # print('$1:', res)
         self.res = res
 
     def get(self)->Var:

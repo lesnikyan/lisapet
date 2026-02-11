@@ -157,7 +157,9 @@ class TestDev(TestCase):
             
         -- string.bytes(encoding)
         
-        TODO: bytes: add other num bases: bin 0b[10], oct 0o[17], dec 0d[19]
+        DONE: bytes: add other num bases: bin 0b[10], oct 0o[17], dec 0d[19]
+        
+        TODO: (?) bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
         
         TODO: bytes construcor - add len arg for fill by 0
             0x[len=10] # 10 bytes
@@ -166,7 +168,6 @@ class TestDev(TestCase):
             bytes(12) # future type-constructors
         
     '''
-
 
     def _test_bytes_builtin_methods(self):
         ''' '''
@@ -185,7 +186,8 @@ class TestDev(TestCase):
         # self.assertEqual(0, rvar.getVal())
         # rvar = ctx.get('res').get()
         # exv = []
-        # self.assertEqual(exv, rvar.vals())
+        # resv = resRepr(rvar.vals())
+        # self.assertEqual(exv, resv)
 
     def _test_code(self):
         ''' '''

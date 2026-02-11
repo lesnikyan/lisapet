@@ -182,7 +182,7 @@ class ListVal(Collection):
         raise EvalErr('List out of range by index %d ' % i)
 
     def getSlice(self, beg, end):
-        if beg < 0 or end > len(self.elems):
+        if beg < -len(self.elems) or end > len(self.elems):
             raise EvalErr('indexes of List slice are out of range [%d : %d] with len = %d' % (beg, end, len(self.elems)))
         rdata = self.elems[beg: end]
         return ListVal(elems=rdata)
@@ -372,7 +372,7 @@ class StringVal(ValSequence):
         return len(self.val)
 
     def getSlice(self, beg, end):
-        if beg < 0 or end > len(self.val):
+        if beg < -len(self.val) or end > len(self.val):
             raise EvalErr('indexes of String slice are out of range [%d : %d] with len = %d' % (beg, end, len(self.val)))
         res =  self.val[beg: end]
         return StringVal(res)
@@ -405,7 +405,6 @@ class BytesVal(ValSequence):
         return len(self.val)
     
     def addVal(self, val:Val):
-        # not sure, we need whole Var or just internal value?
         # print('Bytes.addVal:', self.val, val.getVal())
         if val.getType() == TypeBytes():
             addv = val.getVal()
@@ -420,9 +419,9 @@ class BytesVal(ValSequence):
         self.val[i] = val.getVal()
 
     def getSlice(self, beg, end):
-        if beg < 0 or end > len(self.val):
+        if beg < -len(self.val) or end > len(self.val):
             raise EvalErr('indexes of Bytes slice are out of range [%d : %d] with len = %d' % (beg, end, len(self.val)))
-        res =  self.val[beg: end]
+        res =  bytearray2(self.val[beg: end])
         return BytesVal(res)
     
     def __str__(self):

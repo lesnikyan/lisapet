@@ -780,6 +780,8 @@ bb = [00 01 07 f0]
 ```
 - Usage.  
 In common cases usage of `bytes` object looks similar to list.  
+
+Read.
 ```python
 bb = [01 02 03 04]
 
@@ -795,12 +797,23 @@ for n in bb
 print(nn)
 # >> [1, 2, 3, 4]
 ```
-Append  to bytes.  
+Slice.  
+```python
+# slice
+bb = [ff 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f]
+
+bb[:1] # 0x[ff]
+bb[10:-1] # 0x[09 0a 0b 0c 0d 0e]
+a,b = 5,8
+bb[a:b] # 0x[04 05 06]
+```
+Append to bytes and change.  
 ```python
 bb = 0x[]
 for i <- iter(16)
     b <- i
 
+# change byte in bytes
 bb[3] = 0xa5
 
 print(bb)
@@ -809,7 +822,7 @@ print(bb)
 
 
 
-### 4 Data typr.
+### 4 Data type.
 
 ### 4.1 Typed var expression x:type   
 Type of variable is defined by `:` operator.  
