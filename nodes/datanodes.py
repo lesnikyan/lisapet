@@ -83,17 +83,6 @@ class TupleExpr(CollectionExpr):
         return self.obj
 
 
-
-# class ListConstr(MultilineVal, ListExpr):
-#     ''' list '''
-#     tname = 'list'
-
-#     def __init__(self, byword = False):
-#         super().__init__()
-#         self.byword = byword
-
-
-
 class DictExpr(CollectionExpr):
     ''' {'key': val, keyVar: 13, foo():bar()} '''
     def __init__(self):
@@ -122,17 +111,6 @@ class DictExpr(CollectionExpr):
         # dprint('## DictExpr.get self.data:', self.data)
         return self.data
 
-
-# class DictConstr(MultilineVal, DictExpr):
-#     ''' dict '''
-#     tname = 'dict'
-
-#     # def __init__(self):
-#     #     super().__init__()
-
-#     def __init__(self, byword = False):
-#         super().__init__()
-#         self.byword = byword
 
 class CollectElemExpr(Expression, CollectElem):
     

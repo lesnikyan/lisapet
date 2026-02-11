@@ -729,6 +729,7 @@ class CaseBytes(ExpCase, SolidCase):
     def __init__(self):
         super().__init__()
         self.nrx = re.compile(r'[0-9a-f]{1,2}', re.I) 
+        self.numBases = {'x':16, 'b':2, 'd': 10, 'o':8}
     
     # def isInsertion(self, elems):
     #     if 
@@ -749,10 +750,17 @@ class CaseBytes(ExpCase, SolidCase):
         return True
 
 
-    def expr(self, elems:list[Elem])-> Expression:
+    def expr(self, elems:list[Elem], pref=None)-> Expression:
         bb = bytearray2()
+        # print('$1 ', pref)
+        numBase = 16
+        if pref:
+            nb = pref[1]
+            assert 'bdox'.index(nb) >= 0
+            numBase = self.numBases[nb]
+        # print('nbase', numBase)
         for n in elems[1: -1]:
-            bb.append(int(n.text, 16))
+            bb.append(int(n.text, numBase))
         # var2val
         bexp = BytesExpr(bb)
         return bexp
@@ -762,7 +770,7 @@ class CaseBytes(ExpCase, SolidCase):
 class CaseBytesExplicit(CaseBytes):
     def __init__(self):
         super().__init__()
-        self.xre = re.compile(r'0[bxbd]')
+        self.xre = re.compile(r'0[xobd]')
     
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) < 3:
@@ -778,5 +786,5 @@ class CaseBytesExplicit(CaseBytes):
         return super().match(elems[1:], 2)
     
     def expr(self, elems:list[Elem])-> Expression:
-        return super().expr(elems[1:])
+        return super().expr(elems[1:], elems[0].text)
 

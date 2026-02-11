@@ -46,7 +46,7 @@ Content:
     2. [Tuple `(,)`](#32-tuple-val-val-val)
     3. [Unpack `a,b = [1,2]`](#33-unpack-of-sequence-by-multi-assignment)
     4. [Dict `{'key':val}`](#34-dict-linear-and-block-constructor)
-    5. [bytes `0x[00 ff]`](#)
+    5. [bytes `0x[00 ff]`](#35-bytes)
     6. [Collection features >>>](#collection-features)
     7. [List features >>>](#list-features)
 
@@ -741,6 +741,9 @@ More feature of collections:
 
 ### 3.5 Bytes.  
 Bytes is a sequence of byte (array of bytes).  
+`bytes`is not the "another string" like `bytes` in python, it mostly like a classic universal array of bytes.  
+But not the same as a `list` of shorten numbers.  
+So we don't make string-like methods for `bytes`.  
 `bytes` is a mutable type, we can add bytes or change them by index.  
 - Declaration.  
 `bytes` declaration looks simiar to list, but without commas.  
@@ -756,11 +759,24 @@ b1 = 0x[01]
 # empty
 b0 = 0x[]
 ```
+Other number bases: `0b` - bin, `0o` - octa, `0d` - decimal.  
+```python
+bb2 = 0b[00 01 10 11]
+# >> 0x[00 01 02 03]
+
+bb8 = 0o[00 01 07 77 377]
+# >> 0x[00 01 07 3f ff]
+
+bb10 = 0d[0 1 9 10 19 199 255]
+# >> 0x[00 01 09 0a 13 c7 ff]
+```
+
 If sequence have more than 1 byte we can skip the prefix `0x`.  
 Square brackets and numbers separated by spaces is enough to identify byte set.  
 Numbers are interpreted as hex in such case.  
 ```python
-bb = [00 01 02 f0]
+bb = [00 01 07 f0]
+# >> 0x[00 01 07 f0]
 ```
 - Usage.  
 In common cases usage of `bytes` object looks similar to list.  

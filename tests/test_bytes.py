@@ -11,6 +11,53 @@ class TestBytes(TestCase):
     ''' '''
     
 
+
+    def test_bytes_other_num_bases(self):
+        ''' 0x[10] 0b[10], 0o[10], 0d[10] '''
+        code = r'''
+        res = [-555]
+        
+        bb16 = 0x[10 01 f0 0f ff 00]
+        res <- (16, len(bb16))
+        res <- bb16 
+        
+        bb = [10 01 00 ff]
+        res <- (16, len(bb))
+        res <- bb
+        
+        bb2 = 0b[10 01 1111 1000 10101010 10000000 11111111 00000000]
+        res <- (2, len(bb2))
+        res <- bb2
+        
+        
+        bb8 = 0o[1 2 3 4 5 6 7 10 11 17 20 27 70 71 377 0]
+        res <- (8, len(bb8))
+        res <- bb8
+        
+        bb10 = 0d[1 2 3 4 9 11 12 19 20 21 29 80 81 90 100 109 110 111 199 200 240 250 255 0]
+        res <- (10, len(bb10))
+        res <- bb10
+        
+        # res.each(n -> print(~'{n[1]}'))
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        exv = [
+            -555,
+            (16, 6), '0x[10 01 f0 0f ff 00]', 
+            (16, 4), '0x[10 01 00 ff]', 
+            (2, 8), '0x[02 01 0f 08 aa 80 ff 00]', 
+            (8, 16), '0x[01 02 03 04 05 06 07 08 09 0f 10 17 38 39 ff 00]', 
+            (10, 24), '0x[01 02 03 04 09 0b 0c 13 14 15 1d 50 51 5a 64 6d 6e 6f c7 c8 f0 fa ff 00]']
+        resv = resRepr(rvar.vals())
+        self.assertEqual(exv, resv)
+
     def test_bytes_usage(self):
         ''' '''
         code = r'''
