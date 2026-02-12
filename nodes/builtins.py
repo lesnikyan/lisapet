@@ -21,8 +21,6 @@ def loop_iter(_, *args):
 def getVal(arg):
     v = arg
     # print('getVal:', v)
-    # if isinstance(v, (BytesVal)):
-    #     return v
     if isinstance(arg, Var):
         v = arg.get()
     if isinstance(v, (ListVal, TupleVal)):
@@ -32,9 +30,6 @@ def getVal(arg):
         v = t
     elif isinstance(v, (DictVal)):
         v = {k: getVal(vv) for k,vv in v.data.items()}
-        # v = [getVal(e) for e in v.vals()]
-    # elif isinstance(v, StructInstance):
-    #     v = v.istr()
     elif isinstance(v, (Function, FuncOverSet, ObjMethod)):
         v = str(v)
     elif isinstance(v, Val):
@@ -186,6 +181,9 @@ def built_list(_, src):
         res = str2list(val)
     elif isinstance(src, TupleVal):
         res = ListVal(elems=[n for n in src.elems])
+    elif isinstance(src, BytesVal):
+        # print('bu_list')
+        res = ListVal(elems=[Val(b, TypeInt()) for b in src.val])
     # print('b-list2:', res)
     return res
 

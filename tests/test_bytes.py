@@ -12,6 +12,69 @@ class TestBytes(TestCase):
     
 
 
+    def test_bytes_builtin_methods(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        # .map
+        
+        bb = [10 0d 00 ff]
+        
+        f1 = x -> x + 1
+        res <- bb.map(f1)
+        
+        res <- 0d[1 2 4 8 16 32].map(x -> x << 1)
+        
+        # .each
+        
+        bb3 = [1 2 3 4 5 6 7 8]
+        
+        r3 = []
+        func evenInk(x)
+            r3 <- (x % 2 == 0) ? x + 1 : x - 1
+        
+        bb3.each(evenInk)
+        res <- r3
+        
+        # .reverse
+        
+        bb4 = [0 1 2 3 4 16 27 f8]
+        res <- bb4.reverse()
+        
+        # .fold
+        
+        # sum
+        res <- [0 1 0 1 0 1].fold(0, (s, v) -> s + v)
+        # prod
+        res <- [3 3 3].fold(1, (s, v) -> s * v)
+        # fill list
+        res <- [1 2 3 4 5].fold([], (s, v) -> (s <- v + 1000; s))
+        
+        # .replace
+        
+        bb6 = [1 2 3 2 4 5 7 1 2 9]
+        res <- bb6.replace([1 2], [1f f5])
+        
+        res <- 0x[1 0 11 10 1 0 12 13].replace([1 0], [0 f])
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        exv = [
+            '0x[11 0e 01 00]', '0x[02 04 08 10 20 40]', 
+            [0, 3, 2, 5, 4, 7, 6, 9], '0x[f8 27 16 04 03 02 01 00]', 
+            3, 27, [1001, 1002, 1003, 1004, 1005], 
+            '0x[1f f5 03 02 04 05 07 1f f5 09]', '0x[00 0f 11 10 00 0f 12 13]']
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        self.assertEqual(exv, resv)
+
     def test_bytes_slice(self):
         ''' '''
         code = r'''

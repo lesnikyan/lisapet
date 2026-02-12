@@ -108,4 +108,39 @@ def str_map(ctx:Context, inst:StringVal, fun:Function):
     stres = ''.join([n.get() for n in res])
     return StringVal(stres)
 
-#
+# Bytes
+
+def bytes_map(ctx:Context, inst:BytesVal, fun:Function):
+    res = seq_map(ctx, inst, fun)
+    stres = bytearray2([(n.get() % 256) for n in res])
+    return BytesVal(stres)
+
+
+def bytes_reverse(_, inst:BytesVal):
+    data = bytearray2(inst.val[:])
+    data.reverse()
+    return BytesVal(data)
+
+
+def bytes_fold(ctx:Context, elems:ListVal, start:Val, fun:Function):
+    return built_foldl(ctx, start, elems, fun)
+
+
+def bytes_replace(_, inst:BytesVal, findptn:StringVal|DictVal, repl:BytesVal, count:Val=None):
+    ''' thinking. few way to implement
+        1) simple byte - byte (map can do the same)
+        2) find sequence, replace by sequence, dict with find-repl pairs
+        3) find by function / lambda , replace by val or another lambda
+        3) full regexp (why? use string)
+        DONE - 2
+    '''
+    src = inst.val
+    old = findptn.val
+    new = repl.val
+    n = -1
+    if count:
+        n = count.getVal()
+    res = bytearray2(src.replace(old, new, n))
+    return BytesVal(res)
+    
+

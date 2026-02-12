@@ -391,7 +391,7 @@ class BytesVal(ValSequence):
     
     def __init__(self, val:bytearray):
         super().__init__(None, TypeBytes())
-        self.val:bytearray = val
+        self.val:bytearray2 = val
     
     def getElem(self, key:Val):
         k = key.getVal()

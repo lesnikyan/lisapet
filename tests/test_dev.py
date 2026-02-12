@@ -113,21 +113,36 @@ class TestDev(TestCase):
         
         BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
         
-        TODO: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
-            // byte(int), bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
-        
         TODO: string methods: upper, lower
         TODO: list|tuple methods: sort, filter
         
         TODO: add assertion to cases in test_lists
         
         TODO: add byte: int/4, unsigned
-            x:byte = 1 / 0-255
+            x:byte = 1 # 0-255
             x:byte = 0xff ; auto casting
             x:byte= intVal % 0x100
             #  optional: explicit byte value
             x = &01; 8xff; 8b100; &0xff; |xf0; 8d255
             0xff; 0b10000001
+        
+        TODO: (?) bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        
+        TODO: bytes constructor - add len arg for fill by 0
+            0x[len=10] # 10 bytes
+            0x[] * 10 # 10 bytes
+            0x(12) (?)
+            bytes(12) # future type-constructors
+        
+        TODO: currying operator:
+            func foo(a, b, c)
+            triple dots funcName...
+            (foo...)(1)(2)(3)
+            f = (foo...)
+            f(1)(2)(3)
+        
+        TODO: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
+            // byte(int), bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
         
         DONE: add bytes.
         bytes - sequence of bytes, mutable (instead of string)
@@ -139,55 +154,39 @@ class TestDev(TestCase):
             bb = [f0 01 05 21]
             b = bb[0] # >> get first byte
             bb[-1] = 22 # set last byte
-            
-        TODO: bytes methods:
-            bb.map(x -> x & 0xf0) # apply function to each byte in sequence and return result
-            .each() # apply function to each byte
-            .each_block() (?) 
-            .fold()
-            bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
-            .reverse()
-            .intlist() # split bytes by 4 and convert to int vals
-            .blocks(size:int) # split byte set (from right) on block with size.
-                fill last left to size by 0
-        -- operators
-            bb[a:b] # get slice - copy part of bytes
-            bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
-            shift: bb << 4; bb >> 8 # no extend size
-            
-        -- string.bytes(encoding)
         
         DONE: bytes: add other num bases: bin 0b[10], oct 0o[17], dec 0d[19]
+            
+        DONE: bytes methods:
+            # .map(x -> x & 0xf0) # apply function to each byte in sequence and return result
+            # .each() # apply function to each byte
+            # .fold()
+            # .reverse()
+            # .replace() # simple val to val
         
-        TODO: (?) bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        TODO: bytes: splitting methods 
+            .blocks / .nsplit(size:int) # split byte set (from right) on block with size.
+                fill last left to size by 0 
+            .split(sep=bytes) # like string do
+            .nums(int) # list of int numbers, arg = 1-8, split to numbers by byte-size
+            .bits() # list of bits
+            
         
-        TODO: bytes construcor - add len arg for fill by 0
-            0x[len=10] # 10 bytes
-            0x[] * 10 # 10 bytes
-            0x(12) (?)
-            bytes(12) # future type-constructors
+        TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
+        TODO: string.replace({dict}) # check, implement if not
+        
+        TODO: bytes features
+        -- operators
+            #ok bb[a:b] # get slice - copy part of bytes
+            bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
+            shift: bb << 4; bb >> 8 # no extend size
+        
+        -- string
+            (?) bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
+            string(bytes(), encoding='utf8') # string from bytes
+            string.bytes(encoding) # string to bytes
         
     '''
-
-    def _test_bytes_builtin_methods(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        bb = [10 0d 00 ff]
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # exv = []
-        # resv = resRepr(rvar.vals())
-        # self.assertEqual(exv, resv)
 
     def _test_code(self):
         ''' '''

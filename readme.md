@@ -48,7 +48,8 @@ Content:
     4. [Dict `{'key':val}`](#34-dict-linear-and-block-constructor)
     5. [bytes `0x[00 ff]`](#35-bytes)
     6. [Collection features >>>](#collection-features)
-    7. [List features >>>](#list-features)
+    7. [List `[]` features >>>](#list-features)
+    8. [`"string"` features >>>](#string-features)
 
 4. Data type.
     1. [Strict type `var:type`](#41-typed-var-expression-xtype)
@@ -58,6 +59,7 @@ Content:
 5. `if`-statement
     1. [if - else](#5-if-statement-else)
     2. [if sub-expr; cond](#52-if-sub-expression)
+    3. [See also `match` statement >>>](#match-statement)
 
 6. `while`, `for`-statement 
     1. [Classic `for` loop by counter](#6-while-for-statement)
@@ -116,14 +118,14 @@ Content:
     [Few-expressions block ` ; `](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
 
-21. [String features](#21-string-features)
+21. #### [String features](#21-string-features)
     1. [insert `"%s" << x`](#211-percent-formatting)
     2. [include `~"{x}"`](#212-format-by-including-expressions)
     3. [base functions](#213-string-functions)
 
-22. [Import modules](#22-import-modules)
+22. [Modules. `import`](#22-import-modules)
 
-23. `match`-statement
+23. #### `match`-statement
     1. [Match, cases, /:`](#23-match-statement)
     2. [List and tuple `[0,x,_,?,*]` `(_,?,*)`](#232-matching-list-and-tuple)
     3. [Dict pattern `{'a':a, _:_, *}`](#233-matching-dict)
@@ -450,6 +452,7 @@ Others, have specific behaviour, and will be explained further:
 ```
 () [] {} 
 . 
+...
 -x !x ~x 
 ** 
 * / % 
@@ -467,6 +470,7 @@ Others, have specific behaviour, and will be explained further:
 ?: 
 : 
 ? 
+..
 ,
 <- 
 ->
@@ -819,7 +823,12 @@ bb[3] = 0xa5
 print(bb)
 # >> 0x[00 01 02 a5 04 05 06 07 08 09 0a 0b 0c 0d e0 0f]
 ```
-
+`bytes` type has its own builtins methods:  
+`map`, `each`, `fold`, `reverse`, `replace`.  
+```python
+res = 0d[1 2 4 8 16 32].map(x -> x << 1)
+# >> '0x[02 04 08 10 20 40]'
+```
 
 
 ### 4 Data type.
