@@ -1,6 +1,9 @@
 '''
 methods bound to base types
 '''
+
+import math
+
 from vars import *
 from nodes.iternodes import *
 from nodes.structs import StructInstance
@@ -142,5 +145,65 @@ def bytes_replace(_, inst:BytesVal, findptn:StringVal|DictVal, repl:BytesVal, co
         n = count.getVal()
     res = bytearray2(src.replace(old, new, n))
     return BytesVal(res)
+
+
+def bytes_blocks(_, inst:BytesVal, size:Val):
+    '''
+    Split byte set into blocks of a passed size.
+    If length of source is not a multiple of size, 
+    the source will be padded with zero bytes on the left.
+    '''
+    slen = len(inst.val)
+    bsize = size.getVal()
+    rowlen = slen / bsize
+    blen = int(math.ceil(rowlen)) # blocks length
+    data = inst.val
+    if slen % bsize > 0:
+        need = bsize * blen - slen
+        data = bytearray(need) + data
+    res = []
+    for i in range(blen):
+        part = data[i * bsize : (i + 1) * bsize]
+        res.append(BytesVal(bytearray2(part)))
+    return ListVal(elems=res)
+
+
+def bytes_nums(_, inst:BytesVal, size:Val, signed:Val=None):
+    '''
+    Split byte set into int numbers by a passed size.
+    If length of source is not a multiple of size, 
+    the source will be padded with zero bytes on the left.
     
+    :param inst: source ByteVal
+    :param size: size of each part
+    :param signed - to make or not signed int, default = false
+    '''
+    slen = len(inst.val)
+    bsize = size.getVal()
+    rowlen = slen / bsize
+    blen = int(math.ceil(rowlen)) # blocks length
+    data = inst.val
+    if slen % bsize > 0:
+        need = bsize * blen - slen
+        data = bytearray(need) + data
+    sg = False
+    if signed is not None:
+        sg = bool(signed.getVal())
+    res = []
+    for i in range(blen):
+        part = data[i * bsize : (i + 1) * bsize]
+        num = Val(int.from_bytes(part, 'big', signed=sg), TypeInt())
+        res.append(num)
+    return ListVal(elems=res)
+
+
+def bytes_bits(_, inst:BytesVal):
+    '''
+    Split byte set into bit-array.
+    inst: source ByteVal
+    '''
+    data = inst.val
+    res = [Val(i, TypeInt()) for b in data for i in [(b >> i) & 1 for i in range(7, -1, -1)] ]
+    return ListVal(elems=res)
+
 

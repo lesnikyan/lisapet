@@ -60,6 +60,11 @@ def initFuncs(ctx:Context):
     bindNativeMethod(ctx, 'tuple', seq_each, 'each', None)
     bindNativeMethod(ctx, 'bytes', seq_each, 'each', None)
     
+    # bytes
+    bindNativeMethod(ctx, 'bytes', bytes_blocks, 'blocks', TypeList)
+    bindNativeMethod(ctx, 'bytes', bytes_nums, 'nums', TypeList)
+    bindNativeMethod(ctx, 'bytes', bytes_bits, 'bits', TypeList)
+    
 
 
 def setDefaultTypes(ctx:Context):

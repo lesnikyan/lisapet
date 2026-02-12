@@ -759,8 +759,43 @@ class CaseBytes(ExpCase, SolidCase):
             assert 'bdox'.index(nb) >= 0
             numBase = self.numBases[nb]
         # print('nbase', numBase)
-        for n in elems[1: -1]:
-            bb.append(int(n.text, numBase))
+        nums = [n.text for n in elems[1: -1]]
+        
+        # if nums without spaces: 0b[1010101010], 0x[f011dde50f1234]
+        match numBase:
+            case 2:
+                t = []
+                for p in nums:
+                    if len(p) > 1:
+                        p = list(p)
+                    else:
+                        p = [p]
+                    t.extend(p)
+                # print('$1: ', len(t))
+                
+                if len(t) % 8 > 0:
+                    t = ['0' for _ in range(8 - (len(t) % 8))]  + t
+                # print('$2: ', len(t), t)
+                lnt = int(len(t) / 8)
+                nums = [''.join(t[i*8 : (i+1) * 8]) for i in range(lnt)]
+            case 16:
+                t = []
+                for p in nums:
+                    lnp = len(p)
+                    if lnp != 2:
+                        # p = list(p)
+                        if lnp % 2 >0:
+                            # fix length by leading 0
+                            p = f'0{p}'
+                        p = [p[i * 2 : (i+1) * 2] for i in range(int(len(p)/2))]
+                    else:
+                        p = [p]
+                    # print('$3:', p)
+                    t.extend(p)
+                nums = t
+        # print('', nums)
+        for n in nums:
+            bb.append(int(n, numBase))
         # var2val
         bexp = BytesExpr(bb)
         return bexp

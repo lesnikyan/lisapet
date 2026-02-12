@@ -823,13 +823,24 @@ bb[3] = 0xa5
 print(bb)
 # >> 0x[00 01 02 a5 04 05 06 07 08 09 0a 0b 0c 0d e0 0f]
 ```
+- Methods.  
+
+Basic methods:  
 `bytes` type has its own builtins methods:  
-`map`, `each`, `fold`, `reverse`, `replace`.  
+`map`, `each`, `fold`, `reverse`, `replace`  
 ```python
 res = 0d[1 2 4 8 16 32].map(x -> x << 1)
 # >> '0x[02 04 08 10 20 40]'
 ```
 
+Splitting methods:  
+`blocks`, `nums`, `bits`, `split`   
+```python
+bb = 0x[ff05]
+bitList = bb.blocks(1).map(b -> b.bits())
+bitList.map(x -> x.join(''))
+# >> ['11111111', '00000101']
+```
 
 ### 4 Data type.
 

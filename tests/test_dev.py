@@ -143,6 +143,21 @@ class TestDev(TestCase):
         
         TODO: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
             // byte(int), bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
+            
+        
+        TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
+        TODO: string.replace({dict}) # check, implement if not
+        
+        TODO: bytes features
+        -- operators
+            #ok bb[a:b] # get slice - copy part of bytes
+            bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
+            shift: bb << 4; bb >> 8 # no extend size
+        
+        -- string-related
+            (?) bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
+            string(bytes(), encoding='utf8') # string from bytes
+            string.bytes(encoding) # string to bytes
         
         DONE: add bytes.
         bytes - sequence of bytes, mutable (instead of string)
@@ -165,28 +180,36 @@ class TestDev(TestCase):
             # .replace() # simple val to val
         
         TODO: bytes: splitting methods 
-            .blocks / .nsplit(size:int) # split byte set (from right) on block with size.
+            # .blocks / .nsplit(size:int) # split byte set (from right) on block with size.
                 fill last left to size by 0 
-            .split(sep=bytes) # like string do
-            .nums(int) # list of int numbers, arg = 1-8, split to numbers by byte-size
-            .bits() # list of bits
-            
+            # .nums(int) # list of int numbers, arg = 1-8, split to numbers by byte-size
+            # .bits() # list of bits
         
-        TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
-        TODO: string.replace({dict}) # check, implement if not
-        
-        TODO: bytes features
-        -- operators
-            #ok bb[a:b] # get slice - copy part of bytes
-            bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
-            shift: bb << 4; bb >> 8 # no extend size
-        
-        -- string
-            (?) bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
-            string(bytes(), encoding='utf8') # string from bytes
-            string.bytes(encoding) # string to bytes
+        TODO: .split(sep=bytes) # like string do
         
     '''
+
+
+    def _test_bytes_builtin_split_method(self):
+        ''' '''
+        code = r'''
+        res = [-553]
+        
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            -553,
+            ]
+        self.assertEqual(exv, resv)
 
     def _test_code(self):
         ''' '''

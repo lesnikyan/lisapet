@@ -12,6 +12,82 @@ class TestBytes(TestCase):
     
 
 
+    def test_bytes_builtin_dividing_methods(self):
+        ''' '''
+        code = r'''
+        res = [-552]
+        
+        # .blocks
+        bb1 = [a0 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f]
+        res <- bb1.blocks(1)
+        res <- bb1.blocks(2)
+        res <- bb1.blocks(4)
+        res <- bb1.blocks(3)
+        res <- bb1.blocks(5)
+        
+        # .nums
+        
+        # int32
+        bb2 =  [00 00 00 01 00 00 f0 00]
+        bb2 <- [00 00 00 ff 00 00 ff ff]
+        bb2 <- [00 ff ff ff ff ff ff ff]
+        # res <- bb2.nums(4)
+        
+        # byte (int8)
+        bb3 = [00 01 02 09 10 f0 ff]
+        res <- bb3.nums(1)
+        
+        # short (int16)
+        bb4 = [00 01 00 08 00 10 01 00 00 ff ff 00]
+        res <- bb4.nums(2)
+        
+        # long (int64)
+        bb5 =  [00 10 00 00 00 00 00 00]
+        bb5 <- [10 00 00 00 00 00 00 00]
+        res <- bb5.nums(8)
+        
+        # sined int
+        bb6 = [01 00 7f ff 80 01 ff ff]
+        res <- bb6.nums(2, true)
+        
+        # .bits
+        
+        bb11 = [01 04]
+        res <- bb11.bits()
+        res <- 0x[80].bits()
+        res <- 0b[11110000 01010101].bits()
+        
+        res <- 0x[ff00 1234 0000 0001 1000].blocks(2)
+        res <- 0x[ff00 1234 0000 0001 1000].blocks(2).map(b -> b.bits())
+        res <- 0x[1234]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            -552,
+            ['0x[a0]', '0x[01]', '0x[02]', '0x[03]', '0x[04]', '0x[05]', '0x[06]', '0x[07]', '0x[08]', '0x[09]', '0x[0a]', '0x[0b]', '0x[0c]', '0x[0d]', '0x[0e]', '0x[0f]'], 
+            ['0x[a0 01]', '0x[02 03]', '0x[04 05]', '0x[06 07]', '0x[08 09]', '0x[0a 0b]', '0x[0c 0d]', '0x[0e 0f]'], 
+            ['0x[a0 01 02 03]', '0x[04 05 06 07]', '0x[08 09 0a 0b]', '0x[0c 0d 0e 0f]'], 
+            ['0x[00 00 a0]', '0x[01 02 03]', '0x[04 05 06]', '0x[07 08 09]', '0x[0a 0b 0c]', '0x[0d 0e 0f]'], 
+            ['0x[00 00 00 00 a0]', '0x[01 02 03 04 05]', '0x[06 07 08 09 0a]', '0x[0b 0c 0d 0e 0f]'], 
+            [0, 1, 2, 9, 16, 240, 255], [1, 8, 16, 256, 255, 65280], [4503599627370496, 1152921504606846976], [256, 32767, -32767, -1], 
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0], [1, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1], 
+            ['0x[ff 00]', '0x[12 34]', '0x[00 00]', '0x[00 01]', '0x[10 00]'], 
+            [
+                [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0], 
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+                [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], 
+            '0x[12 34]']
+        self.assertEqual(exv, resv)
+
     def test_bytes_builtin_methods(self):
         ''' '''
         code = r'''
@@ -95,7 +171,7 @@ class TestBytes(TestCase):
         
         res <- 0x[1 2 3 4 5 6 7 8][1:4]
         
-        res <- 0b[1 10 11 100 101 110 111 1000][-4:-1]
+        res <- 0b[00010010 00000101 00000110 00000111 00001000][-4:-1]
         
         res <- 0d[1 2 3 4 5 6 7 8][:]
         
@@ -116,6 +192,35 @@ class TestBytes(TestCase):
         resv = resRepr(rvar.vals())
         self.assertEqual(exv, resv)
 
+    def test_bytes_no_spaces(self):
+        ''' ob[11110000], 0x[ff00ffa8] '''
+        code = r'''
+        res = [-551]
+        
+        # bin
+        res <- 0b[1111111100000000]
+        res <- 0b[1111 0000 1010 0011]
+        
+        #hex
+        res <- 0x[ff00]
+        res <- 0x[1234 5678 ffff 0005]
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        exv = [
+            -551,
+            '0x[ff 00]', '0x[f0 a3]',
+            '0x[ff 00]', '0x[12 34 56 78 ff ff 00 05]']
+        resv = resRepr(rvar.vals())
+        # for n in resv : print(n)
+        self.assertEqual(exv, resv)
+
     def test_bytes_other_num_bases(self):
         ''' 0x[10] 0b[10], 0o[10], 0d[10] '''
         code = r'''
@@ -129,7 +234,7 @@ class TestBytes(TestCase):
         res <- (16, len(bb))
         res <- bb
         
-        bb2 = 0b[10 01 1111 1000 10101010 10000000 11111111 00000000]
+        bb2 = 0b[00000001 00000010 00001111 00001000 10101010 10000000 11111111 00000000]
         res <- (2, len(bb2))
         res <- bb2
         
@@ -156,7 +261,7 @@ class TestBytes(TestCase):
             -555,
             (16, 6), '0x[10 01 f0 0f ff 00]', 
             (16, 4), '0x[10 01 00 ff]', 
-            (2, 8), '0x[02 01 0f 08 aa 80 ff 00]', 
+            (2, 8), '0x[01 02 0f 08 aa 80 ff 00]', 
             (8, 16), '0x[01 02 03 04 05 06 07 08 09 0f 10 17 38 39 ff 00]', 
             (10, 24), '0x[01 02 03 04 09 0b 0c 13 14 15 1d 50 51 5a 64 6d 6e 6f c7 c8 f0 fa ff 00]']
         resv = resRepr(rvar.vals())
