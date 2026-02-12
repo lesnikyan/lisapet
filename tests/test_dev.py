@@ -45,6 +45,34 @@ class TestDev(TestCase):
         tt2 = (nums...) # >> (1,2,3)
         3) func args
         foo(nums...)
+        
+        DONE: add bytes.
+        bytes - sequence of bytes, mutable (instead of string)
+            # implementstion:
+                1) pythons `bytearray` inside
+            # declarations:
+            bb = [00 01 fa d8]
+            # usage:
+            bb = [f0 01 05 21]
+            b = bb[0] # >> get first byte
+            bb[-1] = 22 # set last byte
+        
+        DONE: bytes: add other num bases: bin 0b[10], oct 0o[17], dec 0d[19]
+            
+        DONE: bytes methods:
+            # .map(x -> x & 0xf0) # apply function to each byte in sequence and return result
+            # .each() # apply function to each byte
+            # .fold()
+            # .reverse()
+            # .replace() # simple val to val
+        
+        DONE: bytes: splitting methods 
+            # .blocks / .nsplit(size:int) # split byte set (from right) on block with size.
+                fill last left to size by 0 
+            # .nums(int) # list of int numbers, arg = 1-8, split to numbers by byte-size
+            # .bits() # list of bits
+        
+        DONE: .split(sep=bytes) # like string do
 
     # features for for `enum` - not sure
         TODO: Enum.name(11)
@@ -159,57 +187,8 @@ class TestDev(TestCase):
             string(bytes(), encoding='utf8') # string from bytes
             string.bytes(encoding) # string to bytes
         
-        DONE: add bytes.
-        bytes - sequence of bytes, mutable (instead of string)
-            # implementstion:
-                1) pythons `bytearray` inside
-            # declarations:
-            bb = [00 01 fa d8]
-            # usage:
-            bb = [f0 01 05 21]
-            b = bb[0] # >> get first byte
-            bb[-1] = 22 # set last byte
-        
-        DONE: bytes: add other num bases: bin 0b[10], oct 0o[17], dec 0d[19]
-            
-        DONE: bytes methods:
-            # .map(x -> x & 0xf0) # apply function to each byte in sequence and return result
-            # .each() # apply function to each byte
-            # .fold()
-            # .reverse()
-            # .replace() # simple val to val
-        
-        TODO: bytes: splitting methods 
-            # .blocks / .nsplit(size:int) # split byte set (from right) on block with size.
-                fill last left to size by 0 
-            # .nums(int) # list of int numbers, arg = 1-8, split to numbers by byte-size
-            # .bits() # list of bits
-        
-        TODO: .split(sep=bytes) # like string do
-        
     '''
 
-
-    def _test_bytes_builtin_split_method(self):
-        ''' '''
-        code = r'''
-        res = [-553]
-        
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = [
-            -553,
-            ]
-        self.assertEqual(exv, resv)
 
     def _test_code(self):
         ''' '''

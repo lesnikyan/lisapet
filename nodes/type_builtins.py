@@ -207,3 +207,13 @@ def bytes_bits(_, inst:BytesVal):
     return ListVal(elems=res)
 
 
+def bytes_split(_, inst:BytesVal, sep:BytesVal, limit:Val=None):
+    data:bytearray = inst.val
+    lim = -1
+    if limit:
+        lim = limit.getVal()
+    parts = data.split(sep.val, lim)
+    res = [BytesVal(bytearray2(p)) for p in parts]
+    return ListVal(elems=res)
+
+

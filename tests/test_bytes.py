@@ -8,9 +8,35 @@ from tests.utils import *
 
 
 class TestBytes(TestCase):
-    ''' '''
-    
+    ''' 0x[ff 00 12 ab] '''
 
+
+    def test_bytes_builtin_split_method(self):
+        ''' split bytes by separator '''
+        code = r'''
+        res = [-553]
+        
+        bb1 = 0x[ff 00 11 00 f1 00 ae de 00 33]
+        res <- bb1.split(0x[00])
+        
+        bb2 = 0d[1 2 111 3 4 111 5 6 7 8 111 123 145]
+        res <- bb2.split(0d[111]).map(
+            p -> p.nums(1))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [-553, 
+               ['0x[ff]', '0x[11]', '0x[f1]', '0x[ae de]', '0x[33]'], 
+               [[1, 2], [3, 4], [5, 6, 7, 8], [123, 145]]]
+        self.assertEqual(exv, resv)
 
     def test_bytes_builtin_dividing_methods(self):
         ''' '''
