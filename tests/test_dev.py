@@ -179,7 +179,7 @@ class TestDev(TestCase):
         TODO: bytes features
         -- operators
             #ok bb[a:b] # get slice - copy part of bytes
-            bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
+            #ok bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
             shift: bb << 4; bb >> 8 # no extend size
         
         -- string-related
@@ -189,6 +189,8 @@ class TestDev(TestCase):
         
     '''
 
+        
+        
 
     def _test_code(self):
         ''' '''
@@ -204,8 +206,9 @@ class TestDev(TestCase):
         trydo(ex, ctx)
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
-        exv = []
         resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = []
         self.assertEqual(exv, resv)
 
 

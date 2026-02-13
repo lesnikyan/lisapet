@@ -842,6 +842,24 @@ bitList.map(x -> x.join(''))
 # >> ['11111111', '00000101']
 ```
 
+- Operatoros.  
+Bitwize operators has been overloaded for bytes type :  
+and `&`, or `|`, xor `^`  
+For those operators, the shorter operand will be filled by `0` in left up to the size of longer, before the operator is applied.  
+```python
+r1 = [ff 00 ff 11] & [e5 ff]
+# >> 0x[00 00 e5 11]
+
+bb1 = [ff ff]
+bb2 = [0f f0]
+r2 = bb1 ^ bb2
+# >> 0x[f0 0f]
+```
+
+shift `<<`, `>>` in dev.
+
+
+
 ### 4 Data type.
 
 ### 4.1 Typed var expression x:type   

@@ -11,6 +11,65 @@ class TestBytes(TestCase):
     ''' 0x[ff 00 12 ab] '''
 
 
+    def test_bytes_oper_bitwize(self):
+        ''' '''
+        code = r'''
+        res = [-556]
+        
+        # AND &
+        bb1 = [f0 f0]
+        bb2 = [ff 00]
+        res <- (bb1 & bb2)
+        
+        # bin
+        res <- 0b[1100 1100] & 0b[0000 1111]
+        
+        # diff len
+        res <- [ff 00 ff 11] & [e5 ff]
+        res <- 0x[17] & [ff 00 11 ff]
+        
+        # OR |
+        
+        bb11 = 0x[f0 f1 00 01 00]
+        bb12 = 0x[03 00 49 e2 de]
+        res <- bb11 | bb12
+        
+        # bin
+        res <- 0b[1111 0000 1100 1100] | 0b [1001 0001 0001]
+        
+        # diff len
+        res <- 0x[3c] | [f4 12 00]
+        res <- [e1 b2 c3 f6 22 00] | 0x[15 de]
+        
+        # XOR ^
+        
+        bb21 = [ff ff]
+        bb22 = [0f f0]
+        res <- bb21 ^ bb22
+        
+        # bin
+        res <- 0b[1111 0000 1010 0101] ^ 0b[0000 0011 1111 0000]
+        
+        # diff len
+        res <- 0x[15] ^ [ee 07 00]
+        res <- [ff 05 00] ^ 0x[12 41]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [-556, 
+            '0x[f0 00]', '0x[0c]', '0x[00 00 e5 11]', '0x[00 00 00 17]', 
+            '0x[f3 f1 49 e3 de]', '0x[f9 dd]', '0x[f4 12 3c]', '0x[e1 b2 c3 f6 37 de]', 
+            '0x[f0 0f]', '0x[f3 55]', '0x[ee 07 15]', '0x[ff 17 41]']
+        self.assertEqual(exv, resv)
+
     def test_bytes_builtin_split_method(self):
         ''' split bytes by separator '''
         code = r'''

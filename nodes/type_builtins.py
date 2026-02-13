@@ -11,6 +11,7 @@ from nodes.func_expr import Function
 from nodes.builtins import built_list, built_foldl
 
 import libs.str as libst
+import libs.bytes as lbytes
 
 
 # General

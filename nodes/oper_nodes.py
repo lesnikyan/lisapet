@@ -14,6 +14,7 @@ from nodes.oper_dot import *
 from nodes.structs import StructConstrBegin 
 from vars import *
 
+import libs.bytes as lbytes
 
 
 class OpAssign(AssignExpr):
@@ -490,22 +491,32 @@ class OpBitwise(BinOper):
         # print('OpBitwise ():', self.oper)
         # print('self.left, self.right = ', self.left, self.right)
         # print('a, b : ', a, b)
-        # print('types: : ', a.getType(), b.getType())
-        type = a.getType()
-        # if type != b.getType():
-        #     # TODO type??
-        #     self.res = Val(False, TypeBool())
-        #     return False
-        
-        if isinstance(a, TypeVal) and isinstance(b, TypeVal):
-            # multitype detected
-            # print('TYPE VAL', a, b)
-            res = self.type_or(a.getVal(), b.getVal())
-            self.res = res
-            return
+        if not isinstance(a.getType(), (TypeInt, TypeBool)):
+            return self.over_types(a, b)
         
         res = ff[self.oper](a.getVal(), b.getVal())
         self.res = Val(res, a.getType())
+
+    def over_types(self, a, b):
+        # print('bit_oper_over', self.oper, a, b)
+        a, b = var2val(a), var2val(b)
+        match self.oper:
+            case '|':
+                if isinstance(a, TypeVal) and isinstance(b, TypeVal):
+                    # multitype detected
+                    res = self.type_or(a.getVal(), b.getVal())
+                    self.res = res
+                elif isinstance(a.getType(), TypeBytes) and isinstance(b.getType(), TypeBytes):
+                    res = lbytes.bit_or(0, a, b)
+                    self.res = res
+            case '&':
+                if isinstance(a.getType(), TypeBytes) and isinstance(b.getType(), TypeBytes):
+                    res = lbytes.bit_and(0, a, b)
+                    self.res = res
+            case '^':
+                if isinstance(a.getType(), TypeBytes) and isinstance(b.getType(), TypeBytes):
+                    res = lbytes.bit_xor(0, a, b)
+                    self.res = res
 
     def bt_and(self, a, b):
         return a & b
