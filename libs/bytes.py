@@ -53,3 +53,29 @@ def bit_xor(_, a:BytesVal, b:BytesVal) -> BytesVal:
     clen = len(da)
     r = [da[i] ^ db[i] for i in range(clen)]
     return BytesVal(bytearray2(r))
+
+
+# Not sure we really need shifting for bytes
+# postpone, to think
+
+# def bit_rshift(_, a:BytesVal, shift:Val) -> BytesVal:
+#     '''
+#     bytes >> bytes
+#     '''
+#     sh = shift.getVal()
+#     step = int(sh / 8)
+#     src = bytearray() + a.vals
+#     r = [src[i] for i in range(len(src))]
+#     return BytesVal(bytearray2(r))
+
+
+# def bit_lshift(_, a:BytesVal, shift:Val) -> BytesVal:
+#     '''
+#     bytes << bytes
+#     '''
+#     sh = shift.getVal()
+#     step = int(sh / 8)
+#     src = bytearray([0 for _ in range(step)]) + a.vals
+#     r = [src[i] for i in range(len(src), -1, -1)]
+    
+#     return BytesVal(bytearray2(r))

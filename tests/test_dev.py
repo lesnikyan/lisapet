@@ -73,6 +73,10 @@ class TestDev(TestCase):
             # .bits() # list of bits
         
         DONE: .split(sep=bytes) # like string do
+        
+        DONE: bytes operators
+            #ok bb[a:b] # get slice - copy part of bytes
+            #ok bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
 
     # features for for `enum` - not sure
         TODO: Enum.name(11)
@@ -94,7 +98,7 @@ class TestDev(TestCase):
             unary backtick tested in test_parsing_string_backtiks
             mres = ``` \\n \\t \\ \\s \\w ```
         
-        TODO:  user defined types
+        TODO: type() for user defined types
             struct ABC a: int, b: int
             abc = ABC{a:1, b:2}
             res <- type(abc)
@@ -154,6 +158,8 @@ class TestDev(TestCase):
             x = &01; 8xff; 8b100; &0xff; |xf0; 8d255
             0xff; 0b10000001
         
+        TODO: (?) bytes oper shift: bb << 4; bb >> 8 # no extend size
+        
         TODO: (?) bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
         
         TODO: bytes constructor - add len arg for fill by 0
@@ -171,16 +177,11 @@ class TestDev(TestCase):
         
         TODO: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
             // byte(int), bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
-            
         
         TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
         TODO: string.replace({dict}) # check, implement if not
         
         TODO: bytes features
-        -- operators
-            #ok bb[a:b] # get slice - copy part of bytes
-            #ok bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
-            shift: bb << 4; bb >> 8 # no extend size
         
         -- string-related
             (?) bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8

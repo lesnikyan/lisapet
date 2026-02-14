@@ -184,8 +184,7 @@ class CaseBinOper(SubCase):
 def makeOperExp(elem:Elem)->OperCommand:
     # TODO: make oper command by cases: math, logical, assign and math+assign, bit operators, brackets
     oper = elem.text
-    mathOpers = '+ - * / % ** << >>'.split(' ')
-    binAssgn = '+= -= *= /= %='.split(' ')
+    mathOpers = '+ - * / % **'.split(' ')
     if oper in mathOpers:
         return OpMath(oper)
     boolOpers = '&& ||'.split(' ')
@@ -194,11 +193,12 @@ def makeOperExp(elem:Elem)->OperCommand:
     cmpOpers = '== != > < >= < <='.split(' ')
     if oper in cmpOpers:
         return OpCompare(oper)
-    btOpers = '& | ^'.split(' ')
+    btOpers = '& | ^ << >>'.split(' ')
     if oper in btOpers:
         return OpBitwise(oper)
     if oper == '=':
         return OpAssign()
+    binAssgn = '+= -= *= /= %='.split(' ')
     if oper in binAssgn:
         return OpBinAssign(oper)
     if oper == ':':
