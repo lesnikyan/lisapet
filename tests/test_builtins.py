@@ -25,6 +25,65 @@ from tests.utils import *
 
 class TestBoundFuncs(TestCase):
 
+
+    def test_code_string_to_bytes(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        bb = "Hello string!".bytes()
+        res <- bb
+        
+        res <- '1 2 3 4 5'.bytes('utf8')
+        
+        res <- "Мама мыла раму.".bytes()
+        res <- "Мама мыла раму.".bytes('cp855')
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            '0x[48 65 6c 6c 6f 20 73 74 72 69 6e 67 21]', '0x[31 20 32 20 33 20 34 20 35]', 
+            '0x[d0 9c d0 b0 d0 bc d0 b0 20 d0 bc d1 8b d0 bb d0 b0 20 d1 80 d0 b0 d0 bc d1 83 2e]', 
+            '0x[d3 a0 d2 a0 20 d2 f1 d0 a0 20 e1 a0 d2 e7 2e]']
+        self.assertEqual(exv, resv)
+
+    def test_code_bytes_to_string(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        bb1 = [31 20 32 20 33 20 34 20 35]
+        res <- bb1.string('utf8')
+        
+        res <- [48 65 6c 6c 6f 20 62 79 74 65 73 21].string()
+        
+        res <- [e6 b0 b8 e6 81 92 e4 b9 8b e6 98 a5 e7 9a 84 e8 8a b1 e5 9b ad].string()
+        
+        res <- [c6 90 20 c6 8d 20 c6 80 20 c6 8b 20 c6 95 20 c6 a9 20 c6 b1 20 c6 b3 20 c6 9b].string()
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # to see more unicode chars: set in console:
+        # >chcp 65001
+        # switch font to SimSun-ExtB
+        exv = ['1 2 3 4 5', 'Hello bytes!', '永恒之春的花园', 'Ɛ ƍ ƀ Ƌ ƕ Ʃ Ʊ Ƴ ƛ']
+        self.assertEqual(exv, resv)
+
     def test_bound_each(self):
         '''
             Test method seq.each()

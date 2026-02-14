@@ -175,6 +175,9 @@ class TestDev(TestCase):
             f = (foo...)
             f(1)(2)(3)
         
+        TODO: func composition operator:
+            foo * bar * baz (x)
+        
         TODO: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
             // byte(int), bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
         
@@ -184,14 +187,12 @@ class TestDev(TestCase):
         TODO: bytes features
         
         -- string-related
-            (?) bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
+            bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
             string(bytes(), encoding='utf8') # string from bytes
             string.bytes(encoding) # string to bytes
         
     '''
 
-        
-        
 
     def _test_code(self):
         ''' '''

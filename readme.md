@@ -841,6 +841,15 @@ bitList = bb.blocks(1).map(b -> b.bits())
 bitList.map(x -> x.join(''))
 # >> ['11111111', '00000101']
 ```
+- Encoding / decoding.  
+```python
+"Hello string!".bytes('utf8')
+# >> '0x[48 65 6c 6c 6f 20 73 74 72 69 6e 67 21]'
+
+[48 65 6c 6c 6f 20 62 79 74 65 73 21].string()
+# >> 'Hello bytes!'
+```
+
 
 - Operatoros.  
 Bitwize operators has been overloaded for bytes type :  
@@ -855,8 +864,6 @@ bb2 = [0f f0]
 r2 = bb1 ^ bb2
 # >> 0x[f0 0f]
 ```
-
-shift `<<`, `>>` in dev.
 
 
 

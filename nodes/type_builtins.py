@@ -112,6 +112,18 @@ def str_map(ctx:Context, inst:StringVal, fun:Function):
     stres = ''.join([n.get() for n in res])
     return StringVal(stres)
 
+
+def string_bytes(_, inst:StringVal, encoding:Val=None):
+    enc = 'utf-8'
+    if encoding:
+        enc = encoding.getVal()
+    enc = enc.lower()
+    if enc in encodeMap:
+        enc = encodeMap[enc]
+    bb = bytearray2(inst.val.encode(enc))
+    return BytesVal(bb)
+
+
 # Bytes
 
 def bytes_map(ctx:Context, inst:BytesVal, fun:Function):
@@ -218,3 +230,17 @@ def bytes_split(_, inst:BytesVal, sep:BytesVal, limit:Val=None):
     return ListVal(elems=res)
 
 
+encodeMap = {
+    'utff8': 'utf-8',
+}
+
+
+def bytes_string(_, inst:BytesVal, encoding:Val=None):
+    enc = 'utf-8'
+    if encoding:
+        enc = encoding.getVal()
+    enc = enc.lower()
+    if enc in encodeMap:
+        enc = encodeMap[enc]
+    s = inst.val.decode(enc)
+    return StringVal(s)

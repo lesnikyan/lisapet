@@ -65,6 +65,11 @@ def initFuncs(ctx:Context):
     bindNativeMethod(ctx, 'bytes', bytes_nums, 'nums', TypeList)
     bindNativeMethod(ctx, 'bytes', bytes_bits, 'bits', TypeList)
     bindNativeMethod(ctx, 'bytes', bytes_split, 'split', TypeList)
+    bindNativeMethod(ctx, 'bytes', bytes_string, 'string', TypeString)
+    
+    # string
+    bindNativeMethod(ctx, 'string', string_bytes, 'bytes', TypeBytes)
+    
     
 
 
