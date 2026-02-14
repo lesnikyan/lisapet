@@ -30,9 +30,6 @@ def getVal(arg):
         v = t
     elif isinstance(v, (DictVal)):
         v = {k: getVal(vv) for k,vv in v.data.items()}
-        # v = [getVal(e) for e in v.vals()]
-    # elif isinstance(v, StructInstance):
-    #     v = v.istr()
     elif isinstance(v, (Function, FuncOverSet, ObjMethod)):
         v = str(v)
     elif isinstance(v, Val):
@@ -79,8 +76,7 @@ def tostr(arg):
     # print('\n_tostr1:::', arg, '>>', v, v.__class__.__name__)
     # if isinstance(v, str):
     #     rval = esc_str(v)
-        
-    
+
     if isinstance(v, (list, tuple, dict)):
         # [1, 2, 'a', [3, 'b']]
         #
@@ -110,6 +106,8 @@ def tostr(arg):
         rval = str(v).lower()
     elif isinstance(v, (int, float, Function)):
         rval = str(v)
+    elif isinstance(v, (bytearray)):
+        rval = '0x[%s]' % ' '.join([f'{b:02x}' for b in v])
     # print('_tosrt9:', arg, ':', rval)
     return rval
 
@@ -120,7 +118,15 @@ def built_tostr(_, arg):
     rval = tostr(arg)
     # print('_tostr3::', rval, rval.__class__.__name__)
     return StringVal(rval)
-    
+
+
+def pstr(v):
+    # if isinstance(v, (bytearray)):
+    #     return '0x[%s]' % ' '.join([f'{b:02x}' for b in v])
+    if isinstance(v, (Val|Var)):
+        return str(v)
+    return v
+
 
 def buit_print(ctx:Context,*args):
     pargs = []
@@ -131,7 +137,12 @@ def buit_print(ctx:Context,*args):
         if isinstance(n, (Function, FuncOverSet)):
             pargs.append(str(n))
             continue
+        # print('$1 ', n)
         v = getVal(n)
+        # print('$2 ', v)
+        if isinstance(v, (list)):
+            v = [pstr(e) for e in v]
+        # raise EvalErr('')
         if isinstance(v, StructInstance):
             v = v.istr()
         pargs.append(v)
@@ -170,6 +181,9 @@ def built_list(_, src):
         res = str2list(val)
     elif isinstance(src, TupleVal):
         res = ListVal(elems=[n for n in src.elems])
+    elif isinstance(src, BytesVal):
+        # print('bu_list')
+        res = ListVal(elems=[Val(b, TypeInt()) for b in src.val])
     # print('b-list2:', res)
     return res
 

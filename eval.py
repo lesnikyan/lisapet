@@ -1,6 +1,7 @@
 
 '''
 Eval parsed lexems
+TODO: rename to preload.py
 '''
 
 from vars import *
@@ -28,25 +29,47 @@ def initFuncs(ctx:Context):
     setNativeFunc(ctx, 'dkeys', dc.dict_keys, TypeList)
     setNativeFunc(ctx, 'ditems', dc.dict_items, TypeList)
     # print('>>>\n\n~~~!!!!\n\n')
+    
     # bind methods
+    
+    # sequence actions
     bindNativeMethod(ctx, 'list', list_join, 'join', TypeString)
     bindNativeMethod(ctx, 'list', list_reverse, 'reverse', TypeList)
     bindNativeMethod(ctx, 'tuple', tuple_reverse, 'reverse', TypeTuple)
+    bindNativeMethod(ctx, 'bytes', bytes_reverse, 'reverse', TypeBytes)
+    bindNativeMethod(ctx, 'string', str_split, 'split', TypeList)
+    bindNativeMethod(ctx, 'string', str_join, 'join', TypeString)
+    bindNativeMethod(ctx, 'string', str_replace, 'replace', TypeString)
+    bindNativeMethod(ctx, 'bytes', bytes_replace, 'replace', TypeBytes)
+    
     bindNativeMethod(ctx, 'dict', dict_keys, 'keys', TypeList)
     bindNativeMethod(ctx, 'dict', dict_items, 'items', TypeList)
-    bindNativeMethod(ctx, 'string', str_split, 'split', TypeList)
-    bindNativeMethod(ctx, 'string', str_replace, 'replace', TypeString)
-    bindNativeMethod(ctx, 'string', str_join, 'join', TypeString)
+    
+    # functional set
     # map
     bindNativeMethod(ctx, 'list', list_map, 'map', TypeList)
     bindNativeMethod(ctx, 'tuple', tuple_map, 'map', TypeTuple)
     bindNativeMethod(ctx, 'string', str_map, 'map', TypeString)
+    bindNativeMethod(ctx, 'bytes', bytes_map, 'map', TypeBytes)
     # fold
     bindNativeMethod(ctx, 'list', list_fold, 'fold', TypeList)
     bindNativeMethod(ctx, 'tuple', tuple_fold, 'fold', TypeTuple)
+    bindNativeMethod(ctx, 'bytes', bytes_fold, 'fold', TypeBytes)
     # each
     bindNativeMethod(ctx, 'list', seq_each, 'each', None)
     bindNativeMethod(ctx, 'tuple', seq_each, 'each', None)
+    bindNativeMethod(ctx, 'bytes', seq_each, 'each', None)
+    
+    # bytes
+    bindNativeMethod(ctx, 'bytes', bytes_blocks, 'blocks', TypeList)
+    bindNativeMethod(ctx, 'bytes', bytes_nums, 'nums', TypeList)
+    bindNativeMethod(ctx, 'bytes', bytes_bits, 'bits', TypeList)
+    bindNativeMethod(ctx, 'bytes', bytes_split, 'split', TypeList)
+    bindNativeMethod(ctx, 'bytes', bytes_string, 'string', TypeString)
+    
+    # string
+    bindNativeMethod(ctx, 'string', string_bytes, 'bytes', TypeBytes)
+    
     
 
 

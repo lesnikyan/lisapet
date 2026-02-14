@@ -83,17 +83,6 @@ class TupleExpr(CollectionExpr):
         return self.obj
 
 
-
-# class ListConstr(MultilineVal, ListExpr):
-#     ''' list '''
-#     tname = 'list'
-
-#     def __init__(self, byword = False):
-#         super().__init__()
-#         self.byword = byword
-
-
-
 class DictExpr(CollectionExpr):
     ''' {'key': val, keyVar: 13, foo():bar()} '''
     def __init__(self):
@@ -122,17 +111,6 @@ class DictExpr(CollectionExpr):
         # dprint('## DictExpr.get self.data:', self.data)
         return self.data
 
-
-# class DictConstr(MultilineVal, DictExpr):
-#     ''' dict '''
-#     tname = 'dict'
-
-#     # def __init__(self):
-#     #     super().__init__()
-
-#     def __init__(self, byword = False):
-#         super().__init__()
-#         self.byword = byword
 
 class CollectElemExpr(Expression, CollectElem):
     
@@ -163,7 +141,7 @@ class CollectElemExpr(Expression, CollectElem):
     def set(self, val:Var):
         ''' '''
         key = self.keyExpr.get()
-        if not isinstance(self.target, Collection):
+        if not isinstance(self.target, (Collection, BytesVal)):
             raise EvalErr("Bad collection instance for setVal")
         self.target.setVal(key, val)
 
@@ -209,14 +187,15 @@ class SliceExpr(Expression, CollectElem):
         #     target = target.getVal()
         # self.target = target
         
-        # dprint('SliceExpr.do2', target, '::')
+        # print('SliceExpr.do2', target, ':')
         self.beginExpr.do(ctx)
         self.closeExpr.do(ctx)
         if isinstance(self.closeExpr, NothingExpr):
             self.closeExpr = ValExpr(Val(self.target.len(), TypeInt()))
         # dprint('## self.target', self.target)
-        beg, end = self.beginExpr.get(), self.closeExpr.get()
+        beg, end = var2val(self.beginExpr.get()), var2val(self.closeExpr.get())
         res = self.target.getSlice(beg.get(), end.get())
+        # print('$1:', res)
         self.res = res
 
     def get(self)->Var:

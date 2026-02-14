@@ -46,8 +46,10 @@ Content:
     2. [Tuple `(,)`](#32-tuple-val-val-val)
     3. [Unpack `a,b = [1,2]`](#33-unpack-of-sequence-by-multi-assignment)
     4. [Dict `{'key':val}`](#34-dict-linear-and-block-constructor)
-    5. [Collection features >>>](#collection-features)
-    6. [List features >>>](#list-features)
+    5. [bytes `0x[00 ff]`](#35-bytes)
+    6. [Collection features >>>](#collection-features)
+    7. [List `[]` features >>>](#list-features)
+    8. [`"string"` features >>>](#string-features)
 
 4. Data type.
     1. [Strict type `var:type`](#41-typed-var-expression-xtype)
@@ -57,6 +59,7 @@ Content:
 5. `if`-statement
     1. [if - else](#5-if-statement-else)
     2. [if sub-expr; cond](#52-if-sub-expression)
+    3. [See also `match` statement >>>](#match-statement)
 
 6. `while`, `for`-statement 
     1. [Classic `for` loop by counter](#6-while-for-statement)
@@ -115,14 +118,14 @@ Content:
     [Few-expressions block ` ; `](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
 
-21. [String features](#21-string-features)
+21. #### [String features](#21-string-features)
     1. [insert `"%s" << x`](#211-percent-formatting)
     2. [include `~"{x}"`](#212-format-by-including-expressions)
     3. [base functions](#213-string-functions)
 
-22. [Import modules](#22-import-modules)
+22. [Modules. `import`](#22-import-modules)
 
-23. `match`-statement
+23. #### `match`-statement
     1. [Match, cases, /:`](#23-match-statement)
     2. [List and tuple `[0,x,_,?,*]` `(_,?,*)`](#232-matching-list-and-tuple)
     3. [Dict pattern `{'a':a, _:_, *}`](#233-matching-dict)
@@ -449,6 +452,7 @@ Others, have specific behaviour, and will be explained further:
 ```
 () [] {} 
 . 
+...
 -x !x ~x 
 ** 
 * / % 
@@ -466,6 +470,7 @@ Others, have specific behaviour, and will be explained further:
 ?: 
 : 
 ? 
+..
 ,
 <- 
 ->
@@ -738,7 +743,131 @@ More feature of collections:
 [`[]+[]`](#93-list-plus---).
 
 
-### 4 Data typr.
+### 3.5 Bytes.  
+Bytes is a sequence of byte (array of bytes).  
+`bytes`is not the "another string" like `bytes` in python, it mostly like a classic universal array of bytes.  
+But not the same as a `list` of shorten numbers.  
+So we don't make string-like methods for `bytes`.  
+`bytes` is a mutable type, we can add bytes or change them by index.  
+- Declaration.  
+`bytes` declaration looks simiar to list, but without commas.  
+The prefix before the square brackets determines how the numbers inside them are interpreted,  
+`0x` for hex.  
+```python
+# full syntax
+bb = 0x[01 00 10 f0 ff]
+
+# 1 byte sequence
+b1 = 0x[01]
+
+# empty
+b0 = 0x[]
+```
+Other number bases: `0b` - bin, `0o` - octa, `0d` - decimal.  
+```python
+bb2 = 0b[00 01 10 11]
+# >> 0x[00 01 02 03]
+
+bb8 = 0o[00 01 07 77 377]
+# >> 0x[00 01 07 3f ff]
+
+bb10 = 0d[0 1 9 10 19 199 255]
+# >> 0x[00 01 09 0a 13 c7 ff]
+```
+
+If sequence have more than 1 byte we can skip the prefix `0x`.  
+Square brackets and numbers separated by spaces is enough to identify byte set.  
+Numbers are interpreted as hex in such case.  
+```python
+bb = [00 01 07 f0]
+# >> 0x[00 01 07 f0]
+```
+- Usage.  
+In common cases usage of `bytes` object looks similar to list.  
+
+Read.
+```python
+bb = [01 02 03 04]
+
+# read
+print(bb[1], bb[-1]) 
+# >> 1 4
+
+# iteration
+nn = []
+for n in bb
+    nn <- n
+
+print(nn)
+# >> [1, 2, 3, 4]
+```
+Slice.  
+```python
+# slice
+bb = [ff 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f]
+
+bb[:1] # 0x[ff]
+bb[10:-1] # 0x[09 0a 0b 0c 0d 0e]
+a,b = 5,8
+bb[a:b] # 0x[04 05 06]
+```
+Append to bytes and change.  
+```python
+bb = 0x[]
+for i <- iter(16)
+    b <- i
+
+# change byte in bytes
+bb[3] = 0xa5
+
+print(bb)
+# >> 0x[00 01 02 a5 04 05 06 07 08 09 0a 0b 0c 0d e0 0f]
+```
+- Methods.  
+
+Basic methods:  
+`bytes` type has its own builtins methods:  
+`map`, `each`, `fold`, `reverse`, `replace`  
+```python
+res = 0d[1 2 4 8 16 32].map(x -> x << 1)
+# >> '0x[02 04 08 10 20 40]'
+```
+
+Splitting methods:  
+`blocks`, `nums`, `bits`, `split`   
+```python
+bb = 0x[ff05]
+bitList = bb.blocks(1).map(b -> b.bits())
+bitList.map(x -> x.join(''))
+# >> ['11111111', '00000101']
+```
+- Encoding / decoding.  
+```python
+"Hello string!".bytes('utf8')
+# >> '0x[48 65 6c 6c 6f 20 73 74 72 69 6e 67 21]'
+
+[48 65 6c 6c 6f 20 62 79 74 65 73 21].string()
+# >> 'Hello bytes!'
+```
+
+
+- Operatoros.  
+Bitwize operators has been overloaded for bytes type :  
+and `&`, or `|`, xor `^`  
+For those operators, the shorter operand will be filled by `0` in left up to the size of longer, before the operator is applied.  
+```python
+r1 = [ff 00 ff 11] & [e5 ff]
+# >> 0x[00 00 e5 11]
+
+bb1 = [ff ff]
+bb2 = [0f f0]
+r2 = bb1 ^ bb2
+# >> 0x[f0 0f]
+```
+
+
+
+### 4 Data type.
 
 ### 4.1 Typed var expression x:type   
 Type of variable is defined by `:` operator.  

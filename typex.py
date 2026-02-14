@@ -94,6 +94,18 @@ class TypeEnum(VType):
     th = TH.mk()
 
 
+class TypeByte(VType):
+    nume='byte'
+    _defVal = 0
+    th = TH.mk()
+
+
+class TypeBytes(VType):
+    name = 'bytes'
+    _defVal = bytes()
+    th = TH.mk()
+
+
 class FuncInst(Objective):
     '''function object is stored in context, callable, returns result '''
 
@@ -243,7 +255,8 @@ def find(self, name)->Base:
 
 def builtinTypes()->list[VType]:
     return [TypeAny, TypeBool, TypeInt, TypeFloat, TypeComplex, 
-            TypeString, TypeList, TypeDict, TypeStruct, TypeTuple, TypeFunc]
+            TypeString, TypeList, TypeDict, TypeStruct, TypeTuple, TypeFunc,
+            TypeBytes]
 
 
 class MultiType(VType):

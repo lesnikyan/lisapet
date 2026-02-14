@@ -28,6 +28,7 @@ from libs.regexp import *
 import pdb
 
 
+            
 class TestDev(TestCase):
 
 
@@ -35,11 +36,53 @@ class TestDev(TestCase):
   _<-od
  (+a)(-b)
         
-        # features for for `enum` - not sure
-            TODO: Enum.name(11)
-            TODO: Enum.value(name)
-            TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
-            TODO: 22 ?> Enum # after methods
+        
+        DONE: list... unpack list/tuple into function 
+        nums = [1,2,3]
+        1) insert to list
+        nn2 = [10, 11, nums...] # >> [10,11,1,2,3]
+        2) insert to tuple
+        tt2 = (nums...) # >> (1,2,3)
+        3) func args
+        foo(nums...)
+        
+        DONE: add bytes.
+        bytes - sequence of bytes, mutable (instead of string)
+            # implementstion:
+                1) pythons `bytearray` inside
+            # declarations:
+            bb = [00 01 fa d8]
+            # usage:
+            bb = [f0 01 05 21]
+            b = bb[0] # >> get first byte
+            bb[-1] = 22 # set last byte
+        
+        DONE: bytes: add other num bases: bin 0b[10], oct 0o[17], dec 0d[19]
+            
+        DONE: bytes methods:
+            # .map(x -> x & 0xf0) # apply function to each byte in sequence and return result
+            # .each() # apply function to each byte
+            # .fold()
+            # .reverse()
+            # .replace() # simple val to val
+        
+        DONE: bytes: splitting methods 
+            # .blocks / .nsplit(size:int) # split byte set (from right) on block with size.
+                fill last left to size by 0 
+            # .nums(int) # list of int numbers, arg = 1-8, split to numbers by byte-size
+            # .bits() # list of bits
+        
+        DONE: .split(sep=bytes) # like string do
+        
+        DONE: bytes operators
+            #ok bb[a:b] # get slice - copy part of bytes
+            #ok bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
+
+    # features for for `enum` - not sure
+        TODO: Enum.name(11)
+        TODO: Enum.value(name)
+        TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
+        TODO: 22 ?> Enum # after methods
 
         TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
@@ -55,7 +98,7 @@ class TestDev(TestCase):
             unary backtick tested in test_parsing_string_backtiks
             mres = ``` \\n \\t \\ \\s \\w ```
         
-        TODO:  user defined types
+        TODO: type() for user defined types
             struct ABC a: int, b: int
             abc = ABC{a:1, b:2}
             res <- type(abc)
@@ -96,27 +139,59 @@ class TestDev(TestCase):
                 print(i, x, key, val)
         
         TODO: add type `glif` - 1 multibyte symbol
+
+        TODO: think about type casting by colon; type in left
+            x:int = int: true
         
-        TODO: add bytes.
-            bb = [00 01 fa d8]
-            [pref num num num]; pref in: x, d, b, o
-            
         BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
-        
-        TODO: list... unpack list/tuple into function 
-        nums = [1,2,3]
-        1) insert to list
-        nn2 = [10, 11, nums...] # >> [10,11,1,2,3]
-        2) insert to tuple
-        tt2 = (nums...) # >> (1,2,3)
-        3) func args
-        foo(nums...)
         
         TODO: string methods: upper, lower
         TODO: list|tuple methods: sort, filter
         
+        TODO: add assertion to cases in test_lists
+        
+        TODO: add byte: int/4, unsigned
+            x:byte = 1 # 0-255
+            x:byte = 0xff ; auto casting
+            x:byte= intVal % 0x100
+            #  optional: explicit byte value
+            x = &01; 8xff; 8b100; &0xff; |xf0; 8d255
+            0xff; 0b10000001
+        
+        TODO: (?) bytes oper shift: bb << 4; bb >> 8 # no extend size
+        
+        TODO: (?) bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        
+        TODO: bytes constructor - add len arg for fill by 0
+            0x[len=10] # 10 bytes
+            0x[] * 10 # 10 bytes
+            0x(12) (?)
+            bytes(12) # future type-constructors
+        
+        TODO: currying operator:
+            func foo(a, b, c)
+            triple dots funcName...
+            (foo...)(1)(2)(3)
+            f = (foo...)
+            f(1)(2)(3)
+        
+        TODO: func composition operator:
+            foo * bar * baz (x)
+        
+        TODO: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
+            // byte(int), bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
+        
+        TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
+        TODO: string.replace({dict}) # check, implement if not
+        
+        TODO: bytes features
+        
+        -- string-related
+            bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
+            string(bytes(), encoding='utf8') # string from bytes
+            string.bytes(encoding) # string to bytes
+        
     '''
-
 
 
     def _test_code(self):
@@ -132,9 +207,11 @@ class TestDev(TestCase):
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # exv = []
-        # self.assertEqual(exv, rvar.vals())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = []
+        self.assertEqual(exv, resv)
 
 
     def _test_match_last_expr_of_case_as_result(self):
@@ -240,6 +317,3 @@ class TestDev(TestCase):
         self.assertEqual(0, rvar.getVal())
 
 
-
-if __name__ == '__main__':
-    main()

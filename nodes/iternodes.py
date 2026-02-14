@@ -178,6 +178,8 @@ class SrcIterator(NIterator):
     def __init__(self, src:ListVal|DictVal|TupleVal):
         self.src = None
         match src:
+            case BytesVal():
+                self.src = src.val
             case ListVal() | TupleVal():
                 self.src = src.elems
             case DictVal():
@@ -214,7 +216,10 @@ class SrcIterator(NIterator):
             val = self.src[key]
             # dprint('Iter-dict get: key, val', key, val)
             return (raw2val(key), val)
-        return self.src[key]
+        val = self.src[key]
+        if isinstance(self.src, bytearray):
+            val = Val(val, TypeInt())
+        return val
 
 
 
@@ -317,7 +322,7 @@ class Append(Expression):
             self.setArgs(left, right)
 
     def setArgs(self, targ:Collection, src:Var|Val):
-        # dprint('Append setArgs:', targ, src)
+        # print('Append setArgs:', targ, src)
         self.target = targ
         self.src = src
 
@@ -325,9 +330,10 @@ class Append(Expression):
         # key, val for DictVal. src should be a tuple or dict
         # print('Append do:', self.target, self.src)
         
-        if isinstance(self.target, ListVal):
+        if isinstance(self.target, (ListVal, BytesVal)):
             v = self.src
             val = var2val(v)
+            # print('$4 ', v, val)
             self.target.addVal(val)
         elif isinstance(self.target, DictVal):
             if isinstance(self.src, TupleVal):
@@ -371,7 +377,7 @@ class LeftArrowExpr(BinOper):
         # left expression defines type of case
         self.leftExpr.do(ctx)
         # print('..')
-        # print('Arr <- init1', self.leftExpr, self.rightExpr)
+        # print('Arr <- init1', self.leftExpr, '<-', self.rightExpr)
         ltArg = None
         if isinstance(self.leftExpr, SequenceExpr):
             if self.leftExpr.getDelim() == ',':
@@ -390,15 +396,16 @@ class LeftArrowExpr(BinOper):
         self.rightExpr.do(ctx) # make iter object
         rtArg = self.rightExpr.get()
 
-        # print('Arr <-2 init ltArg', ltArg)
+        # print('Arr <-2 init ltArg', ltArg, ltArg.__class__)
         # print('Arr <-3 init rtArg:', rtArg)
-        if isinstance(ltArg, Var) and isinstance(ltArg.getType(), (TypeList, TypeDict)):
-            # print('Arr <-2 init ltArg', ltArg.getType())
+        if isinstance(ltArg, Var) and isinstance(ltArg.getType(), (TypeList, TypeDict, TypeBytes)):
+            # print('Arr <-22 init ltArg', ltArg.getType())
             ltArg = var2val(ltArg)
             
+        # print('Arr <-4 init ltArg', ltArg, ltArg.__class__)
         # append case: ListVal/DictVal <- val
         # if not isinstance(ltArg, list) and isinstance(ltArg, (ListVal, DictVal)):
-        if isinstance(ltArg, (ListVal, DictVal)):
+        if isinstance(ltArg, (ListVal, DictVal, BytesVal)):
             if rtArg :
                 rtArg = var2val(rtArg)
             self.expr = Append(ltArg, rtArg)
@@ -410,7 +417,7 @@ class LeftArrowExpr(BinOper):
         # print('Arr <- init4 rtArg:', rtArg)
         # print('Arr <- init4 ltArg:', ltArg)
         itExp = None
-        if isinstance(rtArg, (Collection)):
+        if isinstance(rtArg, (Collection, BytesVal)):
             itExp = SrcIterator(rtArg)
         elif isinstance(rtArg.get(), (NIterator)):
             itExp = rtArg.get()

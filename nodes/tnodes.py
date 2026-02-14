@@ -199,10 +199,26 @@ class ConstSetExpr(Expression):
         if self.typeExpr:
             self.typeExpr.do(ctx)
             rtype = self.typeExpr.get()
-            print('Enum.do type:', rtype)
+            # print('Enum.do type:', rtype)
             if isinstance(rtype, TypeVal):
                 etype = rtype
         if not etype:
             etype = TypeAny()
+
+
+class BytesExpr(Expression):
+    ''' [0a b2 c3 f0] '''
+    
+    def __init__(self, byteset, src = ''):
+        super().__init__(None, src)
+        self.val:bytearray = byteset
+        self.res = -100500
+
+    def do(self, ctx:Context):
+        ''' '''
+        self.res = BytesVal(self.val)
+    
+    def get(self):
+        return self.res
 
 

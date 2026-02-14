@@ -118,7 +118,7 @@ expCaseSolids:list[ExpCase] = [
     CaseBreak(), CaseContinue(), CaseRegexp(), CaseReturn(),  CaseElse(), 
     CaseVal(), CaseVar(), CaseVar_(), CaseDotName(), CaseString(),
     CaseTuple(),
-    CaseListGen(),
+    CaseListGen(), CaseBytes(), CaseBytesExplicit(),
     CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), 
     CaseFunCall(), CaseStructConstr(),
     CaseBrackets()

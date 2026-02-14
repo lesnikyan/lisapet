@@ -14,6 +14,7 @@ from nodes.oper_dot import *
 from nodes.structs import StructConstrBegin 
 from vars import *
 
+import libs.bytes as lbytes
 
 
 class OpAssign(AssignExpr):
@@ -133,6 +134,7 @@ class OpAssign(AssignExpr):
             val = resSet[i]
             
             val = self.readVal(val)
+            # print('$1', val)
             valType = val.getType()
             if isinstance(left[i], CollectElem):
                 ''' '''
@@ -230,8 +232,6 @@ class OpMath(BinOper):
             '/': self.div,
             '**': self.pow,
             '%': self.divmod,
-            '<<': self.lshift,
-            '>>': self.rshift
         }
         
         # Some operations can return another type
@@ -310,12 +310,6 @@ class OpMath(BinOper):
     def divmod(self, a, b):
         return a % b
 
-    def lshift(self, a, b):
-        return a << b
-
-    def rshift(self, a, b):
-        return a >> b
-
     def collMinus(self, a:Collection, b:list):
         ''' a:dict|list - b:[int] '''
         key = b.getElem(Val(0, TypeInt()))
@@ -332,18 +326,6 @@ class OpMath(BinOper):
     def stringPlus(self, a, b):
         res = a.getVal() + b.getVal()
         return StringVal(res)
-
-    def strLshift(self, a, b):
-        ''' "str pattern " << (vals) '''
-        if not isinstance(b, TupleVal):
-            t = b
-            b = TupleVal()
-            b.addVal(t)
-        # reuse python old format %
-        args = tuple(n.getVal() for n in b.rawVals())
-        tpl = a.getVal()
-        # dprint('tpl % args: ', tpl % args)
-        return StringVal(tpl % args)
 
     def normalize(self, val:Val):
         # print('O-nod.normalize', val)
@@ -368,9 +350,6 @@ class OpMath(BinOper):
             case '-' :
                 if isinstance(a, (ListVal, DictVal)) and isinstance(b, ListVal):
                     return (True, self.collMinus(a, b))
-            case '<<':
-                if isinstance(a.getVal(), (str)):
-                    return (True, self.strLshift(a, b))
             
         return (False, 0)
 
@@ -480,6 +459,8 @@ class OpBitwise(BinOper):
             '&': self.bt_and,
             '|': self.bt_or,
             '^': self.bt_xor,
+            '<<': self.lshift,
+            '>>': self.rshift
         }
         # eval expressions
         self.left.do(ctx)
@@ -489,25 +470,42 @@ class OpBitwise(BinOper):
         # print('OpBitwise ():', self.oper)
         # print('self.left, self.right = ', self.left, self.right)
         # print('a, b : ', a, b)
-        # print('types: : ', a.getType(), b.getType())
-        type = a.getType()
-        # if type != b.getType():
-        #     # TODO type??
-        #     self.res = Val(False, TypeBool())
-        #     return False
-        
-        if isinstance(a, TypeVal) and isinstance(b, TypeVal):
-            # multitype detected
-            # print('TYPE VAL', a, b)
-            res = self.type_or(a.getVal(), b.getVal())
-            self.res = res
-            return
+        if not isinstance(a.getType(), (TypeInt, TypeBool)):
+            return self.over_types(a, b)
         
         res = ff[self.oper](a.getVal(), b.getVal())
         self.res = Val(res, a.getType())
 
-    def bt_and(self, a, b):
-        return a & b
+    def over_types(self, a, b):
+        # print('bit_oper_over', self.oper, a, b)
+        a, b = var2val(a), var2val(b)
+        match self.oper:
+            case '|':
+                if isinstance(a, TypeVal) and isinstance(b, TypeVal):
+                    # multitype detected
+                    res = self.type_or(a.getVal(), b.getVal())
+                    self.res = res
+                elif isinstance(a.getType(), TypeBytes) and isinstance(b.getType(), TypeBytes):
+                    res = lbytes.bit_or(0, a, b)
+                    self.res = res
+            case '&':
+                if isinstance(a.getType(), TypeBytes) and isinstance(b.getType(), TypeBytes):
+                    res = lbytes.bit_and(0, a, b)
+                    self.res = res
+            case '^':
+                if isinstance(a.getType(), TypeBytes) and isinstance(b.getType(), TypeBytes):
+                    res = lbytes.bit_xor(0, a, b)
+                    self.res = res
+            case '<<':
+                if isinstance(a.getType(), (TypeString)):
+                    self.res = self.strLshift(a, b)
+                # elif isinstance(a.getType(), (TypeBytes)):
+                #     self.res = lbytes.bit_lshift(0, a, b)
+            case '>>':
+                pass
+                # if isinstance(a.getType(), (TypeBytes)):
+                #     self.res = lbytes.bit_rshift(0, a, b)
+        # print('$1 ', self.res)
     
     def type_or(self, a:TypeVal, b:TypeVal):
         r = MultiType()
@@ -524,6 +522,9 @@ class OpBitwise(BinOper):
             r.addSubType(sub)
         
         return TypeVal(r)
+
+    def bt_and(self, a, b):
+        return a & b
     
     def bt_or(self, a, b):
         return a | b
@@ -531,6 +532,23 @@ class OpBitwise(BinOper):
     def bt_xor(self, a, b):
         return a ^ b
 
+    def lshift(self, a, b):
+        return a << b
+
+    def rshift(self, a, b):
+        return a >> b
+
+    def strLshift(self, a, b):
+        ''' "str pattern " << (vals) '''
+        if not isinstance(b, TupleVal):
+            t = b
+            b = TupleVal()
+            b.addVal(t)
+        # reuse python old format %
+        args = tuple(n.getVal() for n in b.rawVals())
+        tpl = a.getVal()
+        # dprint('tpl % args: ', tpl % args)
+        return StringVal(tpl % args)
 
 class UnarOper(OperCommand):
     def __init__(self, oper:str, inner:Expression=None):

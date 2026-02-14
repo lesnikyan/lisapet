@@ -182,7 +182,7 @@ class ListVal(Collection):
         raise EvalErr('List out of range by index %d ' % i)
 
     def getSlice(self, beg, end):
-        if beg < 0 or end > len(self.elems):
+        if beg < -len(self.elems) or end > len(self.elems):
             raise EvalErr('indexes of List slice are out of range [%d : %d] with len = %d' % (beg, end, len(self.elems)))
         rdata = self.elems[beg: end]
         return ListVal(elems=rdata)
@@ -224,8 +224,8 @@ class ListVal(Collection):
         # if not nm:
             # nm = '#list-noname'
         def strv(var):
-            # dprint('@>>', var, var.getType(),  isinstance(var.getType(), TypeContainer), ' str:', str(var))
-            if isinstance(var.getType(), TypeContainer):
+            # print('@>>', var, var.getType(),  isinstance(var.getType(), (TypeContainer, TypeBytes)), ' str:', str(var))
+            if isinstance(var.getType(), (TypeContainer, TypeBytes)):
                 return str(var)
             return str(var.get())
         vals = [strv(n) for n in self.elems[:10]]
@@ -365,17 +365,67 @@ class StringVal(ValSequence):
         k = key.getVal()
         data = self.getVal()
         if len(data) <= k:
-            raise EvalErr('List out of range by key %s ' % k)
+            raise EvalErr('String content out of range by key %s ' % k)
         return StringVal(data[k])
     
     def len(self)->int:
         return len(self.val)
 
     def getSlice(self, beg, end):
-        if beg < 0 or end > len(self.val):
-            raise EvalErr('indexes of List slice are out of range [%d : %d] with len = %d' % (beg, end, len(self.val)))
+        if beg < -len(self.val) or end > len(self.val):
+            raise EvalErr('indexes of String slice are out of range [%d : %d] with len = %d' % (beg, end, len(self.val)))
         res =  self.val[beg: end]
         return StringVal(res)
+
+
+class bytearray2(bytearray):
+    def __str__(self):
+        return  '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
+                                    
+    def __repr__(self):
+        return '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
+
+
+class BytesVal(ValSequence):
+    ''' [11, 22, 33, ff] '''
+    
+    def __init__(self, val:bytearray):
+        super().__init__(None, TypeBytes())
+        self.val:bytearray2 = val
+    
+    def getElem(self, key:Val):
+        k = key.getVal()
+        data = self.getVal()
+        if len(data) <= k:
+            raise EvalErr('Bytes set out of range by key %s ' % k)
+        # TODO change to TypeByte, or not
+        return Val(data[k], TypeInt())
+    
+    def len(self)->int:
+        return len(self.val)
+    
+    def addVal(self, val:Val):
+        # print('Bytes.addVal:', self.val, val.getVal())
+        if val.getType() == TypeBytes():
+            addv = val.getVal()
+            self.val.extend(addv)
+        else:
+            self.val.append(val.getVal())
+    
+    def setVal(self, key:Val, val:Val):
+        i = key.getVal()
+        if i >= len(self.val):
+            raise EvalErr('Bytes out of range by index %d ' % i)
+        self.val[i] = val.getVal()
+
+    def getSlice(self, beg, end):
+        if beg < -len(self.val) or end > len(self.val):
+            raise EvalErr('indexes of Bytes slice are out of range [%d : %d] with len = %d' % (beg, end, len(self.val)))
+        res =  bytearray2(self.val[beg: end])
+        return BytesVal(res)
+    
+    def __str__(self):
+        return 'bytes[%s]' % ' '.join([f'{b:02x}' for b in self.val])
 
 
 class Regexp(Val):
@@ -424,8 +474,6 @@ class Regexp(Val):
             grval.extend(groups)
             rvals.append(ListVal(elems=[StringVal(s) for s in grval]))
         return ListVal(elems=rvals)
-
-
 
 
 class EnumItem(Val):
@@ -535,7 +583,7 @@ def var2val(var:Var|Val):
     if isinstance(var, (Val, Collection, Regexp, StringVal, FuncInst)):
         return var
     val = var.getVal()
-    if isinstance(val, (Val, Collection, ObjectInstance, FuncInst)):
+    if isinstance(val, (Val, Collection, ObjectInstance, BytesVal, FuncInst)):
         return val
     tp = var.getType()
     return Val(val, tp)
