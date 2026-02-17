@@ -304,6 +304,56 @@ class TestBoundFuncs(TestCase):
             's1-s2-s3', 's4_s5_s6', 's7/s8/s9', '11"12"13', ['aaa', 'bbb', 'ccc'], '<t>Hello</t> <t>dear</t> <t>friend</t>']
         self.assertEqual(exv, rvar.vals())
 
+    def test_builtin_len_for_string(self):
+        ''' test implementation of builtin function len for string type '''
+        code = r'''
+        nn = [
+            '', ' ', '123', 'a b c'
+        ]
+        nn <- """abc
+        def"""
+        res = []
+        for s <- nn
+            res <- len(s)
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        self.assertEqual([0, 1, 3, 5, 7], rvar.vals())
+
+    def test_built_foldl(self):
+        ''' '''
+        code = r'''
+        res = 0
+        
+        func sum(nums)
+            plus = (x, y) -> x + y
+            foldl(0, nums, plus)
+        
+        # args = [1,2,3,4,5]
+        s1 = sum([1,2,3,4,5])
+        s2 = sum([1..10])
+        s3 = sum([x ** 2 ; x <- [2..9]])
+        
+        res = [s1, s2, s3]
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rval = ctx.get('res').get()
+        self.assertEqual([15, 55, 284], rval.vals())
+
     def test_dict_func_ditems(self):
         ''' '''
         code = r'''

@@ -118,6 +118,57 @@ class ArgSetNamed:
         self.elems[name] = elem
 
 
+class TripleDotsExpr(Expression):
+    '''
+    dualistic object
+    1) arg... in func definition
+    2) expr... in func call
+    3) func... in currying
+    '''
+    def __init__(self, var:Var|Expression=None):
+        self.defVal = []
+        self.name = ''
+        expr = var
+        if not var:
+            expr = VarExpr_()
+            var = Var_()
+        elif isinstance(var, VarExpr):
+            self.name = var.get().getName()
+        super().__init__(var)
+        self.expr = expr
+    
+    def setSub(self, sub:Expression):
+        self.expr = sub
+    
+    def carry(self, expr):
+        return -115 # dev
+    
+    def do(self, ctx:NSContext):
+        # newVal = ctx.get(self.name)
+        self.expr.do(ctx)
+        xval = self.expr.get()
+        
+        # 1) case arg in def; xval - Var
+        
+        # 2) case param in func call, xval - list, tuple
+        
+        # 3) case func currying, xval - function
+        inval = var2val(xval)
+        if isinstance(inval, FuncInst):
+            xval = self.carry(inval)
+        
+        self.val = xval
+    
+    def get(self):
+        return self.val
+
+
+class CurryingExpression(Expression):
+    def __init__(self, funcExpr=None, src=None):
+        super().__init__(None, src)
+        self.funcExpr = funcExpr
+
+
 class ArgExtList(ArgExpr):
     '''
     dualistic object
@@ -142,6 +193,7 @@ class ArgExtList(ArgExpr):
     def do(self, ctx:NSContext):
         # newVal = ctx.get(self.name)
         self.expr.do(ctx)
+        # print('$1 ', self.expr.get())
         self.val = self.expr.get()
     
     def get(self):

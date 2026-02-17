@@ -48,6 +48,9 @@ class Function(FuncInst):
     def setDefContext(self, ctx:Context):
         self.defCtx = ctx
 
+    def getDefContext(self):
+        return self.defCtx
+    
     def getName(self):
         return self._name
     
@@ -84,7 +87,7 @@ class Function(FuncInst):
             raise EvalErr('Not enough args in call of fuction `%s`. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
 
-        inCtx = Context(self.defCtx)
+        inCtx = Context(self.getDefContext())
         # ordCollector = []
         noMoreOrds = False
         
@@ -265,8 +268,6 @@ class ResursionLoop(Block):
             
 
 
-
-
 class ObjMethod(FuncInst):
     
     def __init__(self, inst:Val, func:FuncInst, src=None):
@@ -299,3 +300,10 @@ class ObjMethod(FuncInst):
 
     def __str__(self):
         return 'ObjMethod(%s.%s)' % (str(self.obj.vtype), self.getName())
+
+class InnFunction(Function):
+    
+    def __init__(self, name, defCtx:Context):
+        super().__init__(name)
+        self.defCtx:Context = defCtx # 
+    

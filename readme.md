@@ -6,6 +6,7 @@ Syntax is similar to mix of Python, Golang and some functional langs. It's writt
 
 Name: Linear Interpreter of Scripting And Processing Expression Tree.  
 (LP, this code, miniscript)
+Alter name: FOTEX - Functional-object tree of expressions.
 possible ico: Fox pet on the bicycle
 
 LP was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run within the python project but without direct execution of native python code on the python interpreter (bad and unsafe way).  
@@ -826,7 +827,7 @@ print(bb)
 - Methods.  
 
 Basic methods:  
-`bytes` type has its own builtins methods:  
+`bytes` type has its own builtin methods:  
 `map`, `each`, `fold`, `reverse`, `replace`  
 ```python
 res = 0d[1 2 4 8 16 32].map(x -> x << 1)

@@ -48,7 +48,6 @@ class UnclosedExpr:
         self.indent = cline.indent
 
     def add(self, part:list, src:TLine):
-        # prels('Uncl.add: ', part)
         self.elems.extend(part)
         self.src.add(src)
 
@@ -136,7 +135,7 @@ expCaseList:list[ExpCase] = [
     CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
     CaseLambda(),
     CaseSemic(), CaseBinOper(), CaseCommas(),
-    CaseMString(), CaseUnar(StrFormatter()),
+    CaseMString(), CaseLUnar(StrFormatter()),
     
     #CaseComment(),
     # CaseBreak(), CaseContinue(), CaseRegexp(),
@@ -326,17 +325,18 @@ def lex2tree(src:list[CLine]) -> Block:
     curBlock = root
     lineNum = 0
     parents:list[Block] = []
-    # dprint('~~~~~~~~~~~` start tree builder ~~~~~~~~~~~~')
-    i = -1
+    # print('~~~~~~~~~~~` start tree builder ~~~~~~~~~~~~')
+    i_src = -1
 
     unclosed = None
     unclosedCase = CaseUnclosedBrackets()
     prev = root # expr of prev line
     expr = root
     indent = src[0].indent
+    lastInd = len(src) - 1
     caseComment = CaseComment()
     for cline in src:
-        i += 1
+        i_src += 1
         # print('  -  -  - ')
         lineNum += 1
         cline.line = lineNum
@@ -362,13 +362,16 @@ def lex2tree(src:list[CLine]) -> Block:
             expr.init(cline)
             if unclosed is None:
                 unclosed = expr
+            # print('->>', lastInd, i_src)
+            if lastInd == i_src:
+                raise InterpretErr('Unclosed expression in last line. Uncosed till <<%s>>' % expSrc(cline.src))
             continue
         else:
             if unclosed is not None:
                 unclosed = None
         
-        # print( '$ind=',  indent, '; prevIndent=', prevIndent)
         prevIndent = indent
+        # print(i_src, '$ind=',  indent, '; prevIndent=', prevIndent)
         if unclosed is None:
             indent = cline.indent
         else:

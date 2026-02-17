@@ -7,7 +7,7 @@ from nodes.expression import *
 from nodes.keywords import *
 from nodes.base_oper import AssignExpr
 from nodes.oper_dot import ObjectMember
-from objects.func import Function, ObjMethod
+from objects.func import Function, ObjMethod, InnFunction
 
 import inspect
 
@@ -251,6 +251,13 @@ class NFunc(Function):
         self.callFunc:Callable = lambda *args : 1
         self.res:Val = None
         self.resType:VType = rtype
+        # self.topCtx:Context = None
+
+    def copy(self, defCtx:Context):
+        r = NFunc(self._name)
+        r.callFunc = self.callFunc
+        r.resType = self.resType
+        r.setDefContext(defCtx)
 
     def setArgVals(self, args:list[Var], named:dict={}):
         self.argVars = []
@@ -263,7 +270,8 @@ class NFunc(Function):
         args = []
         for arg in self.argVars:
             args.append(arg)
-        res = self.callFunc(ctx, *args)
+        inCtx = Context(self.getDefContext())
+        res = self.callFunc(inCtx, *args)
         if not isinstance(res, Val):
             # not Val, Not ListVal, etc.
             res =  Val(res, self.resType)
@@ -272,18 +280,93 @@ class NFunc(Function):
     def get(self)->Val:
         return self.res
 
+# class CContext(Context):
+    # ''' '''
 
-def coverFunc(name:str, fn:Callable, rtype:VType=TypeAny):
+# class _InnNFunc(NFunc):
+#     ''' '''
+#     def __init__(self, name, defCtx, protoFunc:Function):
+#         super().__init__(name, defCtx)
+#         # self.callFunc:Callable = lambda *args : 1
+#         self.proto = protoFunc
+#         self.inDefCtx = defCtx
+#         self.res:Val = None
+
+#     def getDefContext(self):
+#         return self.inDefCtx
+    
+#     def setArgVals(self, args:list[Var], named:dict={}):
+#         self.proto.setArgVals(args)
+#         # self.argVars = []
+#         # for arg in (args):
+#         #     if isinstance(arg, Var):
+#         #         arg = arg.get()
+#         #     self.argVars.append(arg)
+
+#     def do(self, ctx: Context):
+#         dx = self.getDefContext()
+#         self.proto.do(ctx)
+#         # args = []
+#         # for arg in self.argVars:
+#         #     args.append(arg)
+#         # inCtx = CContext(self.defCtx)
+#         # print('- - - $2 ', 'inX:', hex(id(inCtx)), 'defX:', hex(id(self.defCtx)), self.getName(),)
+#         # # print('>>', args)
+#         # # if self.topCtx:
+#         # #     kw = {'exCtx':self.topCtx.copy()}
+#         # #     res = self.callFunc(inCtx, *args)
+#         # # else:
+#         # res = self.callFunc(inCtx, *args)
+#         # if not isinstance(res, Val):
+#         #     # not Val, Not ListVal, etc.
+#         #     res =  Val(res, self.resType)
+#         # self.res = res
+
+#     def get(self)->Val:
+#         return self.res
+
+
+
+def coverFunc(name:str, fn:Callable, rtype:VType=TypeAny, topCtx=None):
     func = NFunc(name)
     func.resType = rtype
     func.callFunc = fn
+    # if topCtx:
+    #     func.topCtx = topCtx
     return func
 
 def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
     func = NFunc(name)
+    func.setDefContext(ctx)
     func.resType = rtype
     func.callFunc = fn
     ctx.addFunc(func)
+
+
+def curryStep(ctx, fname,  target:Function):
+    def local(ctx, arg:Val):
+        target.do(ctx)
+    return setNativeFunc(ctx, fname, local, TypeFunc())
+
+
+def curry(func:Function):
+    '''
+    func foo(a, b, c)
+        #...
+    func carry()
+        func f1(a)
+            func f2(b)
+                func f3(c)
+                    return foo(a, b, c)
+                return f3
+            return f2
+        return f1
+    '''
+    fNum = func.argNum - 1
+    # for i in range(fNum):
+    #     infun = coverFunc('f%d'%i, )
+    #     r.argNum = 1
+    #     r.addArg
 
 
 class BoundMethod(NFunc):
@@ -305,6 +388,7 @@ def bindNativeMethod(ctx:Context, typeName, fn, fname, rtype:VType=None):
         rtype = TypeAny
     # print('BM fn name:', fname)
     func = BoundMethod(fn, fname)
+    func.setDefContext(ctx)
     func.resType = rtype
     func.callFunc = fn
     ctx.bindTypeMethod(typeName, func)

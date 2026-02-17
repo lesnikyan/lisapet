@@ -15,7 +15,40 @@ from cases.structs import MethodDefExpr
 from cases.utils import OperSplitter
 
 
-class CaseArgExtraList(SubCase):
+class RUnaryOper(SubCase, SolidCase):
+    ''' n...  '''
+    def match(self, elems:list[Elem]) -> bool:
+        if len(elems) < 2:
+            return False
+        if not isSolidExpr(elems[:-1]):
+            return False
+        if isLex(elems[-1], Lt.oper, '...'):
+            return True
+        return False
+    
+    def getExpr(self, oper):
+        match oper:
+            case '...':
+                return TripleDotsExpr()
+    
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+    # def expr(self, elems:list[Elem])-> Expression:
+        ''' Value from context by var name'''
+        subs = []
+        subs = [elems[:-1]]
+        oper = elems[-1].text
+        
+        expr = self.getExpr(oper)
+        return expr, subs
+
+    def setSub(self, base:ArgExtList, subs:Expression|list[Expression])->Expression:
+        if subs:
+            base.setSub(subs[0])
+    
+    
+
+
+class CaseArgExtraList(SubCase, SolidCase):
     ''' varname... '''
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) < 2:

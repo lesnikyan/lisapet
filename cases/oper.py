@@ -233,8 +233,10 @@ def makeOperExp(elem:Elem)->OperCommand:
 unaryOpers = '- ! ~'.split(' ')
 # oneValExptRx = re.compile('[0-9a-z]+?(\(.*\))?')
 
-class CaseUnar(SubCase):
-    
+class CaseLUnar(SubCase):
+    ''' Left unary operators
+    -n ; ~n ; !n
+    '''
     def __init__(self, strformat=None):
         super().__init__()
         self.formatter:SFormatter = strformat
