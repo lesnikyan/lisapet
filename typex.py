@@ -135,6 +135,10 @@ class FuncInst(Objective):
         return '~'.join([at.hash() for at in argTypes])
 
 
+class MethodInst(FuncInst):
+    ''''''
+
+
 class ConstSet(TypeContainer):
     ''' enum, etc '''
 

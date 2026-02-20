@@ -115,10 +115,12 @@ class StrFormatter(SFormatter):
 # CaseMString
 expCaseSolids:list[ExpCase] = [
     CaseBreak(), CaseContinue(), CaseRegexp(), CaseReturn(),  CaseElse(), 
-    CaseVal(), CaseVar(), CaseVar_(), CaseDotName(), CaseString(),
-    CaseTuple(),
+    CaseVal(), CaseVar(), CaseVar_(), CaseDotName(), CaseRTildArroy(), 
+    CaseString(),
+    CaseTuple(), CaseList(),
+    CaseArgExtraList(), CaseArgExtraDict(),
     CaseListGen(), CaseBytes(), CaseBytesExplicit(),
-    CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), 
+    CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseCollectElem(), 
     CaseFunCall(), CaseStructConstr(),
     CaseBrackets()
     ]
@@ -131,7 +133,6 @@ expCaseList:list[ExpCase] = [
     CaseInlineSub(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(),  
     CaseMatchCase(),
-    CaseArgExtraList(), CaseArgExtraDict(),
     CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
     CaseLambda(),
     CaseSemic(), CaseBinOper(), CaseCommas(),
@@ -246,7 +247,7 @@ def subBtContext(blockContext:Expression):
 
 def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     # print('#elems2expr:', [(n.text, Lt.name(n.type)) for n in elems])
-    # print('/n# elems2expr/1::', ' '.join(["'%s'"%n.text for n in elems]), 'bContext:', blockContext)
+    # print('\n--/n# elems2expr/1::', ' '.join(["'%s'"%n.text for n in elems]), 'bContext:', blockContext)
     
     foundCase = None
     
@@ -255,9 +256,12 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
         foundCase = subBtContext(blockContext)
     
     # check Solid:
-    if not foundCase and isSolidExpr(elems):
+    expSolid = isSolidExpr(elems)
+    # print('\ntree.solid:', expSolid)
+    if not foundCase and expSolid:
         # print('elems2expr/isSolidExpr', expCaseSolids)
         for expCase in expCaseSolids:
+            # print('elems2expr/Solid', expCase.__class__)
             if expCase.match(elems):
                 foundCase = expCase
                 break
@@ -265,6 +269,7 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     # check non-Solid
     if not foundCase:
         for expCase in getCases():
+            # print('elems2expr/NoSolid', expCase.__class__)
             if expCase.match(elems):
                 foundCase = expCase
                 break
@@ -274,7 +279,7 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
         expr = makeExpr(foundCase, elems)
         if isinstance(expr, CtrlSubExpr):
             expr = expr.toControl()
-        # print('\n#EL2EX . expr:', expr, '', elemStr(elems))
+        # print('#post-sub:', expr, '', elemStr(elems))
         return expr
     # print('tree:DEBUG: No current ExprCase for `%s` ' % ''.join([n.text for n in elems]))
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))

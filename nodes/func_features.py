@@ -34,12 +34,14 @@ ff = curry(foo) # f1 returned here
 def hiddenName(i:int):
     return '#var-%d'% (i)
 
+
 def defineFunc(defCtx:Context, name:str, fn:Callable):
     func = NFunc(name, 1)
     func.setDefContext(defCtx)
     func.resType = TypeFunc()
     func.callFunc = fn
     return func
+
 
 def cascadeStep(i, func:Callable):
     '''
@@ -56,6 +58,7 @@ def cascadeStep(i, func:Callable):
         return rfunc
     return inFunc
 
+
 def coverTarget(i, func:Callable):
     '''
     i = name-index
@@ -69,18 +72,25 @@ def coverTarget(i, func:Callable):
         return func(ctx)
     return resFunc
 
+
 def func_curry(defCtx:Context, fun:Function):
     ''' Curry pased function
     :param defCtx - definition context.
     :param fun - the target function being curried
     :return - NFunc obj with a cascase of currying. 
     '''
-    argNum = fun.argNum
+    argNum = fun.argCount()
+    isMethod = isinstance(fun, MethodInst)
+    if isMethod:
+        argNum -= 1
     
     # deepest raw function in currying cascade
     def cover(ctx:Context):
         vars = [ctx.get(hiddenName(i+1)) for i in range(argNum)]
-        args = [var2val(a) for a in vars]
+        args = []
+        if isMethod:
+            args.append(fun.obj)
+        args.extend([var2val(a) for a in vars])
         fun.setArgVals(args)
         fun.do(ctx)
         r = fun.get()

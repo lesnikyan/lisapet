@@ -99,7 +99,7 @@ class FuncCallExpr(CallExpr):
         if isinstance(func, ObjMethod):
             # method but not a function object in the field of struct
             method = func
-            obj = method.obj
+            # obj = method.obj
             # print('F.func: ObjectMember', obj, method)
             # next we need Function to resolve overload case
             func = method.func
@@ -280,59 +280,11 @@ class NFunc(Function):
     def get(self)->Val:
         return self.res
 
-# class CContext(Context):
-    # ''' '''
-
-# class _InnNFunc(NFunc):
-#     ''' '''
-#     def __init__(self, name, defCtx, protoFunc:Function):
-#         super().__init__(name, defCtx)
-#         # self.callFunc:Callable = lambda *args : 1
-#         self.proto = protoFunc
-#         self.inDefCtx = defCtx
-#         self.res:Val = None
-
-#     def getDefContext(self):
-#         return self.inDefCtx
-    
-#     def setArgVals(self, args:list[Var], named:dict={}):
-#         self.proto.setArgVals(args)
-#         # self.argVars = []
-#         # for arg in (args):
-#         #     if isinstance(arg, Var):
-#         #         arg = arg.get()
-#         #     self.argVars.append(arg)
-
-#     def do(self, ctx: Context):
-#         dx = self.getDefContext()
-#         self.proto.do(ctx)
-#         # args = []
-#         # for arg in self.argVars:
-#         #     args.append(arg)
-#         # inCtx = CContext(self.defCtx)
-#         # print('- - - $2 ', 'inX:', hex(id(inCtx)), 'defX:', hex(id(self.defCtx)), self.getName(),)
-#         # # print('>>', args)
-#         # # if self.topCtx:
-#         # #     kw = {'exCtx':self.topCtx.copy()}
-#         # #     res = self.callFunc(inCtx, *args)
-#         # # else:
-#         # res = self.callFunc(inCtx, *args)
-#         # if not isinstance(res, Val):
-#         #     # not Val, Not ListVal, etc.
-#         #     res =  Val(res, self.resType)
-#         # self.res = res
-
-#     def get(self)->Val:
-#         return self.res
-
-
 
 def coverFunc(name:str, fn:Callable, rtype:VType=TypeAny, topCtx=None):
     func = NFunc(name)
     func.resType = rtype
     func.callFunc = fn
-    # if topCtx:
-    #     func.topCtx = topCtx
     return func
 
 def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
@@ -341,32 +293,6 @@ def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
     func.resType = rtype
     func.callFunc = fn
     ctx.addFunc(func)
-
-
-def curryStep(ctx, fname,  target:Function):
-    def local(ctx, arg:Val):
-        target.do(ctx)
-    return setNativeFunc(ctx, fname, local, TypeFunc())
-
-
-def curry(func:Function):
-    '''
-    func foo(a, b, c)
-        #...
-    func carry()
-        func f1(a)
-            func f2(b)
-                func f3(c)
-                    return foo(a, b, c)
-                return f3
-            return f2
-        return f1
-    '''
-    fNum = func.argNum - 1
-    # for i in range(fNum):
-    #     infun = coverFunc('f%d'%i, )
-    #     r.argNum = 1
-    #     r.addArg
 
 
 class BoundMethod(NFunc):

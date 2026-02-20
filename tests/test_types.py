@@ -542,7 +542,7 @@ class TestTypes(TestCase):
             # print('\n', tcase)
             
             with self.assertRaises(EvalErr, msg="Not raised expression: %s" % tcase):
-                ctx:Context = doCode(tcode)
+                ctx:Context = doCodeMute(tcode)
 
     def test_compatible_value_func_args(self):
         ''' assign compatible args of function '''

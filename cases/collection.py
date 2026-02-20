@@ -77,11 +77,49 @@ class CaseList(SubCase, SolidCase):
             return False
         if not (isLex(elems[0], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']')):
             return False
+        
+        # empty case:
         if len(elems) == 2:
             return True
+        
+        r =  isSolidExpr(elems, getLast=True)
+        # print('CaseList.of solid:', r)
+        if not isinstance(r, tuple):
+            return False
+        
+        ok, pos = r
+        if not ok or pos != 0:
+            return False
+        
+        inElems = elems[1:-1]
+        # many items case
+        cs = CaseCommas()
+        cres = cs.match(elems[1:-1])
+        # print(' $$$$$$$$$$$$$$$$$$$$ CL.comm', cres)
+        if cres:
+            return True
+        smc = CaseSemic()
+        if smc.match(inElems):
+            return False
+
+        # expr .. expr - is ok, in setSub wil be fixed
+        
+        # TODO: refactor all [subs] cases as top CaseSquareBr, then: List, IterGen, ListGen, Slice
+        
+        # begn = 1
+        # if isLex(elems[1], Lt.oper, ['-','~','!']):
+        #     begn = 2
+        # return isSolidExpr(elems[begn:-1])
+        
+        if isHexBytes(inElems):
+            # print('CL.isHexBytes')
+            return False
+        
         spl = OperSplitter()
-        opInd = spl.mainOper(elems)
-        return opInd == 0
+        opInd = spl.mainOper(inElems)
+        # ltex = inElems[opInd].text
+        # print('CL.opSpl', opInd, ltex)
+        return opInd not in [';', '..', ':']
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         exp = ListExpr()
@@ -93,7 +131,11 @@ class CaseList(SubCase, SolidCase):
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        # dprint('CaseList.setSub: ', base, subs)
+        # print('CaseList.setSub: ', base, subs)
+        if len(subs) == 1:
+            if isinstance(subs[0], TwoDotsOper):
+                # print('$1 ')
+                return subs[0].getListGen()
         for exp in subs:
             if isinstance(exp, NothingExpr):
                 # empty position after comma

@@ -515,14 +515,14 @@ class MatchPtrCase(RawCase):
 
 
 def flatOpers():
-    opers = getOperPriors()[1:]
+    opers = getOperPriors()[4:]
     fopers = []
     for oops in opers:
         # print(oops.split(' '))
         fopers.extend([n for n in oops.split(' ') if n and  n not in ' .'])
     return fopers
 
-_noDotOpers = flatOpers()
+_noSolidOpers = flatOpers()
 
 _keyWords = (
     'if else while for match func struct import @debug'
@@ -537,13 +537,18 @@ def isSolidExpr(elems:list[Elem], getLast=None):
     elen = len(elems)
     if elen == 0:
         return False
+    
     if elen == 1 and elems[0].type in [Lt.word, Lt.text, Lt.num]:
         return True
+    
     # print('isSolid #2', f"<{elems[0].text}>", elems[0].text in _keyWords)
     if elems[0].type == Lt.word and elems[0].text in _keyWords:
         return False
     
-    fopers = _noDotOpers
+    if isHexBytes(elems):
+        return False
+
+    fopers = _noSolidOpers
     # print('solid-fopers', fopers)
     opened = [] # brackets openede from right
     # cbr = []
@@ -554,7 +559,7 @@ def isSolidExpr(elems:list[Elem], getLast=None):
     for i in range(elen-1, -1, -1):
         el = elems[i]
         etx = el.text
-        # print('=>', etx, end=' ')
+        # print('=>', '', etx, end=' ')
         et = el.type
         if isLex(el, Lt.oper, rob):
             # open brackets from right
@@ -564,7 +569,7 @@ def isSolidExpr(elems:list[Elem], getLast=None):
             # close brackets
             if len(opened) == 0:
                 # posibly multiline expr
-                # print('No-solid', )
+                # print('No-solid?', len(opened))
                 return False
             lastObr = opened.pop()
             if bpairs[etx] != lastObr:
@@ -576,8 +581,8 @@ def isSolidExpr(elems:list[Elem], getLast=None):
                 return True, i
             continue
         if not opened and isLex(el, Lt.oper, fopers):
-            # any operator has been found not in brackets a + b
-            # print('No Solid because of ', etx)
+            # any operator has been found not in brackets a + b, excepr [. ~>]
+            # print('back-i:%d'%i, 'No Solid because of ', etx)
             return False
     # print('\n>> ', opened, ' //')
     return not opened
@@ -642,6 +647,32 @@ class CaseDotName(SubCase, SolidCase):
         objExpr = subs[0]
         # print('O.dot:setSub', objExpr)
         base.setObj(objExpr)
+
+
+class CaseRTildArroy(SubCase, SolidCase):
+    ''' solid~> '''
+    # RTildArrowExpr
+    
+    def match(self, elems:list[Elem]) -> bool:
+        ''' '''
+        if len(elems) < 2:
+            return False
+        return isLex(elems[-1], Lt.oper, '~>')
+        
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        ''' '''
+        # fname = elems[-1].text
+        # member = VarExpr(Var(fname, TypeAny()))
+        expr = RTildArrowExpr()
+        return expr, [elems[:-1]]
+    
+    def setSub(self, base:RTildArrowExpr, subs:Expression|list[Expression])->Expression: 
+        ''' '''
+        sub = subs[0]
+        # print('O.dot:setSub', objExpr)
+        base.setInner(sub)
+        return base
 
 
 class CaseEnum(SubCase):
@@ -731,9 +762,6 @@ class CaseBytes(ExpCase, SolidCase):
         self.nrx = re.compile(r'[0-9a-f]{1,2}', re.I) 
         self.numBases = {'x':16, 'b':2, 'd': 10, 'o':8}
     
-    # def isInsertion(self, elems):
-    #     if 
-
     def match(self, elems:list[Elem], min3=0) -> bool:
         ''' '''
         ln = len(elems)

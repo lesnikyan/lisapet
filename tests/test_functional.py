@@ -26,6 +26,125 @@ from eval import *
 class TestFuncs(TestCase):
     
 
+    def test_curry_operator(self):
+        code = r'''
+        res = [-557]
+        
+        func foo(a,b)
+            a + b
+        
+        func bar(a, b, c)
+            a * b + c
+        
+        func fu5(a1, a2, a3, a4, a5)
+            ('fu5>', a1, a2, a3, a4, a5)
+        
+        # 2 args
+        res <- 'foo'
+        f01 = foo~>
+        res <- f01(100)(23)
+        res <- foo~>(200)(13)
+        
+        f02 = f01(1000)
+        f03 = f01(2000)
+        res <- f02(31)
+        res <- f02(32)
+        res <- f03(31)
+        res <- f03(32)
+        # in format-string
+        res <- ~'foo(50)(7)={foo~>(50)(7)}'
+        
+        # 3 args
+        res <- 'bar'
+        
+        b01 = bar~>
+        res <- b01(3)(100)(1)
+        res <- b01(3)(110)(2)
+        
+        b02 = b01(4)
+        b22 = b02(200)
+        b03 = b01(5)
+        b04 = bar~>(6)
+        
+        res <- b02(100)(11)
+        res <- b02(110)(2)
+        res <- b22(3)
+        res <- b03(100)(11)
+        res <- b03(110)(12)
+        
+        # 5 args
+        
+        fu51 = fu5~>
+        fu52 = fu51(1)
+        fu511 = fu5~>(11)
+        
+        res <- fu51(22)(2)(3)(4)(5)
+        res <- fu52(22)(33)(44)(55)
+        res <- fu511(32)(33)(34)(35)
+        
+        # func from func
+        func getFoo()
+            foo
+        
+        res <- getFoo()~>(700)(13)
+        
+        ff1 = [foo~>, bar~>(14), fu5~>(51)(52)(53)]
+        
+        for i <- iter(len(ff1))
+            fn = ff1[i]
+            res <- [~'{i}:', fn(10)(7)]
+        
+        # func from struct member
+        # f~>(1).n 
+        # m.n~>(1)
+        
+        struct A a:int, f:function
+        
+        func getA(n)
+            f = (x,y) -> [x, y]
+            A(n, f)
+        
+        res <- 'A.foo'
+        
+        a1 = A(120, foo)
+        res <- ('a1', a1.f~>(10)(2))
+        
+        res <- ('a_2', (getA(2)).f~>(2)(4))
+        
+        a3 = (getA(3))
+        res <- a3.f~>(3)(6)
+        
+        
+        # struct method
+        struct B b:int
+        
+        func st:B bum(x, y)
+            ('B.bum', st.b, x, y)
+        
+        b1 = B(15)
+        res <- b1.bum~>(901)(902)
+        b8000 = b1.bum~>(8000)
+        res <- b8000(16)
+        
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [-557, 
+            'foo', 123, 213, 1031, 1032, 2031, 2032, 'foo(50)(7)=57', 
+            'bar', 301, 332, 411, 442, 803, 511, 562, 
+            ('fu5>', 22, 2, 3, 4, 5), ('fu5>', 1, 22, 33, 44, 55), ('fu5>', 11, 32, 33, 34, 35), 713, 
+            ['0:', 17], ['1:', 147], ['2:', ('fu5>', 51, 52, 53, 10, 7)], 
+            'A.foo', ('a1', 12), ('a_2', [2, 4]), [3, 6], 
+            ('B.bum', 15, 901, 902), ('B.bum', 15, 8000, 16)]
+        self.assertEqual(exv, resv)
+
     def test_dev_currying_function(self):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()

@@ -12,7 +12,20 @@ oper group replacement:
 `1` >=> ,
 '''
 
-operPrior = ('( ) [ ] { } , . , ... , -x !x ~x , ** , * / % , + - ,'
+
+
+
+def isHexBytes(elems:list[Elem]):
+    rx = re.compile(r'[0-9a-f]+', flags=re.I)
+    if len(elems) < 2:
+        return False
+    xtype = [Lt.word, Lt.num]
+    for el in elems:
+        if el.type not in xtype or not rx.match(el.text):
+            return False
+    return True
+
+operPrior = ('( ) [ ] { } , . , ~> , ... , -x ! ~ , ** , * / % , + - ,'
 ' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, ?: , : , ? , `1`, .. , <- , ->, = += -= *= /= %= , ; , !: :? => , /: ')
 
 unaryOperators = '- ! ~'.split(' ')

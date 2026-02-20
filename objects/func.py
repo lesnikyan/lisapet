@@ -268,7 +268,7 @@ class ResursionLoop(Block):
             
 
 
-class ObjMethod(FuncInst):
+class ObjMethod(MethodInst):
     
     def __init__(self, inst:Val, func:FuncInst, src=None):
         super().__init__()
@@ -278,6 +278,9 @@ class ObjMethod(FuncInst):
 
     def getName(self):
         return self.func.getName()
+    
+    # def getInst(self):
+    #     return self.obj
     
     def setArgVals(self, args:list[Var], named:dict={}):
         return self.func.setArgVals(args, named)

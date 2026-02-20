@@ -182,22 +182,33 @@ class TestDev(TestCase):
         
         TODO: list|tuple methods: sort, filter
         
+        TODO: refactor list-like expressions to avoid multiple check items in []-brackets
+            first check solid []-case, then find case in []-cases:
+            list, slice, iter-gen, list-gen, bytes
+        
         TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        
+        TODO:  # partially called, make function with remined args; can't be applyed to func with arg...
+            foo(1,2, ...>)
+            foo(1,2, ->)
+            foo(1,2, _...)
+            foo(1,2, :...)
+            foo(1,2, |...)
+            foo(1,2, /...)
         
         DONE: curry as builtin function
         
-        TODO: currying operator:
+        DONE: currying operator:
             func foo(a, b, c)
-            triple dots funcName...
-            (foo...)(1)(2)(3)
-            f = (foo...)
-            f(1)(2)(3)
+            foo~>(1)(2)(3)
         
         TODO: func composition operator:
-            foo * bar * baz (x)
+            foo * bar * baz <??> (x)
+        
+        TODO: tests: curry func from var, from list, from func-call(), curry method, curry 2-3 args lambda.
+        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
         
     '''
-
 
     def _test_currying_operator(self):
         '''
@@ -206,6 +217,23 @@ class TestDev(TestCase):
         f()...
         n[1]...
         st.f...
+        
+        f1 * @foo>(1)([2,3]) * f2 $ 58
+        f1 * foo^^(1)(0) * f2 $ 58
+        f1 * foo...(1)(0) * f2 $ 58
+        f1 * foo(...)(1)(0) * f2 $ 58
+        f1 * foo(->)(1)(0) * f2 $ 58
+        f1 * foo(^^)(1)(0) * f2 $ 58
+        (/>) (!>) (~>) 
+        foo~>(1)(2) ; f = foo~> ; bar * foo~>(1)(100) * baz $ 58 ; f1 * ff()~>(1)(2) * f2 $ 58
+        f1 * foo^^(1)(0) * f2 $ 58
+        {@foo} (@foo) <@foo> @/foo @**foo @.foo 
+        foo.@(1)(2) foo.$()() foo._()() foo!!()() 
+        
+        f = foo-X
+        bar * foo-X(2)(3) $ 22
+        bar(foo-X)
+        [x, y, foo-X]
         
         
         '''
