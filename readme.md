@@ -113,7 +113,8 @@ Content:
     4. [Closures](#154-closures) 
     5. [Call-chain `foo(1)(2)(3)`](#155-call-chain)
     6. [Currying cascade](#156-currying-cascade)
-    7. [Tail recursion](#157-tail-recursion)
+    7. [Builtin `curry` `f~>`](#157-builtin-currying)
+    8. [Tail recursion](#158-tail-recursion)
 
 20. Inline syntax.  
     [Few-expressions block ` ; `](#20-one-line-block---operators)  
@@ -2212,16 +2213,53 @@ func bar(a)
 bar(11)(22)(33)(44)(55) #  [11, 22, 33, 44, 55]
 ```
 
-### 15.6.2 builtin curry.
-1) function `curry()`
+### 15.7 builtin currying.
+Currying here is a classic functional feature, when we take multi-arg function ang making function which return 1-arg funcs.  
+Currying expression gets original multi-arg function and returns function with one argument, that returns next function with one argument and so on, up to the last function with 1 arg, that returns result from call of original function.  
+In LP there are 2 ways for currying: builtin function and cpecial operator.  
+- function  
+- operator  
+```golang
+# base function
 
+func foo(a, b)
+    a + b
+```
+
+1) Builtin function `curry()`
+```python
+f1 = curry(foo)
+f1(10)(5) # >> 15
+```
 
 2) Currying operator `~>`
+```python
 
+f2 = foo~>
+f2(20)(5) # >> 25
+```
+Solid expression:  
+```python
+foo~>(30)(6) # >> 36
+```
+`~>` operator has most priority, exactly for using currying-and-call in expressions with other operators.  
+```python
+res = []
 
+res <- foo~>(10)(3) + 2 * 2
+# >> [17]
+```
+So currying doesn't break call-expression solid pattern.  
+```python
+# currying of method
+inst.mfunc~>(1)(2)
 
+# currying elem of list
+nn[2]~>(3)(4)
+```
+*Note.* We can't curry functions correctly with variadic args, default arg values, or function overloaded by count of agrs.  
 
-### 15.7 Tail recursion
+### 15.8 Tail recursion
 Classical tail recursion is a recursion in which the last expression in a function is a call to itself.  
 In the LP tail recursion works if we put the returning call into a last position, literally (I'm still thinking about earlier returns, but still have no idea if we need it).  
 So, if interpreter has detected tail recursion it will run code of such function in lightweight loop instead of increase depth of call stack.  
