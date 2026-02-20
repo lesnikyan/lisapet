@@ -16,6 +16,8 @@ from cases.mt_cases import *
 
 from nodes import *
 from nodes.tnodes import *
+from cases.sequence import *
+from cases.runar_oper import *
 from nodes.oper_nodes import *
 from nodes.control import *
 from cases.structs import *

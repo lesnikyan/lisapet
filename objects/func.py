@@ -279,8 +279,8 @@ class ObjMethod(MethodInst):
     def getName(self):
         return self.func.getName()
     
-    # def getInst(self):
-    #     return self.obj
+    def getInst(self):
+        return self.obj
     
     def setArgVals(self, args:list[Var], named:dict={}):
         return self.func.setArgVals(args, named)
@@ -303,10 +303,3 @@ class ObjMethod(MethodInst):
 
     def __str__(self):
         return 'ObjMethod(%s.%s)' % (str(self.obj.vtype), self.getName())
-
-class InnFunction(Function):
-    
-    def __init__(self, name, defCtx:Context):
-        super().__init__(name)
-        self.defCtx:Context = defCtx # 
-    

@@ -2212,6 +2212,15 @@ func bar(a)
 bar(11)(22)(33)(44)(55) #  [11, 22, 33, 44, 55]
 ```
 
+### 15.6.2 builtin curry.
+1) function `curry()`
+
+
+2) Currying operator `~>`
+
+
+
+
 ### 15.7 Tail recursion
 Classical tail recursion is a recursion in which the last expression in a function is a call to itself.  
 In the LP tail recursion works if we put the returning call into a last position, literally (I'm still thinking about earlier returns, but still have no idea if we need it).  

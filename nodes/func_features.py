@@ -89,7 +89,7 @@ def func_curry(defCtx:Context, fun:Function):
         vars = [ctx.get(hiddenName(i+1)) for i in range(argNum)]
         args = []
         if isMethod:
-            args.append(fun.obj)
+            args.append(fun.getInst())
         args.extend([var2val(a) for a in vars])
         fun.setArgVals(args)
         fun.do(ctx)

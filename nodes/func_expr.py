@@ -7,7 +7,7 @@ from nodes.expression import *
 from nodes.keywords import *
 from nodes.base_oper import AssignExpr
 from nodes.oper_dot import ObjectMember
-from objects.func import Function, ObjMethod, InnFunction
+from objects.func import Function, ObjMethod
 
 import inspect
 
@@ -24,7 +24,6 @@ class FuncCallExpr(CallExpr):
         self.argExpr:list[Expression] = []
 
     def setFuncExpr(self, fexp:Expression):
-        # print('FCall.setFuncExpr')
         self.funcExpr = fexp
 
     def addArgExpr(self, exp:Expression):
@@ -56,9 +55,7 @@ class FuncCallExpr(CallExpr):
             
             if isinstance(exp, ArgExtList):
                 vv = var2val(arg)
-                # print('$1', vv)
                 for n in vv.elems:
-                    # self.obj.addVal(var2val(n))
                     args.append(var2val(n))
                 continue
             
@@ -222,13 +219,9 @@ class FuncDefExpr(ObjDefExpr, Block):
         argCtx = Context(ctx)
         for arg in self.argVars:
             # print('FDef.do#1', arg)
-            # argType = TypeAny()
-            # aName = arg.name
             if isinstance(arg, TypedArgExpr):
                 arg.do(argCtx)
             # print('-> addArg', arg.get(), arg.defVal)
-            # if isinstance(arg, ArgExtList):
-            #     arg = arg.expr.get()
             func.addArg(arg.get(), arg.defVal)
         func.block = Block()
         # build inner block of function
@@ -251,7 +244,6 @@ class NFunc(Function):
         self.callFunc:Callable = lambda *args : 1
         self.res:Val = None
         self.resType:VType = rtype
-        # self.topCtx:Context = None
 
     def copy(self, defCtx:Context):
         r = NFunc(self._name)
@@ -281,11 +273,12 @@ class NFunc(Function):
         return self.res
 
 
-def coverFunc(name:str, fn:Callable, rtype:VType=TypeAny, topCtx=None):
+def coverFunc(name:str, fn:Callable, rtype:VType=TypeAny):
     func = NFunc(name)
     func.resType = rtype
     func.callFunc = fn
     return func
+
 
 def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
     func = NFunc(name)
@@ -300,6 +293,7 @@ class BoundMethod(NFunc):
     def __init__(self, func:FuncCallExpr, fname, rtype = TypeAny()):
         super().__init__(fname, rtype)
         self.inst = None
+        self.callFunc = func
         self.callArgs:list[Expression] = []
     
     def setInstance(self, inst):
@@ -316,7 +310,6 @@ def bindNativeMethod(ctx:Context, typeName, fn, fname, rtype:VType=None):
     func = BoundMethod(fn, fname)
     func.setDefContext(ctx)
     func.resType = rtype
-    func.callFunc = fn
     ctx.bindTypeMethod(typeName, func)
 
 
