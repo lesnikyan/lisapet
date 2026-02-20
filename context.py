@@ -22,6 +22,14 @@ class Context(NSContext):
         self.funcs:dict[str,FuncInst] = {}
         self.upper:Context = parent # upper level context
 
+    def copy(self):
+        ctx = Context(self.upper)
+        ctx.vars = self.vars
+        ctx.types = self.types
+        ctx.enums = self.enums
+        ctx.funcs = self.funcs
+        return ctx
+
     def depth(self):
         d = []
         src = self

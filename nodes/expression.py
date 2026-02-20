@@ -124,7 +124,7 @@ class ArgExtList(ArgExpr):
     1) arg... in func definition
     2) expr... in func call
     '''
-    def __init__(self, var:Var|Expression):
+    def __init__(self, var:Var|Expression=None):
         self.defVal = []
         self.name = ''
         expr = var
@@ -142,6 +142,7 @@ class ArgExtList(ArgExpr):
     def do(self, ctx:NSContext):
         # newVal = ctx.get(self.name)
         self.expr.do(ctx)
+        # print('$1 ', self.expr.get())
         self.val = self.expr.get()
     
     def get(self):

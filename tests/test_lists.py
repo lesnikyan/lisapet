@@ -491,11 +491,10 @@ class TestLists(TestCase):
         # print('nums = ', res)
         '''
         code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        ctx = rootContext()
-        ex.do(ctx)
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
         exp = [[[4], [9], [16], [25]], [[5], [10], [17], [26]]]
         rvar = ctx.get('res').get()
         self.assertEqual(exp, rvar.vals())
@@ -503,6 +502,7 @@ class TestLists(TestCase):
     def test_slice_of_generator(self):
         ''' # TODO: nn = [1..10]; nn5 = nn[1:5] '''
         code = r'''
+        res = []
         # r1, r2, r3, r = [], [], [], []
         
         # list
@@ -959,8 +959,8 @@ class TestLists(TestCase):
         code = '''
         res = 0
         for n <- [5..10]
-            # print('  n >>', n)
             res += n
+        
         # print('res >>', res)
         '''
         code = norm(code[1:])
@@ -969,6 +969,7 @@ class TestLists(TestCase):
         ex = lex2tree(clines)
         ctx = rootContext()
         ex.do(ctx)
+        # self.fail()
 
     def test_list_in_list(self):
         code = '''

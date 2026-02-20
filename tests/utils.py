@@ -29,16 +29,6 @@ def ivar(name, value):
 
 def filepath(fname):
     return Path(__file__).with_name(fname)
-
-
-def doCode(code):
-    tlines = splitLexems(code)
-    clines:CLine = elemStream(tlines)
-    ex = lex2tree(clines)
-    rCtx = rootContext()
-    ctx = rCtx.moduleContext()
-    ex.do(ctx)
-    return ctx
     
 def trydo(expr, ctx):
     try:
@@ -65,6 +55,28 @@ def tryParse(code):
     except Exception as ex:
         print('\n!! Common Error', ex.args)
         raise ex
+
+
+def doCodeMute(code):
+    # ex = tryParse(code)
+    tlines = splitLexems(code)
+    clines:CLine = elemStream(tlines)
+    ex = lex2tree(clines)
+    rCtx = rootContext()
+    ctx = rCtx.moduleContext()
+    ex.do(ctx)
+    return ctx
+
+
+def doCode(code):
+    ex = tryParse(code)
+    # tlines = splitLexems(code)
+    # clines:CLine = elemStream(tlines)
+    # ex = lex2tree(clines)
+    rCtx = rootContext()
+    ctx = rCtx.moduleContext()
+    trydo(ex, ctx)
+    return ctx
 
 
 def resRepr(src):

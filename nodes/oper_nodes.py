@@ -878,4 +878,28 @@ class RegexpSearchOper(RegexpOper):
         src = var2val(src)
         res = rx.find(src)
         self.res = res
-    
+        
+from nodes.func_features import *
+class RTildArrowExpr(UnarOper):
+
+    def __init__(self, inner = None):
+        super().__init__('~>', inner)
+
+    # def setInner(self, inner:Expression):
+    #     self.inner = inner
+
+    def do(self, ctx:Context):
+        ''' '''
+        # do inner
+        self.inner.do(ctx)
+        # get func from inner
+        fval = self.inner.get()
+        func = var2val(fval)
+        # check func for currying
+        if func.getType() != TypeFunc():
+            raise EvalErr('Not function tried to curry')
+        # call curry(), get result
+        curFunc = func_curry(ctx, func)
+        self.res = curFunc
+
+

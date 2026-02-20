@@ -8,6 +8,7 @@ from nodes.control import *
 from nodes.match_patterns import *
 
 from cases.tcases import *
+from cases.sequence import *
 from cases.oper import CaseBrackets, CaseBinOper, CaseVar
 from cases.collection import *
 from cases.structs import *

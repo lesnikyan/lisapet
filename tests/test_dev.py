@@ -23,6 +23,7 @@ from nodes.func_expr import setNativeFunc
 from bases.over_ctx import FuncOverSet
 from tests.utils import *
 from libs.regexp import *
+from nodes.func_features import *
 
 
 import pdb
@@ -58,6 +59,11 @@ class TestDev(TestCase):
             bb[-1] = 22 # set last byte
         
         DONE: bytes: add other num bases: bin 0b[10], oct 0o[17], dec 0d[19]
+        
+        DONE: bytes features
+        -- string-related
+            # bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
+            #string.bytes(encoding) # string to bytes
             
         DONE: bytes methods:
             # .map(x -> x & 0xf0) # apply function to each byte in sequence and return result
@@ -77,6 +83,10 @@ class TestDev(TestCase):
         DONE: bytes operators
             #ok bb[a:b] # get slice - copy part of bytes
             #ok bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
+        
+        DONE:
+            # done: struct type args in overloaded func, 
+            # done: test methods with compatiple types
 
     # features for for `enum` - not sure
         TODO: Enum.name(11)
@@ -90,6 +100,16 @@ class TestDev(TestCase):
         TODO:? to think about things that is not obvious:
             - instance of function inside function itself
             - additional properties of function as an object
+        
+        TODO: (?) add byte: int/4, unsigned
+            x:byte = 1 # 0-255
+            x:byte = 0xff ; auto casting
+            x:byte= intVal % 0x100
+            #  optional: explicit byte value
+            x = &01; 8xff; 8b100; &0xff; |xf0; 8d255
+            0xff; 0b10000001
+        
+        TODO: (?) bytes oper shift: bb << 4; bb >> 8 # no extend size
         
         TODO:? class Null() -> class Null(Val)
         
@@ -113,13 +133,11 @@ class TestDev(TestCase):
                 looks like overloading is a feature within one module
             (? do we need) overloaded methods of imported structs
             
-            override of overload:
+        TODO: override of overload:
                 Think about case with same name func in a child is overloaded for another args in parent
                     1) child method will override all overloaded or
                     2) child method will add and shoud find func by signature in all parent tree or
                     3) disallow override overloaded func name
-            # done: struct type args in overloaded func, 
-            # done: test methods with compatiple types
         
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
@@ -127,40 +145,25 @@ class TestDev(TestCase):
         
         TODO:? var type in for-loop 
             for n:int <- nn
-        
-        TODO: group - static block for set of const vals and functions. 
-            Like extended enum and struct
+
+        TODO: think about type casting by colon; type in left
+            x:int = int: true
 
         TODO: 21.1 Multi-reading in loop:
             put at right part one more collections, so assign more var in left: 
             aa = [1,2,3]
             dd = {11:1, 22:2, 33:3}
             for i, x, key, val <- iter(3), aa, dd
+        
+        TODO: group - static block for set of const vals and functions. 
+            Like extended enum and struct
                 print(i, x, key, val)
         
         TODO: add type `glif` - 1 multibyte symbol
-
-        TODO: think about type casting by colon; type in left
-            x:int = int: true
         
         BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
         
-        TODO: string methods: upper, lower
-        TODO: list|tuple methods: sort, filter
-        
         TODO: add assertion to cases in test_lists
-        
-        TODO: add byte: int/4, unsigned
-            x:byte = 1 # 0-255
-            x:byte = 0xff ; auto casting
-            x:byte= intVal % 0x100
-            #  optional: explicit byte value
-            x = &01; 8xff; 8b100; &0xff; |xf0; 8d255
-            0xff; 0b10000001
-        
-        TODO: (?) bytes oper shift: bb << 4; bb >> 8 # no extend size
-        
-        TODO: (?) bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
         
         TODO: bytes constructor - add len arg for fill by 0
             0x[len=10] # 10 bytes
@@ -168,31 +171,98 @@ class TestDev(TestCase):
             0x(12) (?)
             bytes(12) # future type-constructors
         
-        TODO: currying operator:
-            func foo(a, b, c)
-            triple dots funcName...
-            (foo...)(1)(2)(3)
-            f = (foo...)
-            f(1)(2)(3)
-        
-        TODO: func composition operator:
-            foo * bar * baz (x)
-        
         TODO: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
             // byte(int), bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
+            string(bytes(), encoding='utf8') # string from bytes
         
         TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
         TODO: string.replace({dict}) # check, implement if not
         
-        TODO: bytes features
+        TODO: string methods: upper, lower
         
-        -- string-related
-            bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
-            string(bytes(), encoding='utf8') # string from bytes
-            string.bytes(encoding) # string to bytes
+        TODO: list|tuple methods: sort, filter
+        
+        TODO: refactor case-loops to pattern-tree
+        1) find common cases:
+            solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, control-keywords, var, val, 
+            no-solid -> definitions, control-statements, bin-opers, 
+        2) dive into sub-cases
+        
+        TODO: refactor list-like expressions to avoid multiple check items in []-brackets
+            first check solid []-case, then find case in []-cases:
+            list, slice, iter-gen, list-gen, bytes
+        
+        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        
+        TODO:  # partially called, make function with remined args; can't be applyed to func with arg...
+            foo(1,2, ...>)
+            foo(1,2, ->)
+            foo(1,2, _...)
+            foo(1,2, :...)
+            foo(1,2, |...)
+            foo(1,2, /...)
+        
+        TODO: func composition operator:
+            foo * bar * baz <??> (x)
+        
+        DONE: curry as builtin function
+        
+        DONE: currying operator:
+            func foo(a, b, c)
+            foo~>(1)(2)(3)
+        
+        DONE: tests: curry func from var, from list, from func-call(), curry method, curry 2-3 args lambda.
+        
+        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
         
     '''
 
+    def _test_currying_operator(self):
+        '''
+        foo~>
+        (foo~>)
+        f()~>
+        n[1]~>
+        st.f~>
+        
+        foo~>(1)(2) ; f = foo~> ; bar * foo~>(1)(100) * baz $ 58 ; f1 * ff()~>(1)(2) * f2 $ 58
+        
+        f = foo-X
+        bar * foo-X(2)(3) $ 22
+        bar(foo-X)
+        [x, y, foo-X]
+        
+        
+        '''
+        code = r'''
+        res = []
+        
+        func foo(a, b, c)
+            [a, b, c]
+        
+        cur1 = foo...
+        
+        r1 = cur1(1)(2)(3)
+        
+        # []...
+        # f()...
+        # ()...
+        # a.b...
+        # moduleN.m...
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = []
+        self.assertEqual(exv, resv)
 
     def _test_code(self):
         ''' '''
@@ -316,4 +386,8 @@ class TestDev(TestCase):
         rvar = ctx.get('res')
         self.assertEqual(0, rvar.getVal())
 
+
+
+if __name__ == '__main__':
+    main()
 

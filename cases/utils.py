@@ -12,7 +12,20 @@ oper group replacement:
 `1` >=> ,
 '''
 
-operPrior = ('( ) [ ] { } , . , ... , -x !x ~x , ** , * / % , + - ,'
+
+
+
+def isHexBytes(elems:list[Elem]):
+    rx = re.compile(r'[0-9a-f]+', flags=re.I)
+    if len(elems) < 2:
+        return False
+    xtype = [Lt.word, Lt.num]
+    for el in elems:
+        if el.type not in xtype or not rx.match(el.text):
+            return False
+    return True
+
+operPrior = ('( ) [ ] { } , . , ~> , ... , -x ! ~ , ** , * / % , + - ,'
 ' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, ?: , : , ? , `1`, .. , <- , ->, = += -= *= /= %= , ; , !: :? => , /: ')
 
 unaryOperators = '- ! ~'.split(' ')
@@ -189,3 +202,107 @@ class OperSplitter:
             return 0
         return -1 # debug output, won't happened in real case
 
+
+
+def flatOpers():
+    opers = getOperPriors()[4:]
+    fopers = []
+    for oops in opers:
+        # print(oops.split(' '))
+        fopers.extend([n for n in oops.split(' ') if n and  n not in ' .'])
+    return fopers
+
+_noSolidOpers = flatOpers()
+
+_keyWords = (
+    'if else while for match func struct import @debug'
+).split(' ')
+
+def isSolidExpr(elems:list[Elem], getLast=None):
+    ''' single varName or chain of fields, subelem, call 
+    
+        getLast - get pos of lastsubpart like word after dot, brackets
+    '''
+    # print('isSolid #1', elemStr(elems))
+    elen = len(elems)
+    if elen == 0:
+        return False
+    
+    if elen == 1 and elems[0].type in [Lt.word, Lt.text, Lt.num]:
+        return True
+    
+    # print('isSolid #2', f"<{elems[0].text}>", elems[0].text in _keyWords)
+    if elems[0].type == Lt.word and elems[0].text in _keyWords:
+        return False
+    
+    if isHexBytes(elems):
+        return False
+
+    fopers = _noSolidOpers
+    # print('solid-fopers', fopers)
+    opened = [] # brackets openede from right
+    # cbr = []
+    rob = list('}])')
+    rcb = list('([{')
+    bpairs = {'(':')', '[':']', '{':'}'}
+    # print('ss:', end=' ')
+    for i in range(elen-1, -1, -1):
+        el = elems[i]
+        etx = el.text
+        # print('=>', '', etx, end=' ')
+        et = el.type
+        if isLex(el, Lt.oper, rob):
+            # open brackets from right
+            opened.append(el.text)
+            continue
+        if isLex(el, Lt.oper, rcb):
+            # close brackets
+            if len(opened) == 0:
+                # posibly multiline expr
+                # print('No-solid?', len(opened))
+                return False
+            lastObr = opened.pop()
+            if bpairs[etx] != lastObr:
+                # incorrect brackets pair in closing
+                raise InterpretErr(f"incorrect brackets pair in closing `{etx}{bpairs[etx]}`")
+                # return False
+            if len(opened) == 0 and getLast:
+                # last closed part found in solidExpr
+                return True, i
+            continue
+        if not opened and isLex(el, Lt.oper, fopers):
+            # any operator has been found not in brackets a + b, excepr [. ~>]
+            # print('back-i:%d'%i, 'No Solid because of ', etx)
+            return False
+    # print('\n>> ', opened, ' //')
+    return not opened
+
+def isFuncCall(elems:list[Elem]):
+    ''' solid expr with func call in the end
+        a()
+        a(args)
+        a.b()
+        a[0]()
+        a()()
+        a.b()()
+    '''
+
+def isField(elems:list[Elem]):
+    ''' solid expr with `.fieldName` in the end 
+        a.b
+        a().b
+        a.b().c
+        a.b[0].c
+    '''
+    if not isLex(elems[-2], Lt.oper, '.'):
+        return False
+    
+    return elems[-1].type == Lt.word and elems[-1].text
+
+def isSeqElem(elems:list[Elem]):
+    ''' solid expr with square brackets in the end
+        a[0]
+        a.b[0]
+        a()[0]
+        
+    '''
