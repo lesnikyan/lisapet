@@ -54,6 +54,9 @@ class TestFuncs(TestCase):
         # in format-string
         res <- ~'foo(50)(7)={foo~>(50)(7)}'
         
+        # from brackets
+        res <- ('(f~>)', (foo~>)(60)(7))
+        
         # 3 args
         res <- 'bar'
         
@@ -93,6 +96,17 @@ class TestFuncs(TestCase):
         for i <- iter(len(ff1))
             fn = ff1[i]
             res <- [~'{i}:', fn(10)(7)]
+        
+        # from array
+        ffs = [foo, (x, y)-> x * y]
+        
+        res <- '[]~>'
+        
+        af0 = ffs[0]~>
+        
+        res <- af0(7700)(1)
+        res <- ffs[1]~>(78)(100)
+        
         
         # func from struct member
         # f~>(1).n 
@@ -137,10 +151,11 @@ class TestFuncs(TestCase):
         resv = resRepr(rvar.vals())
         # print(resv)
         exv = [-557, 
-            'foo', 123, 213, 1031, 1032, 2031, 2032, 'foo(50)(7)=57', 
+            'foo', 123, 213, 1031, 1032, 2031, 2032, 'foo(50)(7)=57', ('(f~>)', 67),
             'bar', 301, 332, 411, 442, 803, 511, 562, 
             ('fu5>', 22, 2, 3, 4, 5), ('fu5>', 1, 22, 33, 44, 55), ('fu5>', 11, 32, 33, 34, 35), 713, 
             ['0:', 17], ['1:', 147], ['2:', ('fu5>', 51, 52, 53, 10, 7)], 
+            '[]~>', 7701, 7800,
             'A.foo', ('a1', 12), ('a_2', [2, 4]), [3, 6], 
             ('B.bum', 15, 901, 902), ('B.bum', 15, 8000, 16)]
         self.assertEqual(exv, resv)
