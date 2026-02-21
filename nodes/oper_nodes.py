@@ -247,12 +247,12 @@ class OpMath(BinOper):
         # print('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
-        # print('#bin-oper2', self.oper, a, '|', b)
         a, b = var2val(a), var2val(b)
+        # print('#bin-oper2', self.oper, a, '|', b)
         
         # overloaded operators:
         over, res = self.overs(a, b)
-        # dprint('#bin-oper-over:', over, res)
+        # print('#bin-oper-over:', over, res)
         if over:
             self.res = res
             return
@@ -336,6 +336,10 @@ class OpMath(BinOper):
             return val.val.allVals()
         return val
 
+    def starFuncs(self, a:FuncInst, b:FuncInst):
+        # print('starFunc %')
+        return func_compose(None, a, b)
+
     def overs(self, a, b):
         a, b = valFrom(a), valFrom(b)
         # print('#bin-overs-1', a, b)
@@ -345,12 +349,15 @@ class OpMath(BinOper):
             case '+' :
                 if isinstance(a, (ListVal)) and isinstance(b, ListVal):
                     return (True, self.listPlus(a, b))
-                if isinstance(a, (StringVal)) and isinstance(b, StringVal):
+                elif isinstance(a, (StringVal)) and isinstance(b, StringVal):
                     return (True, self.stringPlus(a, b))
             case '-' :
                 if isinstance(a, (ListVal, DictVal)) and isinstance(b, ListVal):
                     return (True, self.collMinus(a, b))
-            
+            case '*':
+                if isinstance(a, (FuncInst)) and isinstance(b, FuncInst):
+                    return (True, self.starFuncs(a, b))
+                
         return (False, 0)
 
 

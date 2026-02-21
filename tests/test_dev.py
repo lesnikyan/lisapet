@@ -229,7 +229,36 @@ class TestDev(TestCase):
         foo . bar (x)
     '''
 
-    def _test_composition_of_function_no_apply(self):
+    def _test_apply_operator(self):
+        ''' foo $ arg '''
+        code = r'''
+        res = []
+        
+        func foo(x)
+            x + 10
+        
+        res <- foo $ 1
+        res <- foo $ 2 + 3
+        res <- foo $ 3 * 5
+        res <- foo $ foo(1)
+        res <- foo $ 2 ** 3
+        res <- [foo $ 11, foo $ 12]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = []
+        self.assertEqual(exv, resv)
+
+    def _test_composition_of_function_with_apply(self):
         '''
         composed = foo * bar * baz
         composed(arg)
@@ -251,13 +280,17 @@ class TestDev(TestCase):
         func baz(x)
             x * 3
         
+        
+        f0 = foo * bar
+        res <- (f0(1), f0(2), f0(5))
+
+        
         # foo * bar * baz
         com1 = foo * bar * baz
         
         res <- com1(1)
-        
         r1 = [-13]
-        for n <- [3, 5, 8, 11, 20]
+        for n <- [2, 3, 5, 10, 11, 20]
             r1 <- com1(n)
         res <- r1
         
@@ -265,9 +298,8 @@ class TestDev(TestCase):
         com2 = baz * bar * foo
         
         res <- com2(1)
-        
         r2 = [-14]
-        for n <- [3, 5, 8, 11, 20]
+        for n <- [2, 3, 5, 10, 11, 20]
             r2 <- com2(n)
         res <- r2
         
@@ -281,9 +313,8 @@ class TestDev(TestCase):
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
         resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        
+            # print(resv)
+        exv = [(60, 70, 100), 80, [-13, 110, 140, 200, 350, 380, 650], 45, [-14, 75, 105, 165, 315, 345, 615]]
         self.assertEqual(exv, resv)
 
     def _test_code(self):

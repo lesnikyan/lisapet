@@ -25,6 +25,65 @@ from eval import *
 class TestFuncs(TestCase):
     
 
+    def test_composition_of_function_no_apply(self):
+        '''
+        composed = foo * bar * baz
+        composed(arg)
+        # is equal to
+        foo(bar(baz(arg)))
+        
+        no `applay` operator here
+        '''
+        
+        code = r'''
+        res = []
+        
+        func foo(x)
+            x * 10
+        
+        func bar(x)
+            x + 5
+        
+        func baz(x)
+            x * 3
+        
+        
+        f0 = foo * bar
+        res <- (f0(1), f0(2), f0(5))
+
+        
+        # foo * bar * baz
+        com1 = foo * bar * baz
+        
+        res <- com1(1)
+        r1 = [-13]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r1 <- com1(n)
+        res <- r1
+        
+        # baz * bar * foo
+        com2 = baz * bar * foo
+        
+        res <- com2(1)
+        r2 = [-14]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r2 <- com2(n)
+        res <- r2
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+            # print(resv)
+        exv = [(60, 70, 100), 80, [-13, 110, 140, 200, 350, 380, 650], 45, [-14, 75, 105, 165, 315, 345, 615]]
+        self.assertEqual(exv, resv)
+
     def test_composition_builtin(self):
         '''
         composed = compose(foo, bar, baz)
