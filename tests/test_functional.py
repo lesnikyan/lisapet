@@ -22,9 +22,129 @@ from tree import *
 from eval import *
 
 
-
 class TestFuncs(TestCase):
     
+
+    def test_composition_builtin(self):
+        '''
+        composed = compose(foo, bar, baz)
+        composed(arg)
+        # is equal to
+        foo(bar(baz(arg)))
+        '''
+        
+        code = r'''
+        res = []
+        
+        func foo(x)
+            x * 10
+        
+        func bar(x)
+            x + 5
+        
+        func baz(x)
+            x * 3
+        
+        # foo, bar, baz
+        com1 = compose(foo, bar, baz)
+        
+        res <- com1(1)
+        
+        r1 = [-11]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r1 <- com1(n)
+        res <- r1
+        
+        # baz, bar, foo
+        com2 = compose(baz, bar, foo)
+        
+        res <- com2(1)
+        
+        r2 = [-12]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r2 <- com2(n)
+        res <- r2
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [80, [-11, 110, 140, 200, 350, 380, 650], 45, [-12, 75, 105, 165, 315, 345, 615]]
+        
+        self.assertEqual(exv, resv)
+
+    def runComposed(self, ctx, comps:ComposedFunc, argSet:list):
+        rr = []
+        for i in argSet:
+            x = Val(i, TypeInt())
+            comps.setArgVals([x])
+            comps.do(ctx)
+            cres = comps.get()
+            rr.append(cres.getVal())
+        return rr
+
+    def test_composition_object(self):
+        '''
+        ComposedFunc object.
+        '''
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        
+        def f1(_, x:Val):
+            v = var2val(x).getVal()
+            return Val(v * 2, TypeInt())
+        
+        def f2(_,x):
+            v = var2val(x).getVal()
+            return Val(v + 10, TypeInt())
+        
+        def f3(_, x):
+            v = var2val(x).getVal()
+            return Val(v * 100, TypeInt())
+        
+        fn1 = (defineFunc(ctx, 'f1', f1))
+        fn2 = defineFunc(ctx, 'f2', f2)
+        fn3 = defineFunc(ctx, 'f3', f3)
+        
+        # test f1 * f2 *  f3
+
+        comps123 = ComposedFunc()
+        comps123.add(fn1)
+        comps123.add(fn2)
+        comps123.add(fn3)
+        comps123.setDefContext(ctx)
+        
+        rr1 = self.runComposed(ctx, comps123, [1, 2, 5, 10, 11, 12])
+        self.assertEqual([220, 420, 1020, 2020, 2220, 2420], rr1)
+        
+        # test f1 * f3 *  f2
+
+        comps132 = ComposedFunc()
+        comps132.add(fn1)
+        comps132.add(fn3)
+        comps132.add(fn2)
+        comps132.setDefContext(ctx)
+        
+        rr2 = self.runComposed(ctx, comps132, [1, 2, 5, 10, 11, 12])
+        self.assertEqual([2200, 2400, 3000, 4000, 4200, 4400], rr2)
+        
+        # test f1 * f2 *  f3
+
+        comps321 = ComposedFunc()
+        comps321.add(fn3)
+        comps321.add(fn2)
+        comps321.add(fn1)
+        comps321.setDefContext(ctx)
+        
+        rr3 = self.runComposed(ctx, comps321, [1, 2, 5, 10, 11, 12])
+        self.assertEqual([1200, 1400, 2000, 3000, 3200, 3400], rr3)
 
     def test_curry_operator(self):
         code = r'''

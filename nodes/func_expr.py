@@ -273,6 +273,32 @@ class NFunc(Function):
         return self.res
 
 
+# class ComposedFunc(Function):
+class ComposedFunc(NFunc):
+    '''
+    composed = foo * bar * baz
+    '''
+    def __init__(self):
+        name = 'composed_%x' % hash(self)
+        super().__init__(name)
+        self.funcs:list[Function] = []
+
+    def add(self, func:Function):
+        self.funcs.append(func)
+
+    def do(self, ctx: Context):
+        arg = self.argVars[0]
+        rval = None
+        for i in range(len(self.funcs) -1, -1 , -1):
+            fn = self.funcs[i]
+            inCtx = Context(fn.getDefContext())
+            fn.setArgVals([arg])
+            fn.do(inCtx)
+            rval = fn.get()
+            arg = rval
+            
+        self.res = rval
+
 def coverFunc(name:str, fn:Callable, rtype:VType=TypeAny):
     func = NFunc(name)
     func.resType = rtype

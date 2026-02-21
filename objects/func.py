@@ -187,28 +187,7 @@ class Function(FuncInst):
         # trying to detect tail recursion
         lastExpr = self.block.subs[-1]
         isTail = self.checkTailSame(ctx, lastExpr)
-        # if isinstance(lastExpr, CallExpr):
-        #     # print('F.do last callExpr', self, 'name:', lastExpr.name)
-        #     # if method
-        #     ''
-        #     lastName = lastExpr.name
-        #     if self.objInst and lastExpr.name.find('.') > -1:
-        #         lastName = lastExpr.name.split('.')[-1]
-        #         # print('Method of', self.objInst, lastName, 'self.getName()', self.getName(), self.getName() == lastName)
-        #         # print('method',' lastName `%s` self.getName() `%s`' % (lastName, self.getName()), self.getName() == lastName)
-        #     if self.getName() == lastName:
-        #         rname = lastName
-        #         rfunc = None
-        #         # print('same name', rname, rfunc)
-        #         if self.objInst and isinstance(self.objInst, ObjectInstance):
-        #             stype = self.objInst.vtype
-        #             rfunc = stype.getMethod(rname)
-        #         else:
-        #             rfunc = self.defCtx.get(rname)
-        #         if rfunc == self:
-        #             # print('-- same fn:', rname, rfunc)
-        #             isTail = True
-        
+
         self.fillArgs(inCtx)
         if isTail:
             res = self.tailRecur(inCtx)

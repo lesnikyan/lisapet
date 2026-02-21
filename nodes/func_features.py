@@ -11,7 +11,7 @@ from nodes.keywords import *
 # from nodes.base_oper import AssignExpr
 # from nodes.oper_dot import ObjectMember
 from objects.func import Function
-from nodes.func_expr import NFunc
+from nodes.func_expr import NFunc, ComposedFunc
 
 
 '''
@@ -107,6 +107,13 @@ def func_curry(defCtx:Context, fun:Function):
     rfun = defineFunc(defCtx, '#top-local-%s' % fun.getName(), covN)
     return rfun
 
+
+def func_compose(ctx:Context, *funcs):
+    com = ComposedFunc()
+    com.setDefContext(ctx)
+    for fn in funcs:
+        com.add(fn)
+    return com
 
 # # dev check 
 # def curr1(_, fun:Function):

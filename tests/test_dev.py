@@ -202,9 +202,6 @@ class TestDev(TestCase):
             foo(1,2, |...)
             foo(1,2, /...)
         
-        TODO: func composition operator:
-            foo * bar * baz <??> (x)
-        
         DONE: curry as builtin function
         
         DONE: currying operator:
@@ -213,42 +210,66 @@ class TestDev(TestCase):
         
         DONE: tests: curry func from var, from list, from func-call(), curry method, curry 2-3 args lambda.
         
+        TODO: func composition operator:
+            foo * bar * baz <??> (x)
+            
+        TODO: operator of applying function to argument
+            foo $ arg
+            equal to
+            foo(arg)
+        
         TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
         
+        
+        ~!@#$%^&*()_+
+        {}|":<>?
+        [];'\,./
+        \|
+        foo ~~ bar~>(1) ~~ baz $ x
+        foo . bar (x)
     '''
 
-    def _test_currying_operator(self):
+    def _test_composition_of_function_no_apply(self):
         '''
-        foo~>
-        (foo~>)
-        f()~>
-        n[1]~>
-        st.f~>
+        composed = foo * bar * baz
+        composed(arg)
+        # is equal to
+        foo(bar(baz(arg)))
         
-        foo~>(1)(2) ; f = foo~> ; bar * foo~>(1)(100) * baz $ 58 ; f1 * ff()~>(1)(2) * f2 $ 58
-        
-        f = foo-X
-        bar * foo-X(2)(3) $ 22
-        bar(foo-X)
-        [x, y, foo-X]
-        
-        
+        no `applay` operator here
         '''
+        
         code = r'''
         res = []
         
-        func foo(a, b, c)
-            [a, b, c]
+        func foo(x)
+            x * 10
         
-        cur1 = foo...
+        func bar(x)
+            x + 5
         
-        r1 = cur1(1)(2)(3)
+        func baz(x)
+            x * 3
         
-        # []...
-        # f()...
-        # ()...
-        # a.b...
-        # moduleN.m...
+        # foo * bar * baz
+        com1 = foo * bar * baz
+        
+        res <- com1(1)
+        
+        r1 = [-13]
+        for n <- [3, 5, 8, 11, 20]
+            r1 <- com1(n)
+        res <- r1
+        
+        # baz * bar * foo
+        com2 = baz * bar * foo
+        
+        res <- com2(1)
+        
+        r2 = [-14]
+        for n <- [3, 5, 8, 11, 20]
+            r2 <- com2(n)
+        res <- r2
         
         # print('res = ', res)
         '''
@@ -260,8 +281,9 @@ class TestDev(TestCase):
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
         resv = resRepr(rvar.vals())
-        # print(resv)
+        print(resv)
         exv = []
+        
         self.assertEqual(exv, resv)
 
     def _test_code(self):
