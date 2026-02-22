@@ -87,6 +87,22 @@ class TestDev(TestCase):
         DONE:
             # done: struct type args in overloaded func, 
             # done: test methods with compatiple types
+        
+        DONE: curry as builtin function
+        
+        DONE: currying operator:
+            func foo(a, b, c)
+            foo~>(1)(2)(3)
+        
+        DONE: tests: curry func from var, from list, from func-call(), curry method, curry 2-3 args lambda.
+        
+        DONE: func composition operator:
+            foo * bar * baz $ (x)
+            
+        DONE: operator of applying function to argument
+            foo $ arg
+            equal to
+            foo(arg)
 
     # features for for `enum` - not sure
         TODO: Enum.name(11)
@@ -202,97 +218,22 @@ class TestDev(TestCase):
             foo(1,2, |...)
             foo(1,2, /...)
         
-        DONE: curry as builtin function
-        
-        DONE: currying operator:
-            func foo(a, b, c)
-            foo~>(1)(2)(3)
-        
-        DONE: tests: curry func from var, from list, from func-call(), curry method, curry 2-3 args lambda.
-        
-        TODO: func composition operator:
-            foo * bar * baz <??> (x)
-            
-        TODO: operator of applying function to argument
-            foo $ arg
-            equal to
-            foo(arg)
+        TODO: root, square root operator
+            |/ _/ -/ */
+            -/4 # 2;  3-/ 8 # 2
+            */4 # 2;  3*/ 8 # 2
         
         TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
         
+        TODO: composition / apply with methods
         
-        ~!@#$%^&*()_+
-        {}|":<>?
-        [];'\,./
-        \|
-        foo ~~ bar~>(1) ~~ baz $ x
-        foo . bar (x)
     '''
-
-    def _test_composition_of_function_with_apply(self):
-        '''
-        composed = foo * bar * baz
-        composed(arg)
-        # is equal to
-        foo(bar(baz(arg)))
-        
-        no `applay` operator here
-        '''
-        
-        code = r'''
-        res = []
-        
-        func foo(x)
-            x * 10
-        
-        func bar(x)
-            x + 5
-        
-        func baz(x)
-            x * 3
-        
-        
-        f0 = foo * bar
-        res <- (f0(1), f0(2), f0(5))
-
-        
-        # foo * bar * baz
-        com1 = foo * bar * baz
-        
-        res <- com1(1)
-        r1 = [-13]
-        for n <- [2, 3, 5, 10, 11, 20]
-            r1 <- com1(n)
-        res <- r1
-        
-        # baz * bar * foo
-        com2 = baz * bar * foo
-        
-        res <- com2(1)
-        r2 = [-14]
-        for n <- [2, 3, 5, 10, 11, 20]
-            r2 <- com2(n)
-        res <- r2
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-            # print(resv)
-        exv = [(60, 70, 100), 80, [-13, 110, 140, 200, 350, 380, 650], 45, [-14, 75, 105, 165, 315, 345, 615]]
-        self.assertEqual(exv, resv)
 
     def _test_code(self):
         ''' '''
         code = r'''
         res = []
-        
+
         # print('res = ', res)
         '''
         code = norm(code[1:])

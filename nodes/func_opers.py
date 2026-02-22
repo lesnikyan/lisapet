@@ -27,7 +27,7 @@ class RTildArrowExpr(UnarOper):
     #     self.inner = inner
 
     def do(self, ctx:Context):
-        ''' '''
+        ''' func ~> '''
         # do inner
         self.inner.do(ctx)
         # get func from inner

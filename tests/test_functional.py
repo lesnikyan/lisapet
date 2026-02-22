@@ -25,6 +25,102 @@ from eval import *
 class TestFuncs(TestCase):
     
 
+    def test_composition_full_test(self):
+        '''
+        foo * bar $ x
+        foo * bar * baz $ x
+        foo * bar * baz $ (foo * bar * baz $ x)
+        '''
+        
+        code = r'''
+        res = []
+        
+        func foo(x)
+            x * 10
+        
+        func bar(x)
+            x + 5
+        
+        func baz(x)
+            x * 3
+        
+        func x2(x)
+            x * 2
+        
+        func trisum(a, b, c)
+            a + b + c
+        
+        res <- foo * bar $ 51
+        
+        
+        # foo * bar * baz
+        
+        r1 = [-15]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r1 <- foo * bar * baz $ n
+        res <- r1
+        
+        # baz * bar * foo $ n
+        
+        r2 = [-16]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r2 <- baz * bar * foo $ n
+        res <- r2
+
+        # curryed func in composition
+        # trisum~>(a)(b) * bar * baz * x2 $ n
+        
+        for a <- [100, 200, 300]
+            r3 = [-17, -(a)]
+            for b <- [4000, 5000, 6000]
+                rr = []
+                for n <- [2, 3, 5, 10, 11, 20]
+                    rr <- trisum~>(a)(b) * bar * baz * x2 $ n
+                r3 <- rr
+            res <- r3
+        
+        # x2 * trisum~>(a)(b) * bar $ n
+        
+        for n <- [2, 3, 5, 10, 11, 20]
+            r4 = [-18]
+            for a <- [10000, 20000]
+                rr = [-a]
+                for b <- [7000, 8000]
+                    rr <- x2 * trisum~>(a)(b) * bar $ n
+                r4 <- rr
+            res <- r4
+        
+        res <- foo * trisum~>(1)(2) $ 7
+        
+        res <- foo * bar * baz $ (foo * bar * baz $ 1)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            560, 
+            [-15, 110, 140, 200, 350, 380, 650], 
+            [-16, 75, 105, 165, 315, 345, 615], 
+            [-17, -100, [4117, 4123, 4135, 4165, 4171, 4225], [5117, 5123, 5135, 5165, 5171, 5225], [6117, 6123, 6135, 6165, 6171, 6225]], 
+            [-17, -200, [4217, 4223, 4235, 4265, 4271, 4325], [5217, 5223, 5235, 5265, 5271, 5325], [6217, 6223, 6235, 6265, 6271, 6325]], 
+            [-17, -300, [4317, 4323, 4335, 4365, 4371, 4425], [5317, 5323, 5335, 5365, 5371, 5425], [6317, 6323, 6335, 6365, 6371, 6425]], 
+            [-18, [-10000, 34014, 36014], [-20000, 54014, 56014]], 
+            [-18, [-10000, 34016, 36016], [-20000, 54016, 56016]], 
+            [-18, [-10000, 34020, 36020], [-20000, 54020, 56020]], 
+            [-18, [-10000, 34030, 36030], [-20000, 54030, 56030]], 
+            [-18, [-10000, 34032, 36032], [-20000, 54032, 56032]], 
+            [-18, [-10000, 34050, 36050], [-20000, 54050, 56050]],
+            100, 2450]
+        self.assertEqual(exv, resv)
+
     def test_apply_operator(self):
         ''' foo $ arg '''
         code = r'''

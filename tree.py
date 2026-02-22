@@ -139,15 +139,6 @@ expCaseList:list[ExpCase] = [
     CaseLambda(),
     CaseSemic(), CaseBinOper(), CaseCommas(),
     CaseMString(), CaseLUnar(StrFormatter()),
-    
-    #CaseComment(),
-    # CaseBreak(), CaseContinue(), CaseRegexp(),
-    # CaseTuple(),
-    # CaseDictBlock(), CaseListBlock(), 
-    # CaseListGen(),
-    # CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), 
-    # CaseFunCall(), CaseStructConstr(), 
-    # CaseVar_(), CaseVal(), CaseString(), CaseVar(), CaseBrackets() 
 ]
 
 patternMatchCasesSolid = [

@@ -2160,8 +2160,39 @@ res = lamb(2)
 >> 1030013
 ```
 
+### 15.5 Tail recursion
+Classical tail recursion is a recursion in which the last expression in a function is a call to itself.  
+In the LP tail recursion works if we put the returning call into a last position, literally (I'm still thinking about earlier returns, but still have no idea if we need it).  
+So, if interpreter has detected tail recursion it will run code of such function in lightweight loop instead of increase depth of call stack.  
+This way we can avoid limits of python recursion.  
+Next example was tested with depth of recursion = 10 millions.  
+```golang
+func f2(a, b)
+    if a == 0
+        return b
+    f2(a - 1, b + 1)
 
-### 15.5 Call chain. 
+f2(10**6, 0) # 10000000
+```
+(bad idea for such slow engine :))  
+```
+>> Ran 1 test in 314.170s 
+```
+It works for method of struct too.  
+
+```golang
+struct A a:int
+
+func st:A ff(a, b)
+    if a == 0
+        return b
+    st.ff(a - 1, b + st.a)
+
+a1 = A(3)
+res <- a1.ff(1001, 0) # 3003
+```
+
+### 15.6 Call chain. 
 We can make chain of calls returning func from func.
 ```golang
 func foo(x)
@@ -2185,7 +2216,7 @@ b1.triple(3)(5)(7, '_Yo') #  'Num_357_Yo'
 ```
 
 
-### 15.6 Currying cascade.   
+### 15.7 Currying cascade.   
 In case when def of function is a last expression in the upper function, we get some useful hack for native currying.  
 ```golang
 func foo(x)
@@ -2213,7 +2244,7 @@ func bar(a)
 bar(11)(22)(33)(44)(55) #  [11, 22, 33, 44, 55]
 ```
 
-### 15.7 builtin currying.
+### 15.8 Builtin currying.
 Currying here is a classic functional feature, when we take multi-arg function ang making function which return 1-arg funcs.  
 Currying expression gets original multi-arg function and returns function with one argument, that returns next function with one argument and so on, up to the last function with 1 arg, that returns result from call of original function.  
 In LP there are 2 ways for currying: builtin function and cpecial operator.  
@@ -2259,40 +2290,70 @@ nn[2]~>(3)(4)
 ```
 *Note.* We can't curry functions correctly with variadic args, default arg values, or function overloaded by count of agrs.  
 
-### 15.8 Tail recursion
-Classical tail recursion is a recursion in which the last expression in a function is a call to itself.  
-In the LP tail recursion works if we put the returning call into a last position, literally (I'm still thinking about earlier returns, but still have no idea if we need it).  
-So, if interpreter has detected tail recursion it will run code of such function in lightweight loop instead of increase depth of call stack.  
-This way we can avoid limits of python recursion.  
-Next example was tested with depth of recursion = 10 millions.  
+### 15.9 Builtin composition.
+
+Composition is a one of basic functional features.  
+If we compose two functions `(f, g)` we obtain new function `F(x)` that works like `f(g(x))`.  
+Composition make sence for function with 1 argument.  
+But we can transform multiarg function into 1-arg by currying.  
+
+- Composition.  
+
+For the composition in LP we have 2 ways.  
+1) builtin function `compose()`.  
+This function takes two or more args and returns composed function.  
 ```golang
-func f2(a, b)
-    if a == 0
-        return b
-    f2(a - 1, b + 1)
+func foo(x)
+    x * 10
 
-f2(10**6, 0) # 10000000
-```
-(bad idea for such slow engine :))  
-```
->> Ran 1 test in 314.170s 
-```
-It works for method of struct too.  
+func bar(x)
+    x + 5
 
-```golang
-struct A a:int
+func baz(x)
+    x * 3
 
-func st:A ff(a, b)
-    if a == 0
-        return b
-    st.ff(a - 1, b + st.a)
-
-a1 = A(3)
-res <- a1.ff(1001, 0) # 3003
+func trisum(a, b, c)
+    a + b + c
 ```
 
+```python
+com1 = compose(foo, bar, baz)
+com1(1) # 80
+```
 
-### 19. Free place :)  
+2) Overloaded `*`-operator.  
+It does almost the same as the `compose` function.  
+```python
+com1 = foo * bar * baz
+com1(1) # 80
+```
+The composition make sence only for function with 1 argument.  
+But we can transform multiarg function into 1-arg by currying.  
+"That the way" (C) :)  
+```python
+com2 = foo * trisum~>(1)(2) * bar
+com2(2) # 100
+```
+
+### 15.9.2 Apply operator.
+The composition operator has lower precedence than parentheses. Therefore, we need a special operator to apply the composed function to its argument.   
+(I thought about using the dot operator, but it would make the code unreadable near structs and methods.)  
+The `$` operator applies the left operand, that is, the function, to the right argument.  
+```python
+# simple function
+res = foo $ 5 # 50
+```
+
+```python
+# composed functions
+res = foo * bar * baz $ 1 # 80
+```
+In expressions with the curryed function we have to notice 
+```python
+# with curryed function
+res = foo * trisum~>(2)(3) $ 2 # 70
+```
+In expressions with the curryed function we have to remember that the curry operator have higher precedense than the composition operator, but apply operator have lower precedence then composition. So we dont need additional brackets around composition or currying.  
 
 
 ### 20. One-line block `;` `/:` operators

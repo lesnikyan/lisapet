@@ -116,16 +116,3 @@ def func_compose(ctx:Context, *funcs):
         com.add(fn)
     return com
 
-
-
-
-# # dev check 
-# def curr1(_, fun:Function):
-#     def cover(ctx:Context, arg:Val):
-#         fun.setArgVals([var2val(arg)])
-#         fun.do(ctx)
-#         r = fun.get()
-#         return r
-#     cfun = coverFunc('cov1', cover, TypeAny())
-#     return cfun
-
