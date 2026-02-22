@@ -108,16 +108,18 @@ Content:
 
 15. #### [Functional features](#15-functional-programming-features)  
     1. [Lambdas `x -> x ** 2`](#151-lambda-functions-right-arrow--)  
-    2. [high-order functions](#152-high-order-functions)
+    2. [high-order functions `f1(f2)`](#152-high-order-functions)
     3. [Function as object](#153-function-as-an-object)
     4. [Closures](#154-closures) 
-    5. [Call-chain `foo(1)(2)(3)`](#155-call-chain)
-    6. [Currying cascade](#156-currying-cascade)
-    7. [Builtin `curry` `f~>`](#157-builtin-currying)
-    8. [Tail recursion](#158-tail-recursion)
+    5. [Tail recursion](#155-tail-recursion)
+    6. [Call-chain `foo(1)(2)(3)`](#156-call-chain)
+    7. [Currying cascade](#157-currying-cascade)
+    8. [Builtin `curry`, `f~>`](#158-builtin-currying)
+    9. [Builtin `compose`, `g * f`](#159-builtin-composition)
+    10. [apply `f $ x`](#1592-apply-operator)
 
 20. Inline syntax.  
-    [Few-expressions block ` ; `](#20-one-line-block---operators)  
+    [Few-expressions block `x=1 ; f(x)`](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
 
 21. #### [String features](#21-string-features)
