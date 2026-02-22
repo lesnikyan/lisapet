@@ -11,6 +11,7 @@ from vals import elem2val, isLex
 
 from cases.utils import *
 from cases.tcases import *
+from nodes.func_opers import *
 from nodes.tnodes import *
 
 

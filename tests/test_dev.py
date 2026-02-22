@@ -229,35 +229,6 @@ class TestDev(TestCase):
         foo . bar (x)
     '''
 
-    def _test_apply_operator(self):
-        ''' foo $ arg '''
-        code = r'''
-        res = []
-        
-        func foo(x)
-            x + 10
-        
-        res <- foo $ 1
-        res <- foo $ 2 + 3
-        res <- foo $ 3 * 5
-        res <- foo $ foo(1)
-        res <- foo $ 2 ** 3
-        res <- [foo $ 11, foo $ 12]
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = []
-        self.assertEqual(exv, resv)
-
     def _test_composition_of_function_with_apply(self):
         '''
         composed = foo * bar * baz

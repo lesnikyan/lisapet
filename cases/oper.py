@@ -8,6 +8,7 @@ from vals import isDefConst, elem2val, isLex
 from cases.utils import *
 from cases.tcases import *
 from nodes.oper_nodes import *
+from nodes.func_opers import FuncApplyOper
 from nodes.datanodes import *
 
 
@@ -224,6 +225,8 @@ def makeOperExp(elem:Elem)->OperCommand:
     if oper =='<-':
         return LeftArrowExpr() # TODO: could be extended for additional cases
         # return IterAssignExpr() # TODO: could be extended for additional cases
+    if oper == '$':
+        return FuncApplyOper()
     # undefined case:
     raise InterpretErr('!!>>> appropriate case didnt found for oper `%s`' % oper)
     return OperCommand(elem.text)

@@ -25,6 +25,35 @@ from eval import *
 class TestFuncs(TestCase):
     
 
+    def test_apply_operator(self):
+        ''' foo $ arg '''
+        code = r'''
+        res = []
+        
+        func foo(x)
+            x + 10
+        
+        res <- foo $ 1
+        res <- foo $ 2 + 3
+        res <- foo $ 3 * 5
+        res <- foo $ foo(1)
+        res <- foo $ 2 ** 3
+        res <- [foo $ 11, foo $ 12]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [11, 15, 25, 21, 18, [21, 22]]
+        self.assertEqual(exv, resv)
+
     def test_composition_of_function_no_apply(self):
         '''
         composed = foo * bar * baz

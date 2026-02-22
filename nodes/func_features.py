@@ -6,12 +6,13 @@ Functions and objects for implementation elements of functional programming
 
 from vars import *
 from bases.ntype import *
+from nodes.base_oper import BinOper
 from nodes.expression import *
 from nodes.keywords import *
 # from nodes.base_oper import AssignExpr
 # from nodes.oper_dot import ObjectMember
 from objects.func import Function
-from nodes.func_expr import NFunc, ComposedFunc
+from nodes.func_expr import NFunc, ComposedFunc, FuncCallExpr
 
 
 '''
@@ -114,6 +115,9 @@ def func_compose(ctx:Context, *funcs):
     for fn in funcs:
         com.add(fn)
     return com
+
+
+
 
 # # dev check 
 # def curr1(_, fun:Function):
