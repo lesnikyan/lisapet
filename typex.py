@@ -135,6 +135,10 @@ class FuncInst(Objective):
         return '~'.join([at.hash() for at in argTypes])
 
 
+class MethodInst(FuncInst):
+    ''''''
+
+
 class ConstSet(TypeContainer):
     ''' enum, etc '''
 
@@ -224,6 +228,10 @@ class TypeProperty:
         self.type = btype
         self.funcs:FuncSpace = funcs
 
+
+class MethodOfType:
+    def instCase(self, inst):
+        pass
 
 class TypeAccess(VType):
     '''  '''

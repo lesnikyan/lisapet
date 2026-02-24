@@ -8,6 +8,7 @@ from vals import isDefConst, elem2val, isLex
 from cases.utils import *
 from cases.tcases import *
 from nodes.oper_nodes import *
+from nodes.func_opers import FuncApplyOper
 from nodes.datanodes import *
 
 
@@ -76,8 +77,8 @@ class CaseAssign(SubCase):
         return base
 
 
-_operPrior = ('() [] {} , . , ... , -x !x ~x , ** , * / % , + - ,'
-' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, ?: , : , ? , <- , = += -= *= /= %= , ; , !: :? , /: ') #
+_operPrior = ('() [] {} , . , ~> , ... , -x ! ~ , ** , * / % , + - ,'
+' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, $, ?: , : , ? , .. , <- , = += -= *= /= %= , ; , !: :? , /: ') #
 
 
 class CaseBinOper(SubCase):
@@ -220,10 +221,12 @@ def makeOperExp(elem:Elem)->OperCommand:
     if oper == '?~':
         return RegexpSearchOper()
     if oper == '..':
-        return ListGenExpr()
+        return TwoDotsOper()
     if oper =='<-':
         return LeftArrowExpr() # TODO: could be extended for additional cases
         # return IterAssignExpr() # TODO: could be extended for additional cases
+    if oper == '$':
+        return FuncApplyOper()
     # undefined case:
     raise InterpretErr('!!>>> appropriate case didnt found for oper `%s`' % oper)
     return OperCommand(elem.text)
@@ -233,14 +236,18 @@ def makeOperExp(elem:Elem)->OperCommand:
 unaryOpers = '- ! ~'.split(' ')
 # oneValExptRx = re.compile('[0-9a-z]+?(\(.*\))?')
 
-class CaseUnar(SubCase):
-    
+class CaseLUnar(SubCase):
+    ''' Left unary operators
+    -n ; ~n ; !n
+    '''
     def __init__(self, strformat=None):
         super().__init__()
         self.formatter:SFormatter = strformat
     
     def match(self, elems:list[Elem]) -> bool:
         ''' -123, -0xabc, ~num, -sum([1,2,3]), !valid, !foo(1,2,3) '''
+        if len(elems) < 2:
+            return False
         if elems[0].type != Lt.oper or elems[0].text not in unaryOpers:
             return False
         if len(elems) == 2 and elems[1].type in [Lt.num, Lt.word]:

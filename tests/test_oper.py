@@ -819,7 +819,7 @@ class TestOper(TestCase):
             mres = cs.match(elems)
             # print('#t1 mr:', mc, mres)
     
-    def test_CaseUnar_split(self):
+    def test_CaseLUnar_split(self):
         data = [
             ('- 5', -5), 
             ('-0xa0013bc', -0xa0013bc), 
@@ -831,7 +831,7 @@ class TestOper(TestCase):
             ('!(!(!(!(!((!true))))))', True)
         ]
         ctxData = {'ddd':True, 'num1':-17}
-        cs = CaseUnar()
+        cs = CaseLUnar()
         for tcase in  data:
             td, exv = tcase
             tlines = splitLexems(td)
@@ -853,11 +853,11 @@ class TestOper(TestCase):
             self.assertEqual(exv, res.get())
             # print(' -- #tr11',td, res.getType(), res.get())
     
-    def test_CaseUnar(self):
+    def test_CaseLUnar(self):
         data = ['- 5', '-0xa0013bc', '!foo(1,2,ddd)', '!foo(bar(1,2,3, baz("aa a aa")))', '~0xabcdef0011', 
                 '~ foo(agr1, arg2)', '-(foo(2-5)+bar(7-num4))']
         
-        cs = CaseUnar()
+        cs = CaseLUnar()
         for td in  data:
             tlines = splitLexems(td)
             clines:CLine = elemStream(tlines)
@@ -866,10 +866,10 @@ class TestOper(TestCase):
             # print('#tc11', td, mres)
             self.assertTrue(mres)
         
-        # dprint('##test_CaseUnar False')
+        # dprint('##test_CaseLUnar False')
         # match false
         fdata = ['-5 + num1', '-(2+3)-a*b-c', '! val && true', '~ num ^ 0x0011']
-        cs = CaseUnar()
+        cs = CaseLUnar()
         for td in  fdata:
             tlines = splitLexems(td)
             clines:CLine = elemStream(tlines)

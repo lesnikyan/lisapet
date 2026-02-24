@@ -285,6 +285,27 @@ class ListGenIterator(NIterator, SequenceGen):
         return res
 
 
+class TwoDotsOper(Expression):
+    ''' a .. b 
+        Abstract binary operator
+        usage:
+        inner espression in List generator
+    '''
+    def __init__(self):
+        self.iter:NIterator = None
+        self.beginExpr = None
+        self.endExpr = None
+
+    def setArgs(self, a:Expression, b:Expression):
+        self.beginExpr = a
+        self.endExpr = b
+
+    def getListGen(self):
+        expr = ListGenExpr()
+        expr.setArgs(self.beginExpr, self.endExpr)
+        return expr
+
+
 class ListGenExpr(Expression):
     ''' [a .. b] '''
     def __init__(self):
@@ -306,9 +327,6 @@ class ListGenExpr(Expression):
         
     def get(self):
         return Val(self.iter, TypeIterator())
-    
-    # def vals(self, ctx:Context):
-        
 
 
 class Append(Expression):

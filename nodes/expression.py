@@ -16,6 +16,13 @@ def repr(obj):
         return str(obj)
     return '%s= %s' % (obj.__class__.__name__, '~%03d' % (hash(obj) % 1000))
 
+
+def takeVal(vv, ctx:Context):
+    if isinstance(vv, ObjectElem):
+        return vv.get(ctx)
+    return var2val(vv)
+
+
 class Expression:
     def __init__(self, val=None, src=None):
         self.val = val
@@ -124,7 +131,7 @@ class ArgExtList(ArgExpr):
     1) arg... in func definition
     2) expr... in func call
     '''
-    def __init__(self, var:Var|Expression):
+    def __init__(self, var:Var|Expression=None):
         self.defVal = []
         self.name = ''
         expr = var
@@ -142,6 +149,7 @@ class ArgExtList(ArgExpr):
     def do(self, ctx:NSContext):
         # newVal = ctx.get(self.name)
         self.expr.do(ctx)
+        # print('$1 ', self.expr.get())
         self.val = self.expr.get()
     
     def get(self):

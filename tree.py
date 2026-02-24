@@ -16,6 +16,8 @@ from cases.mt_cases import *
 
 from nodes import *
 from nodes.tnodes import *
+from cases.sequence import *
+from cases.runar_oper import *
 from nodes.oper_nodes import *
 from nodes.control import *
 from cases.structs import *
@@ -48,7 +50,6 @@ class UnclosedExpr:
         self.indent = cline.indent
 
     def add(self, part:list, src:TLine):
-        # prels('Uncl.add: ', part)
         self.elems.extend(part)
         self.src.add(src)
 
@@ -116,10 +117,12 @@ class StrFormatter(SFormatter):
 # CaseMString
 expCaseSolids:list[ExpCase] = [
     CaseBreak(), CaseContinue(), CaseRegexp(), CaseReturn(),  CaseElse(), 
-    CaseVal(), CaseVar(), CaseVar_(), CaseDotName(), CaseString(),
-    CaseTuple(),
+    CaseVal(), CaseVar(), CaseVar_(), CaseDotName(), CaseRTildArroy(), 
+    CaseString(),
+    CaseTuple(), CaseList(),
+    CaseArgExtraList(), CaseArgExtraDict(),
     CaseListGen(), CaseBytes(), CaseBytesExplicit(),
-    CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), 
+    CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseCollectElem(), 
     CaseFunCall(), CaseStructConstr(),
     CaseBrackets()
     ]
@@ -132,20 +135,10 @@ expCaseList:list[ExpCase] = [
     CaseInlineSub(),
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(),  
     CaseMatchCase(),
-    CaseArgExtraList(), CaseArgExtraDict(),
     CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
     CaseLambda(),
     CaseSemic(), CaseBinOper(), CaseCommas(),
-    CaseMString(), CaseUnar(StrFormatter()),
-    
-    #CaseComment(),
-    # CaseBreak(), CaseContinue(), CaseRegexp(),
-    # CaseTuple(),
-    # CaseDictBlock(), CaseListBlock(), 
-    # CaseListGen(),
-    # CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseList(), CaseCollectElem(), 
-    # CaseFunCall(), CaseStructConstr(), 
-    # CaseVar_(), CaseVal(), CaseString(), CaseVar(), CaseBrackets() 
+    CaseMString(), CaseLUnar(StrFormatter()),
 ]
 
 patternMatchCasesSolid = [
@@ -247,7 +240,7 @@ def subBtContext(blockContext:Expression):
 
 def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     # print('#elems2expr:', [(n.text, Lt.name(n.type)) for n in elems])
-    # print('/n# elems2expr/1::', ' '.join(["'%s'"%n.text for n in elems]), 'bContext:', blockContext)
+    # print('\n--/n# elems2expr/1::', ' '.join(["'%s'"%n.text for n in elems]), 'bContext:', blockContext)
     
     foundCase = None
     
@@ -256,9 +249,12 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
         foundCase = subBtContext(blockContext)
     
     # check Solid:
-    if not foundCase and isSolidExpr(elems):
+    expSolid = isSolidExpr(elems)
+    # print('\ntree.solid:', expSolid)
+    if not foundCase and expSolid:
         # print('elems2expr/isSolidExpr', expCaseSolids)
         for expCase in expCaseSolids:
+            # print('elems2expr/Solid', expCase.__class__)
             if expCase.match(elems):
                 foundCase = expCase
                 break
@@ -266,6 +262,7 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     # check non-Solid
     if not foundCase:
         for expCase in getCases():
+            # print('elems2expr/NoSolid', expCase.__class__)
             if expCase.match(elems):
                 foundCase = expCase
                 break
@@ -275,7 +272,7 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
         expr = makeExpr(foundCase, elems)
         if isinstance(expr, CtrlSubExpr):
             expr = expr.toControl()
-        # print('\n#EL2EX . expr:', expr, '', elemStr(elems))
+        # print('#post-sub:', expr, '', elemStr(elems))
         return expr
     # print('tree:DEBUG: No current ExprCase for `%s` ' % ''.join([n.text for n in elems]))
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))
@@ -326,17 +323,18 @@ def lex2tree(src:list[CLine]) -> Block:
     curBlock = root
     lineNum = 0
     parents:list[Block] = []
-    # dprint('~~~~~~~~~~~` start tree builder ~~~~~~~~~~~~')
-    i = -1
+    # print('~~~~~~~~~~~` start tree builder ~~~~~~~~~~~~')
+    i_src = -1
 
     unclosed = None
     unclosedCase = CaseUnclosedBrackets()
     prev = root # expr of prev line
     expr = root
     indent = src[0].indent
+    lastInd = len(src) - 1
     caseComment = CaseComment()
     for cline in src:
-        i += 1
+        i_src += 1
         # print('  -  -  - ')
         lineNum += 1
         cline.line = lineNum
@@ -362,13 +360,16 @@ def lex2tree(src:list[CLine]) -> Block:
             expr.init(cline)
             if unclosed is None:
                 unclosed = expr
+            # print('->>', lastInd, i_src)
+            if lastInd == i_src:
+                raise InterpretErr('Unclosed expression in last line. Uncosed till <<%s>>' % expSrc(cline.src))
             continue
         else:
             if unclosed is not None:
                 unclosed = None
         
-        # print( '$ind=',  indent, '; prevIndent=', prevIndent)
         prevIndent = indent
+        # print(i_src, '$ind=',  indent, '; prevIndent=', prevIndent)
         if unclosed is None:
             indent = cline.indent
         else:

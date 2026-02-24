@@ -79,8 +79,8 @@ class TestErr(TestCase):
             # except LangError:
             # print('TEST.code: ', code)
             with self.assertRaises(InterpretErr) as cont:
+                # print('>>TT err:', code)
                 self.runErr(code)
-                # print('>>TT err:', cont.exception)
 
     def test_err_parse(self):
         ''' '''

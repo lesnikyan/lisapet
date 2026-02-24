@@ -48,6 +48,9 @@ class Function(FuncInst):
     def setDefContext(self, ctx:Context):
         self.defCtx = ctx
 
+    def getDefContext(self):
+        return self.defCtx
+    
     def getName(self):
         return self._name
     
@@ -84,7 +87,7 @@ class Function(FuncInst):
             raise EvalErr('Not enough args in call of fuction `%s`. Exppected: %d, got: %d. ' % (self._name, self.argNum, len(args)))
         self.callArgs = []
 
-        inCtx = Context(self.defCtx)
+        inCtx = Context(self.getDefContext())
         # ordCollector = []
         noMoreOrds = False
         
@@ -184,28 +187,7 @@ class Function(FuncInst):
         # trying to detect tail recursion
         lastExpr = self.block.subs[-1]
         isTail = self.checkTailSame(ctx, lastExpr)
-        # if isinstance(lastExpr, CallExpr):
-        #     # print('F.do last callExpr', self, 'name:', lastExpr.name)
-        #     # if method
-        #     ''
-        #     lastName = lastExpr.name
-        #     if self.objInst and lastExpr.name.find('.') > -1:
-        #         lastName = lastExpr.name.split('.')[-1]
-        #         # print('Method of', self.objInst, lastName, 'self.getName()', self.getName(), self.getName() == lastName)
-        #         # print('method',' lastName `%s` self.getName() `%s`' % (lastName, self.getName()), self.getName() == lastName)
-        #     if self.getName() == lastName:
-        #         rname = lastName
-        #         rfunc = None
-        #         # print('same name', rname, rfunc)
-        #         if self.objInst and isinstance(self.objInst, ObjectInstance):
-        #             stype = self.objInst.vtype
-        #             rfunc = stype.getMethod(rname)
-        #         else:
-        #             rfunc = self.defCtx.get(rname)
-        #         if rfunc == self:
-        #             # print('-- same fn:', rname, rfunc)
-        #             isTail = True
-        
+
         self.fillArgs(inCtx)
         if isTail:
             res = self.tailRecur(inCtx)
@@ -225,7 +207,7 @@ class Function(FuncInst):
         # return Val(self, TypeFunc())
     
     def __str__(self):
-        if self.__class__.__name__ == 'NFunc':
+        if self.__class__.__name__ in ['NFunc', 'ComposedFunc']:
             return 'func %s(???)' % (self._name)
         args = []
         # print('Func_str_. arg:', self._name, self.argVars)
@@ -265,19 +247,27 @@ class ResursionLoop(Block):
             
 
 
-
-
-class ObjMethod(FuncInst):
+class ObjMethod(MethodInst):
     
     def __init__(self, inst:Val, func:FuncInst, src=None):
         super().__init__()
         self.obj = inst
         self.func = func
         self._name = func.getName()
+        # print('ObMeth', self._name)
 
     def getName(self):
         return self.func.getName()
-    
+
+    def getInst(self):
+        return self.obj
+
+    def getDefContext(self):
+        return self.func.getDefContext()
+
+    def setDefContext(self, ctx:Context):
+        self.func.setDefContext(ctx)
+
     def setArgVals(self, args:list[Var], named:dict={}):
         return self.func.setArgVals(args, named)
 

@@ -24,7 +24,6 @@ class FuncCallExpr(CallExpr):
         self.argExpr:list[Expression] = []
 
     def setFuncExpr(self, fexp:Expression):
-        # print('FCall.setFuncExpr')
         self.funcExpr = fexp
 
     def addArgExpr(self, exp:Expression):
@@ -56,14 +55,14 @@ class FuncCallExpr(CallExpr):
             
             if isinstance(exp, ArgExtList):
                 vv = var2val(arg)
-                # print('$1', vv)
                 for n in vv.elems:
-                    # self.obj.addVal(var2val(n))
                     args.append(var2val(n))
                 continue
             
-            if isinstance(arg, (Var, ObjectMember, CollectElem)):
+            if isinstance(arg, (Var, CollectElem)):
                 arg = arg.get()
+            elif isinstance(arg, (ObjectMember)):
+                arg = arg.get(ctx)
             
             # print('func-call do2:', valExp, arg)
             args.append(arg)
@@ -99,7 +98,7 @@ class FuncCallExpr(CallExpr):
         if isinstance(func, ObjMethod):
             # method but not a function object in the field of struct
             method = func
-            obj = method.obj
+            # obj = method.obj
             # print('F.func: ObjectMember', obj, method)
             # next we need Function to resolve overload case
             func = method.func
@@ -222,13 +221,9 @@ class FuncDefExpr(ObjDefExpr, Block):
         argCtx = Context(ctx)
         for arg in self.argVars:
             # print('FDef.do#1', arg)
-            # argType = TypeAny()
-            # aName = arg.name
             if isinstance(arg, TypedArgExpr):
                 arg.do(argCtx)
             # print('-> addArg', arg.get(), arg.defVal)
-            # if isinstance(arg, ArgExtList):
-            #     arg = arg.expr.get()
             func.addArg(arg.get(), arg.defVal)
         func.block = Block()
         # build inner block of function
@@ -246,11 +241,20 @@ class FuncDefExpr(ObjDefExpr, Block):
 
 class NFunc(Function):
     ''' '''
-    def __init__(self, name, rtype:VType=TypeAny()):
+    def __init__(self, name, fn:Callable=None, rtype:VType=TypeAny()):
         super().__init__(name)
-        self.callFunc:Callable = lambda *args : 1
+        self.callFunc:Callable = fn
         self.res:Val = None
+        if fn:
+            sign = inspect.signature(fn)
+            self.argNum = len(sign.parameters) - 1 # except 1st arg - context
         self.resType:VType = rtype
+
+    def copy(self, defCtx:Context):
+        r = NFunc(self._name, self.callFunc)
+        r.callFunc = self.callFunc
+        r.resType = self.resType
+        r.setDefContext(defCtx)
 
     def setArgVals(self, args:list[Var], named:dict={}):
         self.argVars = []
@@ -263,7 +267,9 @@ class NFunc(Function):
         args = []
         for arg in self.argVars:
             args.append(arg)
-        res = self.callFunc(ctx, *args)
+        inCtx = Context(self.getDefContext())
+        # print('NF', args, self.callFunc)
+        res = self.callFunc(inCtx, *args)
         if not isinstance(res, Val):
             # not Val, Not ListVal, etc.
             res =  Val(res, self.resType)
@@ -273,31 +279,72 @@ class NFunc(Function):
         return self.res
 
 
+class ComposedFunc(NFunc):
+    '''
+    composed = foo * bar * baz
+    '''
+    def __init__(self):
+        name = 'composed_%x' % hash(self)
+        super().__init__(name, None)
+        self.funcs:list[Function] = []
+
+    def add(self, func:Function):
+        self.funcs.append(func)
+
+    def do(self, ctx: Context):
+        arg = self.argVars[0]
+        rval = None
+        for i in range(len(self.funcs) -1, -1 , -1):
+            fn = self.funcs[i]
+            # print('CmF.do2', fn, fn.__class__)
+            args = []
+            if isinstance(fn, (ObjMethod, BoundMethod)):
+                args.append(fn.getInst())
+            args.append(arg)
+            inCtx = Context(fn.getDefContext())
+            fn.setArgVals(args)
+            fn.do(inCtx)
+            rval = fn.get()
+            arg = rval
+            
+        self.res = rval
+
+
 def coverFunc(name:str, fn:Callable, rtype:VType=TypeAny):
-    func = NFunc(name)
+    func = NFunc(name, fn)
     func.resType = rtype
-    func.callFunc = fn
+    # func.callFunc = fn
     return func
 
+
 def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
-    func = NFunc(name)
+    func = NFunc(name, fn)
+    func.setDefContext(ctx)
     func.resType = rtype
-    func.callFunc = fn
+    # func.callFunc = fn
     ctx.addFunc(func)
 
 
-class BoundMethod(NFunc):
+class BoundMethod(NFunc,MethodOfType):
     
     def __init__(self, func:FuncCallExpr, fname, rtype = TypeAny()):
-        super().__init__(fname, rtype)
-        self.inst = None
+        super().__init__(fname, func, rtype)
         self.callArgs:list[Expression] = []
-    
-    def setInstance(self, inst):
-        self.inst = inst
+
+    def instCase(self, inst):
+        return InstBMethod(inst, self)
 
     def __str__(self):
         return 'func %s(???)' % (self._name)
+
+
+class InstBMethod(BoundMethod):
+    def __init__(self, inst, meth:BoundMethod):
+        super().__init__(meth.callFunc, meth._name, meth.resType)
+        self.inst = inst
+
+    def getInst(self):
+        return self.inst
 
 
 def bindNativeMethod(ctx:Context, typeName, fn, fname, rtype:VType=None):
@@ -305,8 +352,8 @@ def bindNativeMethod(ctx:Context, typeName, fn, fname, rtype:VType=None):
         rtype = TypeAny
     # print('BM fn name:', fname)
     func = BoundMethod(fn, fname)
+    func.setDefContext(ctx)
     func.resType = rtype
-    func.callFunc = fn
     ctx.bindTypeMethod(typeName, func)
 
 

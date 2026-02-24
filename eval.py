@@ -11,6 +11,7 @@ from nodes.builtins import *
 import libs.str as lstr
 import libs.dicts as dc
 from nodes.type_builtins import *
+from nodes.func_features import func_curry, func_compose
 
 
 def initFuncs(ctx:Context):
@@ -69,6 +70,10 @@ def initFuncs(ctx:Context):
     
     # string
     bindNativeMethod(ctx, 'string', string_bytes, 'bytes', TypeBytes)
+    
+    # function
+    setNativeFunc(ctx, 'curry', func_curry, TypeFunc())
+    setNativeFunc(ctx, 'compose', func_compose, TypeFunc())
     
     
 

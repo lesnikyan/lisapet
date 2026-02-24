@@ -6,6 +6,7 @@ Syntax is similar to mix of Python, Golang and some functional langs. It's writt
 
 Name: Linear Interpreter of Scripting And Processing Expression Tree.  
 (LP, this code, miniscript)
+Alter name: FOTEX - Functional-object tree of expressions.
 possible ico: Fox pet on the bicycle
 
 LP was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run within the python project but without direct execution of native python code on the python interpreter (bad and unsafe way).  
@@ -107,15 +108,18 @@ Content:
 
 15. #### [Functional features](#15-functional-programming-features)  
     1. [Lambdas `x -> x ** 2`](#151-lambda-functions-right-arrow--)  
-    2. [high-order functions](#152-high-order-functions)
+    2. [high-order functions `f1(f2)`](#152-high-order-functions)
     3. [Function as object](#153-function-as-an-object)
     4. [Closures](#154-closures) 
-    5. [Call-chain `foo(1)(2)(3)`](#155-call-chain)
-    6. [Currying cascade](#156-currying-cascade)
-    7. [Tail recursion](#157-tail-recursion)
+    5. [Tail recursion](#155-tail-recursion)
+    6. [Call-chain `foo(1)(2)(3)`](#156-call-chain)
+    7. [Currying cascade](#157-currying-cascade)
+    8. [Builtin `curry`, `f~>`](#158-builtin-currying)
+    9. [Builtin `compose`, `g * f`](#159-builtin-composition)
+    10. [apply `f $ x`](#1592-apply-operator)
 
 20. Inline syntax.  
-    [Few-expressions block ` ; `](#20-one-line-block---operators)  
+    [Few-expressions block `x=1 ; f(x)`](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
 
 21. #### [String features](#21-string-features)
@@ -826,7 +830,7 @@ print(bb)
 - Methods.  
 
 Basic methods:  
-`bytes` type has its own builtins methods:  
+`bytes` type has its own builtin methods:  
 `map`, `each`, `fold`, `reverse`, `replace`  
 ```python
 res = 0d[1 2 4 8 16 32].map(x -> x << 1)
@@ -2158,60 +2162,7 @@ res = lamb(2)
 >> 1030013
 ```
 
-
-### 15.5 Call chain. 
-We can make chain of calls returning func from func.
-```golang
-func foo(x)
-    func plus(y)
-        z -> x * 100 + y * 10 + z
-    plus
-
-foo(3)(4)(5) #  345
-```
-The same works for methods too.
-```golang
-struct B b:string
-
-func bin:B triple(x)
-    func f2(y)
-        t = x * 100
-        (q, post) -> ~"{bin.b}_{t + y * 10 + q}{post}"
-
-b1 = B('Num')
-b1.triple(3)(5)(7, '_Yo') #  'Num_357_Yo'
-```
-
-
-### 15.6 Currying cascade.   
-In case when def of function is a last expression in the upper function, we get some useful hack for native currying.  
-```golang
-func foo(x)
-    func f2(y)
-        func f3(z)
-            x * 100 + y * 10 + z
-
-foo(1)(2)(3) #  123
-```
-And we can cover any other multiarg function by curriyng cascade.  
-It can be long enough.  
-```golang
-#// func for currying
-func f5vals(n1,n2,n3,n4,n5)
-    [n1,n2,n3,n4,n5]
-
-#// currying cascade
-func bar(a)
-    func f2(b)
-        func f3(c)
-            func f4(d)
-                func f5(e)
-                    f5vals(a, b, c, d, e)
-
-bar(11)(22)(33)(44)(55) #  [11, 22, 33, 44, 55]
-```
-
-### 15.7 Tail recursion
+### 15.5 Tail recursion
 Classical tail recursion is a recursion in which the last expression in a function is a call to itself.  
 In the LP tail recursion works if we put the returning call into a last position, literally (I'm still thinking about earlier returns, but still have no idea if we need it).  
 So, if interpreter has detected tail recursion it will run code of such function in lightweight loop instead of increase depth of call stack.  
@@ -2243,8 +2194,170 @@ a1 = A(3)
 res <- a1.ff(1001, 0) # 3003
 ```
 
+### 15.6 Call chain. 
+We can make chain of calls returning func from func.
+```golang
+func foo(x)
+    func plus(y)
+        z -> x * 100 + y * 10 + z
+    plus
 
-### 19. Free place :)  
+foo(3)(4)(5) #  345
+```
+The same works for methods too.
+```golang
+struct B b:string
+
+func bin:B triple(x)
+    func f2(y)
+        t = x * 100
+        (q, post) -> ~"{bin.b}_{t + y * 10 + q}{post}"
+
+b1 = B('Num')
+b1.triple(3)(5)(7, '_Yo') #  'Num_357_Yo'
+```
+
+
+### 15.7 Currying cascade.   
+In case when def of function is a last expression in the upper function, we get some useful hack for native currying.  
+```golang
+func foo(x)
+    func f2(y)
+        func f3(z)
+            x * 100 + y * 10 + z
+
+foo(1)(2)(3) #  123
+```
+And we can cover any other multiarg function by curriyng cascade.  
+It can be long enough.  
+```golang
+#// func for currying
+func f5vals(n1,n2,n3,n4,n5)
+    [n1,n2,n3,n4,n5]
+
+#// currying cascade
+func bar(a)
+    func f2(b)
+        func f3(c)
+            func f4(d)
+                func f5(e)
+                    f5vals(a, b, c, d, e)
+
+bar(11)(22)(33)(44)(55) #  [11, 22, 33, 44, 55]
+```
+
+### 15.8 Builtin currying.
+Currying here is a classic functional feature, when we take multi-arg function ang making function which return 1-arg funcs.  
+Currying expression gets original multi-arg function and returns function with one argument, that returns next function with one argument and so on, up to the last function with 1 arg, that returns result from call of original function.  
+In LP there are 2 ways for currying: builtin function and cpecial operator.  
+- function  
+- operator  
+```golang
+# base function
+
+func foo(a, b)
+    a + b
+```
+
+1) Builtin function `curry()`
+```python
+f1 = curry(foo)
+f1(10)(5) # >> 15
+```
+
+2) Currying operator `~>`
+```python
+
+f2 = foo~>
+f2(20)(5) # >> 25
+```
+Solid expression:  
+```python
+foo~>(30)(6) # >> 36
+```
+`~>` operator has most priority, exactly for using currying-and-call in expressions with other operators.  
+```python
+res = []
+
+res <- foo~>(10)(3) + 2 * 2
+# >> [17]
+```
+So currying doesn't break call-expression solid pattern.  
+```python
+# currying of method
+inst.mfunc~>(1)(2)
+
+# currying elem of list
+nn[2]~>(3)(4)
+```
+*Note.* We can't curry functions correctly with variadic args, default arg values, or function overloaded by count of agrs.  
+
+### 15.9 Builtin composition.
+
+Composition is a one of basic functional features.  
+If we compose two functions `(f, g)` we obtain new function `F(x)` that works like `f(g(x))`.  
+Composition make sence for function with 1 argument.  
+But we can transform multiarg function into 1-arg by currying.  
+
+- Composition.  
+
+For the composition in LP we have 2 ways.  
+1) builtin function `compose()`.  
+This function takes two or more args and returns composed function.  
+```golang
+func foo(x)
+    x * 10
+
+func bar(x)
+    x + 5
+
+func baz(x)
+    x * 3
+
+func trisum(a, b, c)
+    a + b + c
+```
+
+```python
+com1 = compose(foo, bar, baz)
+com1(1) # 80
+```
+
+2) Overloaded `*`-operator.  
+It does almost the same as the `compose` function.  
+```python
+com1 = foo * bar * baz
+com1(1) # 80
+```
+The composition make sence only for function with 1 argument.  
+But we can transform multiarg function into 1-arg by currying.  
+"That the way" (C) :)  
+```python
+com2 = foo * trisum~>(1)(2) * bar
+com2(2) # 100
+```
+
+### 15.9.2 Apply operator.
+The composition operator has lower precedence than parentheses. Therefore, we need a special operator to apply the composed function to its argument.   
+(I thought about using the dot operator, but it would make the code unreadable near structs and methods.)  
+The `$` operator applies the left operand, that is, the function, to the right argument.  
+```python
+# simple function
+res = foo $ 5 # 50
+```
+
+```python
+# composed functions
+res = foo * bar * baz $ 1 # 80
+```
+In expressions with the curryed function we have to notice 
+```python
+# with curryed function
+res = foo * trisum~>(2)(3) $ 2 # 70
+```
+In expressions with the curryed function we have to remember that the curry operator have higher precedense than the composition operator, but apply operator have lower precedence then composition. So we dont need additional brackets around composition or currying.  
+
+- Composition, currying and apply operator works for methods too.  
 
 
 ### 20. One-line block `;` `/:` operators
