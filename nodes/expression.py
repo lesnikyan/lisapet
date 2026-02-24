@@ -16,6 +16,13 @@ def repr(obj):
         return str(obj)
     return '%s= %s' % (obj.__class__.__name__, '~%03d' % (hash(obj) % 1000))
 
+
+def takeVal(vv, ctx:Context):
+    if isinstance(vv, ObjectElem):
+        return vv.get(ctx)
+    return var2val(vv)
+
+
 class Expression:
     def __init__(self, val=None, src=None):
         self.val = val

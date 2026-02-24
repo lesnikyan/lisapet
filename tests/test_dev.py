@@ -87,6 +87,22 @@ class TestDev(TestCase):
         DONE:
             # done: struct type args in overloaded func, 
             # done: test methods with compatiple types
+        
+        DONE: curry as builtin function
+        
+        DONE: currying operator:
+            func foo(a, b, c)
+            foo~>(1)(2)(3)
+        
+        DONE: tests: curry func from var, from list, from func-call(), curry method, curry 2-3 args lambda.
+        
+        DONE: func composition operator:
+            foo * bar * baz $ (x)
+            
+        DONE: operator of applying function to argument
+            foo $ arg
+            equal to
+            foo(arg)
 
     # features for for `enum` - not sure
         TODO: Enum.name(11)
@@ -202,73 +218,25 @@ class TestDev(TestCase):
             foo(1,2, |...)
             foo(1,2, /...)
         
-        TODO: func composition operator:
-            foo * bar * baz <??> (x)
-        
-        DONE: curry as builtin function
-        
-        DONE: currying operator:
-            func foo(a, b, c)
-            foo~>(1)(2)(3)
-        
-        DONE: tests: curry func from var, from list, from func-call(), curry method, curry 2-3 args lambda.
+        TODO: root, square root operator
+            |/ _/ -/ */
+            -/4 # 2;  3-/ 8 # 2
+            */4 # 2;  3*/ 8 # 2
         
         TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
         
+        TODO: composition / apply with methods
+        
     '''
 
-    def _test_currying_operator(self):
-        '''
-        foo~>
-        (foo~>)
-        f()~>
-        n[1]~>
-        st.f~>
-        
-        foo~>(1)(2) ; f = foo~> ; bar * foo~>(1)(100) * baz $ 58 ; f1 * ff()~>(1)(2) * f2 $ 58
-        
-        f = foo-X
-        bar * foo-X(2)(3) $ 22
-        bar(foo-X)
-        [x, y, foo-X]
-        
-        
-        '''
-        code = r'''
-        res = []
-        
-        func foo(a, b, c)
-            [a, b, c]
-        
-        cur1 = foo...
-        
-        r1 = cur1(1)(2)(3)
-        
-        # []...
-        # f()...
-        # ()...
-        # a.b...
-        # moduleN.m...
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = []
-        self.assertEqual(exv, resv)
+
 
     def _test_code(self):
         ''' '''
         code = r'''
         res = []
         
+        
         # print('res = ', res)
         '''
         code = norm(code[1:])
@@ -279,9 +247,9 @@ class TestDev(TestCase):
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
         resv = resRepr(rvar.vals())
-        # print(resv)
+        print(resv)
         exv = []
-        self.assertEqual(exv, resv)
+        # self.assertEqual(exv, resv)
 
 
     def _test_match_last_expr_of_case_as_result(self):

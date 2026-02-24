@@ -6,12 +6,13 @@ Functions and objects for implementation elements of functional programming
 
 from vars import *
 from bases.ntype import *
+from nodes.base_oper import BinOper
 from nodes.expression import *
 from nodes.keywords import *
 # from nodes.base_oper import AssignExpr
 # from nodes.oper_dot import ObjectMember
 from objects.func import Function
-from nodes.func_expr import NFunc
+from nodes.func_expr import NFunc, ComposedFunc, FuncCallExpr
 
 
 '''
@@ -36,10 +37,10 @@ def hiddenName(i:int):
 
 
 def defineFunc(defCtx:Context, name:str, fn:Callable):
-    func = NFunc(name, 1)
+    func = NFunc(name, fn)
     func.setDefContext(defCtx)
     func.resType = TypeFunc()
-    func.callFunc = fn
+    # func.callFunc = fn
     return func
 
 
@@ -80,10 +81,11 @@ def func_curry(defCtx:Context, fun:Function):
     :return - NFunc obj with a cascase of currying. 
     '''
     argNum = fun.argCount()
-    isMethod = isinstance(fun, MethodInst)
+    # print('$4', fun.__class__)
+    isMethod = isinstance(fun, (MethodInst, MethodOfType))
     if isMethod:
         argNum -= 1
-    
+    # print('~> argcount', fun.argCount(), argNum)
     # deepest raw function in currying cascade
     def cover(ctx:Context):
         vars = [ctx.get(hiddenName(i+1)) for i in range(argNum)]
@@ -108,13 +110,10 @@ def func_curry(defCtx:Context, fun:Function):
     return rfun
 
 
-# # dev check 
-# def curr1(_, fun:Function):
-#     def cover(ctx:Context, arg:Val):
-#         fun.setArgVals([var2val(arg)])
-#         fun.do(ctx)
-#         r = fun.get()
-#         return r
-#     cfun = coverFunc('cov1', cover, TypeAny())
-#     return cfun
+def func_compose(ctx:Context, *funcs):
+    com = ComposedFunc()
+    com.setDefContext(ctx)
+    for fn in funcs:
+        com.add(fn)
+    return com
 

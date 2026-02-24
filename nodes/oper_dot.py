@@ -71,6 +71,8 @@ class ObjectMember(ObjectElem):
             if isinstance(ctype, TypeProperty):
                 func = ctype.funcs.getMethod(fname)
                 # print('Dot7Oper. type-func=', type(func))
+                if isinstance(func, MethodOfType):
+                    return func.instCase(self.object)
                 return func
                 # self.membExpr = BoundMethodCall(func, fcall)
     

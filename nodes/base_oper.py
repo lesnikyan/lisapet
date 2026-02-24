@@ -39,6 +39,15 @@ class BinOper(OperCommand):
         ''' where right is MultilineVal '''
         self.right.add(expr)
 
+class UnarOper(OperCommand):
+    def __init__(self, oper:str, inner:Expression=None):
+        super().__init__(oper)
+        self.inner = inner
+        # self.res = None
+
+    def setInner(self, inner:Expression):
+        self.inner = inner
+
 
 class AssignExpr(BinOper):
     ''' a = x'''

@@ -22,9 +22,400 @@ from tree import *
 from eval import *
 
 
-
 class TestFuncs(TestCase):
     
+
+    def test_compose_types_method(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        # compose list.map
+        func x5(xx:list)
+            xx.map(x -> x * 5)
+            
+        func mult(a, b)
+            a * b
+        
+        nn = [1,2,3]
+        
+        # list.map
+        m2 = x5 * nn.map
+        res <- m2 $ (x -> x + 1)
+        
+        # list.fold
+        ff = nn.fold~>(100)
+        
+        res <- mult~>(2) * ff $ ((s, n) -> s + n)
+        res <- mult~>(3) * nn.fold~>(200) $ ((s, n)-> s + 5 * n)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [[10, 15, 20], 212, 690]
+        self.assertEqual(exv, resv)
+
+    def test_compose_full_methods(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func fx10(x)
+            x * 10
+        
+        func plusAB(a, b)
+            a + b
+        
+        struct A a:int
+        
+        func st:A sum(x)
+            st.a + x
+        
+        struct B b:string
+        func st:B prefX(x)
+            ~'{st.b}{x}'
+        
+        # compose structs methods
+        
+        a1 = A(1)
+        com1 = fx10 * a1.sum
+        res <- com1 $ 5
+        
+        a2 = A(2)
+        b2 = B('bb_')
+        
+        com2 = b2.prefX * fx10 * a2.sum
+        res <- com2 $ 1
+        res <- b2.prefX * fx10 * a2.sum * plusAB~>(5) $ 1
+        
+        res <- B('bIII_').prefX * fx10 * A(3).sum * plusAB~>(10) $ 4
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [60, 'bb_30', 'bb_80', 'bIII_170']
+        self.assertEqual(exv, resv)
+
+    def test_composition_apply(self):
+        '''
+        foo * bar $ x
+        foo * bar * baz $ x
+        foo * bar * baz $ (foo * bar * baz $ x)
+        '''
+        
+        code = r'''
+        res = []
+        
+        func foo(x)
+            x * 10
+        
+        func bar(x)
+            x + 5
+        
+        func baz(x)
+            x * 3
+        
+        func x2(x)
+            x * 2
+        
+        func trisum(a, b, c)
+            a + b + c
+        
+        res <- foo * bar $ 51
+        
+        
+        # foo * bar * baz
+        
+        r1 = [-15]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r1 <- foo * bar * baz $ n
+        res <- r1
+        
+        # baz * bar * foo $ n
+        
+        r2 = [-16]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r2 <- baz * bar * foo $ n
+        res <- r2
+
+        # curryed func in composition
+        # trisum~>(a)(b) * bar * baz * x2 $ n
+        
+        for a <- [100, 200, 300]
+            r3 = [-17, -(a)]
+            for b <- [4000, 5000, 6000]
+                rr = []
+                for n <- [2, 3, 5, 10, 11, 20]
+                    rr <- trisum~>(a)(b) * bar * baz * x2 $ n
+                r3 <- rr
+            res <- r3
+        
+        # x2 * trisum~>(a)(b) * bar $ n
+        
+        for n <- [2, 3, 5, 10, 11, 20]
+            r4 = [-18]
+            for a <- [10000, 20000]
+                rr = [-a]
+                for b <- [7000, 8000]
+                    rr <- x2 * trisum~>(a)(b) * bar $ n
+                r4 <- rr
+            res <- r4
+        
+        res <- foo * trisum~>(1)(2) $ 7
+        
+        res <- foo * bar * baz $ (foo * bar * baz $ 1)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            560, 
+            [-15, 110, 140, 200, 350, 380, 650], 
+            [-16, 75, 105, 165, 315, 345, 615], 
+            [-17, -100, [4117, 4123, 4135, 4165, 4171, 4225], [5117, 5123, 5135, 5165, 5171, 5225], [6117, 6123, 6135, 6165, 6171, 6225]], 
+            [-17, -200, [4217, 4223, 4235, 4265, 4271, 4325], [5217, 5223, 5235, 5265, 5271, 5325], [6217, 6223, 6235, 6265, 6271, 6325]], 
+            [-17, -300, [4317, 4323, 4335, 4365, 4371, 4425], [5317, 5323, 5335, 5365, 5371, 5425], [6317, 6323, 6335, 6365, 6371, 6425]], 
+            [-18, [-10000, 34014, 36014], [-20000, 54014, 56014]], 
+            [-18, [-10000, 34016, 36016], [-20000, 54016, 56016]], 
+            [-18, [-10000, 34020, 36020], [-20000, 54020, 56020]], 
+            [-18, [-10000, 34030, 36030], [-20000, 54030, 56030]], 
+            [-18, [-10000, 34032, 36032], [-20000, 54032, 56032]], 
+            [-18, [-10000, 34050, 36050], [-20000, 54050, 56050]],
+            100, 2450]
+        self.assertEqual(exv, resv)
+
+    def test_apply_operator(self):
+        ''' foo $ arg '''
+        code = r'''
+        res = []
+        
+        func foo(x)
+            x + 10
+        
+        res <- foo $ 1
+        res <- foo $ 2 + 3
+        res <- foo $ 3 * 5
+        res <- foo $ foo(1)
+        res <- foo $ 2 ** 3
+        res <- [foo $ 11, foo $ 12]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [11, 15, 25, 21, 18, [21, 22]]
+        self.assertEqual(exv, resv)
+
+    def test_composition_of_function_no_apply(self):
+        '''
+        composed = foo * bar * baz
+        composed(arg)
+        # is equal to
+        foo(bar(baz(arg)))
+        
+        no `applay` operator here
+        '''
+        
+        code = r'''
+        res = []
+        
+        func foo(x)
+            x * 10
+        
+        func bar(x)
+            x + 5
+        
+        func baz(x)
+            x * 3
+        
+        
+        f0 = foo * bar
+        res <- (f0(1), f0(2), f0(5))
+
+        
+        # foo * bar * baz
+        com1 = foo * bar * baz
+        
+        res <- com1(1)
+        r1 = [-13]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r1 <- com1(n)
+        res <- r1
+        
+        # baz * bar * foo
+        com2 = baz * bar * foo
+        
+        res <- com2(1)
+        r2 = [-14]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r2 <- com2(n)
+        res <- r2
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+            # print(resv)
+        exv = [(60, 70, 100), 80, [-13, 110, 140, 200, 350, 380, 650], 45, [-14, 75, 105, 165, 315, 345, 615]]
+        self.assertEqual(exv, resv)
+
+    def test_composition_builtin(self):
+        '''
+        composed = compose(foo, bar, baz)
+        composed(arg)
+        # is equal to
+        foo(bar(baz(arg)))
+        '''
+        
+        code = r'''
+        res = []
+        
+        func foo(x)
+            x * 10
+        
+        func bar(x)
+            x + 5
+        
+        func baz(x)
+            x * 3
+        
+        # foo, bar, baz
+        com1 = compose(foo, bar, baz)
+        
+        res <- com1(1)
+        
+        r1 = [-11]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r1 <- com1(n)
+        res <- r1
+        
+        # baz, bar, foo
+        com2 = compose(baz, bar, foo)
+        
+        res <- com2(1)
+        
+        r2 = [-12]
+        for n <- [2, 3, 5, 10, 11, 20]
+            r2 <- com2(n)
+        res <- r2
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [80, [-11, 110, 140, 200, 350, 380, 650], 45, [-12, 75, 105, 165, 315, 345, 615]]
+        
+        self.assertEqual(exv, resv)
+
+    def runComposed(self, ctx, comps:ComposedFunc, argSet:list):
+        rr = []
+        for i in argSet:
+            x = Val(i, TypeInt())
+            comps.setArgVals([x])
+            comps.do(ctx)
+            cres = comps.get()
+            rr.append(cres.getVal())
+        return rr
+
+    def test_composition_object(self):
+        '''
+        ComposedFunc object.
+        '''
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        
+        def f1(_, x:Val):
+            v = var2val(x).getVal()
+            return Val(v * 2, TypeInt())
+        
+        def f2(_,x):
+            v = var2val(x).getVal()
+            return Val(v + 10, TypeInt())
+        
+        def f3(_, x):
+            v = var2val(x).getVal()
+            return Val(v * 100, TypeInt())
+        
+        fn1 = (defineFunc(ctx, 'f1', f1))
+        fn2 = defineFunc(ctx, 'f2', f2)
+        fn3 = defineFunc(ctx, 'f3', f3)
+        
+        # test f1 * f2 *  f3
+
+        comps123 = ComposedFunc()
+        comps123.add(fn1)
+        comps123.add(fn2)
+        comps123.add(fn3)
+        comps123.setDefContext(ctx)
+        
+        rr1 = self.runComposed(ctx, comps123, [1, 2, 5, 10, 11, 12])
+        self.assertEqual([220, 420, 1020, 2020, 2220, 2420], rr1)
+        
+        # test f1 * f3 *  f2
+
+        comps132 = ComposedFunc()
+        comps132.add(fn1)
+        comps132.add(fn3)
+        comps132.add(fn2)
+        comps132.setDefContext(ctx)
+        
+        rr2 = self.runComposed(ctx, comps132, [1, 2, 5, 10, 11, 12])
+        self.assertEqual([2200, 2400, 3000, 4000, 4200, 4400], rr2)
+        
+        # test f1 * f2 *  f3
+
+        comps321 = ComposedFunc()
+        comps321.add(fn3)
+        comps321.add(fn2)
+        comps321.add(fn1)
+        comps321.setDefContext(ctx)
+        
+        rr3 = self.runComposed(ctx, comps321, [1, 2, 5, 10, 11, 12])
+        self.assertEqual([1200, 1400, 2000, 3000, 3200, 3400], rr3)
 
     def test_curry_operator(self):
         code = r'''

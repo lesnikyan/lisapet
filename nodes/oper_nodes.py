@@ -10,6 +10,7 @@ from nodes.base_oper import *
 from nodes.expression import *
 from bases.ntype import *
 from lang import *
+from nodes.func_features import *
 from nodes.oper_dot import *
 from nodes.structs import StructConstrBegin 
 from vars import *
@@ -247,12 +248,13 @@ class OpMath(BinOper):
         # print('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
+        
+        a, b = takeVal(a, ctx), takeVal(b, ctx)
         # print('#bin-oper2', self.oper, a, '|', b)
-        a, b = var2val(a), var2val(b)
         
         # overloaded operators:
         over, res = self.overs(a, b)
-        # dprint('#bin-oper-over:', over, res)
+        # print('#bin-oper-over:', over, res)
         if over:
             self.res = res
             return
@@ -336,6 +338,10 @@ class OpMath(BinOper):
             return val.val.allVals()
         return val
 
+    def starFuncs(self, a:FuncInst, b:FuncInst):
+        # print('starFunc %')
+        return func_compose(None, a, b)
+
     def overs(self, a, b):
         a, b = valFrom(a), valFrom(b)
         # print('#bin-overs-1', a, b)
@@ -345,12 +351,15 @@ class OpMath(BinOper):
             case '+' :
                 if isinstance(a, (ListVal)) and isinstance(b, ListVal):
                     return (True, self.listPlus(a, b))
-                if isinstance(a, (StringVal)) and isinstance(b, StringVal):
+                elif isinstance(a, (StringVal)) and isinstance(b, StringVal):
                     return (True, self.stringPlus(a, b))
             case '-' :
                 if isinstance(a, (ListVal, DictVal)) and isinstance(b, ListVal):
                     return (True, self.collMinus(a, b))
-            
+            case '*':
+                if isinstance(a, (FuncInst)) and isinstance(b, FuncInst):
+                    return (True, self.starFuncs(a, b))
+                
         return (False, 0)
 
 
@@ -549,15 +558,6 @@ class OpBitwise(BinOper):
         tpl = a.getVal()
         # dprint('tpl % args: ', tpl % args)
         return StringVal(tpl % args)
-
-class UnarOper(OperCommand):
-    def __init__(self, oper:str, inner:Expression=None):
-        super().__init__(oper)
-        self.inner = inner
-        # self.res = None
-
-    def setInner(self, inner:Expression):
-        self.inner = inner
 
 
 class BoolNot(UnarOper):
@@ -878,28 +878,4 @@ class RegexpSearchOper(RegexpOper):
         src = var2val(src)
         res = rx.find(src)
         self.res = res
-        
-from nodes.func_features import *
-class RTildArrowExpr(UnarOper):
-
-    def __init__(self, inner = None):
-        super().__init__('~>', inner)
-
-    # def setInner(self, inner:Expression):
-    #     self.inner = inner
-
-    def do(self, ctx:Context):
-        ''' '''
-        # do inner
-        self.inner.do(ctx)
-        # get func from inner
-        fval = self.inner.get()
-        func = var2val(fval)
-        # check func for currying
-        if func.getType() != TypeFunc():
-            raise EvalErr('Not function tried to curry')
-        # call curry(), get result
-        curFunc = func_curry(ctx, func)
-        self.res = curFunc
-
 
