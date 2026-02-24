@@ -37,10 +37,10 @@ def hiddenName(i:int):
 
 
 def defineFunc(defCtx:Context, name:str, fn:Callable):
-    func = NFunc(name, 1)
+    func = NFunc(name, fn)
     func.setDefContext(defCtx)
     func.resType = TypeFunc()
-    func.callFunc = fn
+    # func.callFunc = fn
     return func
 
 
@@ -85,7 +85,7 @@ def func_curry(defCtx:Context, fun:Function):
     isMethod = isinstance(fun, (MethodInst, MethodOfType))
     if isMethod:
         argNum -= 1
-    
+    # print('~> argcount', fun.argCount(), argNum)
     # deepest raw function in currying cascade
     def cover(ctx:Context):
         vars = [ctx.get(hiddenName(i+1)) for i in range(argNum)]

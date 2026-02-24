@@ -241,14 +241,17 @@ class FuncDefExpr(ObjDefExpr, Block):
 
 class NFunc(Function):
     ''' '''
-    def __init__(self, name, rtype:VType=TypeAny()):
+    def __init__(self, name, fn:Callable=None, rtype:VType=TypeAny()):
         super().__init__(name)
-        self.callFunc:Callable = lambda *args : 1
+        self.callFunc:Callable = fn
         self.res:Val = None
+        if fn:
+            sign = inspect.signature(fn)
+            self.argNum = len(sign.parameters) - 1 # except 1st arg - context
         self.resType:VType = rtype
 
     def copy(self, defCtx:Context):
-        r = NFunc(self._name)
+        r = NFunc(self._name, self.callFunc)
         r.callFunc = self.callFunc
         r.resType = self.resType
         r.setDefContext(defCtx)
@@ -276,14 +279,13 @@ class NFunc(Function):
         return self.res
 
 
-# class ComposedFunc(Function):
 class ComposedFunc(NFunc):
     '''
     composed = foo * bar * baz
     '''
     def __init__(self):
         name = 'composed_%x' % hash(self)
-        super().__init__(name)
+        super().__init__(name, None)
         self.funcs:list[Function] = []
 
     def add(self, func:Function):
@@ -291,7 +293,6 @@ class ComposedFunc(NFunc):
 
     def do(self, ctx: Context):
         arg = self.argVars[0]
-        # print('ComposedF.do', arg)
         rval = None
         for i in range(len(self.funcs) -1, -1 , -1):
             fn = self.funcs[i]
@@ -308,36 +309,28 @@ class ComposedFunc(NFunc):
             
         self.res = rval
 
+
 def coverFunc(name:str, fn:Callable, rtype:VType=TypeAny):
-    func = NFunc(name)
+    func = NFunc(name, fn)
     func.resType = rtype
-    func.callFunc = fn
+    # func.callFunc = fn
     return func
 
 
 def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
-    func = NFunc(name)
+    func = NFunc(name, fn)
     func.setDefContext(ctx)
     func.resType = rtype
-    func.callFunc = fn
+    # func.callFunc = fn
     ctx.addFunc(func)
 
 
 class BoundMethod(NFunc,MethodOfType):
     
     def __init__(self, func:FuncCallExpr, fname, rtype = TypeAny()):
-        super().__init__(fname, rtype)
-        # self.inst = None
-        self.callFunc = func
+        super().__init__(fname, func, rtype)
         self.callArgs:list[Expression] = []
-    
-    # def setInstance(self, inst):
-    #     self.inst = inst
 
-    # def getInst(self):
-    #     print('BM', self.inst)
-    #     return self.inst
-    
     def instCase(self, inst):
         return InstBMethod(inst, self)
 

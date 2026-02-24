@@ -231,40 +231,6 @@ class TestDev(TestCase):
 
 
 
-    def _test_compose_types_method(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        # compose list.map
-        func x5(xx:list)
-            xx.map(x -> x * 5)
-            
-        nn = [1,2,3]
-        
-        m2 = x5 * nn.map
-        # print(m2)
-        res <- m2 $ (x -> x + 1)
-        
-        nn.fold~>(1000)
-        # res <- plusAB~>(2) * nn.fold~>(1000) $ (s, n -> s + n)
-        
-        # res <- plusAB~>(2) * nn.fold~>(1000) $ (s, n -> s + n)
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = [60, 'bb_30', 'bb_80', 'bIII_170']
-        self.assertEqual(exv, resv)
-
     def _test_code(self):
         ''' '''
         code = r'''

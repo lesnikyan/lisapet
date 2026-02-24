@@ -25,6 +25,44 @@ from eval import *
 class TestFuncs(TestCase):
     
 
+    def test_compose_types_method(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        # compose list.map
+        func x5(xx:list)
+            xx.map(x -> x * 5)
+            
+        func mult(a, b)
+            a * b
+        
+        nn = [1,2,3]
+        
+        # list.map
+        m2 = x5 * nn.map
+        res <- m2 $ (x -> x + 1)
+        
+        # list.fold
+        ff = nn.fold~>(100)
+        
+        res <- mult~>(2) * ff $ ((s, n) -> s + n)
+        res <- mult~>(3) * nn.fold~>(200) $ ((s, n)-> s + 5 * n)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [[10, 15, 20], 212, 690]
+        self.assertEqual(exv, resv)
+
     def test_compose_full_methods(self):
         ''' '''
         code = r'''
