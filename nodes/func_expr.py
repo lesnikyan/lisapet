@@ -59,8 +59,10 @@ class FuncCallExpr(CallExpr):
                     args.append(var2val(n))
                 continue
             
-            if isinstance(arg, (Var, ObjectMember, CollectElem)):
+            if isinstance(arg, (Var, CollectElem)):
                 arg = arg.get()
+            elif isinstance(arg, (ObjectMember)):
+                arg = arg.get(ctx)
             
             # print('func-call do2:', valExp, arg)
             args.append(arg)
@@ -263,6 +265,7 @@ class NFunc(Function):
         for arg in self.argVars:
             args.append(arg)
         inCtx = Context(self.getDefContext())
+        # print('NF', args, self.callFunc)
         res = self.callFunc(inCtx, *args)
         if not isinstance(res, Val):
             # not Val, Not ListVal, etc.
@@ -288,11 +291,17 @@ class ComposedFunc(NFunc):
 
     def do(self, ctx: Context):
         arg = self.argVars[0]
+        # print('ComposedF.do', arg)
         rval = None
         for i in range(len(self.funcs) -1, -1 , -1):
             fn = self.funcs[i]
+            # print('CmF.do2', fn, fn.__class__)
+            args = []
+            if isinstance(fn, (ObjMethod, BoundMethod)):
+                args.append(fn.getInst())
+            args.append(arg)
             inCtx = Context(fn.getDefContext())
-            fn.setArgVals([arg])
+            fn.setArgVals(args)
             fn.do(inCtx)
             rval = fn.get()
             arg = rval
@@ -314,19 +323,35 @@ def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
     ctx.addFunc(func)
 
 
-class BoundMethod(NFunc):
+class BoundMethod(NFunc,MethodOfType):
     
     def __init__(self, func:FuncCallExpr, fname, rtype = TypeAny()):
         super().__init__(fname, rtype)
-        self.inst = None
+        # self.inst = None
         self.callFunc = func
         self.callArgs:list[Expression] = []
     
-    def setInstance(self, inst):
-        self.inst = inst
+    # def setInstance(self, inst):
+    #     self.inst = inst
+
+    # def getInst(self):
+    #     print('BM', self.inst)
+    #     return self.inst
+    
+    def instCase(self, inst):
+        return InstBMethod(inst, self)
 
     def __str__(self):
         return 'func %s(???)' % (self._name)
+
+
+class InstBMethod(BoundMethod):
+    def __init__(self, inst, meth:BoundMethod):
+        super().__init__(meth.callFunc, meth._name, meth.resType)
+        self.inst = inst
+
+    def getInst(self):
+        return self.inst
 
 
 def bindNativeMethod(ctx:Context, typeName, fn, fname, rtype:VType=None):

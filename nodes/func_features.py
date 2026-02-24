@@ -81,7 +81,8 @@ def func_curry(defCtx:Context, fun:Function):
     :return - NFunc obj with a cascase of currying. 
     '''
     argNum = fun.argCount()
-    isMethod = isinstance(fun, MethodInst)
+    # print('$4', fun.__class__)
+    isMethod = isinstance(fun, (MethodInst, MethodOfType))
     if isMethod:
         argNum -= 1
     

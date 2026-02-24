@@ -32,7 +32,7 @@ class RTildArrowExpr(UnarOper):
         self.inner.do(ctx)
         # get func from inner
         fval = self.inner.get()
-        func = var2val(fval)
+        func = takeVal(fval, ctx)
         # check func for currying
         if func.getType() != TypeFunc():
             raise EvalErr('Not function tried to curry')

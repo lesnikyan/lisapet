@@ -207,7 +207,7 @@ class Function(FuncInst):
         # return Val(self, TypeFunc())
     
     def __str__(self):
-        if self.__class__.__name__ == 'NFunc':
+        if self.__class__.__name__ in ['NFunc', 'ComposedFunc']:
             return 'func %s(???)' % (self._name)
         args = []
         # print('Func_str_. arg:', self._name, self.argVars)
@@ -254,13 +254,20 @@ class ObjMethod(MethodInst):
         self.obj = inst
         self.func = func
         self._name = func.getName()
+        # print('ObMeth', self._name)
 
     def getName(self):
         return self.func.getName()
-    
+
     def getInst(self):
         return self.obj
-    
+
+    def getDefContext(self):
+        return self.func.getDefContext()
+
+    def setDefContext(self, ctx:Context):
+        self.func.setDefContext(ctx)
+
     def setArgVals(self, args:list[Var], named:dict={}):
         return self.func.setArgVals(args, named)
 

@@ -104,6 +104,9 @@ class ObjectInstance(Val):
 
 
 class ObjectElem(Val):
+    
+    def getInst(self):
+        pass
 
     def set(self, val:Var):
         pass
@@ -572,6 +575,12 @@ def valFrom(src:Var|Val):
     if isinstance(src, (Var)):
         return src.get()
 
+
+def isBaseTypeMember(var):
+    ''' if obj.member
+        when obj is not struct'''
+    return isinstance(var, ObjectElem) and not isinstance(var.getInst(), ObjectInstance)
+        
 
 def var2val(var:Var|Val):
     ''' Convert Var to Val instance  '''

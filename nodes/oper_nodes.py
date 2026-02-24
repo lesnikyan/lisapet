@@ -248,7 +248,8 @@ class OpMath(BinOper):
         # print('#bin-oper1:',' ( %s )' % self.oper, self.left, self.right) # expressions
         # get val objects from expressions
         a, b = self.left.get(), self.right.get() # Var objects
-        a, b = var2val(a), var2val(b)
+        
+        a, b = takeVal(a, ctx), takeVal(b, ctx)
         # print('#bin-oper2', self.oper, a, '|', b)
         
         # overloaded operators:

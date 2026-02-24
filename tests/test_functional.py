@@ -25,7 +25,56 @@ from eval import *
 class TestFuncs(TestCase):
     
 
-    def test_composition_full_test(self):
+    def test_compose_full_methods(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func fx10(x)
+            x * 10
+        
+        func plusAB(a, b)
+            a + b
+        
+        struct A a:int
+        
+        func st:A sum(x)
+            st.a + x
+        
+        struct B b:string
+        func st:B prefX(x)
+            ~'{st.b}{x}'
+        
+        # compose structs methods
+        
+        a1 = A(1)
+        com1 = fx10 * a1.sum
+        res <- com1 $ 5
+        
+        a2 = A(2)
+        b2 = B('bb_')
+        
+        com2 = b2.prefX * fx10 * a2.sum
+        res <- com2 $ 1
+        res <- b2.prefX * fx10 * a2.sum * plusAB~>(5) $ 1
+        
+        res <- B('bIII_').prefX * fx10 * A(3).sum * plusAB~>(10) $ 4
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [60, 'bb_30', 'bb_80', 'bIII_170']
+        self.assertEqual(exv, resv)
+
+    def test_composition_apply(self):
         '''
         foo * bar $ x
         foo * bar * baz $ x

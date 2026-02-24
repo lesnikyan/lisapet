@@ -2357,6 +2357,8 @@ res = foo * trisum~>(2)(3) $ 2 # 70
 ```
 In expressions with the curryed function we have to remember that the curry operator have higher precedense than the composition operator, but apply operator have lower precedence then composition. So we dont need additional brackets around composition or currying.  
 
+- Composition, currying and apply operator works for methods too.  
+
 
 ### 20. One-line block `;` `/:` operators
 (Note! there is not a usual code style. Just special tool for specific cases.)  

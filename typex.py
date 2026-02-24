@@ -229,6 +229,10 @@ class TypeProperty:
         self.funcs:FuncSpace = funcs
 
 
+class MethodOfType:
+    def instCase(self, inst):
+        pass
+
 class TypeAccess(VType):
     '''  '''
     name = 'handler'
