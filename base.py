@@ -84,6 +84,9 @@ class VType(Base):
     def hash(self):
         return self.th
     
+    def copy(self):
+        return self.__class__()
+    
     def __eq__(self, value):
         return self.__class__ == value.__class__
 
@@ -112,6 +115,9 @@ class Val(Base):
 
     def get(self):
         return self.val
+    
+    def copy(self):
+        return Val(self.val, self.vtype.copy())
 
     def getVal(self):
         return self.get()

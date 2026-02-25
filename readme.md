@@ -960,6 +960,24 @@ foo(1.5, 4000) #// (15.0, '<4000>')
 ```
 The same works for methods.  
 
+### 4.4 Type constructor
+
+Each builtin type has its own function-constructor.  
+Constructor has the same name as a type and argumens (one in common case).  
+Constructor can convert compatible types into target type, make empty-value or construct complex value from parts.  
+```python
+int(true) # 1
+float(1) # 1.0
+bool(5) # true
+string(123) # '123'
+bytes('Hello!') # '0x[48 65 6c 6c 6f 21]'
+list('Cats') # ['C','a','t','s']
+tuple([1,2,3]) # (1,2,3)
+dict([('a',11), ('b',22)]) # {'a':11, 'b':22}
+```
+See `tests/test_builtins.py` for more information.  
+
+
 
 ### 5. `if`-statement, `else`
 `if` statement, comparison operators, bool operators. 

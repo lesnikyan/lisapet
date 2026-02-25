@@ -6,7 +6,7 @@ TODO: rename to preload.py
 
 from vars import *
 from context import Context, RootContext
-from nodes.func_expr import setNativeFunc, bindNativeMethod
+from nodes.func_expr import setNativeFunc, bindNativeMethod, addTypeConstr
 from nodes.builtins import *
 import libs.str as lstr
 import libs.dicts as dc
@@ -15,6 +15,16 @@ from nodes.func_features import func_curry, func_compose
 
 
 def initFuncs(ctx:Context):
+    # type constructors
+    addTypeConstr(ctx, int_constr, TypeInt())
+    addTypeConstr(ctx, float_constr, TypeFloat())
+    addTypeConstr(ctx, bool_constr, TypeBool())
+    addTypeConstr(ctx, string_constr, TypeString())
+    addTypeConstr(ctx, bytes_constr, TypeBytes())
+    addTypeConstr(ctx, list_constr, TypeList())
+    addTypeConstr(ctx, tuple_constr, TypeTuple())
+    addTypeConstr(ctx, dict_constr, TypeDict())
+    
     # global funcs
     setNativeFunc(ctx, 'print', buit_print, TypeNull)
     setNativeFunc(ctx, 'len', built_len, TypeInt)

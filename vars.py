@@ -201,7 +201,6 @@ class ListVal(Collection):
         del self.elems[index.getVal()]
 
     def vals(self):
-        
         r = []
         for n in self.elems:
             if isinstance(n, (FuncInst, ObjectInstance)):
@@ -302,9 +301,11 @@ def dkeyCover(k):
 class DictVal(Collection):
     ''' classic List / Array object'''
     
-    def __init__(self):
+    def __init__(self, data=None):
         super().__init__(None, TypeDict())
-        self.data:dict[str|int|bool,Val] = {}
+        if not data:
+            data = {}
+        self.data:dict[str|int|bool,Val] = data
 
     def len(self)->int:
         return len(self.data)
@@ -359,10 +360,10 @@ class DictVal(Collection):
 
 class StringVal(ValSequence):
     ''' '', "", ``, etc '''
-    def __init__(self, val, stype=None):
-        if not stype:
-            stype = TypeString()
-        super().__init__(val, stype)
+    def __init__(self, val):
+        # if not stype:
+        #     stype = TypeString()
+        super().__init__(val, TypeString())
     
     def getElem(self, key:Val):
         k = key.getVal()
@@ -373,6 +374,9 @@ class StringVal(ValSequence):
     
     def len(self)->int:
         return len(self.val)
+    
+    def copy(self):
+        return StringVal(str(self.val))
 
     def getSlice(self, beg, end):
         if beg < -len(self.val) or end > len(self.val):
@@ -406,6 +410,9 @@ class BytesVal(ValSequence):
     
     def len(self)->int:
         return len(self.val)
+    
+    def copy(self):
+        return BytesVal(bytearray2(self.val))
     
     def addVal(self, val:Val):
         # print('Bytes.addVal:', self.val, val.getVal())

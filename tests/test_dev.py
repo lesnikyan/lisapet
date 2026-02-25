@@ -103,6 +103,18 @@ class TestDev(TestCase):
             foo $ arg
             equal to
             foo(arg)
+        
+        DONE: composition / apply with methods
+        
+        DONE: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
+            // byte(int), 
+            bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
+            # dont,  string(bytes(), encoding='utf8') # string from bytes / 0x[].string() for that
+        DONE: bytes constructor - add len arg for fill by 0
+            0x[len=10] # 10 bytes
+            0x[] * 10 # 10 bytes
+            0x(12) (?)
+            bytes(12) # future type-constructors
 
     # features for for `enum` - not sure
         TODO: Enum.name(11)
@@ -181,23 +193,6 @@ class TestDev(TestCase):
         
         TODO: add assertion to cases in test_lists
         
-        TODO: bytes constructor - add len arg for fill by 0
-            0x[len=10] # 10 bytes
-            0x[] * 10 # 10 bytes
-            0x(12) (?)
-            bytes(12) # future type-constructors
-        
-        TODO: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
-            // byte(int), bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
-            string(bytes(), encoding='utf8') # string from bytes
-        
-        TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
-        TODO: string.replace({dict}) # check, implement if not
-        
-        TODO: string methods: upper, lower
-        
-        TODO: list|tuple methods: sort, filter
-        
         TODO: refactor case-loops to pattern-tree
         1) find common cases:
             solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, control-keywords, var, val, 
@@ -225,9 +220,25 @@ class TestDev(TestCase):
         
         TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
         
-        TODO: composition / apply with methods
+        
+        
+        TODO: add glif type
+            glif represents one char with any byte-size
+            constr: glif('a'),  glif(41), 
+            'Hello'.glifs() -> list of glifs
+        
+        TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
+        TODO: string.replace({dict}) # check, implement if not
+        
+        TODO: string methods: upper, lower
+        
+        TODO: list|tuple methods: sort, filter; 
+            dict: filterk (filter by key)
+        
+        TODO: fix print(bool): should be false, true, instead of False, True
         
     '''
+
 
 
 

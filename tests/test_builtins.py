@@ -26,6 +26,97 @@ from tests.utils import *
 class TestBoundFuncs(TestCase):
 
 
+    def test_type_builtin_constructors(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        res <- int(1.0)
+        res <- int(27 ** (1/3))
+        res <- int(true)
+        res <- int(false)
+        res <- int(null)
+        res <- int('1')
+        res <- int(0x[0a 0b 0e 0f])
+        res <- int(0x0a0b0e0f)
+        res <- int(0x[fe dc ba 98 76 54 32 10])
+        
+        
+        res <- float(11)
+        res <- float(12.5)
+        res <- float('2.5')
+        res <- float(false)
+        res <- float(true)
+        res <- float(null)
+        
+        res <- bool(0)
+        res <- bool(null)
+        res <- bool('')
+        res <- bool(float(0))
+        res <- bool('false')
+        res <- bool(0x[])
+        res <- bool(0x[00])
+        res <- bool(1)
+        res <- bool('true')
+        res <- bool('Hello!')
+        res <- bool(0x[01])
+        
+        res <- bytes(4)
+        res <- bytes(0x[11 22 33 4f])
+        res <- bytes('Hello!')
+        res <- bytes([31, 32, 41, 61])
+        
+        res <- string(0)
+        res <- string(1)
+        res <- string('')
+        res <- string(null)
+        res <- string([1,2,3])
+        res <- string((1,2,3))
+        res <- string(['','a','9'])
+        res <- string(0x[])
+        res <- string(0x[41 42 43 44 45])
+        
+        res <- list(1)
+        res <- list(5)
+        res <- list('Hello')
+        res <- list(0d[1 2 3 10])
+        res <- list([1,2,3])
+        res <- list((3,4,5))
+        
+        res <- tuple(1)
+        res <- tuple(5)
+        res <- tuple('Hello')
+        res <- tuple(0d[1 2 3 10])
+        res <- tuple([1,2,3])
+        res <- tuple((3,4,5))
+        
+        res <- dict({1:11, 2:22})
+        items = [('a', 111),('b',222),('c',333)]
+        res <- dict(items)
+        res <- dict((['x','y','z'], [100, 200, 300]))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            1, 3, 1, 0, 0, 1, 168496655, 168496655, 18364758544493064720, 
+            11.0, 12.5, 2.5, 0.0, 1.0, 0.0, 
+            False, False, False, False, False, False, False, True, True, True, True, 
+            '0x[00 00 00 00]', [], '0x[48 65 6c 6c 6f 21]', '0x[1f 20 29 3d]', 
+            '0', '1', '', 'null', '[1,2,3]', '(1,2,3)', "['','a','9']", '0x[]', '0x[41 42 43 44 45]', 
+            [0], [0, 0, 0, 0, 0], ['H', 'e', 'l', 'l', 'o'], [1, 2, 3, 10], [1, 2, 3], [3, 4, 5], 
+            (0,), (0, 0, 0, 0, 0), ('H', 'e', 'l', 'l', 'o'), (1, 2, 3, 10), (1, 2, 3), (3, 4, 5), 
+            {1: 11, 2: 22}, {'a': 111, 'b': 222, 'c': 333}, {'x': 100, 'y': 200, 'z': 300}]
+        self.assertEqual(exv, resv)
+
     def test_code_string_to_bytes(self):
         ''' '''
         code = r'''

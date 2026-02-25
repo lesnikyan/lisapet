@@ -511,7 +511,7 @@ class MString(StringExpr, MultilineVal):
     
     def __init__(self, val, quot):
         super().__init__(val, quot)
-        self.val = StringVal(''.join(val), TypeString())
+        self.val = StringVal(''.join(val))
 
     def add(self, next:'MString'):
         text = self.val.val + next.val.val
