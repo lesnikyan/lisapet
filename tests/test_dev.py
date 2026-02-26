@@ -141,6 +141,14 @@ class TestDev(TestCase):
         
         TODO:? class Null() -> class Null(Val)
         
+        TODO (?):  # partially called, make function with remined args; can't be applyed to func with arg...
+            foo(1,2, ...>)
+            foo(1,2, ->)
+            foo(1,2, _...)
+            foo(1,2, :...)
+            foo(1,2, |...)
+            foo(1,2, /...)
+        
         TODO: 
             think about escapes in triple-backticks strings
             unary backtick tested in test_parsing_string_backtiks
@@ -166,6 +174,8 @@ class TestDev(TestCase):
                     1) child method will override all overloaded or
                     2) child method will add and shoud find func by signature in all parent tree or
                     3) disallow override overloaded func name
+        
+        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
         
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
@@ -205,21 +215,10 @@ class TestDev(TestCase):
         
         TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
         
-        TODO:  # partially called, make function with remined args; can't be applyed to func with arg...
-            foo(1,2, ...>)
-            foo(1,2, ->)
-            foo(1,2, _...)
-            foo(1,2, :...)
-            foo(1,2, |...)
-            foo(1,2, /...)
-        
         TODO: root, square root operator
             |/ _/ -/ */
             -/4 # 2;  3-/ 8 # 2
             */4 # 2;  3*/ 8 # 2
-        
-        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
-        
         
         
         TODO: add glif type
@@ -232,13 +231,15 @@ class TestDev(TestCase):
         
         TODO: string methods: upper, lower
         
-        TODO: list|tuple methods: sort, filter; 
-            dict: filterk (filter by key)
+        DONE: list|tuple methods: sort, filter; 
+        
+        TODO: dict: key_filter (filter by key)
         
         TODO: fix print(bool): should be false, true, instead of False, True
         
+        TODO: add builtin compare() for base type: string, tuple, bytes.
+        
     '''
-
 
 
 

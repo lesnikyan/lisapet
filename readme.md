@@ -1989,11 +1989,15 @@ See `eval.py` for more examples.
     .reverse()  
     .join(`string`)  
     .each(`function`)  
+    .sort(`function`)  
+    .filter(`function`)  
 2. `tuple`:  
     .map(`function`)  
     .fold(any, `function`)
     .reverse()  
     .each(`function`)  
+    .sort(`function`)  
+    .filter(`function`)  
 3. `dict`:  
     .keys()  
     .items()  

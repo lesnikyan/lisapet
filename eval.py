@@ -39,6 +39,7 @@ def initFuncs(ctx:Context):
     setNativeFunc(ctx, 'replace', lstr.replace, TypeList)
     setNativeFunc(ctx, 'dkeys', dc.dict_keys, TypeList)
     setNativeFunc(ctx, 'ditems', dc.dict_items, TypeList)
+    setNativeFunc(ctx, 'char_key', char_key, TypeInt)
     # print('>>>\n\n~~~!!!!\n\n')
     
     # bind methods
@@ -80,6 +81,15 @@ def initFuncs(ctx:Context):
     
     # string
     bindNativeMethod(ctx, 'string', string_bytes, 'bytes', TypeBytes)
+    
+    # list
+    bindNativeMethod(ctx, 'list', list_sort, 'sort', TypeList)
+    bindNativeMethod(ctx, 'list', list_filter, 'filter', TypeList)
+    
+    # tuple
+    bindNativeMethod(ctx, 'tuple', tuple_sort, 'sort', TypeTuple)
+    bindNativeMethod(ctx, 'tuple', tuple_filter, 'filter', TypeTuple)
+    
     
     # function
     setNativeFunc(ctx, 'curry', func_curry, TypeFunc())

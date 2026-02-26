@@ -3,6 +3,7 @@ methods bound to base types
 '''
 
 import math
+from functools import cmp_to_key
 
 from vars import *
 from nodes.iternodes import *
@@ -13,6 +14,14 @@ from nodes.builtins import built_list, built_foldl, built_tostr
 import libs.str as libst
 import libs.bytes as lbytes
 
+
+
+def char_key(ctx, arg:StringVal):
+    v = arg.getVal()
+    if len(v) != 1:
+        raise EvalErr('only 1-char string is a correct argument for int constructor.')
+    v = ord(v)
+    return Val(int(v), TypeInt())
 
 # Type constructors
 
@@ -26,9 +35,9 @@ def int_constr(ctx, arg:Val):
         case bytearray():
             lv = len(v)
             nn = [v[i] << ((lv-i-1)*8)  for i in range(lv)]
-            # print([hex(n) for n in nn])
-            # print(nn)
             v = sum(nn)
+        case str():
+            v = int(v)
     return Val(int(v), TypeInt())
 
 def float_constr(ctx, arg:Val):
@@ -53,8 +62,10 @@ def bool_constr(ctx, arg:Val):
             v = sum(int(b) for b in v) != 0
     return Val(bool(v), TypeBool())
 
+
 def string_constr(ctx, arg:Val):
     return built_tostr(ctx, arg)
+
 
 def bytes_constr(ctx, arg:Val):
     r = []
@@ -68,6 +79,7 @@ def bytes_constr(ctx, arg:Val):
             r = bytearray2(arg.get())
     return BytesVal(r)
 
+
 def copyElems(src:list):
     r = []
     for v in src:
@@ -79,6 +91,7 @@ def copyElems(src:list):
             r.append(v.copy())
     # print('CopyEl', src, r)
     return r
+
 
 def val2Seq(val:Val):
     r = []
@@ -95,13 +108,16 @@ def val2Seq(val:Val):
             r = copyElems(val.elems)
     return r
 
+
 def list_constr(ctx, arg:Val):
     r = val2Seq(arg)
     return ListVal(elems = r)
 
+
 def tuple_constr(ctx, arg:Val):
     r = val2Seq(arg)
     return TupleVal(elems=r)
+
 
 def dict_constr(ctx, arg:Val):
     v = arg.getVal()
@@ -119,11 +135,13 @@ def dict_constr(ctx, arg:Val):
             dd = {tt.elems[0].getVal(): tt.elems[1] for tt in arg.elems}
     return DictVal(data=dd)
 
+
 # def _constr(ctx, arg:Val):
 #     v = arg.getVal()
 #     return Val(float(v), Type())
 
 # General
+
 
 def seq_map(ctx:Context, inst:Collection|SequenceGen, fun:Function):
     elems = built_list(0, inst).rawVals()
@@ -134,6 +152,7 @@ def seq_map(ctx:Context, inst:Collection|SequenceGen, fun:Function):
         r = fun.get()
         res.append(r)
     return res
+
 
 def seq_each(ctx:Context, inst:Collection|SequenceGen, fun:Function):
     elems = built_list(0, inst).rawVals()
@@ -149,6 +168,7 @@ def list_reverse(_, inst:ListVal):
     src.reverse()
     return ListVal(elems=src)
 
+
 def list_map(ctx:Context, inst:ListVal|SequenceGen, fun:Function):
     res = seq_map(ctx, inst, fun)
     return ListVal(elems=res)
@@ -160,11 +180,56 @@ def list_join(_, data:ListVal, inst:StringVal):
     return StringVal(res)
 
 
+def seq_sort(ctx:Context, elems:list, cmp:Function):
+    nn = copyElems(elems)
+    def cmpFunc(a:Val, b:Val):
+        cmp.setArgVals([a, b])
+        cmp.do(ctx)
+        cval = cmp.get()
+        return var2val(cval).getVal()
+    return sorted(nn, key = cmp_to_key(cmpFunc))
+
+
+def list_sort(ctx:Context, src:ListVal, cmp:Function):
+    r = seq_sort(ctx, src.elems, cmp)
+    return ListVal(elems=r)
+
+
+def tuple_sort(ctx:Context, src:ListVal, cmp:Function):
+    r = seq_sort(ctx, src.elems, cmp)
+    return TupleVal(elems=r)
+
+
+def filterFuncCall(ctx:Context, a:Val, cond:Function):
+    cond.setArgVals([a])
+    cond.do(ctx)
+    cval = cond.get()
+    return var2val(cval).getVal()
+
+
+def seq_filter(ctx:Context, elems:list, cond:Function):
+    nn = [v for v in elems if filterFuncCall(ctx, v, cond)]
+    r = copyElems(nn)
+    return r
+
+
+def list_filter(ctx:Context, src:ListVal, cond:Function):
+    r = seq_filter(ctx, src.elems, cond)
+    return ListVal(elems=r)
+
+
+def tuple_filter(ctx:Context, src:ListVal, cond:Function):
+    r = seq_filter(ctx, src.elems, cond)
+    return TupleVal(elems=r)
+
+
 def seq_fold(ctx:Context, elems:ListVal|TupleVal, start:Val, fun:Function):
     return built_foldl(ctx, start, elems, fun)
 
+
 def list_fold(ctx:Context, elems:ListVal, start:Val, fun:Function):
     return built_foldl(ctx, start, elems, fun)
+
 
 def tuple_fold(ctx:Context, elems:TupleVal, start:Val, fun:Function):
     return built_foldl(ctx, start, elems, fun)

@@ -26,6 +26,109 @@ from tests.utils import *
 class TestBoundFuncs(TestCase):
 
 
+    def test_builtin_filter(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        nn = [3,22,4,1,5,10,7,0]
+        res <- nn.filter(x -> x < 10 && x > 1)
+        
+        res <- nn.filter(x -> x ?> [0, 3, 5, 7, 9])
+        
+        cn = list('AaBbCcDdEeXxYyZz')
+        res <- cn.filter(a -> char_key(a) >= char_key('a') && char_key(a) <= char_key('z'))
+        
+        struct A a:int
+        
+        an = [A(11), A(2), A(41), A(5), A(0), A(8)]
+        res <- an.filter(a -> a.a % 2 == 0)
+        
+        sn = ["Hello!", "zoomba", "123", "12345", "Aaa", "aaaa", "Bbbb", "bbb", "900", "009999"]
+        res <- sn.filter(s -> len(s) > 3 && s[0] !?> '0123456789')
+        
+        dn = [ {'a':1, 'b':2}, {'Aaa':0}, {'abc':132}, {'123':';-)'}, {'000':'zero'}, {'zope':'bd-bd-bd'}, {'q': 555}]
+        res <- dn.filter(a -> len(a.keys()) == 1 && a.keys()[0][0] ?> 'aq0')
+        
+        # tuple
+        
+        ntt = (1,4,2,6,33,78,43,12,9,0)
+        res <- ntt.filter(x -> x < 20).filter(y -> y > 3)
+        
+        stt = ('Hello','Table','house','article','Bombom','Zumma','Xenon','xxl','prima')
+        res <- stt.filter(s -> s[0] ?> 'HTX')
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [3, 4, 5, 7], [3, 5, 7, 0], 
+            ['a', 'b', 'c', 'd', 'e', 'x', 'y', 'z'], 
+            ['st@A{a: 2}', 'st@A{a: 0}', 'st@A{a: 8}'], 
+            ['Hello!', 'zoomba', 'aaaa', 'Bbbb'], 
+            [{'abc': 132}, {'000': 'zero'}, {'q': 555}], 
+            (4, 6, 12, 9), ('Hello', 'Table', 'Xenon')]
+        self.assertEqual(exv, resv)
+
+    def test_builtin_sort(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        nn = [3,2,4,1,5,0]
+        res <- nn.sort((x, y) -> x - y)
+        
+        cn = list('dfbcae')
+        res <- cn.sort((a, b) -> char_key(a) - char_key(b))
+        
+        struct A a:float
+        
+        an = [A(11), A(2), A(41), A(5), A(0)]
+        res <- an.sort( (a, b) -> a.a - b.a)
+        
+        func strCompare(a, b)
+            if len(a) != len(b)
+                return len(a) - len(b)
+            for i <- iter(len(a))
+                if a[i] != b[i]
+                    return char_key(a[i]) - char_key(b[i])
+            return 0
+        
+        sn = ["Hello!", "zoomba", "123", "12345", "Aaa", "aaa", "Bbb", "bbb", "900", "009"]
+        res <- sn.sort(strCompare)
+        
+        dn = [{'Aaa':0}, {'abc':132}, {'123':';-)'}, {'000':'zero'}, {'zope':'bd-bd-bd'}, {'q': 555}]
+        res <- dn.sort((a, b) -> strCompare(a.keys()[0], b.keys()[0]))
+        
+        ntt = (4,3,2,1,5,6,7)
+        
+        res <- ntt.sort((a, b)-> a - b)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [0, 1, 2, 3, 4, 5], ['a', 'b', 'c', 'd', 'e', 'f'], 
+            ['st@A{a: 0.0}', 'st@A{a: 2.0}', 'st@A{a: 5.0}', 'st@A{a: 11.0}', 'st@A{a: 41.0}'], 
+            ['009', '123', '900', 'Aaa', 'Bbb', 'aaa', 'bbb', '12345', 'Hello!', 'zoomba'], 
+            [{'q': 555}, {'000': 'zero'}, {'123': ';-)'}, {'Aaa': 0}, {'abc': 132}, {'zope': 'bd-bd-bd'}],
+            (1, 2, 3, 4, 5, 6, 7)]
+        self.assertEqual(exv, resv)
+
     def test_type_builtin_constructors(self):
         ''' '''
         code = r'''
