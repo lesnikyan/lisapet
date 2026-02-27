@@ -49,3 +49,12 @@ def replace(_, src:StringVal, findptn:StringVal, repl:StringVal, count:Val=None)
     return StringVal(res)
 
 
+def string_upper(_, src:StringVal):
+    res = src.getVal().upper()
+    return StringVal(res)
+
+
+def string_lower(_, src:StringVal):
+    res = src.getVal().lower()
+    return StringVal(res)
+

@@ -26,6 +26,30 @@ from tests.utils import *
 class TestBoundFuncs(TestCase):
 
 
+    def test_string_upper_lower(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        s1 = 'abcdef-xyz'
+        res <- s1.upper()
+        
+        s2 = 'Hello ABCDDEF-XYZ'
+        res <- s2.lower()
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = ['ABCDEF-XYZ', 'hello abcddef-xyz']
+        self.assertEqual(exv, resv)
+
     def test_builtin_filter(self):
         ''' '''
         code = r'''

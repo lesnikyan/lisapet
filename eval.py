@@ -81,6 +81,8 @@ def initFuncs(ctx:Context):
     
     # string
     bindNativeMethod(ctx, 'string', string_bytes, 'bytes', TypeBytes)
+    bindNativeMethod(ctx, 'string', lstr.string_upper, 'upper', TypeString)
+    bindNativeMethod(ctx, 'string', lstr.string_lower, 'lower', TypeString)
     
     # list
     bindNativeMethod(ctx, 'list', list_sort, 'sort', TypeList)

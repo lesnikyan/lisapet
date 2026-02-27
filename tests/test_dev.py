@@ -229,17 +229,18 @@ class TestDev(TestCase):
         TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
         TODO: string.replace({dict}) # check, implement if not
         
-        TODO: string methods: upper, lower
-        
-        DONE: list|tuple methods: sort, filter; 
-        
         TODO: dict: key_filter (filter by key)
         
         TODO: fix print(bool): should be false, true, instead of False, True
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
+        DONE: list|tuple methods: sort, filter; 
+        
+        DONE: string methods: upper, lower
+        
     '''
+
 
 
 
