@@ -62,8 +62,8 @@ class CaseLambda(CaseFuncDef):
             return False
 
         main = OperSplitter().mainOper(elems)
-        dprint('CaseLamb, main=', main, ' len_elems:', len(elems))
-        dprint('CaseLambda elems[main]', elems[main].text, main)
+        # print('CaseLamb, main=', main, ' len_elems:', len(elems), '<%s>' % elemStr(elems))
+        # print('CaseLambda elems[main] el:', elems[main].text, 'i:',main)
         return isLex(elems[main], Lt.oper, '->')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
@@ -71,6 +71,8 @@ class CaseLambda(CaseFuncDef):
         method:
             func u:User setName(name:string)
         '''
+        if isLex(elems[0], Lt.oper, '\\'):
+            elems = elems[1:]
         idx = OperSplitter().mainOper(elems)
         args = elems[:idx]
         if CaseBrackets().match(args):
@@ -80,7 +82,7 @@ class CaseLambda(CaseFuncDef):
         return exp, [args, body]
 
     def setSub(self, base:FuncDefExpr, subs:Expression|list[Expression])->Expression:
-        dprint('CaseLambda. setSub', base,  ' \\ ', subs)
+        # dprint('CaseLambda. setSub', base,  ' \\ ', subs)
         args, body = subs
         if isinstance(args, SequenceExpr):
             for arg in args.subs:

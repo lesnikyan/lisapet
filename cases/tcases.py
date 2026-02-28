@@ -254,6 +254,9 @@ class CaseSeq(SubCase):
         if self.delim in delimord:
             baseDelInd = delimord.index(self.delim)
         obr = 0 # bracket counter
+        slIn = False # right of `\` and left of `->`
+        lrEls = [] # elems left of ->
+        
         # check without control of nesting, just count open and close brackets
         found = False
         for ee in elems:
@@ -270,6 +273,12 @@ class CaseSeq(SubCase):
                 continue
             # if ee.text in dmInds and dmInds[ee.text]:
             #     print('CS.>', ee.text, dmInds[ee.text], '>' , baseDelInd)
+            if slIn:
+                if isLex(ee, Lt.oper, '->'):
+                    slIn = False
+                continue
+            if isLex(ee, Lt.oper, '\\'):
+                slIn = True
             if ee.text in dmInds and dmInds[ee.text] > baseDelInd:
                 # break if has delim in later pos
                 return False
@@ -282,7 +291,9 @@ class CaseSeq(SubCase):
         sub = []
         obr = 0
         start = 0
-        for i in range(len(elems)):
+        slIn = False
+        elen = len(elems)
+        for i in range(elen):
             ee = elems[i]
             if ee.text in self.opens:
                 obr += 1
@@ -294,6 +305,15 @@ class CaseSeq(SubCase):
                 # in brackets, ignore internal elems
                 # sub.append(ee)
                 continue
+            
+            # lambda args changes behaviour of separator
+            if slIn:
+                if ee.text == '->' and ee.type == Lt.oper:# isLex(ee, Lt.oper, '->'):
+                    slIn = False
+                continue
+            if ee.text == '\\' and ee.type == Lt.oper:#  isLex(ee, Lt.oper, '\\'):
+                slIn = True
+                
             if ee.type == Lt.oper and ee.text == self.delim:
                 sub = elems[start: i]
                 # prels('# start= %d, i= %d sub:' % (start, i), sub)

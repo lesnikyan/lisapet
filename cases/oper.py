@@ -78,8 +78,9 @@ class CaseAssign(SubCase):
 
 
 _operPrior = ('() [] {} , . , ~> , ... , -x ! ~ , ** , * / % , + - ,'
-' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, $, ?: , : , ? , .. , <- , = += -= *= /= %= , ; , !: :? , /: ') #
+' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, $, ?: , : , ?, \\ , -> , .. , <- , = += -= *= /= %= , ; , !: :? , /: ') #
 
+_noOpers = ['\\', '->', '.']
 
 class CaseBinOper(SubCase):
     '''
@@ -92,6 +93,7 @@ class CaseBinOper(SubCase):
         priorGroups = _operPrior.split(',')
         self.priorGroups = [[ n for n in g.split(' ') if n.strip()] for g in priorGroups]
         self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
+        self.splitter = OperSplitter()
         # self.funcCall = CaseFunCall()
 
     def match(self, elems:list[Elem]) -> bool:
@@ -102,76 +104,84 @@ class CaseBinOper(SubCase):
         if elen < 3:
             # exceptions: -2+, --1, -sum(1,2,3)
             return False
-        for i in range(elen):
-            el = elems[i]
-            # skip parts in brackets: math or function calls
-            if el.text == '':
-                continue
-            if el.text in '([{':
-                inBr += 1
-                continue
-            if el.text in ')]}':
-                inBr -= 1
-            if inBr > 0:
-                continue
-            # print('el.text:', el.text, Lt.name(el.type))
+        # for i in range(elen):
+        #     el = elems[i]
+        #     # skip parts in brackets: math or function calls
+        #     if el.text == '':
+        #         continue
+        #     if el.text in '([{':
+        #         inBr += 1
+        #         continue
+        #     if el.text in ')]}':
+        #         inBr -= 1
+        #     if inBr > 0:
+        #         continue
+        #     # print('el.text:', el.text, Lt.name(el.type))
             
-            if el.type != Lt.oper:
-                continue
-            if i in [0, elen-1]:
-                continue 
-            # in simple case if we have oper, it's operator case
-            if el.text in self.opers and  el.text != '.':
-                return True
-        return False
+        #     if el.type != Lt.oper:
+        #         continue
+        #     if i in [0, elen-1]:
+        #         continue
+        #     # in simple case if we have oper, it's operator case
+        #     if el.text in self.opers and  el.text not in _noOpers:
+        #         print('$3', el.text)
+        #         return True
+        main = self.splitter.mainOper(elems)
+        return main > 0 and elems[main].text not in _noOpers and isLex(elems[main], Lt.oper, self.opers)
+        # return False
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
         # print('#a51:', [n.text for n in elems])
-        src = elemStr(elems)
-        lowesPrior = len(self.priorGroups) - 1
-        inBr = 0
-        maxInd = len(elems)-1
-        obr='([{'
-        cbr = ')]}'
-        inBrs = [] # brackets which was opened from behind
+        # lowesPrior = len(self.priorGroups) - 1
+        # inBr = 0
+        # maxInd = len(elems)-1
+        # obr='([{'
+        # cbr = ')]}'
+        # inBrs = [] # brackets which was opened from behind
         # prels('~~ CaseBinOper', elems, show=1)
-        for prior in range(lowesPrior, -1, -1):
-            skip = -1
-            # print('prior=', prior, self.priorGroups[prior] )
-            for i in range(maxInd, -1, -1):
-                el = elems[i]
-                if el.type != Lt.oper:
-                    continue
-                etx = el.text
-                # counting brackets from tne end, closed is first
-                if etx in cbr:
-                    inBrs.append(etx)
-                    # dprint(' >> ',etx)
-                    continue
-                if etx in obr:
-                    if len(inBrs):
-                        last = inBrs.pop()
-                    # dprint(' << ', etx, last)
-                    continue
-                    # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
-                if len(inBrs) > 0:
-                    continue
+        main = self.splitter.mainOper(elems)
+        exp = makeOperExp(elems[main])
+        src = elemStr(elems)
+        exp.src = src
+        return exp, [elems[0:main], elems[main+1:]]
+        
+        # for prior in range(lowesPrior, -1, -1):
+        #     skip = -1
+        #     # print('prior=', prior, self.priorGroups[prior] )
+        #     for i in range(maxInd, -1, -1):
+        #         el = elems[i]
+        #         if el.type != Lt.oper:
+        #             continue
+        #         etx = el.text
+        #         # counting brackets from tne end, closed is first
+        #         if etx in cbr:
+        #             inBrs.append(etx)
+        #             # dprint(' >> ',etx)
+        #             continue
+        #         if etx in obr:
+        #             if len(inBrs):
+        #                 last = inBrs.pop()
+        #             # dprint(' << ', etx, last)
+        #             continue
+        #             # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
+        #         if len(inBrs) > 0:
+        #             continue
 
-                # TODO: fix unary cases, like: 5 * -3,  7 ** -2, x == ! true, (-12)
-                if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
-                    # unary case found, skip current pos
-                    continue
+        #         # TODO: fix unary cases, like: 5 * -3,  7 ** -2, x == ! true, (-12)
+        #         if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
+        #             # unary case found, skip current pos
+        #             continue
                 
-                # dirty fix: unary case in expression beginning, like: x = -1 * y
-                if i == 0 and el.type == Lt.oper and el.text in ['-', '+', '!', '~']:
-                    continue
+        #         # dirty fix: unary case in expression beginning, like: x = -1 * y
+        #         if i == 0 and el.type == Lt.oper and el.text in ['-', '+', '!', '~']:
+        #             continue
                 
-                if el.text in self.priorGroups[prior]:
-                    exp = makeOperExp(el)
-                    exp.src = src
-                    return exp, [elems[0:i], elems[i+1:]]
-        raise InterpretErr('Matched case didnt find key Item in [%s]' % ','.join([n.text for n in elems]))
+        #         if el.text in self.priorGroups[prior]:
+        #             exp = makeOperExp(el)
+        #             exp.src = src
+        #             return exp, [elems[0:i], elems[i+1:]]
+        # raise InterpretErr('Matched case didnt find key Item in [%s]' % ','.join([n.text for n in elems]))
 
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         ''' base - top-level (very right oper with very small priority) 
