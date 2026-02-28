@@ -229,20 +229,53 @@ class TestDev(TestCase):
         TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
         TODO: string.replace({dict}) # check, implement if not
         
-        TODO: dict: key_filter (filter by key)
-        
         TODO: fix print(bool): should be false, true, instead of False, True
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
+        TODO: dict: filter (filter by key, val)
+        
         DONE: list|tuple methods: sort, filter; 
         
         DONE: string methods: upper, lower
-        
     '''
 
+    _ = r"""
+# guides
 
 
+"""
+
+
+
+    def _test_2(self):
+        ''' TODO: in-arguments lambda with slash-leading syntax 
+            idea: lambda with one more args without brackets, basically it conficts with comma separator in more complex expression:
+            func call, collections, etc.
+            leading slash can resolve this issue, commas between slash and r-arrow are definition-args of lambda
+        '''
+        code = r'''
+        res = []
+        
+        ff = [x -> x, \ a, b -> a + b, y -> 2 * y]
+        res <- ff[1](1, 200)
+        
+        dd2 = {'a':'1', 'b':'2', 'c':'3', 'qqq':'4', 'xxx':'5', 'abc':'6'}
+        res <- dd2.filter(\ k , v -> k ?> 'abcd')
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
 
     def _test_code(self):
         ''' '''

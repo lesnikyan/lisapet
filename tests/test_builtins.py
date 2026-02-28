@@ -26,6 +26,41 @@ from tests.utils import *
 class TestBoundFuncs(TestCase):
 
 
+    def test_dict_filter_k_v(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        dd1 = {1:11, 2:22, 3:33, 4:44, 5:55, 6:66, -7: 77}
+        res <- dd1.filter((key, val) -> key % 2 > 0 &&  key > 0)
+        
+        dd2 = {'a':'1', 'b':'2', 'c':'3', 'qqq':'4', 'xxx':'5', 'abc':'6'}
+        res <- dd2.filter((k, v)-> k ?> 'abcd')
+        res <- dd2.filter((k, v)-> v ?> '135')
+        res <- dd2.filter((k, v)-> len(k) > 1 && int(v) ?> [2,4,6,8])
+        
+        dd3 = {'a':'abba', 'b':'baby', 33:33, 4:44, '5':55, '6':66, 7:'seven'}
+        
+        res <- dd3.filter((k, v)-> k :: string)
+        res <- dd3.filter((k, v)-> k :: int)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            {1: 11, 3: 33, 5: 55}, 
+            {'a': '1', 'b': '2', 'c': '3', 'abc': '6'}, {'a': '1', 'c': '3', 'xxx': '5'}, 
+            {'qqq': '4', 'abc': '6'}, {'a': 'abba', 'b': 'baby', '5': 55, '6': 66}, 
+            {33: 33, 4: 44, 7: 'seven'}]
+        self.assertEqual(exv, resv)
+
     def test_string_upper_lower(self):
         ''' '''
         code = r'''

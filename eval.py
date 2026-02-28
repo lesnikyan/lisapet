@@ -92,6 +92,7 @@ def initFuncs(ctx:Context):
     bindNativeMethod(ctx, 'tuple', tuple_sort, 'sort', TypeTuple)
     bindNativeMethod(ctx, 'tuple', tuple_filter, 'filter', TypeTuple)
     
+    bindNativeMethod(ctx, 'dict', dict_filter, 'filter', TypeDict)
     
     # function
     setNativeFunc(ctx, 'curry', func_curry, TypeFunc())
