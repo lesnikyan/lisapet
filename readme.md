@@ -1985,27 +1985,31 @@ See `eval.py` for more examples.
 ### 14.3 Methods are already bound to types
 1. `list`:  
     .map(`function`)  
-    .fold(any, `function`)
+    .fold(any, `function(base, next)`)
     .reverse()  
     .join(`string`)  
     .each(`function`)  
-    .sort(`function`)  
+    .sort(`function(a,b)`)  
     .filter(`function`)  
 2. `tuple`:  
     .map(`function`)  
-    .fold(any, `function`)
+    .fold(any, `function(base, next)`)
     .reverse()  
     .each(`function`)  
-    .sort(`function`)  
+    .sort(`function(a,b)`)  
     .filter(`function`)  
 3. `dict`:  
     .keys()  
     .items()  
+    .filter(`function(key, val)`)
 4. `string`:  
     .split(`string`|`regexp`)  
     .replace(`string`|`regexr`, `string`)
-    .joinn(`list`|`tuple`)  
+    .join(`list`|`tuple`)  
     .map(`function`)  
+    .bytes()
+    .upper()  
+    .lower()  
 
 Example of usage: 
 ```python

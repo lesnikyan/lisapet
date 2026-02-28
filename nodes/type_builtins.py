@@ -200,8 +200,11 @@ def tuple_sort(ctx:Context, src:ListVal, cmp:Function):
     return TupleVal(elems=r)
 
 
-def filterFuncCall(ctx:Context, a:Val, cond:Function):
-    cond.setArgVals([a])
+def filterFuncCall(ctx:Context, a:Val|list, cond:Function):
+    arg = a
+    if not isinstance(a, list):
+        arg = [a]
+    cond.setArgVals(arg)
     cond.do(ctx)
     cval = cond.get()
     return var2val(cval).getVal()
@@ -221,6 +224,13 @@ def list_filter(ctx:Context, src:ListVal, cond:Function):
 def tuple_filter(ctx:Context, src:ListVal, cond:Function):
     r = seq_filter(ctx, src.elems, cond)
     return TupleVal(elems=r)
+
+
+def dict_filter(ctx:Context, src:DictVal, cond:Function):
+    elems = [ [dkeyCover(k), v] for k, v in src.data.items()]
+    r = seq_filter(ctx, elems, cond)
+    d = {n[0].getVal() : n[1] for n in r}
+    return DictVal(data=d)
 
 
 def seq_fold(ctx:Context, elems:ListVal|TupleVal, start:Val, fun:Function):
