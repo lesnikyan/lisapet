@@ -33,7 +33,7 @@ import pdb
 class TestDev(TestCase):
 
 
-    '''
+    r'''
   _<-od
  (+a)(-b)
         
@@ -233,11 +233,18 @@ class TestDev(TestCase):
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
-        TODO: dict: filter (filter by key, val)
+        TODO: think about performance, decreased after \lambda changes.
+        
+        DONE: dict: filter (filter by key, val)
         
         DONE: list|tuple methods: sort, filter; 
         
         DONE: string methods: upper, lower
+        
+        DONE: lambda with slash-leading syntax: in assign, arg list, etc. 
+            idea: lambda with more than 1 args without brackets, basically it conficts with comma separator in more complex expression:
+            func call, collections, etc.
+            leading slash can resolve this issue, commas between `\` and `->` are definition-args of lambda
     '''
 
     _ = r"""
@@ -247,35 +254,6 @@ class TestDev(TestCase):
 """
 
 
-
-    def _test_2(self):
-        ''' TODO: in-arguments lambda with slash-leading syntax 
-            idea: lambda with one more args without brackets, basically it conficts with comma separator in more complex expression:
-            func call, collections, etc.
-            leading slash can resolve this issue, commas between slash and r-arrow are definition-args of lambda
-        '''
-        code = r'''
-        res = []
-        
-        ff = [x -> x, \ a, b -> a + b, y -> 2 * y]
-        res <- ff[1](1, 200)
-        
-        dd2 = {'a':'1', 'b':'2', 'c':'3', 'qqq':'4', 'xxx':'5', 'abc':'6'}
-        res <- dd2.filter(\ k , v -> k ?> 'abcd')
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
 
     def _test_code(self):
         ''' '''

@@ -75,9 +75,12 @@ class CaseMatchCase(SubCase):
                 case1 !- expr
                 case2 !- expr
         '''
+    def __init__(self):
+        super().__init__()
+        self.splitter = OperSplitter()
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        arrInd = OperSplitter().mainOper(elems)
+        arrInd = self.splitter.mainOper(elems)
         exp = MatchPtrCase()
         subs = [elems, []]
         if isLex(elems[arrInd], Lt.oper, '/:'):
@@ -95,6 +98,9 @@ class CaseMatchPattern(SubCase):
     left of `!-` operator.
     [*], {_:_}, (_,?), ...
     '''
+    def __init__(self):
+        super().__init__()
+        self.splitter = OperSplitter()
 
     def match(self, elems:list[Elem]) -> bool:
         '''
@@ -102,12 +108,12 @@ class CaseMatchPattern(SubCase):
         if len(elems) < 2:
             return False
 
-        main = OperSplitter().mainOper(elems)
+        main = self.splitter.mainOper(elems)
         # dprint('CaseMatchCase elems[main]', elems[main].text, main)
         return isLex(elems[main], Lt.oper, '!-')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        arrInd = OperSplitter().mainOper(elems)
+        arrInd = self.splitter.mainOper(elems)
         exp = ArrOper()
         subs = [elems[:arrInd], elems[arrInd+1:]]
         return exp, subs

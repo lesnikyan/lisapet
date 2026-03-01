@@ -36,8 +36,8 @@ def afterLeft(elems:list[Elem])->int:
     res = -1
     inBr = 0
     opers = ''.split('= += -= *= /= %=')
-    
-    for i in range(len(elems)):
+    elran =  range(len(elems))
+    for i in elran:
         ee = elems[i]
         # dprint(ee.text)
         if inBr:
@@ -63,7 +63,7 @@ def afterLeft(elems:list[Elem])->int:
     return res
 
 
-def bracketsPart(elems:list[Elem])->int:
+def _bracketsPart(elems:list[Elem])->int:
     ''' find index of elem after var/func Name and possible brackets
     cases:
         var ...
@@ -78,7 +78,8 @@ def bracketsPart(elems:list[Elem])->int:
     cbr = ')]}'
     if elems[0].text not in obr:
         return -1
-    for i in range(len(elems)):
+    elran = range(len(elems))
+    for i in elran:
         ee = elems[i]
         # print(' >>> ', ee.text)
         # if inBr:
@@ -100,7 +101,7 @@ def bracketsPart(elems:list[Elem])->int:
         if ee.type == Lt.oper and  ee.text in obr:
             # enter into brackets
             inBr += ee.text
-            dprint('#open:', inBr)
+            # dprint('#open:', inBr)
             continue
         if inBr:
             continue
@@ -115,13 +116,62 @@ def firstBrackets(elems:list[Elem]):
     elen = len(elems)
     a, b = -1, -1
     for i in range(elen):
-        if isLex(elems[i], Lt.oper, '('):
+        ee = elems[i]
+        if ee.type != Lt.oper:
+            continue
+        if ee.text == '(':
             a = i
             continue
-        if isLex(elems[i], Lt.oper, ')'):
+        if ee.text == ')':
             b = i
             break
     return a, b
+
+
+def endsWithBrackets(elems:list[Elem], br='()'):
+    ''' any expr which ends with something(or nothing) in brackets 
+        expr(); expr[expr]; expt{expr}
+        (): foo(arg), obj.foo(obj.val), arr[expr].foo(arr[expr])
+        []: obj.arr[expr], arr[obj.arr[expr]], arr[obj.sub.foo(arg)], dictVal[keyExpr][arrIndex][arrIndex]
+        {}: SType{expr, expr}; foo(SType{expr, expr}); foo(struct{field:val, field:val}); foo({key:val, key:val})
+    '''
+    lem = len(elems)
+    if lem < 2:
+        return False
+    
+    bopen, bclose = br
+    if not isLex(elems[-1], Lt.oper, bclose):
+        return False
+
+    opInd = findLastBrackets(elems)
+    return opInd > 0
+
+def findLastBrackets(elems:list[Elem]):
+    ''' return index of opening of last brackets in explession '''
+    lem = len(elems)
+    inBr = 0
+    obrs = '( [ {'.split(' ')
+    cbrs = ') ] }'.split(' ')
+    if not isLex(elems[-1], Lt.oper, cbrs):
+        # incorrect elems data
+        return -1
+
+    for i in range(lem-1, -1, -1):
+        ee = elems[i]
+        if ee.type != Lt.oper:
+            continue
+        if ee.text in cbrs:
+            # step in brackets
+            inBr += 1
+            continue
+        if ee.text in obrs: 
+            # step out from brackets
+            inBr -= 1
+            if inBr == 0:
+                return i
+            continue
+    return -2 # just for debug needs
+
 
 
 class ExpCase:
@@ -146,7 +196,7 @@ class CaseComment(ExpCase):
     def match(self, elems:list[Elem])-> bool:
         if len(elems) == 0:
             return False
-        s = ''.join([n.text for n in elems])
+        # s = ''.join([n.text for n in elems])
         if elems[0].type == Lt.comm:
             # dprint('CaseComment.match', s)
             return True
@@ -254,6 +304,8 @@ class CaseSeq(SubCase):
         if self.delim in delimord:
             baseDelInd = delimord.index(self.delim)
         obr = 0 # bracket counter
+        lamArgs = False # right of `\` and left of `->`
+        
         # check without control of nesting, just count open and close brackets
         found = False
         for ee in elems:
@@ -268,8 +320,15 @@ class CaseSeq(SubCase):
             if obr > 0:
                 # in brackets, ignore internal elems
                 continue
-            # if ee.text in dmInds and dmInds[ee.text]:
-            #     print('CS.>', ee.text, dmInds[ee.text], '>' , baseDelInd)
+
+            # lambda-args case
+            if lamArgs:
+                if ee.text == '->':
+                    lamArgs = False
+                continue
+            if ee.text == '\\':
+                lamArgs = True
+
             if ee.text in dmInds and dmInds[ee.text] > baseDelInd:
                 # break if has delim in later pos
                 return False
@@ -282,8 +341,12 @@ class CaseSeq(SubCase):
         sub = []
         obr = 0
         start = 0
-        for i in range(len(elems)):
+        lamArgs = False
+        elen = len(elems)
+        for i in range(elen):
             ee = elems[i]
+            if ee.type != Lt.oper:
+                continue
             if ee.text in self.opens:
                 obr += 1
                 continue
@@ -294,7 +357,16 @@ class CaseSeq(SubCase):
                 # in brackets, ignore internal elems
                 # sub.append(ee)
                 continue
-            if ee.type == Lt.oper and ee.text == self.delim:
+            
+            # lambda args changes behaviour of separator
+            if lamArgs:
+                if ee.text == '->':
+                    lamArgs = False
+                continue
+            if ee.text == '\\':
+                lamArgs = True
+                
+            if ee.text == self.delim:
                 sub = elems[start: i]
                 # prels('# start= %d, i= %d sub:' % (start, i), sub)
                 start = i + 1
@@ -314,51 +386,6 @@ class CaseSeq(SubCase):
         for sub in subs:
             base.add(sub)
         return base
-
-
-def endsWithBrackets(elems:list[Elem], br='()'):
-    ''' any expr which ends with something(or nothing) in brackets 
-        expr(); expr[expr]; expt{expr}
-        (): foo(arg), obj.foo(obj.val), arr[expr].foo(arr[expr])
-        []: obj.arr[expr], arr[obj.arr[expr]], arr[obj.sub.foo(arg)], dictVal[keyExpr][arrIndex][arrIndex]
-        {}: SType{expr, expr}; foo(SType{expr, expr}); foo(struct{field:val, field:val}); foo({key:val, key:val})
-    '''
-    lem = len(elems)
-    if lem < 2:
-        return False
-    
-    bopen, bclose = br
-    if not isLex(elems[-1], Lt.oper, bclose):
-        return False
-
-    opInd = findLastBrackets(elems)
-    return opInd > 0
-
-def findLastBrackets(elems:list[Elem]):
-    ''' return index of opening of last brackets in explession '''
-    lem = len(elems)
-    inBr = 0
-    obrs = '( [ {'.split(' ')
-    cbrs = ') ] }'.split(' ')
-    if not isLex(elems[-1], Lt.oper, cbrs):
-        # incorrect elems data
-        return -1
-
-    for i in range(lem-1, -1, -1):
-        ee = elems[i]
-        if ee.type != Lt.oper:
-            continue
-        if isLex(ee, Lt.oper, cbrs):
-            # step in brackets
-            inBr += 1
-            continue
-        if isLex(ee, Lt.oper, obrs):
-            # step out from brackets
-            inBr -= 1
-            if inBr == 0:
-                return i
-            continue
-    return -2 # just for debug needs
 
 
 class CaseSemic(CaseSeq, SubCase):

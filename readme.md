@@ -2025,7 +2025,7 @@ Here are some features that make Lisapet also a functional programming language.
 - Right-arrow is an operator for definition lambda-function.  
 Arrow separates arguments and body of function.  
 One argement can be defined without brackets. For more then one we need put args into brackets.  
-```python
+```haskell
 # one-arg lambda
 f1 = x -> x * 10
 
@@ -2036,6 +2036,22 @@ f2 = (x, y, z) -> (x + y) * z
 f1(5) # 50
 f2(3,4,5) # 35
 ```
+Another way to define lambda with more than 1 arg is a backslash-leading syntax.  
+Backslash separates args of lambda from outer expression like list elems, function args, etc.  
+```haskell
+f = \ a, b -> a + b
+```
+In comma-separated expressions:  
+```haskell
+# in list
+funcs = [x -> x, \x, y -> x + y, \n -> n * 2]
+
+# in function args
+nn = [1,2,3,4,5]
+nn.fold(0, \s, n -> s + n)
+# >> 15
+```
+
 - Minimal lambdas.  
 In some cases we just need to return value.  
 ```python

@@ -26,7 +26,7 @@ class TestLang(TestCase):
     def test_solidExpr_for_dot_and_brackets(self):
         ''' '''
         # True cases
-        exam = '''
+        exam = r'''
         a.b
         a.b[0]
         a.b[0].c
@@ -643,21 +643,39 @@ class TestLang(TestCase):
 
     def test_bracketsPart(self):
         data = [
-            ('[(a + (b - c)), nn[10], foo()]', ']'),
-            ('[(),[],[[]],([{}])]',']'),
-            ('{'':'','':'',(),'':(),'':[]+[]}','}'),
-            ('{[],[()], {[]},([]),({[]})}', '}'),
-            ("{'aa': 'hello dd', 'bb': 123}", '}'),
+            ('[(a + (b - c)), nn[10], foo()]', '['),
+            ('[(),[],[[]],([{}])]','['),
+            ('{'':'','':'',(),'':(),'':[]+[]}','{'),
+            ('{[],[()], {[]},([]),({[]})}', '{'),
+            ("{'aa': 'hello dd', 'bb': 123}", '{'),
         ]
 
         for code, exp in data:
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
-            ind = bracketsPart(elems)
+            ok, ind = isSolidExpr(elems, getLast=True)
+            self.assertTrue(ok)
             res = elems[ind]
-            # dprint('## t:', code, exp, '>>>', ind, res.text)
             self.assertEqual(res.text, exp)
+
+    # def _test_bracketsPart(self):
+    #     data = [
+    #         ('[(a + (b - c)), nn[10], foo()]', ']'),
+    #         ('[(),[],[[]],([{}])]',']'),
+    #         ('{'':'','':'',(),'':(),'':[]+[]}','}'),
+    #         ('{[],[()], {[]},([]),({[]})}', '}'),
+    #         ("{'aa': 'hello dd', 'bb': 123}", '}'),
+    #     ]
+
+    #     for code, exp in data:
+    #         tlines = splitLexems(code)
+    #         clines:CLine = elemStream(tlines)
+    #         elems = clines[0].code
+    #         ind = bracketsPart(elems)
+    #         res = elems[ind]
+    #         # dprint('## t:', code, exp, '>>>', ind, res.text)
+    #         self.assertEqual(res.text, exp)
 
     def test_multiline_comments(self):
         '''

@@ -241,6 +241,7 @@ def subBtContext(blockContext:Expression):
 def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     # print('#elems2expr:', [(n.text, Lt.name(n.type)) for n in elems])
     # print('\n--/n# elems2expr/1::', ' '.join(["'%s'"%n.text for n in elems]), 'bContext:', blockContext)
+    # print('\n--tree::', elemStr(elems), 'bContext:', blockContext)
     
     foundCase = None
     
@@ -268,7 +269,7 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
                 break
     
     if foundCase:
-        # print('elems2expr/nn:', repr(foundCase), '', elemStr(elems))
+        # print('.. tree/found:', repr(foundCase), '', elemStr(elems))
         expr = makeExpr(foundCase, elems)
         if isinstance(expr, CtrlSubExpr):
             expr = expr.toControl()

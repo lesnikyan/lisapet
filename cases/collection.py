@@ -30,6 +30,11 @@ def keyBorders(elems:list[Elem]):
 
 class CaseTuple(SubCase, SolidCase):
     ''' (a, b, c) '''
+    
+    def __init__(self):
+        super().__init__()
+        self.cs = CaseCommas()
+        
 
     def match(self, elems:list[Elem]) -> bool:
         # trivial check
@@ -44,15 +49,15 @@ class CaseTuple(SubCase, SolidCase):
         if not ok or pos != 0:
             return False
         # print('Tuple. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
-        cs = CaseCommas()
-        return cs.match(elems[1:-1])
+        # cs = CaseCommas()
+        return self.cs.match(elems[1:-1])
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         sub = elems[1:-1]
-        cs = CaseCommas()
+        # cs = CaseCommas()
         subs = [sub]
-        if cs.match(sub):
-            _, subs = cs.split(sub)
+        if self.cs.match(sub):
+            _, subs = self.cs.split(sub)
         exp = TupleExpr()
         return exp, subs
 
@@ -67,6 +72,12 @@ class CaseTuple(SubCase, SolidCase):
 
 class CaseList(SubCase, SolidCase):
     ''' [num, word, expr] '''
+    
+    def __init__(self):
+        super().__init__()
+        self.splitter = OperSplitter()
+        self.cs = CaseCommas()
+        self.csemic = CaseSemic()
 
     def match(self, elems:list[Elem]) -> bool:
         # trivial check
@@ -93,13 +104,13 @@ class CaseList(SubCase, SolidCase):
         
         inElems = elems[1:-1]
         # many items case
-        cs = CaseCommas()
-        cres = cs.match(elems[1:-1])
+        # cs = CaseCommas()
+        cres = self.cs.match(elems[1:-1])
         # print(' $$$$$$$$$$$$$$$$$$$$ CL.comm', cres)
         if cres:
             return True
-        smc = CaseSemic()
-        if smc.match(inElems):
+        # smc = CaseSemic()
+        if self.csemic.match(inElems):
             return False
 
         # expr .. expr - is ok, in setSub wil be fixed
@@ -115,8 +126,8 @@ class CaseList(SubCase, SolidCase):
             # print('CL.isHexBytes')
             return False
         
-        spl = OperSplitter()
-        opInd = spl.mainOper(inElems)
+        # spl = OperSplitter()
+        opInd = self.splitter.mainOper(inElems)
         # ltex = inElems[opInd].text
         # print('CL.opSpl', opInd, ltex)
         return opInd not in [';', '..', ':']
@@ -124,10 +135,10 @@ class CaseList(SubCase, SolidCase):
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         exp = ListExpr()
         sub = elems[1:-1]
-        cs = CaseCommas()
+        # cs = CaseCommas()
         subs = [sub]
-        if cs.match(sub):
-            _, subs = cs.split(sub)
+        if self.cs.match(sub):
+            _, subs = self.cs.split(sub)
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
@@ -158,6 +169,10 @@ class CaseCollectElem(SubCase, SolidCase):
     varName_Expression [ indexVal_Expression ]
     [] - access to element of sequence operator
     '''
+    
+    def __init__(self):
+        super().__init__()
+        self.ccolon = CaseColon()
 
     def match(self, elems:list[Elem]) -> bool:
         '''
@@ -181,7 +196,7 @@ class CaseCollectElem(SubCase, SolidCase):
         # prels('CaseCollectElem match1:', elems, opInd)
         # prels('CaseCollectElem match2:', elems[opInd+1 : -1])
         # filtering slice
-        hasColon = CaseColon().match(elems[opInd+1 : -1])
+        hasColon = self.ccolon.match(elems[opInd+1 : -1])
         # dprint('CaseCollectElem hasColon', hasColon)
         return not hasColon
 
@@ -212,6 +227,9 @@ class CaseCollectElem(SubCase, SolidCase):
 
 
 class CaseSlice(SubCase, SolidCase):
+    def __init__(self):
+        super().__init__()
+        self.ccolon = CaseColon()
 
     def match(self, elems:list[Elem]) -> bool:        
         ''' arr.expr[start-expr : end-expr] 
@@ -222,10 +240,10 @@ class CaseSlice(SubCase, SolidCase):
         
         opInd = findLastBrackets(elems)
 
-        cc = CaseColon()
+        # cc = CaseColon()
         subPart = elems[opInd+1 : -1]
-        hasColon = cc.match(subPart)
-        _, ccParts = cc.split(subPart)
+        hasColon = self.ccolon.match(subPart)
+        _, ccParts = self.ccolon.split(subPart)
         # dprint('CaseSlice match', hasColon, ccParts, len(ccParts))
         return hasColon and (len(ccParts) == 2 or isLex(subPart[-1], Lt.oper, ':'))
 
@@ -233,8 +251,8 @@ class CaseSlice(SubCase, SolidCase):
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         opInd = findLastBrackets(elems)
         subPart = elems[opInd+1 : -1]
-        cc = CaseColon()
-        _, keys = cc.split(subPart)
+        # cc = CaseColon()
+        _, keys = self.ccolon.split(subPart)
         varexp = elems[:opInd]
         exp = SliceExpr()
         return exp, [varexp]+ keys
@@ -251,6 +269,11 @@ class CaseDictLine(SubCase, SolidCase):
         multi-line declaration with { } - another case
         multiline declaration as val = dict // - another.. not sure 
     '''
+    
+    def __init__(self):
+        super().__init__()
+        self.cs = CaseCommas()
+        self.cc = CaseColon()
 
     def match(self, elems:list[Elem]) -> bool:
         if not isBrPair(elems, '{','}'):
@@ -260,22 +283,29 @@ class CaseDictLine(SubCase, SolidCase):
             # dprint('case-dict empty')
             return True
 
-        ind = bracketsPart(elems)
-        # print('case-dict ind', ind)
-        if ind != -1:
+        # ind = bracketsPart(elems)
+        # # print('case-dict ind', ind)
+        # if ind != -1:
+        #     return False
+        
+        r =  isSolidExpr(elems, getLast=True)
+        if not isinstance(r, tuple):
+            return False
+        ok, pos = r
+        if not ok or pos != 0:
             return False
 
         # check CaseCommas into { }
         subel = elems[1:-1]
-        cs = CaseCommas()
-        cc = CaseColon()
-        if not cs.match(subel):
+        # cs = CaseCommas()
+        # cc = CaseColon()
+        if not self.cs.match(subel):
             # guess 1 item, check colon-separeted seq
-            return self.checkValidSub(subel, cc)
-        _, parts = cs.split(subel)
+            return self.checkValidSub(subel, self.cc)
+        _, parts = self.cs.split(subel)
         parts = [n for n in parts if n]
         for pp in parts:
-            if not self.checkValidSub(pp, cc):
+            if not self.checkValidSub(pp, self.cc):
                 return False
         return True
         # return False
@@ -292,10 +322,10 @@ class CaseDictLine(SubCase, SolidCase):
         # prels('dict split', elems, show=1)
         exp = DictExpr()
         sub = elems[1:-1]
-        cs = CaseCommas()
+        # cs = CaseCommas()
         subs = [sub] # 1 elem
-        if cs.match(sub):
-            _, subs = cs.split(sub)
+        if self.cs.match(sub):
+            _, subs = self.cs.split(sub)
         return exp, subs
 
     def setSub(self, base:DictExpr, subs:Expression|list[Expression])->Expression:
