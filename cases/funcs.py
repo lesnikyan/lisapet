@@ -56,12 +56,17 @@ class CaseFuncDef(BlockCase, SubCase):
 
 class CaseLambda(CaseFuncDef):
     ''' args -> expr '''
-    
+
+    def __init__(self):
+        super().__init__()
+        self.splitter = OperSplitter()
+        self.caseBr = CaseBrackets()
+
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) < 3:
             return False
 
-        main = OperSplitter().mainOper(elems)
+        main = self.splitter.mainOper(elems)
         # print('CaseLamb, main=', main, ' len_elems:', len(elems), '<%s>' % elemStr(elems))
         # print('CaseLambda elems[main] el:', elems[main].text, 'i:',main)
         return isLex(elems[main], Lt.oper, '->')
@@ -73,9 +78,9 @@ class CaseLambda(CaseFuncDef):
         '''
         if isLex(elems[0], Lt.oper, '\\'):
             elems = elems[1:]
-        idx = OperSplitter().mainOper(elems)
+        idx = self.splitter.mainOper(elems)
         args = elems[:idx]
-        if CaseBrackets().match(args):
+        if self.caseBr.match(args):
             args = args[1:-1]
         body = elems[idx+1:]
         exp = FuncDefExpr(None) # lambda has no name
@@ -96,13 +101,17 @@ class CaseLambda(CaseFuncDef):
 
 class CaseMathodDef(CaseFuncDef):
     ''' func inst:Type foo(arg-expressions over comma) '''
+    
+    def __init__(self):
+        super().__init__()
+        self.cc = CaseColon()
+        
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) < 7:
             return False
         if not isLex(elems[0], Lt.word, 'func'):
             return False
-        cc = CaseColon()
-        return cc.match(elems[1:4])
+        return self.cc.match(elems[1:4])
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         argSubs = self.splitArgs(elems[6:-1])
@@ -132,6 +141,9 @@ class CaseMathodDef(CaseFuncDef):
 class CaseFunCall(SubCase, SolidCase):
     ''' foo(agrs)
         {expr}(args)'''
+    def __init__(self):
+        super().__init__()
+        self.cs = CaseCommas()
 
     def match(self, elems:list[Elem]) -> bool:
         ''' simple cases:
@@ -174,9 +186,9 @@ class CaseFunCall(SubCase, SolidCase):
         argEl = elems[opInd+1 : -1]
         args = [argEl] # one expression inside by default
         valExpr = elems[:opInd]
-        cs = CaseCommas()
-        if cs.match(argEl):
-            _, args = cs.split(argEl)
+        
+        if self.cs.match(argEl):
+            _, args = self.cs.split(argEl)
         exp = FuncCallExpr(elemStr(valExpr).replace(' ', ''), src)
         # print('FCall.split1', valExpr, args)
         subs = [valExpr] + args

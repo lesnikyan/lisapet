@@ -283,9 +283,16 @@ class CaseDictLine(SubCase, SolidCase):
             # dprint('case-dict empty')
             return True
 
-        ind = bracketsPart(elems)
-        # print('case-dict ind', ind)
-        if ind != -1:
+        # ind = bracketsPart(elems)
+        # # print('case-dict ind', ind)
+        # if ind != -1:
+        #     return False
+        
+        r =  isSolidExpr(elems, getLast=True)
+        if not isinstance(r, tuple):
+            return False
+        ok, pos = r
+        if not ok or pos != 0:
             return False
 
         # check CaseCommas into { }
