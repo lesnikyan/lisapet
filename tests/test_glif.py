@@ -9,8 +9,32 @@ from tests.utils import *
 import pdb
 
 
-class TestDev(TestCase):
+class TestGLif(TestCase):
 
+
+    def test_glif_constructor(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        res <- glif(g'G') # from glif
+        res <- glif(55) # from int
+        res <- glif('A') # from str char
+        res <- glif(0x[42]) # from bytes
+        res <- glif(0x[e7 99 be]) # multibyte
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = ['g(G)', 'g(7)', 'g(A)', 'g(B)', 'g(百)']
+        self.assertEqual(exv, resv)
 
     def test_glif_val(self):
         ''' '''

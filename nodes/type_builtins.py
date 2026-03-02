@@ -67,6 +67,21 @@ def string_constr(ctx, arg:Val):
     return built_tostr(ctx, arg)
 
 
+def glif_constr(ctx, arg:Val):
+    v = arg.getVal()
+    match arg.getType():
+        case TypeGlif():
+            v = arg.get().val
+        case TypeInt():
+            v = chr(v)
+        case TypeString():
+            v = v[0]
+        case TypeBytes():
+            vv:bytearray2 = arg.getVal()
+            v = vv.decode()[0]
+    return Val(Glif(v), TypeGlif())
+
+
 def bytes_constr(ctx, arg:Val):
     r = []
     match arg.getType():

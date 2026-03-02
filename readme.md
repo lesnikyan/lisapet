@@ -26,16 +26,17 @@ Content:
 1. Basic things.
     1. [vars, vals, assignment](#11-vars-vals-lists-assignment)
     2. [Context](#12-execution-context)
-    3. [Numeric and bool types](#13-numeric-types)
-    4. ["Strings"](#14-strings)
-    5. [""" Multiline strings """](#15-multiline-strings)
-    6. [Multiline expressions](#19-multiline-expressions-if-for-math-expr)
-    7. [Code blocks and formatting.](#17-sub-blocks-code-formatting)
+    3. [Numeric and `bool` types](#13-numeric-types)
+    4. [`"Strings"`](#14-strings)
+    5. [`""" Multiline strings """`](#15-multiline-strings)
+    6. [`glif` `g'G'`](#16-glif-gg)
+    7. [Multiline expressions](#17-multiline-expressions-if-for-math-expr)
+    8. [Code blocks and formatting.](#18-sub-blocks-code-formatting)
 
 2. Operators.  
     1. [Math operators](#21-arithmetic-operators)
     2. [Unary operators](#22-other-unary-operators)
-    3. [Assignent operators](#23-operators-with-assignment)
+    3. [Assignment `=` operators](#23-operators-with-assignment)
     4. [Other classic operators](#24-other-classic-c-like-operators)
     5. [Table of operators precedence](#25-table-of-priority-order)
     6. [Ternary `?:` operator](#26-ternary-operator-)
@@ -360,7 +361,32 @@ Formatting operators see in [`"%s"<<` ](#211-percent-formatting) and
 [`"~{s}"`](#212-format-by-including-expressions) formatting.
 
 
-### 1.6 Multiline expressions: `if`, `for`, math expr.  
+### 1.6 Glif `g'G'`
+Glif is a single character.  
+For creation of glif value we can use special syntax of string with `g`-prefix.  
+```golang
+a = g'A'
+b = g"B"
+c = g`c`
+```
+Another way - functional constructor.  
+```python
+# by string
+a = glif('A') # A
+
+# by int code
+b = glif(42) # B
+
+# by glif
+c = glif(g'c') # c
+
+# by bytes
+n100 = glif(0x[e7 99 be]) # 百
+```
+... other features in dev
+
+
+### 1.7 Multiline expressions: `if`, `for`, math expr.  
 Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control statements.  
 The main way to split long line to shorten parts is use brackets.
 For comprehantion expressions it works with its square brackets (see examples).  
@@ -390,7 +416,7 @@ res = ( (a + b) * 15
 ```
 
 
-### 1.7 Sub-blocks, code-formatting.
+### 1.8 Sub-blocks, code-formatting.
 Control structures, data-structures, functions, etc. have inner place with internal lines (expressions), here we call it as an expression block, child or sub-block.  
 Sub block is separated by indent with one or more whitespaces related to parent.  
 All indents should be equal.  

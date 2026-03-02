@@ -173,29 +173,6 @@ class TestDev(TestCase):
 
 
 
-    def _test_glif_constructor(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        glif(55) # from int
-        glif('A') # from str char
-        glif(0x[E3 81]) # from bytes
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
-
 
 
     def _test_glif_functions(self):

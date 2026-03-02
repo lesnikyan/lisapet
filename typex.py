@@ -269,7 +269,7 @@ def find(self, name)->Base:
 def builtinTypes()->list[VType]:
     return [TypeAny, TypeBool, TypeInt, TypeFloat, TypeComplex, 
             TypeString, TypeList, TypeDict, TypeStruct, TypeTuple, TypeFunc,
-            TypeBytes]
+            TypeBytes, TypeGlif]
 
 
 class MultiType(VType):
