@@ -79,6 +79,14 @@ def doCode(code):
     return ctx
 
 
+def typevals(src:ListVal|TupleVal):
+    r = []
+    for n in src.elems:
+        r.append((n.get(), n.getType().__class__.__name__))
+    if isinstance(src, TupleVal):
+        r = tuple(r)
+    return r
+
 def resRepr(src):
     from nodes.builtins import pstr
     rr = []
@@ -88,6 +96,8 @@ def resRepr(src):
             n = resRepr(n)
         if isinstance(n, (bytearray2, bytearray, bytes)):
             n = str(n)
+        if isinstance(n, (Glif)):
+            n = 'g(%s)'%(n.val)
         rr.append(n)
     if isinstance(src, tuple):
         rr = tuple(rr)

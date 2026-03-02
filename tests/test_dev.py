@@ -37,85 +37,6 @@ class TestDev(TestCase):
   _<-od
  (+a)(-b)
         
-        
-        DONE: list... unpack list/tuple into function 
-        nums = [1,2,3]
-        1) insert to list
-        nn2 = [10, 11, nums...] # >> [10,11,1,2,3]
-        2) insert to tuple
-        tt2 = (nums...) # >> (1,2,3)
-        3) func args
-        foo(nums...)
-        
-        DONE: add bytes.
-        bytes - sequence of bytes, mutable (instead of string)
-            # implementstion:
-                1) pythons `bytearray` inside
-            # declarations:
-            bb = [00 01 fa d8]
-            # usage:
-            bb = [f0 01 05 21]
-            b = bb[0] # >> get first byte
-            bb[-1] = 22 # set last byte
-        
-        DONE: bytes: add other num bases: bin 0b[10], oct 0o[17], dec 0d[19]
-        
-        DONE: bytes features
-        -- string-related
-            # bb.string(encoding='UTF8') # convert bytes to string, enc = 'UTF8', code.UTF8
-            #string.bytes(encoding) # string to bytes
-            
-        DONE: bytes methods:
-            # .map(x -> x & 0xf0) # apply function to each byte in sequence and return result
-            # .each() # apply function to each byte
-            # .fold()
-            # .reverse()
-            # .replace() # simple val to val
-        
-        DONE: bytes: splitting methods 
-            # .blocks / .nsplit(size:int) # split byte set (from right) on block with size.
-                fill last left to size by 0 
-            # .nums(int) # list of int numbers, arg = 1-8, split to numbers by byte-size
-            # .bits() # list of bits
-        
-        DONE: .split(sep=bytes) # like string do
-        
-        DONE: bytes operators
-            #ok bb[a:b] # get slice - copy part of bytes
-            #ok bitwize: | & ^ ; 0x[01 02 03] & 0x[00 01 f0]
-        
-        DONE:
-            # done: struct type args in overloaded func, 
-            # done: test methods with compatiple types
-        
-        DONE: curry as builtin function
-        
-        DONE: currying operator:
-            func foo(a, b, c)
-            foo~>(1)(2)(3)
-        
-        DONE: tests: curry func from var, from list, from func-call(), curry method, curry 2-3 args lambda.
-        
-        DONE: func composition operator:
-            foo * bar * baz $ (x)
-            
-        DONE: operator of applying function to argument
-            foo $ arg
-            equal to
-            foo(arg)
-        
-        DONE: composition / apply with methods
-        
-        DONE: add base type constructors: int(), string(), float(), bool(), list(), tuple(), dict(), 
-            // byte(int), 
-            bytes(list[int]|string|glif|int|byte), glif(int|byte|bytes)
-            # dont,  string(bytes(), encoding='utf8') # string from bytes / 0x[].string() for that
-        DONE: bytes constructor - add len arg for fill by 0
-            0x[len=10] # 10 bytes
-            0x[] * 10 # 10 bytes
-            0x(12) (?)
-            bytes(12) # future type-constructors
-
     # features for for `enum` - not sure
         TODO: Enum.name(11)
         TODO: Enum.value(name)
@@ -175,8 +96,6 @@ class TestDev(TestCase):
                     2) child method will add and shoud find func by signature in all parent tree or
                     3) disallow override overloaded func name
         
-        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
-        
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
         2) extend tail-recur case for earlier returns - not sure 
@@ -186,6 +105,9 @@ class TestDev(TestCase):
 
         TODO: think about type casting by colon; type in left
             x:int = int: true
+        
+        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
+        TODO: error of composition of functions with more than 1 arg
 
         TODO: 21.1 Multi-reading in loop:
             put at right part one more collections, so assign more var in left: 
@@ -197,34 +119,40 @@ class TestDev(TestCase):
             Like extended enum and struct
                 print(i, x, key, val)
         
-        TODO: add type `glif` - 1 multibyte symbol
-        
         BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
         
         TODO: add assertion to cases in test_lists
         
-        TODO: refactor case-loops to pattern-tree
+        TODO: refactor tree.py from loops of cases to pattern-tree
         1) find common cases:
-            solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, control-keywords, var, val, 
+            solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, single control-keywords, var, val, 
             no-solid -> definitions, control-statements, bin-opers, 
         2) dive into sub-cases
-        
-        TODO: refactor list-like expressions to avoid multiple check items in []-brackets
+        2.2) refactor list-like expressions to avoid multiple check items in []-brackets
             first check solid []-case, then find case in []-cases:
             list, slice, iter-gen, list-gen, bytes
         
+        
         TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
         
-        TODO: root, square root operator
-            |/ _/ -/ */
+        TODO: root, square root operator, the same precedence as **
+            |/ _/ -/ */ ~* ^* ^/  3^/8 
             -/4 # 2;  3-/ 8 # 2
             */4 # 2;  3*/ 8 # 2
+            
+        TODO: math functions:
+            log(x, base), ln(x), lg(x),
+            abs(), sum(list), prod(list), rem(a, b)->>(int, int)
+            sin(), cos(), tg(), ctg(), atg(), actg(), asin(), acos(),...
+            ceil(), floor(), round()
         
         
-        TODO: add glif type
+        TODO: add type `glif` - 1 multibyte symbol
             glif represents one char with any byte-size
-            constr: glif('a'),  glif(41), 
-            'Hello'.glifs() -> list of glifs
+            constr: glif('a'),  glif(41), glif(0x[E3 81])
+            spec syntax: g'A', g'百', g'ج', g'छ', 'お', g`~`, g`&`, g`"`, g`\n`
+            'Hello'.glifs() ->> list of glifs
+            list('Hello') ->> should be a list of glifs too
         
         TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
         TODO: string.replace({dict}) # check, implement if not
@@ -234,17 +162,6 @@ class TestDev(TestCase):
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
         TODO: think about performance, decreased after \lambda changes.
-        
-        DONE: dict: filter (filter by key, val)
-        
-        DONE: list|tuple methods: sort, filter; 
-        
-        DONE: string methods: upper, lower
-        
-        DONE: lambda with slash-leading syntax: in assign, arg list, etc. 
-            idea: lambda with more than 1 args without brackets, basically it conficts with comma separator in more complex expression:
-            func call, collections, etc.
-            leading slash can resolve this issue, commas between `\` and `->` are definition-args of lambda
     '''
 
     _ = r"""
@@ -253,6 +170,56 @@ class TestDev(TestCase):
 
 """
 
+
+
+
+    def _test_glif_constructor(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        glif(55) # from int
+        glif('A') # from str char
+        glif(0x[E3 81]) # from bytes
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
+
+
+
+    def _test_glif_functions(self):
+        '''  '''
+        code = r'''
+        res = []
+        
+        ''.glifs()
+        [aa bb].glifs()
+        
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
 
 
     def _test_code(self):

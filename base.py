@@ -95,6 +95,7 @@ class TypeAny(VType):
     name = 'any'
     th = TH.mk()
 
+
 class TypeNoVal(VType):
     ''' No value, just technical object '''
     name = 'noval'

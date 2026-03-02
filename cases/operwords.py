@@ -135,3 +135,21 @@ class CaseRegexp(SubCase):
         return base
 
 
+class CaseGlif(CaseVal):
+    '''
+    g'A' , g`E` , g"$"
+    '''
+    
+    def match(self, elems:list[Elem])-> bool:
+        if len(elems) != 2:
+            return False
+        if elems[0].text != 'g':
+            return False
+        return elems[1].type == Lt.text
+    
+    def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        g = elems[1].text
+        # TODO: think about format: str or bytes
+        val = Val(Glif(g), TypeGlif())
+        return ValExpr(val)
+

@@ -2022,9 +2022,9 @@ res = 'Hello dear friend'.split(' ').map(w -> ~"<t>{w}</t>").join('^')
 Here are some features that make Lisapet also a functional programming language.  
 
 ### 15.1 Lambda functions. Right-arrow `->`.
-- Right-arrow is an operator for definition lambda-function.  
+- Right-arrow is an operator for definition of lambda-function.  
 Arrow separates arguments and body of function.  
-One argement can be defined without brackets. For more then one we need put args into brackets.  
+One argument can be defined without brackets. For more than one we need put args into brackets.  
 ```haskell
 # one-arg lambda
 f1 = x -> x * 10
@@ -2184,6 +2184,8 @@ func foo5(f)
 
 res = foo5(y -> y * 3)(33)
 ```
+Two last examples used a mechanism of closure. See the next section.  
+
 
 ### 15.4 Closures.  
 - Definition-related context.   

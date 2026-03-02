@@ -70,12 +70,11 @@ class ValExpr(Expression):
     def do(self, ctx:NSContext):
         pass
 
-    def get(self)->Var:
-        # dprint('#tn2-valEx-get:', self.val, self.val.get())
+    def get(self)->Val:
         return self.val
 
     def __str__(self):
-        return 'ValExpr(%s)' % self.val
+        return '%s(%s)' % (self.__class__.__name__, self.val)
 
 
 class VarExpr(Expression):
@@ -85,20 +84,13 @@ class VarExpr(Expression):
         self.name = var.name
     
     def do(self, ctx:NSContext):
-        # dprint('VarExpr.do ctx:', ctx, 'name=', self.name)
-        # ctx.print(forsed=1)
         newVal = ctx.get(self.name)
-        # print('VarExpr.do:', self.name, newVal)
         self.val = newVal
-    
-    # def set(self, val:Var):
-    #     self.var = val.get()
 
     def get(self)->Var:
         return self.val
 
     def __str__(self):
-        # dprint('VVV', self)
         return '%s(%s, %s)' % (self.__class__.__name__, self.name, self.val)
 
 

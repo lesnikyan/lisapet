@@ -86,6 +86,11 @@ class TypeRegexp(VType):
     name='re'
     _defVal = None
     th = TH.mk()
+
+
+class TypeGlif(VType):
+    name = 'glif'
+    th = TH.mk()
     
 
 class TypeEnum(VType):

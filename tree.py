@@ -116,7 +116,7 @@ class StrFormatter(SFormatter):
 
 # CaseMString
 expCaseSolids:list[ExpCase] = [
-    CaseBreak(), CaseContinue(), CaseRegexp(), CaseReturn(),  CaseElse(), 
+    CaseBreak(), CaseContinue(), CaseRegexp(), CaseReturn(), CaseGlif(),  CaseElse(), 
     CaseVal(), CaseVar(), CaseVar_(), CaseDotName(), CaseRTildArroy(), 
     CaseString(),
     CaseTuple(), CaseList(),

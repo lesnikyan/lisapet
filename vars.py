@@ -385,6 +385,14 @@ class StringVal(ValSequence):
         return StringVal(res)
 
 
+class Glif:
+    def __init__(self, char):
+        self.val = char
+    
+    def __str__(self):
+        return 'glif(%s)' % (self.val)
+
+
 class bytearray2(bytearray):
     def __str__(self):
         return  '0x[%s]' % ' '.join([f'{b:02x}' for b in self])

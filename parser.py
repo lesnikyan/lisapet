@@ -11,7 +11,7 @@ c_space = [' ', '\t', '\n', '\r' ]
 c_esc = '\'\"ntr\\/`'
 c_esc_map = {'n':'\n', 't':'\t', 'r':'\r', '\\':'\\', '/':'/', '\'':'\'', '\"':'\"', '`':'`'}
 c_esc_back = '`'
-c_esc_back_map = {'`':'`'}
+c_esc_back_map = {'`':'`', '\\':'\\'}
 c_nums = [n for n in '1234567890']
 c_oper = '+~-*/=%^&!?<>()[]:.;,|${}\\'
 # single-line comment, to and of line
