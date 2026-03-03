@@ -12,6 +12,54 @@ import pdb
 class TestGLif(TestCase):
 
 
+    def test_glif_operators(self):
+        '''  '''
+        code = r'''
+        res = []
+        
+        res <- 'plus-glif'
+        
+        res <- g'A' + g'B'
+        
+        res <- 'abc ' + g'D'
+        
+        res <- g'B' + ' cde'
+        
+        res <- g'A' + 1
+        
+        res <- 5 + g'A'
+        
+        res <- 'type-glif'
+        res <- 5 :: glif
+        res <- '5' :: glif
+        res <- glif('5') :: glif
+        res <- g'5' :: glif
+        
+        res <- 'format-glif'
+        
+        res <- '<%s>' << g'A'
+        
+        a, b = g'A', g'B'
+        res <-  ~'g:str = {a};{b}'
+        res <- ~'g:num {a:x};{b:d}'
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            'plus-glif', 'AB', 'abc D', 'B cde', 'g(B)', 'g(F)', 
+            'type-glif', False, False, True, True, 
+            'format-glif', '<A>', 'g:str = A;B', 'g:num 41;66']
+        self.assertEqual(exv, resv)
+
     def test_glif_constructor(self):
         ''' '''
         code = r'''

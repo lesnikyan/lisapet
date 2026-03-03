@@ -328,6 +328,37 @@ class OpMath(BinOper):
     def stringPlus(self, a, b):
         res = a.getVal() + b.getVal()
         return StringVal(res)
+    
+    def plusGlif(self, a, b):
+        av = a.getVal()
+        bv = b.get().val
+        match a.getType():
+            case TypeInt():
+                v = av + ord(bv)
+                return Val(Glif(chr(v)), TypeGlif())
+            case TypeGlif():
+                av = av.val
+            case TypeString():
+                # StringVal
+                av = str(av)
+        res = av + bv
+        return StringVal(res)
+    
+    def glifPlus(self, a, b):
+        # print('$1', a, a.get(), b)
+        av = a.get().val
+        bv = b.getVal()
+        match b.getType(): 
+            case TypeInt():
+                v = ord(av) + bv
+                return Val(Glif(chr(v)), TypeGlif())
+            case TypeGlif():
+                bv = bv.val
+            case TypeString():
+                bv = str(bv)
+        # bv = b.get().val
+        res = av + bv
+        return StringVal(res)
 
     def normalize(self, val:Val):
         # print('O-nod.normalize', val)
@@ -353,6 +384,11 @@ class OpMath(BinOper):
                     return (True, self.listPlus(a, b))
                 elif isinstance(a, (StringVal)) and isinstance(b, StringVal):
                     return (True, self.stringPlus(a, b))
+                # glif
+                elif isinstance(a.getType(), TypeGlif):
+                    return (True, self.glifPlus(a, b))
+                elif isinstance(b.getType(), TypeGlif):
+                    return (True, self.plusGlif(a, b))
             case '-' :
                 if isinstance(a, (ListVal, DictVal)) and isinstance(b, ListVal):
                     return (True, self.collMinus(a, b))
@@ -383,8 +419,8 @@ class OpBinBool(BinOper):
         self.right.do(ctx)
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
-        dprint(' ( %s )' % self.oper, a.getVal(), b.getVal())
-        dprint(' (types)', a.getType(), b.getType())
+        # dprint(' ( %s )' % self.oper, a.getVal(), b.getVal())
+        # dprint(' (types)', a.getType(), b.getType())
         # TODOO: type check needs further development
         # vtype = a.getType()
         # if not isinstance(vtype, TypeAny) and not isinstance(b.getType(), TypeAny) and vtype != b.getType():
@@ -554,9 +590,8 @@ class OpBitwise(BinOper):
             b = TupleVal()
             b.addVal(t)
         # reuse python old format %
-        args = tuple(n.getVal() for n in b.rawVals())
+        args = strShiftArgs(b)
         tpl = a.getVal()
-        # dprint('tpl % args: ', tpl % args)
         return StringVal(tpl % args)
 
 
@@ -573,15 +608,15 @@ class BoolNot(UnarOper):
 
 
 class BitNot(UnarOper):
+    '''
+    Note: string formatting by `~` was implemented out of this class.
+    See Formatter class.
+    '''
     def __init__(self, oper:str, inner:Expression=None):
         super().__init__(oper, inner)
 
     def strFormat(self, arg:str, ctx:Context)->Val:
-        val = '' # TODO: parse string, parse and interpret includes, eval includes, build result line
-        # fm = StrFormatter()
-        # expf = fm.toExpr(arg)
-        # expf.do(ctx)
-        # val = expf.get()
+        val = ''
         return val
 
     def do(self, ctx:Context):
@@ -597,9 +632,6 @@ class BitNot(UnarOper):
         self.res = Val(res, inVal.getType())
 
     def setInner(self, inner:Expression):
-        # if isinstance(inner, (StringExpr, MString)):
-        #     sf = StrFormatter()
-        #     inner = sf.toExpr(inner.val)
         self.inner = inner
 
 

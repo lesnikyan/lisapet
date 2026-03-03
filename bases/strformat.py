@@ -6,7 +6,7 @@ from parser import ParseErr
 # from tree import line2expr
 from nodes.expression import ValExpr, Expression
 from base import Val
-from vars import StringVal
+from vars import StringVal, Glif
 from typex import TypeString
 from context import Context
 
@@ -143,6 +143,13 @@ class Formatter:
     def format(self, val, opt:FmtOption):
         res = ''
         isNum = opt.type in 'fdboxe'
+        
+        # prepare glif
+        if isinstance(val, Glif):
+            val = val.val
+            if isNum:
+                val = ord(val)
+        
         # dprint(opt.type)
         match opt.type:
             case 'x': res = self.toHex(val)
@@ -243,12 +250,6 @@ class Formatter:
     
     # TODO: other needed formats
     
-    # def toHex(self, num):
-    #     return ''
-    
-    # def toHex(self, num):
-    #     return ''
-    
 
 def toString(val, ptrn):
     if isinstance(val, str):
@@ -264,13 +265,13 @@ class ExprFormat(Expression):
         if format is None:
             format = FmtOption()
         self.opt = format
+        self.fmt = Formatter()
         self.res = None
     
     def do(self, ctx:Context):
         self.expr.do(ctx)
         val = self.expr.get().getVal()
-        fmt = Formatter()
-        fval = fmt.format(val, self.opt)
+        fval = self.fmt.format(val, self.opt)
         self.res = StringVal(fval)
     
     def get(self):
@@ -299,7 +300,6 @@ class StrJoinExpr(Expression):
         for pp in self.parts:
             pp.do(ctx)
             tres = pp.get()
-            # dprint('SJEx.do1:', pp, tres)
             s = tres.getVal()
             ss.append(s)
         rval = ''.join(ss)
@@ -327,7 +327,7 @@ class FormatParser:
         parts = [] # text parts
         # incs = [] # expr parts
         bparts = self.brx.split(src)
-        # dprint('SF:', bparts)
+        # print('SF:', bparts)
         inExp = False
         for bb in bparts:
             tbr = ''
@@ -343,6 +343,7 @@ class FormatParser:
                     # next elem is expr
                     inExp = True
                 if tbr:
+                    # print('$21--', tbr)
                     parts.append(tbr)
                 continue
             if bb.endswith('}'):

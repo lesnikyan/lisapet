@@ -385,6 +385,20 @@ class StringVal(ValSequence):
         return StringVal(res)
 
 
+def strShiftArgs(src):
+    r = []
+    ListVal
+    for n in src.rawVals():
+        v = ''
+        match n.getType():
+            case TypeGlif():
+                v = n.get().val
+            case _:
+                v = n.getVal()
+        r.append(v) 
+    return tuple(r)
+
+
 class Glif:
     def __init__(self, char):
         self.val = char
