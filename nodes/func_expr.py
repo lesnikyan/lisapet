@@ -75,6 +75,7 @@ class FuncCallExpr(CallExpr):
         func:Function|FuncOverSet = self.funcExpr.get()
         # Here and next we can get one of: 
         # Var, Function, NFunc, BoundMethod, FuncOverSet, ObjectMember, ObjMethod
+        # print('FC/1', func)
         
         # Case with func in var
         if isinstance(func, Var):
@@ -88,7 +89,6 @@ class FuncCallExpr(CallExpr):
             objMem:ObjectMember = func
             objInst = objMem.object
             memVal = func.get(ctx)
-            # print('objMember val=', memVal, memVal.__class__)
             func = memVal
             # print('F.func: ObjectMember', obj, func)
         
@@ -98,8 +98,6 @@ class FuncCallExpr(CallExpr):
         if isinstance(func, ObjMethod):
             # method but not a function object in the field of struct
             method = func
-            # obj = method.obj
-            # print('F.func: ObjectMember', obj, method)
             # next we need Function to resolve overload case
             func = method.func
             objInst = method.obj
@@ -114,6 +112,11 @@ class FuncCallExpr(CallExpr):
             tVal = func.getVal()
             if isinstance(tVal, TypeStruct):
                 func = tVal.getConstr()
+            elif 1:
+                cc = ctx.getRoot()
+                ctype = func.get()
+                constrName = typeConstrName(ctype)
+                func = cc.get(constrName)
         
         # Case with overloaded function
         if isinstance(func, FuncOverSet):
@@ -324,6 +327,14 @@ def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
     # func.callFunc = fn
     ctx.addFunc(func)
 
+
+def typeConstrName(rtype:VType):
+    tname = rtype.name
+    return f'{tname}#construct'
+
+def addTypeConstr(ctx:Context, fn:Callable, rtype:VType):
+    setNativeFunc(ctx, typeConstrName(rtype), fn, rtype)
+    
 
 class BoundMethod(NFunc,MethodOfType):
     

@@ -201,7 +201,6 @@ class ListVal(Collection):
         del self.elems[index.getVal()]
 
     def vals(self):
-        
         r = []
         for n in self.elems:
             if isinstance(n, (FuncInst, ObjectInstance)):
@@ -302,9 +301,11 @@ def dkeyCover(k):
 class DictVal(Collection):
     ''' classic List / Array object'''
     
-    def __init__(self):
+    def __init__(self, data=None):
         super().__init__(None, TypeDict())
-        self.data:dict[str|int|bool,Val] = {}
+        if not data:
+            data = {}
+        self.data:dict[str|int|bool,Val] = data
 
     def len(self)->int:
         return len(self.data)
@@ -359,20 +360,23 @@ class DictVal(Collection):
 
 class StringVal(ValSequence):
     ''' '', "", ``, etc '''
-    def __init__(self, val, stype=None):
-        if not stype:
-            stype = TypeString()
-        super().__init__(val, stype)
+    def __init__(self, val):
+        # if not stype:
+        #     stype = TypeString()
+        super().__init__(val, TypeString())
     
     def getElem(self, key:Val):
         k = key.getVal()
         data = self.getVal()
         if len(data) <= k:
             raise EvalErr('String content out of range by key %s ' % k)
-        return StringVal(data[k])
+        return Val(Glif(data[k]), TypeGlif())
     
     def len(self)->int:
         return len(self.val)
+    
+    def copy(self):
+        return StringVal(str(self.val))
 
     def getSlice(self, beg, end):
         if beg < -len(self.val) or end > len(self.val):
@@ -381,12 +385,26 @@ class StringVal(ValSequence):
         return StringVal(res)
 
 
-class bytearray2(bytearray):
-    def __str__(self):
-        return  '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
-                                    
-    def __repr__(self):
-        return '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
+def strShiftArgs(src, opts=None):
+    r = []
+    ListVal
+    vals = src.rawVals()
+    if len(opts) != len(vals):
+        raise EvalErr('String %-format with error: ncorrect count of vals.')
+    itr = range(len(opts))
+    for i in itr:
+        n = vals[i]
+        op = opts[i]
+        v = ''
+        match n.getType():
+            case TypeGlif():
+                v = n.get().val
+                if op in 'dxXo':
+                    v = ord(v)
+            case _:
+                v = n.getVal()
+        r.append(v)
+    return tuple(r)
 
 
 class BytesVal(ValSequence):
@@ -406,6 +424,9 @@ class BytesVal(ValSequence):
     
     def len(self)->int:
         return len(self.val)
+    
+    def copy(self):
+        return BytesVal(bytearray2(self.val))
     
     def addVal(self, val:Val):
         # print('Bytes.addVal:', self.val, val.getVal())

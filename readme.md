@@ -26,16 +26,17 @@ Content:
 1. Basic things.
     1. [vars, vals, assignment](#11-vars-vals-lists-assignment)
     2. [Context](#12-execution-context)
-    3. [Numeric and bool types](#13-numeric-types)
-    4. ["Strings"](#14-strings)
-    5. [""" Multiline strings """](#15-multiline-strings)
-    6. [Multiline expressions](#19-multiline-expressions-if-for-math-expr)
-    7. [Code blocks and formatting.](#17-sub-blocks-code-formatting)
+    3. [Numeric and `bool` types](#13-numeric-types)
+    4. [`"Strings"`](#14-strings)
+    5. [`""" Multiline strings """`](#15-multiline-strings)
+    6. [`glif` `g'G'`](#16-glif-gg)
+    7. [Multiline expressions](#17-multiline-expressions-if-for-math-expr)
+    8. [Code blocks and formatting.](#18-sub-blocks-code-formatting)
 
 2. Operators.  
     1. [Math operators](#21-arithmetic-operators)
     2. [Unary operators](#22-other-unary-operators)
-    3. [Assignent operators](#23-operators-with-assignment)
+    3. [Assignment `=` operators](#23-operators-with-assignment)
     4. [Other classic operators](#24-other-classic-c-like-operators)
     5. [Table of operators precedence](#25-table-of-priority-order)
     6. [Ternary `?:` operator](#26-ternary-operator-)
@@ -360,7 +361,32 @@ Formatting operators see in [`"%s"<<` ](#211-percent-formatting) and
 [`"~{s}"`](#212-format-by-including-expressions) formatting.
 
 
-### 1.6 Multiline expressions: `if`, `for`, math expr.  
+### 1.6 Glif `g'G'`
+Glif is a single character.  
+For creation of glif value we can use special syntax of string with `g`-prefix.  
+```golang
+a = g'A'
+b = g"B"
+c = g`c`
+```
+Another way - functional constructor.  
+```python
+# by string
+a = glif('A') # A
+
+# by int code
+b = glif(42) # B
+
+# by glif
+c = glif(g'c') # c
+
+# by bytes
+n100 = glif(0x[e7 99 be]) # 百
+```
+... other features in dev
+
+
+### 1.7 Multiline expressions: `if`, `for`, math expr.  
 Normally code lines in LP are short enough, but in some cases we need longer expressions, even in control statements.  
 The main way to split long line to shorten parts is use brackets.
 For comprehantion expressions it works with its square brackets (see examples).  
@@ -390,7 +416,7 @@ res = ( (a + b) * 15
 ```
 
 
-### 1.7 Sub-blocks, code-formatting.
+### 1.8 Sub-blocks, code-formatting.
 Control structures, data-structures, functions, etc. have inner place with internal lines (expressions), here we call it as an expression block, child or sub-block.  
 Sub block is separated by indent with one or more whitespaces related to parent.  
 All indents should be equal.  
@@ -959,6 +985,24 @@ foo(2, 'tons') #// (20, '<tons>')
 foo(1.5, 4000) #// (15.0, '<4000>')
 ```
 The same works for methods.  
+
+### 4.4 Type constructor
+
+Each builtin type has its own function-constructor.  
+Constructor has the same name as a type and argumens (one in common case).  
+Constructor can convert compatible types into target type, make empty-value or construct complex value from parts.  
+```python
+int(true) # 1
+float(1) # 1.0
+bool(5) # true
+string(123) # '123'
+bytes('Hello!') # '0x[48 65 6c 6c 6f 21]'
+list('Cats') # ['C','a','t','s']
+tuple([1,2,3]) # (1,2,3)
+dict([('a',11), ('b',22)]) # {'a':11, 'b':22}
+```
+See `tests/test_builtins.py` for more information.  
+
 
 
 ### 5. `if`-statement, `else`
@@ -1967,23 +2011,31 @@ See `eval.py` for more examples.
 ### 14.3 Methods are already bound to types
 1. `list`:  
     .map(`function`)  
-    .fold(any, `function`)
+    .fold(any, `function(base, next)`)
     .reverse()  
     .join(`string`)  
     .each(`function`)  
+    .sort(`function(a,b)`)  
+    .filter(`function`)  
 2. `tuple`:  
     .map(`function`)  
-    .fold(any, `function`)
+    .fold(any, `function(base, next)`)
     .reverse()  
     .each(`function`)  
+    .sort(`function(a,b)`)  
+    .filter(`function`)  
 3. `dict`:  
     .keys()  
     .items()  
+    .filter(`function(key, val)`)
 4. `string`:  
     .split(`string`|`regexp`)  
     .replace(`string`|`regexr`, `string`)
-    .joinn(`list`|`tuple`)  
+    .join(`list`|`tuple`)  
     .map(`function`)  
+    .bytes()
+    .upper()  
+    .lower()  
 
 Example of usage: 
 ```python
@@ -1996,10 +2048,10 @@ res = 'Hello dear friend'.split(' ').map(w -> ~"<t>{w}</t>").join('^')
 Here are some features that make Lisapet also a functional programming language.  
 
 ### 15.1 Lambda functions. Right-arrow `->`.
-- Right-arrow is an operator for definition lambda-function.  
+- Right-arrow is an operator for definition of lambda-function.  
 Arrow separates arguments and body of function.  
-One argement can be defined without brackets. For more then one we need put args into brackets.  
-```python
+One argument can be defined without brackets. For more than one we need put args into brackets.  
+```haskell
 # one-arg lambda
 f1 = x -> x * 10
 
@@ -2010,6 +2062,22 @@ f2 = (x, y, z) -> (x + y) * z
 f1(5) # 50
 f2(3,4,5) # 35
 ```
+Another way to define lambda with more than 1 arg is a backslash-leading syntax.  
+Backslash separates args of lambda from outer expression like list elems, function args, etc.  
+```haskell
+f = \ a, b -> a + b
+```
+In comma-separated expressions:  
+```haskell
+# in list
+funcs = [x -> x, \x, y -> x + y, \n -> n * 2]
+
+# in function args
+nn = [1,2,3,4,5]
+nn.fold(0, \s, n -> s + n)
+# >> 15
+```
+
 - Minimal lambdas.  
 In some cases we just need to return value.  
 ```python
@@ -2142,6 +2210,8 @@ func foo5(f)
 
 res = foo5(y -> y * 3)(33)
 ```
+Two last examples used a mechanism of closure. See the next section.  
+
 
 ### 15.4 Closures.  
 - Definition-related context.   

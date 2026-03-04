@@ -25,6 +25,76 @@ from eval import *
 class TestFuncs(TestCase):
     
 
+    def test_lambda_definition_with_slash(self):
+        r''' labmdas expression with leading `\`
+            \x, y -> x + y
+        '''
+        _ = r'''
+        f = \ x -> x
+        a = (x -> x)
+        b = (1, \ x, y -> x + y)
+        b = (1, \ (x, y) -> x + y)
+        '''
+        code = r'''
+        res = []
+        
+        f = x -> x + 2
+        f2 = \x,y -> x + y
+        
+        ff = []
+        ff <- \x, y -> x + y
+        res <- ff[0](0, -20)
+        res <- f(3)
+        res <- f2(3,4)
+        
+        # comma separated lambdas
+        \ x, y -> x + y , \y -> y
+        fa, fb = \ x, y -> x + y , \y -> y
+        
+        res <- fa(40, 1)
+        res <- fb(42)
+        
+        # in tuple
+        fft = (x -> x, \x, y -> x + y, (x, y)->x - y)
+        res <- fft[0](6)
+        res <- fft[1](6, 2)
+        res <- fft[2](17, 5)
+        
+        # in list
+        ffl = [x -> x, \ a, b -> a + b, y -> 2 * y]
+        res <- ffl[1](1, 200)
+        res <- ffl[2](125)
+        
+        # in dict
+        ffd1 = {'a': \a, b -> a + b, 'b': \x -> x, 'c': c -> c * 10}
+        ffd2 = {'a': \a, b -> a + b}
+        ffd3 = {'a': a -> a + 1}
+        
+        res <- ffd1['a'](100, 10)
+        res <- ffd1['b'](120)
+        res <- ffd2['a'](200,10)
+        res <- ffd3['a'](240)
+        
+        # in function args
+        dd2 = {'a':'1', 'b':'2', 'c':'3', 'qqq':'4', 'xxx':'5', 'abc':'6', 'd':8}
+        res <- dd2.filter(\ k , v -> k ?> 'abd')
+        
+        nn1 = [1,2,3,4,5]
+        res <- nn1.fold(400, \s, n -> s + n)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [-20, 5, 7, 41, 42, 6, 8, 12, 201, 250, 110, 120, 210, 241, {'a': '1', 'b': '2', 'd': 8}, 415]
+        self.assertEqual(exv, resv)
+
     def test_compose_types_method(self):
         ''' '''
         code = r'''
@@ -41,12 +111,12 @@ class TestFuncs(TestCase):
         
         # list.map
         m2 = x5 * nn.map
-        res <- m2 $ (x -> x + 1)
+        res <- m2 $ x -> x + 1
         
         # list.fold
         ff = nn.fold~>(100)
         
-        res <- mult~>(2) * ff $ ((s, n) -> s + n)
+        res <- mult~>(2) * ff $ \s, n -> s + n
         res <- mult~>(3) * nn.fold~>(200) $ ((s, n)-> s + 5 * n)
         
         # print('res = ', res)

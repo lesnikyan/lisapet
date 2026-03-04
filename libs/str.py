@@ -16,7 +16,12 @@ def split(_, src:StringVal, sep:Regexp):
     if isinstance(sep, Regexp):
         return rx_split(src, sep)
     # sepVal = getVal(sep)
-    parts = src.getVal().split(sep.getVal())
+    sepv = sep.getVal()
+    srcv = src.getVal()
+    if sepv == '':
+        parts = list(srcv)
+    else:
+        parts = srcv.split(sepv)
     return ListVal(elems = [StringVal(s) for s in parts])
 
 
@@ -48,4 +53,13 @@ def replace(_, src:StringVal, findptn:StringVal, repl:StringVal, count:Val=None)
     res = sval.replace(oval, nval, cval)
     return StringVal(res)
 
+
+def string_upper(_, src:StringVal):
+    res = src.getVal().upper()
+    return StringVal(res)
+
+
+def string_lower(_, src:StringVal):
+    res = src.getVal().lower()
+    return StringVal(res)
 

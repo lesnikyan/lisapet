@@ -284,15 +284,17 @@ class TestOper(TestCase):
         ctx = rCtx.moduleContext()
         ex.do(ctx)
         rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print('resv$1', resv)
         exv = [11, 
-               ('abc', 0, 'a'), ('def', 2, 'f'), ('hijk', -1, 'k'), ('abcd1', 0, 'a'), ('abcd1', 3, 'd'), 
-               ('efgh2', 1, 'f'), ('efgh2', -1, '2'), ('ijk3', 1, 'j'), ('ijk3', 2, 'k'), 
-               ('mnop4', 0, 'm'), ('mnop4', 1, 'n'), ('qrst', 0, 'q'), ('qrst', 2, 's'), 
-               ('uvwxyz', 1, 'v'), ('uvwxyz', -1, 'z'), ('0123456789', 0, '0'), ('0123456789', 5, '5'), 
-               ('qwerty', 2, 'e'), ('perin', -1, 'n'), ('xyzlog', 2, 'z'), ('abc', 1, 'b'), ('def', 2, 'f'), 
-               ('function_resUlT', 2, 'n'), ('function_resUlT', 8, '_'), 
-               ('function_resUlT', -3, 'U'), ('function_resUlT</~:>', -3, '~')]
-        self.assertEqual(exv, rvar.vals())
+            ('abc', 0, 'g(a)'), ('def', 2, 'g(f)'), ('hijk', -1, 'g(k)'), ('abcd1', 0, 'g(a)'), ('abcd1', 3, 'g(d)'), 
+            ('efgh2', 1, 'g(f)'), ('efgh2', -1, 'g(2)'), ('ijk3', 1, 'g(j)'), ('ijk3', 2, 'g(k)'), 
+            ('mnop4', 0, 'g(m)'), ('mnop4', 1, 'g(n)'), ('qrst', 0, 'g(q)'), ('qrst', 2, 'g(s)'), 
+            ('uvwxyz', 1, 'g(v)'), ('uvwxyz', -1, 'g(z)'), ('0123456789', 0, 'g(0)'), ('0123456789', 5, 'g(5)'), 
+            ('qwerty', 2, 'g(e)'), ('perin', -1, 'g(n)'), ('xyzlog', 2, 'g(z)'), ('abc', 1, 'g(b)'), 
+            ('def', 2, 'g(f)'), ('function_resUlT', 2, 'g(n)'), ('function_resUlT', 8, 'g(_)'), 
+            ('function_resUlT', -3, 'g(U)'), ('function_resUlT</~:>', -3, 'g(~)')]
+        self.assertEqual(exv, resv)
 
     def test_code_string_plus(self):
         ''' test str + str '''
@@ -672,7 +674,8 @@ class TestOper(TestCase):
         bar # -1
         - 1000 # 0
         ! (true && foo()) # 0
-        - 2 * (abc - 7) # 0
+        - 2 * (abc - 7) # 2
+        5 * - 8 # 1
         1 + 2 , 3 # 3
         1 , 2 # 1
         ( 1, 2, 3 ) # 0

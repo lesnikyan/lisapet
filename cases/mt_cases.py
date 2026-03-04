@@ -327,21 +327,25 @@ class MTMultiCase(MTComplex):
     ''' one of pattern
         1 | 2 | 3 | [*]
     '''
+    
+    def __init__(self):
+        super().__init__()
+        self.spl = OperSplitter(MTComplex._priors)
+        self.ps = CaseSeq('|')
 
     def match(self, elems:list[Elem]) -> bool:
         # priors = '( ) [ ] { } , | , : ,  `1`, :? '
-        spl = OperSplitter(MTComplex._priors)
-        opInd = spl.mainOper(elems)
+        
+        opInd = self.spl.mainOper(elems)
         
         # print('MTMultiCase.match:', opInd, elems[opInd].text)
         return opInd > 0 and isLex(elems[opInd], Lt.oper, '|')
 
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
-        ps = CaseSeq('|')
         subs = elems
         # print('MTMultiCase.expr:', self.__class__.__name__, '', subs)
-        if ps.match(elems):
-            _, subs = ps.split(elems)
+        if self.ps.match(elems):
+            _, subs = self.ps.split(elems)
         mcase = MCMultiCase(src=elems)
         for sub in subs:
             scase = findCase(sub)
@@ -353,18 +357,22 @@ class MTMultiCase(MTComplex):
 class MTPtGuard(MTComplex, SubCase):
     ''' expr :? expr '''
     
+    def __init__(self):
+        super().__init__()
+        self.spl = OperSplitter(MTComplex._priors)
+        
+    
     def match(self, elems:list[Elem]) -> bool:
         # priors = '( ) [ ] { } , | , : ,  `1`, :? '
-        spl = OperSplitter(MTComplex._priors)
-        opInd = spl.mainOper(elems)
+        opInd = self.spl.mainOper(elems)
         
         # print('MTPtGuard.match:', opInd, elems[opInd].text)
         return opInd > 0 and isLex(elems[opInd], Lt.oper, ':?')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[Elem]]:
         # priors = '( ) [ ] { } , | , : ,  `1`, :? '
-        spl = OperSplitter(MTComplex._priors)
-        opInd = spl.mainOper(elems)
+        # spl = OperSplitter(MTComplex._priors)
+        opInd = self.spl.mainOper(elems)
         left = elems[:opInd]
         patCase = findCase(left)
         pattr = patCase.expr(left)
@@ -384,6 +392,12 @@ class MTPtGuard(MTComplex, SubCase):
 
 class CommaSeparatedSequence(MTContr):
     ''' {,,} [,,] (,,) '''
+    
+    def __init__(self):
+        super().__init__()
+        priors = '( ) [ ] { } , | , : ,  `1` '
+        self.spl = OperSplitter(priors)
+        self.cs = CaseCommas()
 
     def matchEdges(self, elems:list[Elem]):
         pass
@@ -397,14 +411,12 @@ class CommaSeparatedSequence(MTContr):
             return False
         if len(elems) == 2:
             return True
-        priors = '( ) [ ] { } , | , : ,  `1` '
-        spl = OperSplitter(priors)
-        opInd = spl.mainOper(elems)
+        opInd = self.spl.mainOper(elems)
         # print('1>>>>>>>>>>>>', opInd,  elems[opInd].text)
         if opInd != 0:
             return False
         subElems = elems[1:-1]
-        opInd = spl.mainOper(subElems)
+        opInd = self.spl.mainOper(subElems)
         nosub = ';:'
         if isLex(elems[0], Lt.oper, '{'):
             # {a:b}
@@ -417,13 +429,12 @@ class CommaSeparatedSequence(MTContr):
 
     def split(self, elems:list[Elem]):
         sub = elems[1:-1]
-        cs = CaseCommas()
         subs = []
         if sub:
             subs.append(sub)
         # print('SSq.split1:', self.__class__.__name__, '', [elemStr(s) for s in subs])
-        if cs.match(sub):
-            _, subs = cs.split(sub)
+        if self.cs.match(sub):
+            _, subs = self.cs.split(sub)
             # print('SSq.split2:','', [elemStr(s) for s in subs])
         subs = [sb for sb in subs if sb]
         # print(subs)

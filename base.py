@@ -84,6 +84,9 @@ class VType(Base):
     def hash(self):
         return self.th
     
+    def copy(self):
+        return self.__class__()
+    
     def __eq__(self, value):
         return self.__class__ == value.__class__
 
@@ -91,6 +94,7 @@ class VType(Base):
 class TypeAny(VType):
     name = 'any'
     th = TH.mk()
+
 
 class TypeNoVal(VType):
     ''' No value, just technical object '''
@@ -112,6 +116,9 @@ class Val(Base):
 
     def get(self):
         return self.val
+    
+    def copy(self):
+        return Val(self.val, self.vtype.copy())
 
     def getVal(self):
         return self.get()
@@ -190,4 +197,23 @@ class Var(Base):
             tt = self.vtype.name
         strict = '' if not self._strict else ' :strict'
         return '%s(%s, %s: %s%s)' % (self.__class__.__name__, n, self.val, tt, strict)
+
+
+class Glif:
+    def __init__(self, char):
+        self.val = char
+    
+    def __str__(self):
+        return 'glif(%s)' % (self.val)
+    
+    def __repr__(self):
+        return 'glif(%s:%x)' % (self.val, ord(self.val))
+
+
+class bytearray2(bytearray):
+    def __str__(self):
+        return  '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
+                                    
+    def __repr__(self):
+        return '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
 

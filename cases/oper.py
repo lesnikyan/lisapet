@@ -78,8 +78,9 @@ class CaseAssign(SubCase):
 
 
 _operPrior = ('() [] {} , . , ~> , ... , -x ! ~ , ** , * / % , + - ,'
-' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, $, ?: , : , ? , .. , <- , = += -= *= /= %= , ; , !: :? , /: ') #
+' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, $, ?: , : , ?, \\ , -> , .. , <- , = += -= *= /= %= , ; , !: :? , /: ') #
 
+_noOpers = ['\\', '->', '.']
 
 class CaseBinOper(SubCase):
     '''
@@ -92,92 +93,31 @@ class CaseBinOper(SubCase):
         priorGroups = _operPrior.split(',')
         self.priorGroups = [[ n for n in g.split(' ') if n.strip()] for g in priorGroups]
         self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
+        self.splitter = OperSplitter()
         # self.funcCall = CaseFunCall()
 
     def match(self, elems:list[Elem]) -> bool:
         # print('CaseBinOper.match', elemStr(elems))
-        # print(self.opers)
         elen = len(elems)
         inBr = 0
         if elen < 3:
-            # exceptions: -2+, --1, -sum(1,2,3)
             return False
-        for i in range(elen):
-            el = elems[i]
-            # skip parts in brackets: math or function calls
-            if el.text == '':
-                continue
-            if el.text in '([{':
-                inBr += 1
-                continue
-            if el.text in ')]}':
-                inBr -= 1
-            if inBr > 0:
-                continue
-            # print('el.text:', el.text, Lt.name(el.type))
-            
-            if el.type != Lt.oper:
-                continue
-            if i in [0, elen-1]:
-                continue 
-            # in simple case if we have oper, it's operator case
-            if el.text in self.opers and  el.text != '.':
-                return True
-        return False
+        main = self.splitter.mainOper(elems)
+        return main > 0 and elems[main].text not in _noOpers and isLex(elems[main], Lt.oper, self.opers)
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
-        # print('#a51:', [n.text for n in elems])
+        main = self.splitter.mainOper(elems)
+        exp = makeOperExp(elems[main])
         src = elemStr(elems)
-        lowesPrior = len(self.priorGroups) - 1
-        inBr = 0
-        maxInd = len(elems)-1
-        obr='([{'
-        cbr = ')]}'
-        inBrs = [] # brackets which was opened from behind
-        # prels('~~ CaseBinOper', elems, show=1)
-        for prior in range(lowesPrior, -1, -1):
-            skip = -1
-            # print('prior=', prior, self.priorGroups[prior] )
-            for i in range(maxInd, -1, -1):
-                el = elems[i]
-                if el.type != Lt.oper:
-                    continue
-                etx = el.text
-                # counting brackets from tne end, closed is first
-                if etx in cbr:
-                    inBrs.append(etx)
-                    # dprint(' >> ',etx)
-                    continue
-                if etx in obr:
-                    if len(inBrs):
-                        last = inBrs.pop()
-                    # dprint(' << ', etx, last)
-                    continue
-                    # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
-                if len(inBrs) > 0:
-                    continue
-
-                # TODO: fix unary cases, like: 5 * -3,  7 ** -2, x == ! true, (-12)
-                if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
-                    # unary case found, skip current pos
-                    continue
-                
-                # dirty fix: unary case in expression beginning, like: x = -1 * y
-                if i == 0 and el.type == Lt.oper and el.text in ['-', '+', '!', '~']:
-                    continue
-                
-                if el.text in self.priorGroups[prior]:
-                    exp = makeOperExp(el)
-                    exp.src = src
-                    return exp, [elems[0:i], elems[i+1:]]
-        raise InterpretErr('Matched case didnt find key Item in [%s]' % ','.join([n.text for n in elems]))
+        exp.src = src
+        return exp, [elems[0:main], elems[main+1:]]
 
     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
         ''' base - top-level (very right oper with very small priority) 
             subs - left and right parts
         '''
-        dprint('oper-bin seSub', base, subs)
+        # dprint('oper-bin seSub', base, subs)
         base.setArgs(subs[0], subs[1])
         return base
 
@@ -229,7 +169,7 @@ def makeOperExp(elem:Elem)->OperCommand:
         return FuncApplyOper()
     # undefined case:
     raise InterpretErr('!!>>> appropriate case didnt found for oper `%s`' % oper)
-    return OperCommand(elem.text)
+    # return OperCommand(elem.text)
 
 
 # Unary cases 
@@ -289,7 +229,7 @@ class CaseLUnar(SubCase):
             subs - left part
         '''
         sub = subs[0]
-        dprint('Unar.setSub', base, sub)
+        # dprint('Unar.setSub', base, sub)
         if self.formatter and isinstance(base, BitNot) and isinstance(sub, (StringExpr, MString)):
             # FString detected
             base = self.formatter.formatString(sub.get().getVal())
@@ -321,13 +261,18 @@ class CaseBrackets(SubCase, SolidCase):
         pass
 
     def match(self, elems:list[Elem]) -> bool:
-        if elems[0].type != Lt.oper:
+        if elems[0].type != Lt.oper or elems[-1].type != Lt.oper:
             return False
-        if elems[0].text == '(' and elems[-1].text == ')':
+        if elems[0].text != '(' or elems[-1].text != ')':
             # only if other operator cases was failed
-            # TODO: test: () smth ()
-            return True
-        return False
+            return False
+        r =  isSolidExpr(elems, getLast=True)
+        if not isinstance(r, tuple):
+            return False
+        ok, pos = r
+        if not ok or pos != 0:
+            return False
+        return True
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
@@ -407,6 +352,12 @@ class CaseListComprehension(SubCase, SolidCase):
     [x ; sub <- listOfLists ; x <- sub ; len(sub) > 2] # if next part is iterator - run loop
     [x ; sub <- listOfLists , x <- sub ; len(sub) > 2] # the same as Case3 ??
      '''
+    
+    def __init__(self):
+        super().__init__()
+        self.spl = OperSplitter()
+        self.cs = CaseSemic()
+         
     def match(self, elems:list[Elem]) -> bool:
         
         if len(elems) < 7:
@@ -418,20 +369,19 @@ class CaseListComprehension(SubCase, SolidCase):
         # if opInd != 0:
         #     return False
         
-        spl = OperSplitter()
-        opInd = spl.mainOper(elems)
+        
+        opInd = self.spl.mainOper(elems)
         if opInd != 0:
             return False
         subElems = elems[1:-1]
-        opInd = spl.mainOper(subElems)
+        opInd = self.spl.mainOper(subElems)
         return opInd > 0 and subElems[opInd].text == ';'
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         sub = elems[1:-1]
-        cs = CaseSemic()
         subs = []
-        if cs.match(sub):
-            _, subs = cs.split(sub)
+        if self.cs.match(sub):
+            _, subs = self.cs.split(sub)
         exp = ListComprExpr()
         subs = [s for s in subs if len(s)]
         # prels('LC.elems = :', elems, show=1) 
@@ -439,7 +389,7 @@ class CaseListComprehension(SubCase, SolidCase):
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        dprint('CaseListComprehension.setSub: ', base, subs)
+        # dprint('CaseListComprehension.setSub: ', base, subs)
         base.setInner(subs)
         return base
 
@@ -457,6 +407,10 @@ class CaseInlineSub(SubCase):
         x -> (for i <- nums /: res <- i * 10)
         '''
     
+    def __init__(self):
+        super().__init__()
+        self.spl = OperSplitter()
+    
     def match(self, elems:list[Elem]) -> bool:
         # print('Case /: >>')
         if len(elems) < 3:
@@ -465,13 +419,13 @@ class CaseInlineSub(SubCase):
         if not isLex(elems[0], Lt.word, ['for','if','while']):
             return False
 
-        main = OperSplitter().mainOper(elems)
+        main = self.spl.mainOper(elems)
         return isLex(elems[main], Lt.oper, '/:')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
         # dprint('CaseInlineSub split', elems)
-        idx = OperSplitter().mainOper(elems)
+        idx = self.spl.mainOper(elems)
         ctrl = elems[:idx]
         sub = elems[idx+1:]
         # print('', elemStr(ctrl), '<<%s>>' % elems[idx].text, elemStr(sub))

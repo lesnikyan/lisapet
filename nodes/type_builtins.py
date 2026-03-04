@@ -3,18 +3,170 @@ methods bound to base types
 '''
 
 import math
+from functools import cmp_to_key
 
 from vars import *
 from nodes.iternodes import *
 from nodes.structs import StructInstance
 from nodes.func_expr import Function
-from nodes.builtins import built_list, built_foldl
+from nodes.builtins import built_list, built_foldl, built_tostr
 
 import libs.str as libst
 import libs.bytes as lbytes
 
 
+
+def char_key(ctx, arg:StringVal):
+    v = arg.getVal()
+    if len(v) != 1:
+        raise EvalErr('only 1-char string is a correct argument for int constructor.')
+    v = ord(v)
+    return Val(int(v), TypeInt())
+
+# Type constructors
+
+def int_constr(ctx, arg:Val):
+    v = arg.getVal()
+    match v:
+        case Null():
+            v = 0
+        case Glif():
+            v = ord(v.val)
+        case '':
+            v = 0
+        case bytearray():
+            lv = len(v)
+            nn = [v[i] << ((lv-i-1)*8)  for i in range(lv)]
+            v = sum(nn)
+        case str():
+            v = int(v)
+    return Val(int(v), TypeInt())
+
+def float_constr(ctx, arg:Val):
+    v = arg.getVal()
+    match v:
+        case Null():
+            v = 0
+        case '':
+            v = 0
+    return Val(float(v), TypeFloat())
+
+def bool_constr(ctx, arg:Val):
+    v = arg.getVal()
+    match v:
+        case Null():
+            v = False
+        case '':
+            v = False
+        case 'false':
+            v = False
+        case bytearray():
+            v = sum(int(b) for b in v) != 0
+        case Glif():
+            v  = ord(v.val) != 0
+    return Val(bool(v), TypeBool())
+
+
+def string_constr(ctx, arg:Val):
+    if isinstance(arg.getType(), TypeGlif):
+        arg = arg.get().val
+    return built_tostr(ctx, arg)
+
+
+def glif_constr(ctx, arg:Val):
+    v = arg.getVal()
+    match arg.getType():
+        case TypeGlif():
+            v = arg.get().val
+        case TypeInt():
+            v = chr(v)
+        case TypeString():
+            if len(v) != 1:
+                raise EvalErr('Glif constructor can take 1-symbol string only.')
+            v = v[0]
+        case TypeBytes():
+            vv:bytearray2 = arg.getVal()
+            v = vv.decode()[0]
+    return Val(Glif(v), TypeGlif())
+
+
+def bytes_constr(ctx, arg:Val):
+    r = []
+    match arg.getType():
+        case TypeString():
+            r = bytearray2(arg.getVal().encode())
+        case TypeInt():
+            r = bytearray2(arg.getVal())
+        case TypeGlif():
+            r = bytearray2(arg.getVal().val.encode())
+        case TypeList():
+            # all elements should be integers
+            r = bytearray2(arg.get())
+    return BytesVal(r)
+
+
+def copyElems(src:list):
+    r = []
+    for v in src:
+        if isinstance(v, (FuncInst, ObjectInstance, Collection)):
+            r.append(v)
+        elif isinstance(v, (Null)):
+            r = Null()
+        else:
+            r.append(v.copy())
+    # print('CopyEl', src, r)
+    return r
+
+
+def val2Seq(val:Val):
+    r = []
+    match val.getType():
+        case TypeInt():
+            r = [Val(0, TypeInt()) for _ in range(val.getVal())]
+        case TypeBytes():
+            r = [Val(n, TypeInt()) for n in list(val.getVal())]
+        case TypeString():
+            r = [Val(Glif(c), TypeGlif()) for c in list(val.getVal())]
+        case TypeTuple():
+            r = copyElems(val.elems)
+        case TypeList():
+            r = copyElems(val.elems)
+    return r
+
+
+def list_constr(ctx, arg:Val):
+    r = val2Seq(arg)
+    return ListVal(elems = r)
+
+
+def tuple_constr(ctx, arg:Val):
+    r = val2Seq(arg)
+    return TupleVal(elems=r)
+
+
+def dict_constr(ctx, arg:Val):
+    v = arg.getVal()
+    dd = []
+    match arg.getType():
+        case TypeDict():
+            dd = {k: v.copy() for k, v in arg.data.items()}
+        case TypeTuple():
+            kk = [k.getVal() for k in arg.elems[0].elems]
+            vv = copyElems(arg.elems[1].elems)
+            dd = dict(zip(kk, vv))
+        case TypeList():
+            # should be list of 2-val tuples
+            # print('tpl:', [tt for tt in arg.elems])
+            dd = {tt.elems[0].getVal(): tt.elems[1] for tt in arg.elems}
+    return DictVal(data=dd)
+
+
+# def _constr(ctx, arg:Val):
+#     v = arg.getVal()
+#     return Val(float(v), Type())
+
 # General
+
 
 def seq_map(ctx:Context, inst:Collection|SequenceGen, fun:Function):
     elems = built_list(0, inst).rawVals()
@@ -25,6 +177,7 @@ def seq_map(ctx:Context, inst:Collection|SequenceGen, fun:Function):
         r = fun.get()
         res.append(r)
     return res
+
 
 def seq_each(ctx:Context, inst:Collection|SequenceGen, fun:Function):
     elems = built_list(0, inst).rawVals()
@@ -40,6 +193,7 @@ def list_reverse(_, inst:ListVal):
     src.reverse()
     return ListVal(elems=src)
 
+
 def list_map(ctx:Context, inst:ListVal|SequenceGen, fun:Function):
     res = seq_map(ctx, inst, fun)
     return ListVal(elems=res)
@@ -51,11 +205,66 @@ def list_join(_, data:ListVal, inst:StringVal):
     return StringVal(res)
 
 
+def seq_sort(ctx:Context, elems:list, cmp:Function):
+    nn = copyElems(elems)
+    def cmpFunc(a:Val, b:Val):
+        cmp.setArgVals([a, b])
+        cmp.do(ctx)
+        cval = cmp.get()
+        return var2val(cval).getVal()
+    return sorted(nn, key = cmp_to_key(cmpFunc))
+
+
+def list_sort(ctx:Context, src:ListVal, cmp:Function):
+    r = seq_sort(ctx, src.elems, cmp)
+    return ListVal(elems=r)
+
+
+def tuple_sort(ctx:Context, src:ListVal, cmp:Function):
+    r = seq_sort(ctx, src.elems, cmp)
+    return TupleVal(elems=r)
+
+
+def filterFuncCall(ctx:Context, a:Val|list, cond:Function):
+    arg = a
+    if not isinstance(a, list):
+        arg = [a]
+    cond.setArgVals(arg)
+    cond.do(ctx)
+    cval = cond.get()
+    return var2val(cval).getVal()
+
+
+def seq_filter(ctx:Context, elems:list, cond:Function):
+    nn = [v for v in elems if filterFuncCall(ctx, v, cond)]
+    r = copyElems(nn)
+    return r
+
+
+def list_filter(ctx:Context, src:ListVal, cond:Function):
+    r = seq_filter(ctx, src.elems, cond)
+    return ListVal(elems=r)
+
+
+def tuple_filter(ctx:Context, src:ListVal, cond:Function):
+    r = seq_filter(ctx, src.elems, cond)
+    return TupleVal(elems=r)
+
+
+def dict_filter(ctx:Context, src:DictVal, cond:Function):
+    elems = [ [dkeyCover(k), v] for k, v in src.data.items()]
+    r = seq_filter(ctx, elems, cond)
+    d = {n[0].getVal() : n[1] for n in r}
+    return DictVal(data=d)
+
+
 def seq_fold(ctx:Context, elems:ListVal|TupleVal, start:Val, fun:Function):
     return built_foldl(ctx, start, elems, fun)
 
+
 def list_fold(ctx:Context, elems:ListVal, start:Val, fun:Function):
     return built_foldl(ctx, start, elems, fun)
+
 
 def tuple_fold(ctx:Context, elems:TupleVal, start:Val, fun:Function):
     return built_foldl(ctx, start, elems, fun)
@@ -122,6 +331,11 @@ def string_bytes(_, inst:StringVal, encoding:Val=None):
         enc = encodeMap[enc]
     bb = bytearray2(inst.val.encode(enc))
     return BytesVal(bb)
+
+
+def string_glifs(_, inst:StringVal):
+    r = [Val(Glif(s), TypeGlif()) for s in inst.getVal()]
+    return ListVal(elems = r)
 
 
 # Bytes
@@ -244,3 +458,15 @@ def bytes_string(_, inst:BytesVal, encoding:Val=None):
         enc = encodeMap[enc]
     s = inst.val.decode(enc)
     return StringVal(s)
+
+
+def glif_int(_, inst:Val):
+    v = inst.get().val
+    return Val(ord(v), TypeInt())
+
+
+def glif_bytes(_, inst:Val):
+    r = bytearray2(inst.getVal().val.encode())
+    return BytesVal(r)
+
+

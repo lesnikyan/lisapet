@@ -6,7 +6,7 @@ TODO: rename to preload.py
 
 from vars import *
 from context import Context, RootContext
-from nodes.func_expr import setNativeFunc, bindNativeMethod
+from nodes.func_expr import setNativeFunc, bindNativeMethod, addTypeConstr
 from nodes.builtins import *
 import libs.str as lstr
 import libs.dicts as dc
@@ -15,6 +15,17 @@ from nodes.func_features import func_curry, func_compose
 
 
 def initFuncs(ctx:Context):
+    # type constructors
+    addTypeConstr(ctx, int_constr, TypeInt())
+    addTypeConstr(ctx, float_constr, TypeFloat())
+    addTypeConstr(ctx, bool_constr, TypeBool())
+    addTypeConstr(ctx, string_constr, TypeString())
+    addTypeConstr(ctx, bytes_constr, TypeBytes())
+    addTypeConstr(ctx, list_constr, TypeList())
+    addTypeConstr(ctx, tuple_constr, TypeTuple())
+    addTypeConstr(ctx, dict_constr, TypeDict())
+    addTypeConstr(ctx, glif_constr, TypeGlif())
+    
     # global funcs
     setNativeFunc(ctx, 'print', buit_print, TypeNull)
     setNativeFunc(ctx, 'len', built_len, TypeInt)
@@ -29,6 +40,7 @@ def initFuncs(ctx:Context):
     setNativeFunc(ctx, 'replace', lstr.replace, TypeList)
     setNativeFunc(ctx, 'dkeys', dc.dict_keys, TypeList)
     setNativeFunc(ctx, 'ditems', dc.dict_items, TypeList)
+    setNativeFunc(ctx, 'char_key', char_key, TypeInt)
     # print('>>>\n\n~~~!!!!\n\n')
     
     # bind methods
@@ -69,11 +81,30 @@ def initFuncs(ctx:Context):
     bindNativeMethod(ctx, 'bytes', bytes_string, 'string', TypeString)
     
     # string
+    bindNativeMethod(ctx, 'string', lstr.string_upper, 'upper', TypeString)
+    bindNativeMethod(ctx, 'string', lstr.string_lower, 'lower', TypeString)
     bindNativeMethod(ctx, 'string', string_bytes, 'bytes', TypeBytes)
+    bindNativeMethod(ctx, 'string', string_glifs, 'glifs', TypeList)
+    
+    # list
+    bindNativeMethod(ctx, 'list', list_sort, 'sort', TypeList)
+    bindNativeMethod(ctx, 'list', list_filter, 'filter', TypeList)
+    
+    # tuple
+    bindNativeMethod(ctx, 'tuple', tuple_sort, 'sort', TypeTuple)
+    bindNativeMethod(ctx, 'tuple', tuple_filter, 'filter', TypeTuple)
+    
+    # dict
+    bindNativeMethod(ctx, 'dict', dict_filter, 'filter', TypeDict)
+    
+    # glif
+    bindNativeMethod(ctx, 'glif', glif_int, 'int', TypeInt)
+    bindNativeMethod(ctx, 'glif', glif_bytes, 'bytes', TypeBytes)
     
     # function
     setNativeFunc(ctx, 'curry', func_curry, TypeFunc())
     setNativeFunc(ctx, 'compose', func_compose, TypeFunc())
+    
     
     
 
