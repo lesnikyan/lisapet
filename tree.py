@@ -91,7 +91,7 @@ class StrFormatter(SFormatter):
     def subExpr(self, code:str):
         tlines = splitLexems(code)
         clines:CLine = elemStream(tlines)
-        # dprint('SFm 1:', clines)
+        # print('SFm 1:', clines)
         return line2expr(clines[0])
 
     def partsToExpr(self, parts:str|subLex)->list[Expression]:

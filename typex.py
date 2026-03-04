@@ -308,6 +308,7 @@ def typeCompat(dest:VType, stype:VType):
         case 'complex': return sclass in [TypeBool, TypeInt, TypeFloat, TypeNull]
         case 'float': return sclass in [TypeBool, TypeInt, TypeNull]
         case 'int': return sclass in [TypeBool, TypeNull]
+        case 'glif': return sclass in [TypeInt]
         case 'list'|'dict'|'struct': return sclass in [TypeNull]
         case _: return False
 
@@ -334,6 +335,10 @@ def converVal(dest:VType, val:Val):
         case 'complex': return val
         case 'float': return Val(float(vval), TypeFloat())
         case 'int': return Val(int(vval), TypeInt())
+        case 'glif':
+            if isinstance(vval, int):
+                vval = chr(vval)
+            return Val(Glif(vval), TypeGlif())
         case 'list'|'dict'|'struct':
             if isinstance(vtype, TypeNull):
                 return val

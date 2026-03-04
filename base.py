@@ -198,3 +198,22 @@ class Var(Base):
         strict = '' if not self._strict else ' :strict'
         return '%s(%s, %s: %s%s)' % (self.__class__.__name__, n, self.val, tt, strict)
 
+
+class Glif:
+    def __init__(self, char):
+        self.val = char
+    
+    def __str__(self):
+        return 'glif(%s)' % (self.val)
+    
+    def __repr__(self):
+        return 'glif(%s:%x)' % (self.val, ord(self.val))
+
+
+class bytearray2(bytearray):
+    def __str__(self):
+        return  '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
+                                    
+    def __repr__(self):
+        return '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
+

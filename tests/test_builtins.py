@@ -96,7 +96,7 @@ class TestBoundFuncs(TestCase):
         res <- nn.filter(x -> x ?> [0, 3, 5, 7, 9])
         
         cn = list('AaBbCcDdEeXxYyZz')
-        res <- cn.filter(a -> char_key(a) >= char_key('a') && char_key(a) <= char_key('z'))
+        res <- cn.filter(a -> a.int() >= char_key('a') && a.int() <= char_key('z')).map(g -> string(g))
         
         struct A a:int
         
@@ -145,7 +145,7 @@ class TestBoundFuncs(TestCase):
         res <- nn.sort((x, y) -> x - y)
         
         cn = list('dfbcae')
-        res <- cn.sort((a, b) -> char_key(a) - char_key(b))
+        res <- cn.sort((a, b) -> a.int() - b.int()).map(g -> string(g))
         
         struct A a:float
         
@@ -157,7 +157,7 @@ class TestBoundFuncs(TestCase):
                 return len(a) - len(b)
             for i <- iter(len(a))
                 if a[i] != b[i]
-                    return char_key(a[i]) - char_key(b[i])
+                    return a[i].int() - b[i].int()
             return 0
         
         sn = ["Hello!", "zoomba", "123", "12345", "Aaa", "aaa", "Bbb", "bbb", "900", "009"]
@@ -240,14 +240,14 @@ class TestBoundFuncs(TestCase):
         
         res <- list(1)
         res <- list(5)
-        res <- list('Hello')
+        res <- list('Hello1')
         res <- list(0d[1 2 3 10])
         res <- list([1,2,3])
         res <- list((3,4,5))
         
         res <- tuple(1)
         res <- tuple(5)
-        res <- tuple('Hello')
+        res <- tuple('Hello2')
         res <- tuple(0d[1 2 3 10])
         res <- tuple([1,2,3])
         res <- tuple((3,4,5))
@@ -274,8 +274,8 @@ class TestBoundFuncs(TestCase):
             False, False, False, False, False, False, False, True, True, True, True, 
             '0x[00 00 00 00]', [], '0x[48 65 6c 6c 6f 21]', '0x[1f 20 29 3d]', 
             '0', '1', '', 'null', '[1,2,3]', '(1,2,3)', "['','a','9']", '0x[]', '0x[41 42 43 44 45]', 
-            [0], [0, 0, 0, 0, 0], ['H', 'e', 'l', 'l', 'o'], [1, 2, 3, 10], [1, 2, 3], [3, 4, 5], 
-            (0,), (0, 0, 0, 0, 0), ('H', 'e', 'l', 'l', 'o'), (1, 2, 3, 10), (1, 2, 3), (3, 4, 5), 
+            [0], [0, 0, 0, 0, 0], ['g(H)', 'g(e)', 'g(l)', 'g(l)', 'g(o)', 'g(1)'], [1, 2, 3, 10], [1, 2, 3], [3, 4, 5], 
+            (0,), (0, 0, 0, 0, 0), ('g(H)', 'g(e)', 'g(l)', 'g(l)', 'g(o)', 'g(2)'), (1, 2, 3, 10), (1, 2, 3), (3, 4, 5), 
             {1: 11, 2: 22}, {'a': 111, 'b': 222, 'c': 333}, {'x': 100, 'y': 200, 'z': 300}]
         self.assertEqual(exv, resv)
 
@@ -519,6 +519,9 @@ class TestBoundFuncs(TestCase):
         res <- "d,e,f".split(',')
         res <- "here12many54hidden09words".split(re`[0-9]+`)
         
+        # split by ampty separator is a converting to list of shortest parts
+        res <- 'Hello 123!'.split('')
+        
         # join
         ss = ['s1', 's2', 's3']
         res <- '-'.join(ss)
@@ -553,7 +556,7 @@ class TestBoundFuncs(TestCase):
         exv = [
             [3, 2, 1], '1^2^3', [1, 2, 'a', 'b', 'c'], 
             [(1, 11), (2, 22), ('a', 'aaa'), ('b', 'bbb'), ('c', 'ccc')], 
-            ['aa', 'bb', 'cc'], ['d', 'e', 'f'], ['here', 'many', 'hidden', 'words'], 
+            ['aa', 'bb', 'cc'], ['d', 'e', 'f'], ['here', 'many', 'hidden', 'words'], ['H', 'e', 'l', 'l', 'o', ' ', '1', '2', '3', '!'],
             's1-s2-s3', 's4_s5_s6', 's7/s8/s9', '11"12"13', ['aaa', 'bbb', 'ccc'], '<t>Hello</t> <t>dear</t> <t>friend</t>']
         self.assertEqual(exv, rvar.vals())
 
