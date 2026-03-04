@@ -81,9 +81,10 @@ def initFuncs(ctx:Context):
     bindNativeMethod(ctx, 'bytes', bytes_string, 'string', TypeString)
     
     # string
-    bindNativeMethod(ctx, 'string', string_bytes, 'bytes', TypeBytes)
     bindNativeMethod(ctx, 'string', lstr.string_upper, 'upper', TypeString)
     bindNativeMethod(ctx, 'string', lstr.string_lower, 'lower', TypeString)
+    bindNativeMethod(ctx, 'string', string_bytes, 'bytes', TypeBytes)
+    bindNativeMethod(ctx, 'string', string_glifs, 'glifs', TypeList)
     
     # list
     bindNativeMethod(ctx, 'list', list_sort, 'sort', TypeList)
@@ -93,11 +94,17 @@ def initFuncs(ctx:Context):
     bindNativeMethod(ctx, 'tuple', tuple_sort, 'sort', TypeTuple)
     bindNativeMethod(ctx, 'tuple', tuple_filter, 'filter', TypeTuple)
     
+    # dict
     bindNativeMethod(ctx, 'dict', dict_filter, 'filter', TypeDict)
+    
+    # glif
+    bindNativeMethod(ctx, 'glif', glif_int, 'int', TypeInt)
+    bindNativeMethod(ctx, 'glif', glif_bytes, 'bytes', TypeBytes)
     
     # function
     setNativeFunc(ctx, 'curry', func_curry, TypeFunc())
     setNativeFunc(ctx, 'compose', func_compose, TypeFunc())
+    
     
     
 

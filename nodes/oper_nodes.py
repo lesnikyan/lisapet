@@ -590,9 +590,14 @@ class OpBitwise(BinOper):
             b = TupleVal()
             b.addVal(t)
         # reuse python old format %
-        args = strShiftArgs(b)
         tpl = a.getVal()
-        return StringVal(tpl % args)
+        # short hack
+        opts = []
+        frex = re.compile(r'%\.?[0-9]{0,2}[csiduoxXeEfgGr]')
+        opts = frex.findall(tpl)
+        optKeys = [n[-1] for n in opts]
+        args = strShiftArgs(b, optKeys)
+        return StringVal(tpl.__mod__(args))
 
 
 class BoolNot(UnarOper):
@@ -782,7 +787,10 @@ class IsInExpr(BinOper):
         if isinstance(coll, (ListVal, DictVal, TupleVal, Maybe)):
             res = coll.has(val)
         if isinstance(coll.getType(), TypeString):
-            res = val.getVal() in coll.getVal()
+            v = val.getVal()
+            if isinstance(v, Glif):
+                v = v.val
+            res = v in coll.getVal()
         if self.isNot:
             res = not res
         self.res = Val(res, TypeBool())

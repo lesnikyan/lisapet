@@ -146,25 +146,6 @@ class TestDev(TestCase):
             sin(), cos(), tg(), ctg(), atg(), actg(), asin(), acos(),...
             ceil(), floor(), round()
         
-        
-        DONE: add type `glif` - 1 multibyte symbol
-            glif represents one char with any byte-size
-            constr: glif('a'),  glif(41), glif(0x[E3 81])
-            spec syntax: g'A', g'百', g'ج', g'छ', 'お', g`~`, g`&`, g`"`, g`\n`
-        
-        DONE: glif operators:
-            g + g,  string + g, '%s' << g, ~{g}, 
-        
-        TODO: fix format by % for numeric cases
-            glif should behave as number in numeric cases
-            and as string in string case
-            def __format__(...)
-        
-        TODO: glif methods:
-            .int(), .bytes(), 
-            'Hello'.glifs() ->> list of glifs
-            list('Hello') ->> should be a list of glifs too
-        
         TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
         TODO: string.replace({dict}) # check, implement if not
         
@@ -181,33 +162,6 @@ class TestDev(TestCase):
 
 """
 
-
-
-    def _test_glif_functions(self):
-        '''  '''
-        code = r'''
-        res = []
-        
-        ''.glifs()
-        [aa bb].glifs()
-        
-        # TODO
-        # res <- '<%d>' << g'A'.int()
-        
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
 
 
     def _test_code(self):

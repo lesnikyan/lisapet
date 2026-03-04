@@ -16,7 +16,12 @@ def split(_, src:StringVal, sep:Regexp):
     if isinstance(sep, Regexp):
         return rx_split(src, sep)
     # sepVal = getVal(sep)
-    parts = src.getVal().split(sep.getVal())
+    sepv = sep.getVal()
+    srcv = src.getVal()
+    if sepv == '':
+        parts = list(srcv)
+    else:
+        parts = srcv.split(sepv)
     return ListVal(elems = [StringVal(s) for s in parts])
 
 

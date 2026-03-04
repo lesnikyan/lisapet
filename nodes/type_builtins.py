@@ -30,6 +30,8 @@ def int_constr(ctx, arg:Val):
     match v:
         case Null():
             v = 0
+        case Glif():
+            v = ord(v.val)
         case '':
             v = 0
         case bytearray():
@@ -60,10 +62,14 @@ def bool_constr(ctx, arg:Val):
             v = False
         case bytearray():
             v = sum(int(b) for b in v) != 0
+        case Glif():
+            v  = ord(v.val) != 0
     return Val(bool(v), TypeBool())
 
 
 def string_constr(ctx, arg:Val):
+    if isinstance(arg.getType(), TypeGlif):
+        arg = arg.get().val
     return built_tostr(ctx, arg)
 
 
@@ -75,6 +81,8 @@ def glif_constr(ctx, arg:Val):
         case TypeInt():
             v = chr(v)
         case TypeString():
+            if len(v) != 1:
+                raise EvalErr('Glif constructor can take 1-symbol string only.')
             v = v[0]
         case TypeBytes():
             vv:bytearray2 = arg.getVal()
@@ -89,6 +97,8 @@ def bytes_constr(ctx, arg:Val):
             r = bytearray2(arg.getVal().encode())
         case TypeInt():
             r = bytearray2(arg.getVal())
+        case TypeGlif():
+            r = bytearray2(arg.getVal().val.encode())
         case TypeList():
             # all elements should be integers
             r = bytearray2(arg.get())
@@ -116,7 +126,7 @@ def val2Seq(val:Val):
         case TypeBytes():
             r = [Val(n, TypeInt()) for n in list(val.getVal())]
         case TypeString():
-            r = [StringVal(c) for c in list(val.getVal())]
+            r = [Val(Glif(c), TypeGlif()) for c in list(val.getVal())]
         case TypeTuple():
             r = copyElems(val.elems)
         case TypeList():
@@ -323,6 +333,11 @@ def string_bytes(_, inst:StringVal, encoding:Val=None):
     return BytesVal(bb)
 
 
+def string_glifs(_, inst:StringVal):
+    r = [Val(Glif(s), TypeGlif()) for s in inst.getVal()]
+    return ListVal(elems = r)
+
+
 # Bytes
 
 def bytes_map(ctx:Context, inst:BytesVal, fun:Function):
@@ -443,3 +458,15 @@ def bytes_string(_, inst:BytesVal, encoding:Val=None):
         enc = encodeMap[enc]
     s = inst.val.decode(enc)
     return StringVal(s)
+
+
+def glif_int(_, inst:Val):
+    v = inst.get().val
+    return Val(ord(v), TypeInt())
+
+
+def glif_bytes(_, inst:Val):
+    r = bytearray2(inst.getVal().val.encode())
+    return BytesVal(r)
+
+

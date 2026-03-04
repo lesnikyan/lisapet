@@ -370,7 +370,7 @@ class StringVal(ValSequence):
         data = self.getVal()
         if len(data) <= k:
             raise EvalErr('String content out of range by key %s ' % k)
-        return StringVal(data[k])
+        return Val(Glif(data[k]), TypeGlif())
     
     def len(self)->int:
         return len(self.val)
@@ -385,34 +385,26 @@ class StringVal(ValSequence):
         return StringVal(res)
 
 
-def strShiftArgs(src):
+def strShiftArgs(src, opts=None):
     r = []
     ListVal
-    for n in src.rawVals():
+    vals = src.rawVals()
+    if len(opts) != len(vals):
+        raise EvalErr('String %-format with error: ncorrect count of vals.')
+    itr = range(len(opts))
+    for i in itr:
+        n = vals[i]
+        op = opts[i]
         v = ''
         match n.getType():
             case TypeGlif():
                 v = n.get().val
+                if op in 'dxXo':
+                    v = ord(v)
             case _:
                 v = n.getVal()
-        r.append(v) 
+        r.append(v)
     return tuple(r)
-
-
-class Glif:
-    def __init__(self, char):
-        self.val = char
-    
-    def __str__(self):
-        return 'glif(%s)' % (self.val)
-
-
-class bytearray2(bytearray):
-    def __str__(self):
-        return  '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
-                                    
-    def __repr__(self):
-        return '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
 
 
 class BytesVal(ValSequence):
