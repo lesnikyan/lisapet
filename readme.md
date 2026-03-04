@@ -383,7 +383,8 @@ c = glif(g'c') # c
 # by bytes
 n100 = glif(0x[e7 99 be]) # 百
 ```
-... other features in dev
+`glif` has builtin methods: `g'x'.int()`, `g'x'.bytes()`  
+Operator `+` has been overloaded and returns `string`.  
 
 
 ### 1.7 Multiline expressions: `if`, `for`, math expr.  
