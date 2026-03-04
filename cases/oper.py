@@ -77,7 +77,7 @@ class CaseAssign(SubCase):
         return base
 
 
-_operPrior = ('() [] {} , . , ~> , ... , -x ! ~ , ** , * / % , + - ,'
+_operPrior = ('() [] {} , . , ~> , ... , -x ! ~ , ** ^/ , * / % , + - ,'
 ' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, $, ?: , : , ?, \\ , -> , .. , <- , = += -= *= /= %= , ; , !: :? , /: ') #
 
 _noOpers = ['\\', '->', '.']
@@ -125,7 +125,7 @@ class CaseBinOper(SubCase):
 def makeOperExp(elem:Elem)->OperCommand:
     # TODO: make oper command by cases: math, logical, assign and math+assign, bit operators, brackets
     oper = elem.text
-    mathOpers = '+ - * / % **'.split(' ')
+    mathOpers = '+ - * / % ** ^/'.split(' ')
     if oper in mathOpers:
         return OpMath(oper)
     boolOpers = '&& ||'.split(' ')

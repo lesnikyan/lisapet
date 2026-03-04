@@ -232,6 +232,7 @@ class OpMath(BinOper):
             '*': self.mult,
             '/': self.div,
             '**': self.pow,
+            '^/': self.root,
             '%': self.divmod,
         }
         
@@ -308,6 +309,9 @@ class OpMath(BinOper):
 
     def pow(self, a, b):
         return a ** b
+
+    def root(self, a, b):
+        return b ** (1/a)
 
     def divmod(self, a, b):
         return a % b
