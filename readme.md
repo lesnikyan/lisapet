@@ -440,7 +440,8 @@ See more about inline syntax [in next sections](#20-one-line-block---operators).
 ### 2.1 Arithmetic operators    
 Arithmetic `+` `-` `*` `/` operators works as usual.  
 `%` - mod operator, returns remainder of division.  
-`**` - pow operator. `2 ** 3` = 8.  
+`**` - pow operator. `2 ** 3` => 8  
+`^/` - root operator. `3 ^/ 8` => 2  
 Math operators is used in math expressions, using braces if need.  
 ```python
 y = 5 + x * -3
@@ -455,7 +456,7 @@ x = -2
 b=100 
 c=4
 d=3
-res = 5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8
+res = 5 + 2 ^/ 36 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8
 ```
 ### 2.2 Other unary operators.  
 `!` logical NOT  
@@ -485,7 +486,7 @@ Others, have specific behaviour, and will be explained further:
 . 
 ...
 -x !x ~x 
-** 
+** ^/
 * / % 
 + - 
 << >> 

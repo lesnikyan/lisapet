@@ -133,12 +133,9 @@ class TestDev(TestCase):
             list, slice, iter-gen, list-gen, bytes
         
         
-        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        TODO: think about performance, decreased after \lambda changes.
         
-        TODO: root, square root operator, the same precedence as **
-            |/ _/ -/ */ ~* ^* ^/  3^/8 
-            -/4 # 2;  3-/ 8 # 2
-            */4 # 2;  3*/ 8 # 2
+        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
             
         TODO: math functions:
             log(x, base), ln(x), lg(x),
@@ -153,7 +150,8 @@ class TestDev(TestCase):
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
-        TODO: think about performance, decreased after \lambda changes.
+        DONE: root, square root operator, the same precedence as **
+            ^/  3^/8 
     '''
 
     _ = r"""
