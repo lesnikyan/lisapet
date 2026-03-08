@@ -540,6 +540,9 @@ Fixes:
 # DONE
         
         
+        DONE: root, square root operator, the same precedence as **
+            ^/  3^/8 
+        
         DONE: add type `glif` - 1 multibyte symbol
             glif represents one char with any byte-size
             constr: glif('a'),  glif(41), glif(0x[E3 81])

@@ -28,57 +28,7 @@ from cases.modules import *
 from parser import *
 from bases.strformat import  *
 
-
-class CaseDebug(ExpCase):
-    def match(self, elems:list[Elem])-> bool:
-        # prels('--DEbug', elems)
-        return len(elems) > 0 and elems[0].text == '@debug'
-    
-    def expr(self, elems:list[Elem])-> Expression:
-        ''' return base expression, Sub(elems) '''
-        return DebugExpr(' '.join([e.text for e in elems]))
-
- 
-class UnclosedExpr:
-    ''' '''
-    def __init__(self, elems:list):
-        # super().__init__('')
-        self.elems:list = elems
-        
-    def init(self, cline:CLine):
-        self.src = cline.src
-        self.indent = cline.indent
-
-    def add(self, part:list, src:TLine):
-        self.elems.extend(part)
-        self.src.add(src)
-
-
-class CaseUnclosedBrackets(ExpCase):
-    
-    def match(self, elems:list[Elem])-> bool:
-        # prels('--', elems)
-        inBr = 0
-        maxLvl = 0
-        for el in elems:
-            if el.type != Lt.oper:
-                continue
-            if el.text in '([{':
-                inBr += 1
-                if maxLvl < inBr:
-                    maxLvl = inBr
-                continue
-            if el.text in ')]}':
-                inBr -= 1
-            
-        return maxLvl > 0 and inBr > 0
-                
-        
-    def expr(self, elems:list[Elem])-> Expression:
-        ''' return elems covered by operation case '''
-        return UnclosedExpr(elems)
-
-
+from cases.matcher import *
 
 
 class StrFormatter(SFormatter):
@@ -114,31 +64,106 @@ class StrFormatter(SFormatter):
         parts = self.fp.parse(src)
         return self.partsToExpr(parts)
 
-# CaseMString
-expCaseSolids:list[ExpCase] = [
-    CaseBreak(), CaseContinue(), CaseRegexp(), CaseReturn(), CaseGlif(),  CaseElse(), 
-    CaseVal(), CaseVar(), CaseVar_(), CaseDotName(), CaseRTildArroy(), 
-    CaseString(),
-    CaseTuple(), CaseList(),
-    CaseArgExtraList(), CaseArgExtraDict(),
-    CaseListGen(), CaseBytes(), CaseBytesExplicit(),
-    CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseCollectElem(), 
-    CaseFunCall(), CaseStructConstr(),
-    CaseBrackets()
-    ]
+_1 = r''' 
 
+single
+
+    brackets
+    ()
+        (,), (expr)
+    []
+        list, slice, [iter: gen], [com;pre;hension], 0x[bytes], [by te s]
+    {}
+        dict
+    
+    right-brackets
+        func-call()
+        collect[elem]
+        struct{constr}
+    
+    expr-chain
+        obj.elem
+        list...
+        expr~>
+        
+        
+    text-line
+        string
+        glif
+        regexp
+    
+    numeric
+        int, float, bool, null
+    
+    word
+        _
+        var
+        keyword-single
+            else, continue, break, return-empty
+
+complex
+    empty, debug
+    unclosed-brackets
+    operator
+        bin-oper
+        unar-left
+    
+    sequence
+        n,n / n;n / n:n /
+    inline-sub /:
+    keyword-line
+        def
+            func, struct, enum, import
+        control
+            if, for, while, match
+            match-case
+        other
+            return-val
+    lambda
+    m-string?
+
+'''
+
+
+# CaseMString
+# CaseBrackets -> CaseBrRound, CaseBrSquare, CaseBrCurl
+# CaseWord -> CaseKeyword, CaseVar, CaseVal
+# CaseEndBrackets -> funcCall, collectElem, structConstr
+# CaseExprLeft: ObjMember, ListExtr, FuncCurry
+expCaseSolids:list[ExpCase] = [
+    CaseBreak(), CaseContinue(), CaseReturn(),  CaseElse(), 
+    
+    CaseNumVal(), CaseVar(), CaseVar_(), 
+    CaseString(), CaseGlif(), CaseRegexp(), 
+    CaseDotName(), CaseRTildArroy(), 
+    
+    CaseListGen(), CaseBytes(), CaseBytesExplicit(),
+    CaseArgExtraList(), CaseArgExtraDict(),
+    CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseCollectElem(), 
+    CaseTuple(), CaseList(),
+    
+    CaseFunCall(), CaseStructConstr(),
+    CaseBrackets(), CaseMString()
+]
+
+# CaseService -> empty, debug, unclosed
+# CaseKeywordLeft -> definition, control, import
+# CaseOperators -> lambda, bin-common, inline-control, sequence, unarLeft
+#
 expCaseList:list[ExpCase] = [
     CaseEmpty(), CaseDebug(),
-    CaseUnclosedBrackets(),
-    CaseImport(),
-    CaseFuncDef(), CaseMathodDef(),
+    # CaseUnclosedBrackets(),
     CaseInlineSub(),
-    CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(),  
+    
+    CaseImport(), 
+    CaseFuncDef(), CaseMathodDef(), # ident func, then - method
+    CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturnVal(),  
     CaseMatchCase(),
     CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
+    
     CaseLambda(),
     CaseSemic(), CaseBinOper(), CaseCommas(),
-    CaseMString(), CaseLUnar(StrFormatter()),
+    CaseLUnar(StrFormatter()),
 ]
 
 patternMatchCasesSolid = [
@@ -238,6 +263,41 @@ def subBtContext(blockContext:Expression):
             return CaseMatchCase()
     return None
 
+def caseMatcher():
+    strLim = CaseOption(CaseStr(), [CaseRegexp(), CaseGlif(), CaseString(), CaseMString()])
+    wordLim = CaseOption(CaseWord(), [CaseElse(), CaseBreak(), CaseContinue(), CaseReturn(), CaseVar_(), CaseNumVal(), CaseDebug(), CaseVar(), ])
+    solidLeft = CaseOption(
+        CaseSolidLeft(), 
+        [CaseFunCall(), CaseStructConstr(), CaseArgExtraList(), CaseDotName(), 
+        CaseRTildArroy(), CaseSlice(), CaseCollectElem(), CaseBytesExplicit()])
+    
+    sqBrkLim = CaseOption(CaseBrkSquare(), [CaseListGen(), CaseBytes(), CaseListComprehension(), CaseList()])
+    brkLim = CaseOption(CaseGenBrackets(), [sqBrkLim, CaseTuple(), CaseDictLine(), CaseBrackets()])
+    
+    solidOther = CaseOption(CaseAny(), [])
+
+    solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidLeft, brkLim, solidOther])
+
+    # ===
+
+    servLim = CaseOption(CaseServ(), [CaseEmpty(), CaseDebug(),])
+    rKeywords = CaseOption(
+        CaseRWord(), 
+        [CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(), CaseImport(), 
+        CaseFuncDef(), CaseMathodDef(), CaseStructBlockDef(), CaseStructDef(), CaseEnum(),])
+
+    operLim = CaseOption(CaseOperLim(), [CaseLambda(), CaseBinOper(), CaseSemic(), CaseCommas(), ])
+
+
+    # should apply after solid
+    nonSolLim = CaseOption(CaseAny(), [servLim, CaseUnclosedBrackets(), CaseInlineSub(), rKeywords, operLim, CaseLUnar(StrFormatter()),])
+
+    fullMatcher = CaseMatchcher([solidLim, nonSolLim])
+    return fullMatcher
+
+__genMatcher = caseMatcher()
+
+
 def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     # print('#elems2expr:', [(n.text, Lt.name(n.type)) for n in elems])
     # print('\n--/n# elems2expr/1::', ' '.join(["'%s'"%n.text for n in elems]), 'bContext:', blockContext)
@@ -249,24 +309,32 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     if blockContext:
         foundCase = subBtContext(blockContext)
     
-    # check Solid:
-    expSolid = isSolidExpr(elems)
-    # print('\ntree.solid:', expSolid)
-    if not foundCase and expSolid:
-        # print('elems2expr/isSolidExpr', expCaseSolids)
-        for expCase in expCaseSolids:
-            # print('elems2expr/Solid', expCase.__class__)
-            if expCase.match(elems):
-                foundCase = expCase
-                break
+    # # check Solid:
+    # expSolid = isSolidExpr(elems)
+    # # print('\ntree.solid:', expSolid)
+    # if not foundCase and expSolid:
+    #     # print('elems2expr/isSolidExpr', expCaseSolids)
+    #     for expCase in expCaseSolids:
+    #         # print('elems2expr/Solid', expCase.__class__)
+    #         if expCase.match(elems):
+    #             foundCase = expCase
+    #             break
     
-    # check non-Solid
+    # # check non-Solid
+    # if not foundCase:
+    #     for expCase in getCases():
+    #         # print('elems2expr/NoSolid', expCase.__class__)
+    #         if expCase.match(elems):
+    #             foundCase = expCase
+    #             break
+    
+    
     if not foundCase:
-        for expCase in getCases():
-            # print('elems2expr/NoSolid', expCase.__class__)
-            if expCase.match(elems):
-                foundCase = expCase
-                break
+        foundCase = __genMatcher.find(elems)
+        ee = 55
+        # if isinstance(foundCase, CaseOption):
+        #     ee = (foundCase.matcher, foundCase.subs)
+        # print('tr-fc', foundCase, ee)
     
     if foundCase:
         # print('.. tree/found:', repr(foundCase), '', elemStr(elems))

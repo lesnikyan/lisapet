@@ -185,6 +185,9 @@ class ExpCase:
     
     def sub(self)->list[Elem]:
         return None
+    
+    def isLim(self):
+        return False
 
 
 class SolidCase:
@@ -217,7 +220,70 @@ class CaseEmpty(ExpCase):
         return NothingExpr()
 
 
+class CaseDebug(ExpCase):
+    def match(self, elems:list[Elem])-> bool:
+        # prels('--DEbug', elems)
+        return len(elems) > 0 and elems[0].text == '@debug'
+    
+    def expr(self, elems:list[Elem])-> Expression:
+        ''' return base expression, Sub(elems) '''
+        return DebugExpr(' '.join([e.text for e in elems]))
+ 
+ 
+class UnclosedExpr:
+    ''' '''
+    def __init__(self, elems:list):
+        # super().__init__('')
+        self.elems:list = elems
+        
+    def init(self, cline:CLine):
+        self.src = cline.src
+        self.indent = cline.indent
+
+    def add(self, part:list, src:TLine):
+        self.elems.extend(part)
+        self.src.add(src)
+
+
+class CaseUnclosedBrackets(ExpCase):
+    
+    def match(self, elems:list[Elem])-> bool:
+        # prels('--', elems)
+        inBr = 0
+        maxLvl = 0
+        for el in elems:
+            if el.type != Lt.oper:
+                continue
+            if el.text in '([{':
+                inBr += 1
+                if maxLvl < inBr:
+                    maxLvl = inBr
+                continue
+            if el.text in ')]}':
+                inBr -= 1
+            
+        return maxLvl > 0 and inBr > 0
+                
+        
+    def expr(self, elems:list[Elem])-> Expression:
+        ''' return elems covered by operation case '''
+        return UnclosedExpr(elems)
+
+
 class CaseVal(ExpCase, SolidCase):
+    ''' '''
+    def match(self, elems:list[Elem]) -> bool:
+        pass
+    
+    def expr(self, elems:list[Elem])-> Expression:
+        ''' Value rom local const'''
+        # prels('CaseVal.expr:', elems, show=1)
+        res = ValExpr(elem2val(elems[0]))
+        # print('## CaseVal', res.get().getVal(), res.get().vtype.__class__.__name__)
+        return res
+
+
+class CaseNumVal(CaseVal, SolidCase):
     ''' '''
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) != 1:
@@ -225,17 +291,13 @@ class CaseVal(ExpCase, SolidCase):
         # prels('CaseVal.match:', elems, show=1)
         if elems[0].type in [Lt.num]:
             return True
-        # if isLex(elems[0], Lt.word, ):
-        #     return True
-        if isLex(elems[0], Lt.word, ['true', 'false', 'null']):
-            return True
-        return False
+        return  isLex(elems[0], Lt.word, ['true', 'false', 'null'])
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
         # prels('CaseVal.expr:', elems, show=1)
         res = ValExpr(elem2val(elems[0]))
-        # print('## CaseVal', res.get().getVal(), res.get().vtype.__class__.__name__)
+        # print('## CaseNumVal', res.get().getVal(), res.get().vtype.__class__.__name__)
         return res
 
 

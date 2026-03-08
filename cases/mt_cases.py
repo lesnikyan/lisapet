@@ -39,9 +39,9 @@ class MTCase(ExpCase):
         ''' For control cases in tree interprer '''
         return False
 
-ValCases = [CaseVal(), CaseString()]
+ValCases = [CaseNumVal(), CaseString()]
 
-class MTVal(MTCase, CaseVal):
+class MTVal(MTCase, CaseNumVal):
     ''' matching value
     12 !-
     true !-

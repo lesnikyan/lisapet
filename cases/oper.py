@@ -80,7 +80,7 @@ class CaseAssign(SubCase):
 _operPrior = ('() [] {} , . , ~> , ... , -x ! ~ , ** ^/ , * / % , + - ,'
 ' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, $, ?: , : , ?, \\ , -> , .. , <- , = += -= *= /= %= , ; , !: :? , /: ') #
 
-_noOpers = ['\\', '->', '.']
+_noOpers = ['\\', '->', '.', ',' ,';']
 
 class CaseBinOper(SubCase):
     '''
@@ -194,6 +194,8 @@ class CaseLUnar(SubCase):
             # fast check for trivial cases: -1, !true, ~num, ~ 0xabc
             return True
         # brackets -(... (... (..)))
+        r = isSolidExpr(elems, 1)
+        # print('UO$14', r)
         inBr = 0
         maxBr = 0
         for ee in elems[1:]:

@@ -30,7 +30,8 @@ operPrior = ('( ) [ ] { } , . , ~> , ... , -x ! ~ , ** ^/ , * / % , + - ,'
 
 unaryOperators = '- ! ~'.split(' ')
 
-SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
+SPEC_WORDS = 'func if for while match enum struct else import return'.split(' ')
+KEYWORDS_R = ['func','if','else','for','return','struct','match','enum','while','import']
 
 
 def getOperPriors():
@@ -226,6 +227,7 @@ class OperSplitter:
 
 def flatOpers():
     opers = getOperPriors()[4:]
+    # print(opers)
     fopers = []
     for oops in opers:
         # print(oops.split(' '))
@@ -235,7 +237,7 @@ def flatOpers():
 _noSolidOpers = flatOpers()
 
 _keyWords = (
-    'if else while for match func struct import @debug'
+    'func if else while for struct import match enum @debug'
 ).split(' ')
 
 def isSolidExpr(elems:list[Elem], getLast=None):
@@ -250,10 +252,11 @@ def isSolidExpr(elems:list[Elem], getLast=None):
     
     if elen == 1 and elems[0].type in [Lt.word, Lt.text, Lt.num]:
         return True
-    
+    # print('%')
     # print('isSolid #2', f"<{elems[0].text}>", elems[0].text in _keyWords)
-    if elems[0].type == Lt.word and elems[0].text in _keyWords:
-        return False
+    if elems[0].type == Lt.word:
+        if elems[0].text in KEYWORDS_R:
+            return False
     
     if isHexBytes(elems):
         return False
@@ -270,6 +273,7 @@ def isSolidExpr(elems:list[Elem], getLast=None):
         el = elems[i]
         etx = el.text
         # print('=>', '', etx, end=' ')
+        # print('=>', '', etx)
         et = el.type
         if isLex(el, Lt.oper, rob):
             # open brackets from right
@@ -290,10 +294,19 @@ def isSolidExpr(elems:list[Elem], getLast=None):
                 # last closed part found in solidExpr
                 return True, i
             continue
-        if not opened and isLex(el, Lt.oper, fopers):
+        # print('2>>')
+        if opened:
+            continue
+        if getLast and isLex(el, Lt.oper, ['.','~>', '...']):
+            return True, i
+        # print('back-i:%d'%i, 'No Solid because of ', etx)
+        # return False
+        if isLex(el, Lt.oper, fopers):
             # any operator has been found not in brackets a + b, excepr [. ~>]
             # print('back-i:%d'%i, 'No Solid because of ', etx)
             return False
+        # elif isLex(el, Lt.word, KEYWORDS_R):
+        #     return False
     # print('\n>> ', opened, ' //')
     return not opened
 
