@@ -248,7 +248,7 @@ class TupleVal(Collection):
         return len(self.elems)
     
     def get(self):
-        return tuple([n.get() for n in self.elems])
+        return tuple(n.get() for n in self.elems)
         # return tuple(self.elems)
 
     def addVal(self, val:Val):
@@ -399,7 +399,7 @@ def strShiftArgs(src, opts=None):
         match n.getType():
             case TypeGlif():
                 v = n.get().val
-                if op in 'dxXo':
+                if op in 'dbxXo':
                     v = ord(v)
             case _:
                 v = n.getVal()
@@ -589,9 +589,10 @@ class Thing(Maybe):
     def has(self, val:Val):
         return self.val == val
 
+vt_01 = (Val, Collection, StringVal, Regexp)
 
 def valFrom(src:Var|Val):
-    if isinstance(src, (Val, Collection, StringVal, Regexp)):
+    if isinstance(src, vt_01):
         return src
     if isinstance(src, (Var)):
         return src.get()
@@ -603,6 +604,9 @@ def isBaseTypeMember(var):
     return isinstance(var, ObjectElem) and not isinstance(var.getInst(), ObjectInstance)
         
 
+vt_02 = (Val, Collection, Regexp, StringVal, FuncInst)
+vt_03 = (Val, Collection, ObjectInstance, BytesVal, FuncInst)
+
 def var2val(var:Var|Val):
     ''' Convert Var to Val instance  '''
     # print('var2val 1 :', var, type(var), var.__class__)
@@ -610,10 +614,10 @@ def var2val(var:Var|Val):
     
     if isinstance(var, (ObjectElem)):
         var = var.get()
-    if isinstance(var, (Val, Collection, Regexp, StringVal, FuncInst)):
+    if isinstance(var, vt_02):
         return var
     val = var.getVal()
-    if isinstance(val, (Val, Collection, ObjectInstance, BytesVal, FuncInst)):
+    if isinstance(val, vt_03):
         return val
     tp = var.getType()
     return Val(val, tp)

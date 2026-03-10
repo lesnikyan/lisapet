@@ -32,7 +32,7 @@ class Mk:
 
 class lex:
     def __init__(self, val=None, mark=None, **kw):
-        self.val = val if type(val) is str else None
+        self.val = val if isinstance(val, str) else None
         # dprint('#4 ', type(val), '|', self.val)
         self.mark = mark if mark in [1,2,3, 4] else Mk.empty
         self.ltype = kw['type'] if 'type' in kw else 0

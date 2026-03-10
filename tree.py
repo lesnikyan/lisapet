@@ -208,7 +208,7 @@ def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
     # print('#makePMatchExpr:', [(n.text, Lt.name(n.type)) for n in elems])
     # print('\n#tree-makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
     caseList = patternMatchCasesSolid
-    if not isSolidExpr(elems):
+    if not isSolidExpr(elems, skipKeywords=True):
         caseList = patternMatchCasesCplx
         
     found = mtCases(elems, caseList, parent)

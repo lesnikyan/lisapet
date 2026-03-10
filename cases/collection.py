@@ -42,12 +42,12 @@ class CaseTuple(SubCase, SolidCase):
         if not (isLex(elems[0], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')')):
             return False
         
-        r =  isSolidExpr(elems, getLast=True)
-        if not isinstance(r, tuple):
-            return False
-        ok, pos = r
-        if not ok or pos != 0:
-            return False
+        # r =  isSolidExpr(elems, getLast=True)
+        # if not isinstance(r, tuple):
+        #     return False
+        # ok, pos = r
+        # if not ok or pos != 0:
+        #     return False
         # print('Tuple. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
         # cs = CaseCommas()
         return self.cs.match(elems[1:-1])
@@ -90,17 +90,19 @@ class CaseList(SubCase, SolidCase):
             return False
         
         # empty case:
-        if len(elems) == 2:
+        if lem == 2:
             return True
+        if lem == 3:
+            return elems[1].type != Lt.oper
         
-        r =  isSolidExpr(elems, getLast=True)
-        # print('CaseList.of solid:', r)
-        if not isinstance(r, tuple):
-            return False
+        # r =  isSolidExpr(elems, getLast=True)
+        # # print('CaseList.of solid:', r)
+        # if not isinstance(r, tuple):
+        #     return False
         
-        ok, pos = r
-        if not ok or pos != 0:
-            return False
+        # ok, pos = r
+        # if not ok or pos != 0:
+        #     return False
         
         inElems = elems[1:-1]
         # many items case
@@ -114,7 +116,7 @@ class CaseList(SubCase, SolidCase):
             return False
 
         # expr .. expr - is ok, in setSub wil be fixed
-        
+        # print('@', elemStr(elems))
         # TODO: refactor all [subs] cases as top CaseSquareBr, then: List, IterGen, ListGen, Slice
         
         # begn = 1
@@ -288,12 +290,12 @@ class CaseDictLine(SubCase, SolidCase):
         # if ind != -1:
         #     return False
         
-        r =  isSolidExpr(elems, getLast=True)
-        if not isinstance(r, tuple):
-            return False
-        ok, pos = r
-        if not ok or pos != 0:
-            return False
+        # r =  isSolidExpr(elems, getLast=True)
+        # if not isinstance(r, tuple):
+        #     return False
+        # ok, pos = r
+        # if not ok or pos != 0:
+        #     return False
 
         # check CaseCommas into { }
         subel = elems[1:-1]

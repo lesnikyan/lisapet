@@ -195,7 +195,7 @@ class MTMultiTyped(MTCase):
         # has brackets (A | B)
         if isLex(elems[operInd+1], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')'):
             # print('$2', elemStr(typeElems))
-            if isSolidExpr(elems[operInd+1:]):
+            if isSolidExpr(elems[operInd+1:], skipKeywords=True):
                 typeElems = typeElems[1:-1]
                 # print('$3', elemStr(typeElems))
         # A | B | C

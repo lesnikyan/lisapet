@@ -131,7 +131,7 @@ class CaseStructConstr(SubCase, SolidCase):
         return dc.match(elems[pos:])
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        _, pos = isSolidExpr(elems, getLast=True)
+        _, pos = isSolidExpr(elems, getLast=True, skipKeywords=True)
         typePart = elems[:pos]
         argPart = elems[pos:]
         argSub = argPart[1:-1]

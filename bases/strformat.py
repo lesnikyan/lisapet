@@ -65,6 +65,8 @@ class FmtOptParser:
         formatTypes = 'x,b,o,d,f,e,s'.split(',')
         res = FmtOption()
         tKey = 's'
+        if not src:
+            return res
         if src.startswith(':'):
             if len(src) < 2:
                 return

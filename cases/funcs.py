@@ -163,7 +163,7 @@ class CaseFunCall(SubCase, SolidCase):
         if elems[0].type == Lt.word and elems[0].text in KEYWORDS:
             return False
         
-        r =  isSolidExpr(elems, getLast=True)
+        r =  isSolidExpr(elems, getLast=True, skipKeywords=True)
         if not isinstance(r, tuple):
             return False
         ok, pos = r

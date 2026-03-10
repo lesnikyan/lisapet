@@ -20,7 +20,8 @@ c_comm = '#'
 c_opcomm = '#@'
 c_ndcomm = '@#'
 c_mlines = '\'\'\' """ ```'.split(' ')
-rxChar = re.compile(r'[a-zA-Z_\$@]')
+rxChar = re.compile(r'[a-zA-Z_@\$]')
+nnChar = '_@$abcdefghijklmnopqrstuvwxyz' + 'abcdefghijklmnopqrstuvwxyz'.upper()
 c_quot = "\'\"`"
 c_regex = '| / % '
 
@@ -56,7 +57,8 @@ def charType(prevs:int, s:str, esc_map=None) -> int:
         base = Lt.num
     elif s in c_comm:
         base = Lt.comm
-    elif rxChar.match(s):
+    # elif rxChar.match(s):
+    elif s in nnChar:
         base = Lt.word
     elif s in c_quot:
         base = Lt.quot
@@ -94,24 +96,25 @@ def charType(prevs:int, s:str, esc_map=None) -> int:
     
     return base
 
+def findOper(oper, res):
+    for n in opers:
+        # dprint('>> ', oper, n)
+        if oper.startswith(n):
+            # first correct oper has been found
+            res.append(n)
+            oper = oper[len(n):]
+            # dprint('#a7:', len(oper), res)
+            return oper, res
+    raise ParseErr('Incorrect operator (not found) : `%s`'% oper)
+
 
 def splitOper(oper:str)->list[str]:
     res = []
     # dprint(opers)
-    def findOper(oper):
-        for n in opers:
-            # dprint('>> ', oper, n)
-            if oper.startswith(n):
-                # first correct oper has been found
-                res.append(n)
-                oper = oper[len(n):]
-                # dprint('#a7:', len(oper), res)
-                return oper
-        raise ParseErr('Incorrect operator (not found) : `%s`'% oper)
     
     while len(oper) > 0:
         # dprint('#1 oper: ', oper)
-        oper = findOper(oper)
+        oper, res = findOper(oper, res)
     if oper:
         raise ParseErr('Incorrect operator (left in the end) : `%s`'% oper)
     return res
@@ -126,7 +129,7 @@ def normilizeLexems(src:list[lex])->list[lex]:
     i = -1
     # split opers
     for x in src:
-        i += 1
+        # i += 1
         if not x.val and x.ltype != Lt.text:
             # print('#norm1:', x)
             continue
@@ -145,9 +148,9 @@ def normilizeLexems(src:list[lex])->list[lex]:
     
     # post-opers part
     # dprint('normLexLine 2::', [n.val for n in src])
-    i = -1
+    # i = -1
     for x in src:
-        i += i
+        # i += i
         # dprint('# x', x.val, ':>', Lt.name(x.ltype))
         
         if prep and x.ltype == Lt.oper and x.val == '.':
@@ -350,9 +353,9 @@ def splitLexems(text: str) -> list[TLine]:
                 continue # miss empty and spaces line
             
             # interpretator magic:
-            if s.startswith('@intr@exit'):
-                # dprint('Interpretation exit in splitLexems()')
-                exit(1);
+            # if s.startswith('@intr@exit'):
+            #     # dprint('Interpretation exit in splitLexems()')
+            #     exit(1);
             nextLine, endType, r3 = splitLine(s, lastType, **extArg)
             extArg = r3
             # print('splLex..', [(x.val, Lt.name(x.ltype), x.mark) for x in nextLine.lexems])

@@ -46,7 +46,7 @@ class CaseArgExtraList(SubCase, SolidCase):
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) < 2:
             return False
-        if not isSolidExpr(elems[:-1]):
+        if not isSolidExpr(elems[:-1], skipKeywords=True):
             return False
         # print('CaseArgExtraList', isSolidExpr(elems[:-1]), elemStr(elems[:-1]))
         # print('$2 ', )
@@ -95,7 +95,7 @@ class RUnaryOper(SubCase, SolidCase):
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) < 2:
             return False
-        if not isSolidExpr(elems[:-1]):
+        if not isSolidExpr(elems[:-1], skipKeywords=True):
             return False
         if isLex(elems[-1], Lt.oper, '...'):
             return True

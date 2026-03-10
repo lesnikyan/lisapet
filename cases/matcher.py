@@ -28,93 +28,6 @@ from parser import *
 from bases.strformat import  *
 
 
-
-# class CaseDebug(ExpCase):
-#     def match(self, elems:list[Elem])-> bool:
-#         # prels('--DEbug', elems)
-#         return len(elems) > 0 and elems[0].text == '@debug'
-    
-#     def expr(self, elems:list[Elem])-> Expression:
-#         ''' return base expression, Sub(elems) '''
-#         return DebugExpr(' '.join([e.text for e in elems]))
-
- 
-# class UnclosedExpr:
-#     ''' '''
-#     def __init__(self, elems:list):
-#         # super().__init__('')
-#         self.elems:list = elems
-        
-#     def init(self, cline:CLine):
-#         self.src = cline.src
-#         self.indent = cline.indent
-
-#     def add(self, part:list, src:TLine):
-#         self.elems.extend(part)
-#         self.src.add(src)
-
-
-# class CaseUnclosedBrackets(ExpCase):
-    
-#     def match(self, elems:list[Elem])-> bool:
-#         # prels('--', elems)
-#         inBr = 0
-#         maxLvl = 0
-#         for el in elems:
-#             if el.type != Lt.oper:
-#                 continue
-#             if el.text in '([{':
-#                 inBr += 1
-#                 if maxLvl < inBr:
-#                     maxLvl = inBr
-#                 continue
-#             if el.text in ')]}':
-#                 inBr -= 1
-            
-#         return maxLvl > 0 and inBr > 0
-                
-        
-#     def expr(self, elems:list[Elem])-> Expression:
-#         ''' return elems covered by operation case '''
-#         return UnclosedExpr(elems)
-
-
-
-
-# class StrFormatter(SFormatter):
-#     '''parse interpret includes, eval includes, build result line'''
-    
-#     def __init__(self):
-#         super().__init__()
-#         self.fp = FormatParser()
-    
-#     def subExpr(self, code:str):
-#         tlines = splitLexems(code)
-#         clines:CLine = elemStream(tlines)
-#         # print('SFm 1:', clines)
-#         return line2expr(clines[0])
-
-#     def partsToExpr(self, parts:str|subLex)->list[Expression]:
-#         expp = []
-#         fmOpPar = FmtOptParser()
-#         for ss in parts:
-#             if isinstance(ss, subLex):
-#                 valExpr = self.subExpr(ss.expr)
-#                 format = fmOpPar.parseSuff(ss.options)
-#                 expr = ExprFormat(valExpr, format)
-#                 expp.append(expr)
-#             else:
-#                 val = Val(ss, TypeString)
-#                 expp.append(ValExpr(val))
-#         rr = StrJoinExpr(expp)
-#         return rr
-
-#     def formatString(self, src:str):
-#         ''' convers src string to expression '''
-#         parts = self.fp.parse(src)
-#         return self.partsToExpr(parts)
-
-
 _1 = r''' 
 
 single
@@ -199,9 +112,9 @@ class CaseOption(ExpCase):
             # print('co.find: %s %s' % (self.matcher.__class__.__name__, sub.__class__.__name__))
             if sub.match(elems):
                 cs =  sub
-                rr = '~~'
-                if sub.isLim():
-                    rr = 'COp.m=%s' % sub.matcher.__class__.__name__
+                # rr = '~~'
+                # if sub.isLim():
+                #     rr = 'COp.m=%s' % sub.matcher.__class__.__name__
                 # print('co-found! %s' % sub.__class__.__name__, rr)
                 break
         if cs and cs.isLim():
@@ -302,7 +215,7 @@ class CaseGenBrackets(CaseLim):
             return False
         if elems[0].text not in ['(','[','{'] or elems[-1].text not in ['}',']',')']:
             return False
-        r =  isSolidExpr(elems, getLast=True)
+        r =  isSolidExpr(elems, getLast=True, skipKeywords=True)
         if not isinstance(r, tuple):
             return False
         ok, pos = r
@@ -378,7 +291,7 @@ class CaseSolidLeft(CaseLim):
     ''' solid with left-end '''
     
     def match(self, elems:list[Elem])-> bool:
-        r = isSolidExpr(elems, True)
+        r = isSolidExpr(elems, True, skipKeywords=True)
         # print('1>>',r)
         if not isinstance(r, tuple):
             return False

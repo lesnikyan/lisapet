@@ -95,6 +95,7 @@ class CaseBinOper(SubCase):
         self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
         self.splitter = OperSplitter()
         # self.funcCall = CaseFunCall()
+        self.lastM = -1
 
     def match(self, elems:list[Elem]) -> bool:
         # print('CaseBinOper.match', elemStr(elems))
@@ -103,11 +104,15 @@ class CaseBinOper(SubCase):
         if elen < 3:
             return False
         main = self.splitter.mainOper(elems)
-        return main > 0 and elems[main].text not in _noOpers and isLex(elems[main], Lt.oper, self.opers)
+        res =  main > 0 and elems[main].text not in _noOpers and isLex(elems[main], Lt.oper, self.opers)
+        self.lastM = main if res else -1
+        return res
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
-        main = self.splitter.mainOper(elems)
+        main = self.lastM
+        # if main == -1:
+        #     main = self.splitter.mainOper(elems)
         exp = makeOperExp(elems[main])
         src = elemStr(elems)
         exp.src = src
@@ -122,24 +127,25 @@ class CaseBinOper(SubCase):
         return base
 
 
+mathOpers = '+ - * / % ** ^/'.split(' ')
+boolOpers = '&& ||'.split(' ')
+cmpOpers = '== != > < >= < <='.split(' ')
+btOpers = '& | ^ << >>'.split(' ')
+binAssgn = '+= -= *= /= %='.split(' ')
+
 def makeOperExp(elem:Elem)->OperCommand:
     # TODO: make oper command by cases: math, logical, assign and math+assign, bit operators, brackets
     oper = elem.text
-    mathOpers = '+ - * / % ** ^/'.split(' ')
     if oper in mathOpers:
         return OpMath(oper)
-    boolOpers = '&& ||'.split(' ')
     if oper in boolOpers:
         return OpBinBool(oper)
-    cmpOpers = '== != > < >= < <='.split(' ')
     if oper in cmpOpers:
         return OpCompare(oper)
-    btOpers = '& | ^ << >>'.split(' ')
     if oper in btOpers:
         return OpBitwise(oper)
     if oper == '=':
         return OpAssign()
-    binAssgn = '+= -= *= /= %='.split(' ')
     if oper in binAssgn:
         return OpBinAssign(oper)
     if oper == ':':
@@ -186,19 +192,23 @@ class CaseLUnar(SubCase):
     
     def match(self, elems:list[Elem]) -> bool:
         ''' -123, -0xabc, ~num, -sum([1,2,3]), !valid, !foo(1,2,3) '''
-        if len(elems) < 2:
+        lem = len(elems)
+        if lem < 2:
             return False
         if elems[0].type != Lt.oper or elems[0].text not in unaryOpers:
             return False
-        if len(elems) == 2 and elems[1].type in [Lt.num, Lt.word]:
+        if lem == 2 and elems[1].type in [Lt.num, Lt.word]:
             # fast check for trivial cases: -1, !true, ~num, ~ 0xabc
             return True
         # brackets -(... (... (..)))
-        r = isSolidExpr(elems, 1)
+        
+        # return isSolidExpr(elems[1:], skipKeywords=True)
         # print('UO$14', r)
         inBr = 0
         maxBr = 0
-        for ee in elems[1:]:
+        # for ee in elems[1:]:
+        for i in range(1, lem):
+            ee = elems[i]
             if ee.text == '(':
                 if inBr == 0 and maxBr > 0:
                     # here we are opening brackets twice
@@ -210,15 +220,14 @@ class CaseLUnar(SubCase):
             elif ee.text == ')':
                 inBr -=1
                 continue
-            if inBr == 0 and ee.type == Lt.oper and ee.text not in unaryOpers:
+            if inBr:
+                continue
+            if ee.type == Lt.oper and ee.text not in unaryOpers:
                 # not in brackets but found operator after 1-st element
                 # except cases with several unary one-by-one: !~x, !-5, ~-(expr)
                 # dprint('# -- not in brackets operator', ee.text)
                 return False
         return True
-        ## regexp method
-        # ss = ''.join([ee.text for ee in elems])
-        # return oneValExptRx.match(ss)
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         # oper = elems[0].text
@@ -232,11 +241,14 @@ class CaseLUnar(SubCase):
         '''
         sub = subs[0]
         # dprint('Unar.setSub', base, sub)
-        if self.formatter and isinstance(base, BitNot) and isinstance(sub, (StringExpr, MString)):
+        
+        # TODO: it breaks normal interpret behaviour, think about it
+        if self.formatter and isinstance(sub, (StringExpr)) and isinstance(base, BitNot):
             # FString detected
             base = self.formatter.formatString(sub.get().getVal())
-            return base
-        base.setInner(sub)
+        else:
+            base.setInner(sub)
+        return base
 
     
     # next: BoolNot, BitNot, UnarSign
@@ -268,13 +280,14 @@ class CaseBrackets(SubCase, SolidCase):
         if elems[0].text != '(' or elems[-1].text != ')':
             # only if other operator cases was failed
             return False
-        r =  isSolidExpr(elems, getLast=True)
+        r =  isSolidExpr(elems, getLast=True, skipKeywords=True)
         if not isinstance(r, tuple):
             return False
         ok, pos = r
-        if not ok or pos != 0:
-            return False
-        return True
+        return ok and pos == 0
+        # if not ok or pos != 0:
+        #     return False
+        # return True
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
@@ -302,6 +315,11 @@ def checkTypes(elems:list[Elem], exp:list[int]):
 
 class CaseListGen(SubCase, SolidCase):
     ''' [startVal..endVal] '''
+    
+    def __init__(self):
+        super().__init__()
+        self.cs = CaseSeq('..')
+    
     def match(self, elems:list[Elem]) -> bool:
         # trivial check
         # TODO: add check for complex cases like [] + []
@@ -310,23 +328,28 @@ class CaseListGen(SubCase, SolidCase):
         
         if not isLex(elems[-1], Lt.oper, ']'):
             return False
-        opInd = findLastBrackets(elems)
-        if opInd != 0:
-            return False
-        cs = CaseSeq('..')
-        return cs.match(elems[1:-1])
+        # opInd = findLastBrackets(elems)
+        # if opInd != 0:
+        #     return False
+        # r =  isSolidExpr(elems, getLast=True, skipKeywords=True)
+        # if not isinstance(r, tuple):
+        #     return False
+        # ok, pos = r
+        # if not ok:
+        #     return False
+        return self.cs.match(elems[1:-1])
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         sub = elems[1:-1]
-        cs = CaseSeq('..')
+        # cs = CaseSeq('..')
         subs = [sub]
-        if cs.match(sub):
-            _, subs = cs.split(sub)
+        if self.cs.match(sub):
+            _, subs = self.cs.split(sub)
         exp = ListGenExpr()
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        dprint('ListGenExpr.setSub: ', base, subs)
+        # dprint('ListGenExpr.setSub: ', base, subs)
         base.setArgs(*subs)
         return base
 
@@ -372,18 +395,21 @@ class CaseListComprehension(SubCase, SolidCase):
         #     return False
         
         
-        opInd = self.spl.mainOper(elems)
-        if opInd != 0:
-            return False
-        subElems = elems[1:-1]
-        opInd = self.spl.mainOper(subElems)
-        return opInd > 0 and subElems[opInd].text == ';'
+        # opInd = self.spl.mainOper(elems)
+        # if opInd != 0:
+        #     return False
+        # subElems = elems[1:-1]
+        # opInd = self.spl.mainOper(subElems)
+        return self.cs.match(elems[1:-1])
+        # return opInd > 0 and subElems[opInd].text == ';'
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         sub = elems[1:-1]
-        subs = []
-        if self.cs.match(sub):
-            _, subs = self.cs.split(sub)
+        # subs = []
+        # if self.cs.match(sub):
+        #     _, subs = self.cs.split(sub)
+        # subs = []
+        _, subs = self.cs.split(sub)
         exp = ListComprExpr()
         subs = [s for s in subs if len(s)]
         # prels('LC.elems = :', elems, show=1) 
@@ -395,6 +421,7 @@ class CaseListComprehension(SubCase, SolidCase):
         base.setInner(subs)
         return base
 
+_inline_contr_keyws = ['if','for','while']
 
 class CaseInlineSub(SubCase):
     ''' 1-line sub-block
@@ -418,11 +445,13 @@ class CaseInlineSub(SubCase):
         if len(elems) < 3:
             return False
         
-        if not isLex(elems[0], Lt.word, ['for','if','while']):
+        if not isLex(elems[0], Lt.word, _inline_contr_keyws):
             return False
 
         main = self.spl.mainOper(elems)
-        return isLex(elems[main], Lt.oper, '/:')
+        return elems[main].text == '/:'
+        
+        # return isLex(elems[main], Lt.oper, '/:')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
@@ -438,3 +467,4 @@ class CaseInlineSub(SubCase):
         ''' '''
         # dprint('CaseInlineSub seSub', base, subs)
         base.setArgs(subs[0], subs[1])
+        return base

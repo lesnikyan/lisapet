@@ -93,35 +93,36 @@ class CaseMatchCase(SubCase):
             base.right = subs[1]
 
 
-class CaseMatchPattern(SubCase):
-    '''
-    left of `!-` operator.
-    [*], {_:_}, (_,?), ...
-    '''
-    def __init__(self):
-        super().__init__()
-        self.splitter = OperSplitter()
+# class CaseMatchPattern(SubCase):
+#     '''
+#     left of `!-` operator.
+#     [*], {_:_}, (_,?), ...
+#     '''
+#     def __init__(self):
+#         super().__init__()
+#         self.splitter = OperSplitter()
 
-    def match(self, elems:list[Elem]) -> bool:
-        '''
-        expr !- expr '''
-        if len(elems) < 2:
-            return False
+#     def match(self, elems:list[Elem]) -> bool:
+#         '''
+#         expr !- expr '''
+#         return False
+#         if len(elems) < 2:
+#             return False
 
-        main = self.splitter.mainOper(elems)
-        # dprint('CaseMatchCase elems[main]', elems[main].text, main)
-        return isLex(elems[main], Lt.oper, '!-')
+#         main = self.splitter.mainOper(elems)
+#         # dprint('CaseMatchCase elems[main]', elems[main].text, main)
+#         return isLex(elems[main], Lt.oper, '!-')
 
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        arrInd = self.splitter.mainOper(elems)
-        exp = ArrOper()
-        subs = [elems[:arrInd], elems[arrInd+1:]]
-        return exp, subs
+#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+#         arrInd = self.splitter.mainOper(elems)
+#         exp = ArrOper()
+#         subs = [elems[:arrInd], elems[arrInd+1:]]
+#         return exp, subs
 
-    def setSub(self, base:ArrOper, subs:list[Expression])->Expression:
-        base.left = subs[0]
-        if len(subs) > 1 and isinstance(subs[1], Expression):
-            base.right = subs[1]
+#     def setSub(self, base:ArrOper, subs:list[Expression])->Expression:
+#         base.left = subs[0]
+#         if len(subs) > 1 and isinstance(subs[1], Expression):
+#             base.right = subs[1]
 
 
 class CaseFor(BlockCase, SubCase):

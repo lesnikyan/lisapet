@@ -58,7 +58,7 @@ class TestLang(TestCase):
             if not cline.code:
                 continue
             # print('', elemStr(cline.code))
-            res = isSolidExpr(cline.code)
+            res = isSolidExpr(cline.code, skipKeywords=True)
             # print('', res)
             self.assertTrue(res)
             

@@ -26,6 +26,7 @@ from libs.regexp import *
 from nodes.func_features import *
 
 
+import cProfile as prof
 import pdb
 
 
@@ -162,8 +163,8 @@ class TestDev(TestCase):
 
 """
 
-
-    def test_base_lang_cases(self):
+    def interpret_base_cases(self):
+        
         data = r'''
         #= solid
         12
@@ -208,7 +209,6 @@ class TestDev(TestCase):
         foo~>(1)(2)
         true
         null
-        
         
         #== not solid
         a + b
@@ -263,8 +263,7 @@ class TestDev(TestCase):
             if '' == src.strip():
                 continue
             src = src.replace('$/N', '\n')
-            # print(' - <%s>' % src)
-            lex
+
             tlines = splitLexems(src)
             # print('', [[(l.val, Lt.name(l.ltype)) for l in n.lexems] for n in tlines])
             clines:CLine = elemStream(tlines)
@@ -279,9 +278,16 @@ class TestDev(TestCase):
                 # print('`=`=`=`=`=`=`=`\n!!Error Exception', ex.args)
                 self.fail()
                 # raise ex
+
+    # def test_interpret_profile(self):
+    #     ''' '''
+    #     prof.runctx('self.interpret_base_cases()', globals(), locals())
         
 
-    def test_code3(self):
+    def _test_base_lang_cases(self):
+        self.interpret_base_cases()
+
+    def _test_code3(self):
         ''' '''
         code = r'''
         
