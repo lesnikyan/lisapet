@@ -92,6 +92,7 @@ class CaseContinue(SubCase):
         # base.setSub(subs[0])
         return base
 
+_flagsRx = re.compile(r'^[aiLmsux]+$')
 
 class CaseRegexp(SubCase):
     ''' re`pattern`, re'...', re"123"
@@ -107,7 +108,7 @@ class CaseRegexp(SubCase):
         think about:
         re {patternVar} {flagsVar}
     '''
-    
+
     def match(self, elems:list[Elem])-> bool:
         # re`abc`: 2
         # re`abc`imu: 3
@@ -120,7 +121,7 @@ class CaseRegexp(SubCase):
             return False
         if elen < 3:
             return True
-        opRx = re.compile(r'^[aiLmsux]+$')
+        # opRx = re.compile(r'^[aiLmsux]+$')
         opInd = -1
         if elen == 5:
             opInd = -2
@@ -128,7 +129,7 @@ class CaseRegexp(SubCase):
             return False
         match elen:
             case 3:
-                return bool(opRx.match(elems[opInd].text))
+                return bool(_flagsRx.match(elems[opInd].text))
             case 5:
                 return True
         return False

@@ -147,8 +147,9 @@ class CaseFunCall(SubCase, SolidCase):
     def __init__(self):
         super().__init__()
         self.cs = CaseCommas()
+        self.lastPos = None
 
-    def match(self, elems:list[Elem], ind=-1) -> bool:
+    def match(self, elems:list[Elem], ind=None) -> bool:
         ''' simple cases:
             foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))
             spec words  should not be here (for, if, func, match, return..)
@@ -159,6 +160,7 @@ class CaseFunCall(SubCase, SolidCase):
             [x -> expr][0](arg) # lambda in list
         '''
         # print('CaseFunCall.matchNew ::: ', ''.join([n.text for n in elems]))
+        
         if ind  == 0:
             return False
         if len(elems) < 3:
@@ -168,8 +170,9 @@ class CaseFunCall(SubCase, SolidCase):
         if elems[0].type == Lt.word and elems[0].text in KEYWORDS:
             return False
         
-        ok, pos = 1, ind
-        if ind == -1:
+        ok, pos = True, ind
+        if ind is None:
+            # print('$3')
             ok, pos =  isSolidExpr(elems, getLast=True, skipKeywords=True)
             # if not isinstance(r, tuple):
             #     return False
@@ -181,6 +184,8 @@ class CaseFunCall(SubCase, SolidCase):
             return False
         if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '(') : 
             return False
+        
+        self.lastPos = pos
         return True
         
         # if elems[1].type != Lt.oper or elems[-1].type != Lt.oper or elems[1].text != '(' or elems[-1].text != ')':
@@ -189,27 +194,46 @@ class CaseFunCall(SubCase, SolidCase):
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
         src = elemStr(elems)
-        opInd = findLastBrackets(elems)
+        # opInd = findLastBrackets(elems)
+        opInd = self.lastPos
+        self.lastPos = None
         argEl = elems[opInd+1 : -1]
         args = [argEl] # one expression inside by default
         valExpr = elems[:opInd]
         
-        if self.cs.match(argEl):
+        if len(argEl) > 1 and self.cs.match(argEl):
             _, args = self.cs.split(argEl)
-        exp = FuncCallExpr(elemStr(valExpr).replace(' ', ''), src)
+        
+        # print('$f', elemStr(valExpr).replace(' ', ''))
+        
+        # TODO: check and fix usage of sode expr instead of real name of function object
+        fname = elems[0].text
+        if len(elems) > 1:
+            fname = elemStr(valExpr).replace(' ', '')
+            # fname = 'func'
+        exp = FuncCallExpr(fname, src)
+        # shorted
+        # exp = FuncCallExpr('func', src)
+        
         # print('FCall.split1', valExpr, args)
-        subs = [valExpr] + args
+        subs = [valExpr]
+        subs.extend(args)
         # print('FCall.split2', elemStr(valExpr), 'Exp:',exp, 'subs:', [elemStr(s) for s in subs])
         return exp, subs
 
     def setSub(self, base:FuncCallExpr, subs:Expression|list[Expression])->Expression: 
         ''' base - FuncCallExpr, subs - argVal expressions '''
-        fexpr = subs[0]
-        args = [n for n in subs[1:] if not isinstance(n, NothingExpr)]
+        # fexpr = subs[0]
+        # args = [n for n in subs[1:] if not isinstance(n, NothingExpr)]
         # print('FCall.setSub1', base)
         # print('FCall.setSub2',fexpr, args)
-        base.setFuncExpr(fexpr)
-        for exp in args:
-            # print('FCall add arg:', exp)
-            base.addArgExpr(exp)
+        base.setFuncExpr(subs[0])
+        # for exp in subs[1:]:
+        for i in range(1, len(subs)):
+            exp = subs[i]
+            if not isinstance(exp, NothingExpr):
+                base.addArgExpr(exp)
+        # for exp in args:
+        #     # print('FCall add arg:', exp)
+        #     base.addArgExpr(exp)
         return base

@@ -77,7 +77,7 @@ class CaseMatchCase(SubCase):
         '''
     def __init__(self):
         super().__init__()
-        self.splitter = OperSplitter()
+        self.splitter = OperSplitter.getInst()
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         arrInd = self.splitter.mainOper(elems)

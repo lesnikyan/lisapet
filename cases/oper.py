@@ -286,11 +286,12 @@ class CaseBrackets(SubCase, SolidCase):
         if elems[0].text != '(' or elems[-1].text != ')':
             # only if other operator cases was failed
             return False
-        r =  isSolidExpr(elems, getLast=True, skipKeywords=True)
-        if not isinstance(r, tuple):
-            return False
-        ok, pos = r
-        return ok and pos == 0
+        return True
+        # r =  isSolidExpr(elems, getLast=True, skipKeywords=True)
+        # if not isinstance(r, tuple):
+        #     return False
+        # ok, pos = r
+        # return ok and pos == 0
         # if not ok or pos != 0:
         #     return False
         # return True

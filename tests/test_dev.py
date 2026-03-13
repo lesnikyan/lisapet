@@ -187,6 +187,13 @@ class TestDev(TestCase):
         0x[12 34 fe dc]
         nums[1]
         nums[1:end]
+        [- 100]
+        [a * b]
+        [[1,2,3]]
+        [[]]
+        [obj.memb]
+        [foo()]
+        
         foo(1)
         f1().aaa.f2().bbb[1+2].f3()
         Abc{}
