@@ -59,14 +59,16 @@ class CaseLambda(CaseFuncDef):
 
     def __init__(self):
         super().__init__()
-        self.splitter = OperSplitter()
+        self.splitter = OperSplitter.getInst()
         self.caseBr = CaseBrackets()
 
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], ind=-1) -> bool:
         if len(elems) < 3:
             return False
-
-        main = self.splitter.mainOper(elems)
+        if ind < 0:
+            return False
+        # main = self.splitter.mainOper(elems)
+        main = ind
         # print('CaseLamb, main=', main, ' len_elems:', len(elems), '<%s>' % elemStr(elems))
         # print('CaseLambda elems[main] el:', elems[main].text, 'i:',main)
         return isLex(elems[main], Lt.oper, '->')
@@ -99,7 +101,7 @@ class CaseLambda(CaseFuncDef):
         return base
 
 
-class CaseMathodDef(CaseFuncDef):
+class CaseMethodDef(CaseFuncDef):
     ''' func inst:Type foo(arg-expressions over comma) '''
     
     def __init__(self):
@@ -111,7 +113,8 @@ class CaseMathodDef(CaseFuncDef):
             return False
         if not isLex(elems[0], Lt.word, 'func'):
             return False
-        return self.cc.match(elems[1:4])
+        return isLex(elems[2], Lt.oper, ':')
+        # return self.cc.match(elems[1:4])
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         argSubs = self.splitArgs(elems[6:-1])
@@ -145,7 +148,7 @@ class CaseFunCall(SubCase, SolidCase):
         super().__init__()
         self.cs = CaseCommas()
 
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], ind=-1) -> bool:
         ''' simple cases:
             foo(), foo(a, b, c), foo(bar(baz(a,b,c-d+123)))
             spec words  should not be here (for, if, func, match, return..)
@@ -156,6 +159,8 @@ class CaseFunCall(SubCase, SolidCase):
             [x -> expr][0](arg) # lambda in list
         '''
         # print('CaseFunCall.matchNew ::: ', ''.join([n.text for n in elems]))
+        if ind  == 0:
+            return False
         if len(elems) < 3:
             return False
         if not isLex(elems[-1], Lt.oper, ')'):
@@ -163,10 +168,12 @@ class CaseFunCall(SubCase, SolidCase):
         if elems[0].type == Lt.word and elems[0].text in KEYWORDS:
             return False
         
-        r =  isSolidExpr(elems, getLast=True, skipKeywords=True)
-        if not isinstance(r, tuple):
-            return False
-        ok, pos = r
+        ok, pos = 1, ind
+        if ind == -1:
+            ok, pos =  isSolidExpr(elems, getLast=True, skipKeywords=True)
+            # if not isinstance(r, tuple):
+            #     return False
+        # ok, pos = r
         # print('FCall. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
         # prels('F match', elems, show=1)
         if pos == 1 and elems[0].type == Lt.oper:

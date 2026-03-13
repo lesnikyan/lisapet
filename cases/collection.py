@@ -75,7 +75,7 @@ class CaseList(SubCase, SolidCase):
     
     def __init__(self):
         super().__init__()
-        self.splitter = OperSplitter()
+        self.splitter = OperSplitter.getInst()
         self.cs = CaseCommas()
         self.csemic = CaseSemic()
 
@@ -176,7 +176,7 @@ class CaseCollectElem(SubCase, SolidCase):
         super().__init__()
         self.ccolon = CaseColon()
 
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], ind=-1) -> bool:
         '''
         simplest: varName[indexVar|intVal]
         elems[0]: varName, funcName + (expr), 
@@ -233,7 +233,7 @@ class CaseSlice(SubCase, SolidCase):
         super().__init__()
         self.ccolon = CaseColon()
 
-    def match(self, elems:list[Elem]) -> bool:        
+    def match(self, elems:list[Elem], ind=-1) -> bool:     
         ''' arr.expr[start-expr : end-expr] 
             TODO: super[key-expr][start : end]
         '''

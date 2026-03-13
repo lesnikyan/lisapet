@@ -145,7 +145,7 @@ class CaseBytesExplicit(CaseBytes):
         super().__init__()
         self.xre = re.compile(r'0[xobd]')
     
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], ind=-1) -> bool:
         if len(elems) < 3:
             return False
         if not isLex(elems[1], Lt.oper, '[') and not isLex(elems[-1], Lt.oper, ']'):

@@ -93,17 +93,23 @@ class CaseBinOper(SubCase):
         priorGroups = _operPrior.split(',')
         self.priorGroups = [[ n for n in g.split(' ') if n.strip()] for g in priorGroups]
         self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
-        self.splitter = OperSplitter()
+        self.splitter = None
         # self.funcCall = CaseFunCall()
         self.lastM = -1
 
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], ind=-1) -> bool:
         # print('CaseBinOper.match', elemStr(elems))
+        if ind == 0:
+            return False
         elen = len(elems)
-        inBr = 0
+        # inBr = 0
         if elen < 3:
             return False
-        main = self.splitter.mainOper(elems)
+        main = ind
+        if ind < 0:
+            if self.splitter is None:
+                self.splitter = OperSplitter.getInst()
+            main = self.splitter.mainOper(elems)
         res =  main > 0 and elems[main].text not in _noOpers and isLex(elems[main], Lt.oper, self.opers)
         self.lastM = main if res else -1
         return res
@@ -274,7 +280,7 @@ class CaseBrackets(SubCase, SolidCase):
     def __init__(self):
         pass
 
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], ind=None) -> bool:
         if elems[0].type != Lt.oper or elems[-1].type != Lt.oper:
             return False
         if elems[0].text != '(' or elems[-1].text != ')':
@@ -380,7 +386,7 @@ class CaseListComprehension(SubCase, SolidCase):
     
     def __init__(self):
         super().__init__()
-        self.spl = OperSplitter()
+        self.spl = OperSplitter.getInst()
         self.cs = CaseSemic()
          
     def match(self, elems:list[Elem]) -> bool:
@@ -438,7 +444,7 @@ class CaseInlineSub(SubCase):
     
     def __init__(self):
         super().__init__()
-        self.spl = OperSplitter()
+        self.spl = OperSplitter.getInst()
     
     def match(self, elems:list[Elem]) -> bool:
         # print('Case /: >>')

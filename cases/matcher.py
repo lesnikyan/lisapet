@@ -89,6 +89,38 @@ complex
 '''
 
 
+class CaseLim(ExpCase):
+    ''' General (parent) case '''
+    
+    def isLim(self):
+        return True
+
+
+class CaseAny(CaseLim):
+    
+    def match(self, elems:list[Elem])-> bool:
+        return True
+
+
+class CMatchInfo:
+    
+    def __init__(self, elems:list[Elem]):
+        self.elems = elems
+        self.solid = None # is solid res
+        self.sid = None # solid id
+        self.mid = None # main elem id
+        self.splitter = OperSplitter.getInst()
+
+    def isSolid(self):
+        ok, id = isSolidExpr(self.elems, getLast=True)
+        self.solid = ok
+        self.sid = id
+        return ok
+
+    def findMain(self):
+        self.mid =self.splitter.mainOper(self.elems)
+
+
 class CaseOption(ExpCase):
     ''' limitation case, it filters cases by light rules,
         container of more concrete cases '''
@@ -97,20 +129,25 @@ class CaseOption(ExpCase):
         if subs is None:
             subs = []
         self.subs:list[ExpCase] = subs
-        self.matcher:ExpCase = matcher
+        self.matcher:CaseLim = matcher
     
-    def match(self, elems:list[Elem])-> bool:
+    def match(self, info:CMatchInfo)-> bool:
         # print('CO.match by %s' % (self.matcher.__class__.__name__), self.matcher.match(elems))
-        return self.matcher.match(elems)
+        return self.matcher.match(info)
     
     def isLim(self):
         return True
     
-    def find(self, elems:list[Elem]):
+    def find(self, info:CMatchInfo):
         cs:ExpCase|CaseOption = None
+        # if isinstance(elems, CMatchInfo):
+        #     elems = elems.elems
         for sub in self.subs:
             # print('co.find: %s %s' % (self.matcher.__class__.__name__, sub.__class__.__name__))
-            if sub.match(elems):
+            mtarg = info
+            if not sub.isLim():
+                mtarg = info.elems
+            if sub.match(mtarg):
                 cs =  sub
                 # rr = '~~'
                 # if sub.isLim():
@@ -119,15 +156,60 @@ class CaseOption(ExpCase):
                 break
         if cs and cs.isLim():
             # print('sub lim')
-            cs = cs.find(elems)
+            cs = cs.find(info)
         if not cs:
             return False
         # print('co-res! %s' % cs.__class__.__name__)
         return cs
 
 
-class CaseLim(ExpCase):
-    ''' General (parent) case '''
+
+
+class CaseOptionPrepared(CaseOption):
+    ''' limitation case, it filters cases by light rules,
+        container of more concrete cases '''
+    
+    def __init__(self, matcher, subs=None):
+        if subs is None:
+            subs = []
+        self.subs:list[ExpCase] = subs
+        self.matcher:CaseLim = matcher
+        self.found = None
+    
+    def match(self, info:CMatchInfo)-> bool:
+        # print('CO.match by %s' % (self.matcher.__class__.__name__), self.matcher.match(elems))
+        self.found = None
+        mres = self.matcher.match(info)
+        if isinstance(mres, tuple):
+            self.found = mres[1]
+            mres = mres[0]
+        return bool(mres)
+    
+    # def isLim(self):
+    #     return True
+    
+    def find(self, info:CMatchInfo):
+        cs:ExpCase|CaseOption = None
+        for sub in self.subs:
+            # print('co.find: %s %s' % (self.matcher.__class__.__name__, sub.__class__.__name__))
+            extrArg = None
+            if self.found is not None:
+                extrArg = self.found
+            
+            if sub.match(info.elems, extrArg):
+                cs =  sub
+                # rr = '~~'
+                # if sub.isLim():
+                #     rr = 'COp.m=%s' % sub.matcher.__class__.__name__
+                # print('co-found! %s' % sub.__class__.__name__, rr)
+                break
+        if cs and cs.isLim():
+            # print('sub lim')
+            cs = cs.find(info.elems)
+        if not cs:
+            return False
+        # print('co-res! %s' % cs.__class__.__name__)
+        return cs
 
 
 class CaseMatchcher:
@@ -135,17 +217,51 @@ class CaseMatchcher:
     def __init__(self, cases):
         self.cases:list[ExpCase] = cases
     
-    def find(self, elems:list[Elem]):
+    def find(self, info:CMatchInfo):
         cs = None
+        elems:list[Elem] = info.elems
         for sub in self.cases:
-            if sub.match(elems):
+            if sub.match(info):
                 if sub.isLim():
-                    sub = sub.find(elems)
+                    sub = sub.find(info)
                 if sub:
                     cs = sub
                 # print('mch-res! %s' % cs.__class__.__name__)
                 break
         return cs
+
+
+class CaseSolid(CaseLim):
+    ''' any solid expr '''
+    # def __init__(self):
+    #     super().__init__()
+    
+    def match(self, info:CMatchInfo)-> bool:
+        # ok, _ = isSolidExpr(info.elems)
+        info.isSolid()
+        return info.solid
+    
+    
+class NonSolid(CaseLim):
+    def match(self, info:CMatchInfo)-> bool:
+        info.findMain()
+        # return info.mid  > 0
+        return True
+
+
+class CaseSolidLeft(CaseLim):
+    ''' solid with left-end '''
+    
+    def match(self, info:CMatchInfo)-> bool:
+        # ok, ind = isSolidExpr(elems, True)
+        # print('1>> CaseSolidLeft >> ', elemStr(elems), (ok, ind ),  ok and ind > 0)
+        # if not isinstance(r, tuple):
+        #     return False
+        # ok, ind = r
+        ok, ind = info.solid, info.sid
+        # print('$2', ok, ind, ok and ind > 0)
+        return (ok and ind > 0), ind
+
 
 # class CaseCateg:
 #     ''' General (parent) case '''
@@ -168,6 +284,7 @@ class CaseMatchcher:
 #                 return sub
 #         return False
 
+_numWordTypes = [Lt.word, Lt.num]
 
 class CaseWord(CaseLim):
     ''' vars, nums, break, etc '''
@@ -176,10 +293,10 @@ class CaseWord(CaseLim):
     #     super().__init__()
     #     self.subs = [CaseBreak(), CaseContinue(), CaseReturn(), CaseVar_(), CaseVar(), CaseNumVal()]
     
-    def match(self, elems:list[Elem])-> bool:
-        if len(elems) != 1:
+    def match(self, info:CMatchInfo)-> bool:
+        if len(info.elems) != 1:
             return False
-        return elems[0].type in [Lt.word, Lt.num]
+        return info.elems[0].type in _numWordTypes
 
 
 # Brackets
@@ -195,10 +312,12 @@ class CaseBrkSquare(CaseLim):
     #     super().__init__()
     #     self.subs = [ CaseSlice(), CaseListGen(), CaseBytes(), CaseListComprehension(), CaseList(),]
         
-    def match(self, elems:list[Elem])-> bool:
-        return elems[0].text =='[' or elems[-1].text == ']'
+    def match(self, info:CMatchInfo)-> bool:
+        return info.elems[0].text =='[' or info.elems[-1].text == ']'
     
 
+_opnenBrs = ['(','[','{']
+_closeBrs = ['}',']',')']
 
 class CaseGenBrackets(CaseLim):
     '''
@@ -210,19 +329,25 @@ class CaseGenBrackets(CaseLim):
     #     self.subs = [CaseBrkSquare(), CaseTuple(), CaseDictLine(), CaseBrackets()]
 
     
-    def match(self, elems:list[Elem])-> bool:
+    def match(self, info:CMatchInfo)-> bool:
+        if not info.solid or info.sid != 0:
+            return False
+        elems = info.elems
         if elems[0].type != Lt.oper or elems[-1].type != Lt.oper:
             return False
-        if elems[0].text not in ['(','[','{'] or elems[-1].text not in ['}',']',')']:
+        if elems[0].text not in _opnenBrs or elems[-1].text not in _closeBrs:
             return False
-        r =  isSolidExpr(elems, getLast=True, skipKeywords=True)
-        if not isinstance(r, tuple):
-            return False
-        ok, pos = r
-        if not ok or pos != 0:
-            return False
+        # r =  isSolidExpr(elems, getLast=True)
+        # if not isinstance(r, tuple):
+        #     return False
+        # ok, pos = r
+        # if not ok or pos != 0:
+        #     return False
         return True
+        return info.solid and info.sid == 0
 
+_strPerfs = ['g', 're']
+_strLexTypes =  [Lt.text, Lt.mttext]
 
 # ! String cases check by not-match
 class CaseStr(CaseLim):
@@ -232,9 +357,9 @@ class CaseStr(CaseLim):
     then - matchSubs
     '''
 
-    def match(self, elems:list[Elem])-> bool:
+    def match(self, info:CMatchInfo)-> bool:
         # TODO: refactor for more productivity
-        if self.matchNot(elems):
+        if self.matchNot(info.elems):
             return False
         # elen = len(elems)
         return True
@@ -244,90 +369,37 @@ class CaseStr(CaseLim):
         True if not one of string type
         False - is not certain result'''
         elen = len(elems)
+        # print('strLim', elen)
         if elen not in [1, 2, 3, 5]:
             return True
         strInd = 0
         if elen > 1:
+            if not isLex(elems[0], Lt.word, _strPerfs):
+                return True
             strInd = 1
-        if elems[strInd].type not in [Lt.text, Lt.mttext]:
+        if elems[strInd].type not in _strLexTypes:
             # print('$11', Lt.name(elems[strInd].type), elems[strInd].text)
             return True
         # print('$4', len(elems))
         match elen:
             # case 1:
             #     return elems[0].type not in [Lt.text, Lt.mttext]
-            case 2:
-                if not isLex(elems[0], Lt.word, ['g', 're']):
-                    return True
+            # case 2:
             # case 3 if elems[0].text in ["'''", '"""', '```']:
             #     return elems[-1].text in ["'''", '"""', '```']
-            case 3|5:
-                if not isLex(elems[0], Lt.word, 're'):
-                    return True
-                if elen == 5 and (not isLex(elems[2], Lt.oper, '{') or not isLex(elems[-1], Lt.oper, '}')):
+            case 3:
+                return elems[-1].type != Lt.word
+            case 5:
+                if (not isLex(elems[2], Lt.oper, '{') or not isLex(elems[-1], Lt.oper, '}')):
                     return True
         return False
-
-
-class CaseSolid(CaseLim):
-    ''' any solid expr '''
-    # def __init__(self):
-    #     super().__init__()
-    
-    def match(self, elems:list[Elem])-> bool:
-        r = isSolidExpr(elems)
-        # print('CaseSolid', r)
-        return r
-
-
-class CaseAny(CaseLim):
-    
-    def match(self, elems:list[Elem])-> bool:
-        return True
-    
-
-
-class CaseSolidLeft(CaseLim):
-    ''' solid with left-end '''
-    
-    def match(self, elems:list[Elem])-> bool:
-        r = isSolidExpr(elems, True, skipKeywords=True)
-        # print('1>>',r)
-        if not isinstance(r, tuple):
-            return False
-        ok, ind = r
-        return ok and ind > 0
-        
-
-
-
-# # CaseMString
-# # CaseBrackets -> CaseBrRound, CaseBrSquare, CaseBrCurl
-# # CaseWord -> CaseKeyword, CaseVar, CaseVal
-# # CaseEndBrackets -> funcCall, collectElem, structConstr
-# # CaseExprLeft: ObjMember, ListExtr, FuncCurry
-# expCaseSolids:list[ExpCase] = [
-#     CaseBreak(), CaseContinue(), CaseReturn(),  CaseElse(), 
-    
-#     CaseVal(), CaseVar(), CaseVar_(), 
-#     CaseString(), CaseGlif(), CaseRegexp(), 
-#     CaseDotName(), CaseRTildArroy(), 
-    
-#     CaseListGen(), CaseBytes(), CaseBytesExplicit(),
-#     CaseArgExtraList(), CaseArgExtraDict(),
-#     CaseDictLine(), CaseListComprehension(),  
-#     CaseTuple(), CaseList(),
-    
-#     CaseFunCall(), CaseStructConstr(),
-#     CaseBrackets(), CaseMString()
-# ]
-
 
 
 class CaseRWord(CaseLim):
     ''' keyword expr '''
     
-    def match(self, elems:list[Elem])-> bool:
+    def match(self, info:CMatchInfo)-> bool:
+        elems = info.elems
         if len(elems) < 2:
             return False
         if elems[0].type != Lt.word:
@@ -340,45 +412,25 @@ class CaseOperLim(CaseLim):
     
     def __init__(self):
         super().__init__()
-        self.splitter = OperSplitter()
+        self.splitter = OperSplitter.getInst()
         self.opers = self.splitter.opers[5:]
 
-    def match(self, elems:list[Elem]) -> bool:
-        if len(elems) < 3:
+    def match(self, info:CMatchInfo) -> bool:
+        if len(info.elems) < 3:
             return False
-        ind = self.splitter.mainOper(elems)
-        if ind == 0 or  elems[ind].type != Lt.oper:
+        # ind = self.splitter.mainOper(info.elems)
+        ind = info.mid
+        if ind == 0 or  info.elems[ind].type != Lt.oper:
             return False
-        return elems[ind].text in self.opers
+        return (info.elems[ind].text in self.opers), ind
 
 
 class CaseServ(CaseLim):
     ''' '''
     
-    def match(self, elems:list[Elem]) -> bool:
-        if len(elems) == 0:
+    def match(self, info:CMatchInfo) -> bool:
+        if len(info.elems) == 0:
             return True
-        if len(elems[0].text) > 1 and elems[0].text[0] == '@':
+        if len(info.elems[0].text) > 1 and info.elems[0].text[0] == '@':
             return True
 
-
-
-# # CaseService -> empty, debug, unclosed
-# # CaseKeywordLeft -> definition, control, import
-# # CaseOperators -> lambda, bin-common, inline-control, sequence, unarLeft
-# #
-# expCaseList:list[ExpCase] = [
-#     CaseEmpty(), CaseDebug(),
-#     CaseUnclosedBrackets(),
-#     CaseInlineSub(),
-    
-#     CaseImport(), 
-#     CaseFuncDef(), CaseMathodDef(), # ident func, then - method
-#     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(),  
-#     CaseMatchCase(),
-#     CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
-    
-#     CaseLambda(),
-#     CaseSemic(), CaseBinOper(), CaseCommas(),
-#     CaseLUnar(StrFormatter()),
-# ]

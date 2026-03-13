@@ -255,6 +255,16 @@ class TestDev(TestCase):
         ab: A|B = null
         ff = x -> x + 2
         
+        ## match cases
+        
+        match nn$/N  a :: int
+        match nn$/N  a :: int|float
+        match nn$/N  1 | 2 | 3
+        match nn$/N  () | {}
+        match nn$/N  :: A
+        match nn$/N  A{}
+        
+        
         #= bugs
         
         '''
@@ -271,7 +281,7 @@ class TestDev(TestCase):
             try:
                 expTree = lex2tree(clines)
             except LangError as ex:
-                # print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n!! Error LangError:', ex.msg)
+                print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n!! Error LangError:', ex.msg)
                 self.fail()
                 # raise ex
             except Exception as ex:
@@ -284,7 +294,7 @@ class TestDev(TestCase):
     #     prof.runctx('self.interpret_base_cases()', globals(), locals())
         
 
-    def _test_base_lang_cases(self):
+    def test_base_lang_cases(self):
         self.interpret_base_cases()
 
     def _test_code3(self):

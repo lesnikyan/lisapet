@@ -170,6 +170,10 @@ class MTMultiTyped(MTCase):
         n :: (A|B|int)
     '''
     
+    def __init__(self):
+        super().__init__()
+        self.splitter = OperSplitter.getInst()
+    
     def findColons(self, elems):
         operInd = -1
         for i in range(2):
@@ -195,7 +199,8 @@ class MTMultiTyped(MTCase):
         # has brackets (A | B)
         if isLex(elems[operInd+1], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')'):
             # print('$2', elemStr(typeElems))
-            if isSolidExpr(elems[operInd+1:], skipKeywords=True):
+            ok, _ = isSolidExpr(elems[operInd+1:], skipKeywords=True)
+            if ok:
                 typeElems = typeElems[1:-1]
                 # print('$3', elemStr(typeElems))
         # A | B | C
@@ -216,6 +221,7 @@ class MTMultiTyped(MTCase):
         # print('MT splitTypes', elemStr(elems))
         cases = [CaseBrackets(), CaseBinOper(), CaseVar()]
         subs = elems
+        mid = self.splitter.mainOper(elems)
         for cs in cases:
             if cs.match(subs):
                 if cs.sub():
@@ -330,7 +336,7 @@ class MTMultiCase(MTComplex):
     
     def __init__(self):
         super().__init__()
-        self.spl = OperSplitter(MTComplex._priors)
+        self.spl = OperSplitter.getInst(MTComplex._priors)
         self.ps = CaseSeq('|')
 
     def match(self, elems:list[Elem]) -> bool:
@@ -359,7 +365,7 @@ class MTPtGuard(MTComplex, SubCase):
     
     def __init__(self):
         super().__init__()
-        self.spl = OperSplitter(MTComplex._priors)
+        self.spl = OperSplitter.getInst(MTComplex._priors)
         
     
     def match(self, elems:list[Elem]) -> bool:
@@ -396,7 +402,7 @@ class CommaSeparatedSequence(MTContr):
     def __init__(self):
         super().__init__()
         priors = '( ) [ ] { } , | , : ,  `1` '
-        self.spl = OperSplitter(priors)
+        self.spl = OperSplitter.getInst(priors)
         self.cs = CaseCommas()
 
     def matchEdges(self, elems:list[Elem]):

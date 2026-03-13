@@ -55,9 +55,9 @@ class CaseMatch(SubCase):
         ''' match expr '''
         if len(elems) < 1:
             return False
-        if isLex(elems[0], Lt.word, 'match'):
-            return True
-        return False
+        return isLex(elems[0], Lt.word, 'match')
+            # return True
+        # return False
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         return MatchExpr(), [elems[1:]]
@@ -220,9 +220,8 @@ class CaseElse(BlockCase, SubCase):
     '''
         
     def match(self, elems:list[Elem]) -> bool:
-        if elems[0].text == 'else':
-            # TODO: possible case in feature: else if sub-cond
-            return True
+        return elems[0].text == 'else'
+            # return True
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         exp = ElseExpr()

@@ -258,9 +258,9 @@ class TestRegexp(TestCase):
             ('re``{fls}', 1),
             ('re`abc`{fls}', 1),
             # 'aiLmsux'
-            ('re``aiLmsux', 1),
-            ('re``mix', 1),
-            ('re``aiLmsur', 0),
+            ('re`11`aiLmsux', 1),
+            ('re`22`mix', 1),
+            ('re`33`aiLmsur', 0),
             ('re``baiLmsux', 0),
             ('re``bcdef', 0), 
             ('re`1`i mux', 0),
@@ -271,11 +271,16 @@ class TestRegexp(TestCase):
         ]
         
         cs = CaseRegexp()
+        co = CaseOption(CaseStr(), [CaseRegexp(), CaseGlif(), CaseString(), CaseMString()])
         for src, expe in data:
             tlines = splitLexems(src)
             clines:CLine = elemStream(tlines)
-            # print(src, clines)
-            self.assertEqual(bool(expe), cs.match(clines[0].code), src)
+            # print('src:', src, '', clines[0].code, cs.match(clines[0].code))
+            minfo = CMatchInfo(clines[0].code)
+            res = co.match(minfo)
+            if res:
+                res = cs.match(clines[0].code)
+            self.assertEqual(bool(expe), res, src)
 
     def test_regex_combineFlags(self):
         ''' '''

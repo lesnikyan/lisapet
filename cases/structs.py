@@ -104,7 +104,7 @@ class CaseStructConstr(SubCase, SolidCase):
         right part: 
             TypeName {field: val, field: val}
     '''
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], ind=-1) -> bool:
         '''
         TypeName {dict-like args}
         module.Typename{args}
@@ -120,11 +120,11 @@ class CaseStructConstr(SubCase, SolidCase):
         dc = CaseDictLine()
         # get curvy brackets part
         # be sure that case already checked as Solid expr
-        r =  isSolidExpr(elems, getLast=True)
+        ok, pos = isSolidExpr(elems, getLast=True)
         # print('Str.Match', r)
-        if not isinstance(r, tuple):
-            return False
-        ok, pos = r
+        # if not isinstance(r, tuple):
+        #     return False
+        
         # print('lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
         if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '{') : 
             return False

@@ -156,7 +156,7 @@ expCaseList:list[ExpCase] = [
     CaseInlineSub(),
     
     CaseImport(), 
-    CaseFuncDef(), CaseMathodDef(), # ident func, then - method
+    CaseFuncDef(), CaseMethodDef(), # ident func, then - method
     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturnVal(),  
     CaseMatchCase(),
     CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
@@ -208,7 +208,8 @@ def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
     # print('#makePMatchExpr:', [(n.text, Lt.name(n.type)) for n in elems])
     # print('\n#tree-makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
     caseList = patternMatchCasesSolid
-    if not isSolidExpr(elems, skipKeywords=True):
+    ok, _ = isSolidExpr(elems, skipKeywords=True)
+    if not ok:
         caseList = patternMatchCasesCplx
         
     found = mtCases(elems, caseList, parent)
@@ -263,10 +264,13 @@ def subBtContext(blockContext:Expression):
             return CaseMatchCase()
     return None
 
+
+## py -m cProfile -s tottime -m unittest
+
 def caseMatcher():
     strLim = CaseOption(CaseStr(), [CaseRegexp(), CaseGlif(), CaseString(), CaseMString()])
     wordLim = CaseOption(CaseWord(), [CaseElse(), CaseBreak(), CaseContinue(), CaseReturn(), CaseVar_(), CaseNumVal(), CaseDebug(), CaseVar(), ])
-    solidLeft = CaseOption(
+    solidLeft = CaseOptionPrepared(
         CaseSolidLeft(), 
         [CaseFunCall(), CaseStructConstr(), CaseArgExtraList(), CaseDotName(), 
         CaseRTildArroy(), CaseSlice(), CaseCollectElem(), CaseBytesExplicit()])
@@ -279,18 +283,22 @@ def caseMatcher():
     solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidLeft, brkLim, solidOther])
 
     # ===
+    # def match\(self, elems:list\[Elem\]\)
 
     servLim = CaseOption(CaseServ(), [CaseEmpty(), CaseDebug(),])
-    rKeywords = CaseOption(
-        CaseRWord(), 
-        [CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(), CaseImport(), 
-        CaseFuncDef(), CaseMathodDef(), CaseStructBlockDef(), CaseStructDef(), CaseEnum(),])
+    
+    kewRList = [CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(), CaseImport(), CaseEnum(), 
+        CaseFuncDef(), CaseMethodDef(), CaseStructDef(), CaseStructBlockDef(),]
+    
+    keywRs = CaseOption(CaseAny(), kewRList)
+    
+    keyrwLim = CaseOption(
+        CaseRWord(), [CaseInlineSub(), keywRs])
 
-    operLim = CaseOption(CaseOperLim(), [CaseLambda(), CaseBinOper(), CaseSemic(), CaseCommas(), ])
-
+    operLim = CaseOptionPrepared(CaseOperLim(), [CaseLambda(), CaseBinOper(), CaseCommas(), CaseSemic(), ])
 
     # should apply after solid
-    nonSolLim = CaseOption(CaseAny(), [servLim, CaseUnclosedBrackets(), CaseInlineSub(), rKeywords, operLim, CaseLUnar(StrFormatter()),])
+    nonSolLim = CaseOption(NonSolid(), [servLim, CaseUnclosedBrackets(), keyrwLim, operLim, CaseLUnar(StrFormatter()),])
 
     fullMatcher = CaseMatchcher([solidLim, nonSolLim])
     return fullMatcher
@@ -330,8 +338,9 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     
     
     if not foundCase:
-        foundCase = __genMatcher.find(elems)
-        ee = 55
+        lineInfo = CMatchInfo(elems)
+        foundCase = __genMatcher.find(lineInfo)
+        # ee = 55
         # if isinstance(foundCase, CaseOption):
         #     ee = (foundCase.matcher, foundCase.subs)
         # print('tr-fc', foundCase, ee)
