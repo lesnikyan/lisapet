@@ -26,6 +26,7 @@ from libs.regexp import *
 from nodes.func_features import *
 
 
+import cProfile as prof
 import pdb
 
 
@@ -123,6 +124,29 @@ class TestDev(TestCase):
         
         TODO: add assertion to cases in test_lists
         
+        
+        TODO: think about performance, decreased after \lambda changes.
+        
+        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        
+        TODO: think about import native lib / module into LP code.
+            eval.py: importLib('math', math)
+            code.et: import math
+        
+        TODO: math functions:
+            log(x, base), ln(x), lg(x),
+            abs(), sum(list), prod(list), rem(a, b)->>(int, int)
+            sin(), cos(), tg(), ctg(), atg(), actg(), asin(), acos(),...
+            ceil(), floor(), round()
+        
+        TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
+        
+        TODO: string.replace({dict}) # check, implement if not
+        
+        TODO: fix print(bool): should be false, true, instead of False, True
+        
+        TODO: add builtin compare() for base type: string, tuple, bytes.
+        
         TODO: refactor tree.py from loops of cases to pattern-tree
         1) find common cases:
             solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, single control-keywords, var, val, 
@@ -131,27 +155,6 @@ class TestDev(TestCase):
         2.2) refactor list-like expressions to avoid multiple check items in []-brackets
             first check solid []-case, then find case in []-cases:
             list, slice, iter-gen, list-gen, bytes
-        
-        
-        TODO: think about performance, decreased after \lambda changes.
-        
-        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
-            
-        TODO: math functions:
-            log(x, base), ln(x), lg(x),
-            abs(), sum(list), prod(list), rem(a, b)->>(int, int)
-            sin(), cos(), tg(), ctg(), atg(), actg(), asin(), acos(),...
-            ceil(), floor(), round()
-        
-        TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
-        TODO: string.replace({dict}) # check, implement if not
-        
-        TODO: fix print(bool): should be false, true, instead of False, True
-        
-        TODO: add builtin compare() for base type: string, tuple, bytes.
-        
-        DONE: root, square root operator, the same precedence as **
-            ^/  3^/8 
     '''
 
     _ = r"""
@@ -160,6 +163,175 @@ class TestDev(TestCase):
 
 """
 
+    def interpret_base_cases(self):
+        
+        data = r'''
+        #= solid
+        12
+        12.5
+        0xdef
+        0b101
+        name
+        @debug
+        return
+        break
+        continue
+        if true$/N    2$/Nelse$/N    3
+        _
+        obj.aaa
+        []
+        [1,2,3]
+        [2 .. 5]
+        [n ; n <- nums; n != 5]
+        [11 22 fe]
+        0x[12 34 fe dc]
+        nums[1]
+        nums[1:end]
+        [- 100]
+        [a * b]
+        [[1,2,3]]
+        [[]]
+        [obj.memb]
+        [foo()]
+        
+        foo(1)
+        f1().aaa.f2().bbb[1+2].f3()
+        Abc{}
+        Abc{a:1}
+        'Hello 1'
+        `Hello 2`
+        foo()
+        (1)
+        """Hello\n 3"""
+        g'A'
+        re'[0-9a-f]?[soda]{1,5}'
+        re`abc\w+\s+`ui
+        ~"Format {a} {f()}"
+        foo~>
+        args...
+        (1,2,3)
+        {'a': 'bbb'}
+        {a:11, 'b':234, c: [1,2]}
+        (a + b - 13 / 44 * foo() - obj.val)
+        foo~>(1)(2)
+        true
+        null
+        
+        #== not solid
+        a + b
+        a = 13
+        a = a + b
+        func foo()
+            1
+        
+        struct Abc a:int, b:string
+        
+        struct C(B) x:int
+        
+        struct AAbbbc
+            a:int
+            b: string
+        
+        if x < 5
+            y = 80
+        for i <- [1..5]
+        for i=0; i < 5; i += 1
+        
+        res <- (1,2)
+        \ x -> x
+        \ x, y -> x + y - foo()
+        (a, b, c) -> a + b + c
+        @debug 123 Hello debug )
+        if 1 /:  if 123 /: 2
+        while a < 5
+        match n
+        if x
+        return 14
+        return (a + b)
+        import mod
+        import mod > *
+        import mymodule > foo f1, bar f2
+        enum Abc
+        1, 2, 3
+        aa; bbb ;c
+        a:int
+        foo:function
+        f00 * bar $ arg
+        foo * bar~>(1)(2) $ arg
+        a :: int
+        ab: A|B = null
+        ff = x -> x + 2
+        
+        ## match cases
+        
+        match nn$/N  a :: int
+        match nn$/N  a :: int|float
+        match nn$/N  1 | 2 | 3
+        match nn$/N  () | {}
+        match nn$/N  :: A
+        match nn$/N  A{}
+        
+        
+        #= bugs
+        
+        '''
+        data = norm(data[1:]).splitlines()
+        for src in data:
+            if '' == src.strip():
+                continue
+            src = src.replace('$/N', '\n')
+
+            tlines = splitLexems(src)
+            # print('', [[(l.val, Lt.name(l.ltype)) for l in n.lexems] for n in tlines])
+            clines:CLine = elemStream(tlines)
+            # print('', [c for c in clines])
+            try:
+                expTree = lex2tree(clines)
+            except LangError as ex:
+                print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n!! Error LangError:', ex.msg)
+                self.fail()
+                # raise ex
+            except Exception as ex:
+                # print('`=`=`=`=`=`=`=`\n!!Error Exception', ex.args)
+                self.fail()
+                # raise ex
+
+    # def test_interpret_profile(self):
+    #     ''' '''
+    #     prof.runctx('self.interpret_base_cases()', globals(), locals())
+        
+
+    def test_base_lang_cases(self):
+        self.interpret_base_cases()
+
+    def _test_code3(self):
+        ''' '''
+        code = r'''
+        
+        res = []
+        
+        x = 1
+        y = 0
+        if x > 5
+            res <- 2
+        else if x > 0
+            res <- 3
+        else
+            res <- 7
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
 
 
     def _test_code(self):

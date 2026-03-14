@@ -1759,7 +1759,7 @@ class TestFuncs(TestCase):
 
     def test_func_method_match(self):
         data = [
-            ('func u:User setName(name:string)', CaseMathodDef),
+            ('func u:User setName(name:string)', CaseMethodDef),
             ('func setName(name:string)', CaseFuncDef),
         ]
         for code, ctype in data:

@@ -733,7 +733,7 @@ class TestOper(TestCase):
         '''
         code = norm(code[1:])
         src = code.splitlines()
-        spl = OperSplitter()
+        spl = OperSplitter.getInst()
         for sline in src:
             if len(sline) == 0:
                 continue

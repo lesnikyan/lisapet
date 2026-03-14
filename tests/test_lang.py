@@ -58,7 +58,7 @@ class TestLang(TestCase):
             if not cline.code:
                 continue
             # print('', elemStr(cline.code))
-            res = isSolidExpr(cline.code)
+            res = isSolidExpr(cline.code, skipKeywords=True)
             # print('', res)
             self.assertTrue(res)
             
@@ -82,8 +82,8 @@ class TestLang(TestCase):
             if not cline.code:
                 continue
             # print('', elemStr(cline.code))
-            res = isSolidExpr(cline.code)
-            # print('', res)
+            res, _ = isSolidExpr(cline.code)
+            # print('', elemStr(cline.code),  res)
             self.assertFalse(res)
 
     def test_multiline_base(self):
