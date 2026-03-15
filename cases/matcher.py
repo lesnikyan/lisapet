@@ -8,24 +8,24 @@ from vars import *
 # from vals import isDefConst, elem2val, isLex
 
 from cases.tcases import *
-from cases.control import *
-from cases.oper import *
-from cases.collection import *
-from cases.mt_cases import *
-
-from nodes import *
-from nodes.tnodes import *
+# from cases.control import *
+# from cases.oper import *
+# from cases.collection import *
+# from cases.mt_cases import *
 from cases.sequence import *
-from cases.runar_oper import *
-from nodes.oper_nodes import *
-from nodes.control import *
-from cases.structs import *
-from cases.funcs import *
-from cases.operwords import *
-from cases.modules import *
+# from cases.runar_oper import *
+# from cases.structs import *
+# from cases.funcs import *
+# from cases.operwords import *
+# from cases.modules import *
 
-from parser import *
-from bases.strformat import  *
+# from nodes import *
+# from nodes.tnodes import *
+# from nodes.oper_nodes import *
+# from nodes.control import *
+
+# from parser import *
+# from bases.strformat import  *
 
 
 _1 = r''' 
@@ -132,7 +132,7 @@ class CaseOption(ExpCase):
         self.matcher:CaseLim = matcher
     
     def match(self, info:CMatchInfo)-> bool:
-        # print('CO.match by %s' % (self.matcher.__class__.__name__), self.matcher.match(elems))
+        # print('CO.match by %s' % (self.matcher.__class__.__name__), self.matcher.match(info))
         return self.matcher.match(info)
     
     def isLim(self):
@@ -177,7 +177,7 @@ class CaseOptionPrepared(CaseOption):
         self.found = None
     
     def match(self, info:CMatchInfo)-> bool:
-        # print('CO.match by %s' % (self.matcher.__class__.__name__), self.matcher.match(elems))
+        # print('COP.match by %s' % (self.matcher.__class__.__name__), self.matcher.match(info))
         self.found = None
         mres = self.matcher.match(info)
         if isinstance(mres, tuple):

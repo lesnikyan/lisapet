@@ -130,41 +130,41 @@ complex
 # CaseWord -> CaseKeyword, CaseVar, CaseVal
 # CaseEndBrackets -> funcCall, collectElem, structConstr
 # CaseExprLeft: ObjMember, ListExtr, FuncCurry
-expCaseSolids:list[ExpCase] = [
-    CaseBreak(), CaseContinue(), CaseReturn(),  CaseElse(), 
+# expCaseSolids:list[ExpCase] = [
+#     CaseBreak(), CaseContinue(), CaseReturn(),  CaseElse(), 
     
-    CaseNumVal(), CaseVar(), CaseVar_(), 
-    CaseString(), CaseGlif(), CaseRegexp(), 
-    CaseDotName(), CaseRTildArroy(), 
+#     CaseNumVal(), CaseVar(), CaseVar_(), 
+#     CaseString(), CaseGlif(), CaseRegexp(), 
+#     CaseDotName(), CaseRTildArroy(), 
     
-    CaseListGen(), CaseBytes(), CaseBytesExplicit(),
-    CaseArgExtraList(), CaseArgExtraDict(),
-    CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseCollectElem(), 
-    CaseTuple(), CaseList(),
+#     CaseListGen(), CaseBytes(), CaseBytesExplicit(),
+#     CaseArgExtraList(), CaseArgExtraDict(),
+#     CaseDictLine(), CaseListComprehension(), CaseSlice(), CaseCollectElem(), 
+#     CaseTuple(), CaseList(),
     
-    CaseFunCall(), CaseStructConstr(),
-    CaseBrackets(), CaseMString()
-]
+#     CaseFunCall(), CaseStructConstr(),
+#     CaseBrackets(), CaseMString()
+# ]
 
-# CaseService -> empty, debug, unclosed
-# CaseKeywordLeft -> definition, control, import
-# CaseOperators -> lambda, bin-common, inline-control, sequence, unarLeft
-#
-expCaseList:list[ExpCase] = [
-    CaseEmpty(), CaseDebug(),
-    # CaseUnclosedBrackets(),
-    CaseInlineSub(),
+# # CaseService -> empty, debug, unclosed
+# # CaseKeywordLeft -> definition, control, import
+# # CaseOperators -> lambda, bin-common, inline-control, sequence, unarLeft
+# #
+# expCaseList:list[ExpCase] = [
+#     CaseEmpty(), CaseDebug(),
+#     # CaseUnclosedBrackets(),
+#     CaseInlineSub(),
     
-    CaseImport(), 
-    CaseFuncDef(), CaseMethodDef(), # ident func, then - method
-    CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturnVal(),  
-    CaseMatchCase(),
-    CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
+#     CaseImport(), 
+#     CaseFuncDef(), CaseMethodDef(), # ident func, then - method
+#     CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturnVal(),  
+#     CaseMatchCase(),
+#     CaseStructBlockDef(), CaseStructDef(), CaseEnum(),
     
-    CaseLambda(),
-    CaseSemic(), CaseBinOper(), CaseCommas(),
-    CaseLUnar(StrFormatter()),
-]
+#     CaseLambda(),
+#     CaseSemic(), CaseBinOper(), CaseCommas(),
+#     CaseLUnar(StrFormatter()),
+# ]
 
 patternMatchCasesSolid = [
     MT_Other(),
@@ -175,13 +175,35 @@ patternMatchCasesCplx = [
     MTPtGuard(), MTMultiCase(), MTTypedVal(), MTDuaColon(), MTMultiTyped(),
 ]
 
+def mtMatcher():
+    ''' case-tree of match-case cases. '''
+    # MTVal(), MTString(), MTRegexp(), MTList(), MTTuple(), MTDict(), MTStruct(), MTObjMember()
+    
+    # sqBrkLim = CaseOption(CaseBrkSquare(), [CaseListGen(), CaseBytes(), CaseListComprehension(), CaseList()])
+    # brkLim = CaseOption(CaseGenBrackets(), [sqBrkLim, CaseTuple(), CaseDictLine(), CaseBrackets()])
 
-def getCases()->list[ExpCase]:
-    return expCaseList
+    
+    wordLim = CaseOption(CaseWord(), [MT_Other(), MTVal()])
+    brkLim = CaseOption(CaseGenBrackets(), [MTList(), MTTuple(), MTDict(), MTParenth(), ])
+    strLim = CaseOption(CaseStr(), [MTString(), MTRegexp(),])
+    solidRight = CaseOptionPrepared(CaseSolidLeft(), [MTStruct(), MTObjMember(),])
+
+    solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidRight, brkLim])
+    
+    
+    operLim = CaseOptionPrepared(CaseOperLim(), [MTPtGuard(), MTTypedVal(), MTMultiCase(), MTMultiTyped(), ])
+    
+    nonSolLim = CaseOption(NonSolid(), [MTDuaColon(), operLim, MTMultiTyped(),])
+
+    fullMatcher = CaseMatchcher([solidLim, nonSolLim])
+    return fullMatcher
+
+# def getCases()->list[ExpCase]:
+#     return expCaseList
 
 
 def simpleExpr(expCase:ExpCase, elems)->Expression:
-    # dprint('#simple-case:', expCase)
+    # print('#simple-case:', expCase)
     return expCase.expr(elems)
 
 
@@ -204,6 +226,7 @@ def mtCases(elems:list[Elem], cases: list[ExpCase], parent:ExpCase=None)->Matchi
     return None
 
 
+
 def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
     # print('#makePMatchExpr:', [(n.text, Lt.name(n.type)) for n in elems])
     # print('\n#tree-makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
@@ -220,6 +243,9 @@ def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
     raise InterpretErr('No current MTCase for `%s` ' % ''.join([n.text for n in elems]))
 
 
+
+__mtMatcher = mtMatcher()
+
 def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     base, subs = expCase.split(elems)
     # print('#complex-case:', expCase.__class__.__name__, ' base:', base, subs)
@@ -228,11 +254,34 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     if not expCase.sub():
         return base
     
+    # if isinstance(expCase, CaseMatchCase):
+    #     # pattern !- block
+    #     pattern =  makePMatchExpr(subs[0])
+    #     block = elems2expr(subs[1])
+    #     expCase.setSub(base, [pattern, block])
+    #     # print('complexExpr..CaseMatchCase', base)
+    #     return base
+    
     if isinstance(expCase, CaseMatchCase):
         # pattern !- block
-        pattern =  makePMatchExpr(subs[0])
+        mtElems = subs[0]
+        info = CMatchInfo(subs[0])
+        mtCase =  __mtMatcher.find(info)
+        if not mtCase:
+            raise EvalErr("Can't find the MTCase for source %s", elemStr(mtElems))
+        
+        # print('mt.found>', mtCase.__class__.__name__, '', elemStr(elems))
+        if mtCase.hasSubExpr():
+            pattr, subElems = mtCase.split(mtElems)
+            subExp = elems2expr(subElems)
+            # print('$3>', subExp)
+            pattr = mtCase.setSub(pattr, subExp)
+        else:
+            pattr = mtCase.expr(mtElems)
+        # print('mtc:', mtcase)
+        # pattern =  makePMatchExpr(subs[0])
         block = elems2expr(subs[1])
-        expCase.setSub(base, [pattern, block])
+        expCase.setSub(base, [pattr, block])
         # print('complexExpr..CaseMatchCase', base)
         return base
         
@@ -253,12 +302,28 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     return base
 
 def makeExpr(expCase:ExpCase, elems:list[Elem])->Expression:
-    # dprint('makeExpr', [n.text for n in elems])
+    # print('makeExpr', expCase, [n.text for n in elems])
     if expCase.sub():
         return complexExpr(expCase, elems)
     return simpleExpr(expCase, elems)
 
-def subBtContext(blockContext:Expression):
+
+# def findMTcase(elems):
+#     info = CMatchInfo(elems)
+#     mtcase =  __mtMatcher.find(info)
+#     base, subs = mtcase.split(elems)
+    
+#     mcExpr = CaseMatchCase()
+#         # if isinstance(expCase, CaseMatchCase):
+#     # pattern !- block
+#     pattern =  makePMatchExpr(subs[0])
+#     block = elems2expr(subs[1])
+#     expCase.setSub(base, [pattern, block])
+#     # print('complexExpr..CaseMatchCase', base)
+#     return base
+
+
+def subBtContext(elems:list[Elem], blockContext:Expression):
     match blockContext:
         case MatchExpr():
             return CaseMatchCase()
@@ -268,6 +333,7 @@ def subBtContext(blockContext:Expression):
 ## py -m cProfile -s tottime -m unittest
 
 def caseMatcher():
+    ''' case-tree of common cases '''
     strLim = CaseOption(CaseStr(), [CaseRegexp(), CaseGlif(), CaseString(), CaseMString()])
     wordLim = CaseOption(CaseWord(), [CaseElse(), CaseBreak(), CaseContinue(), CaseReturn(), CaseVar_(), CaseNumVal(), CaseDebug(), CaseVar(), ])
     solidLeft = CaseOptionPrepared(
@@ -315,11 +381,11 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     
     # check context-dependent
     if blockContext:
-        foundCase = subBtContext(blockContext)
+        foundCase = subBtContext(elems, blockContext)
     
     # # check Solid:
     # expSolid = isSolidExpr(elems)
-    # # print('\ntree.solid:', expSolid)
+    # print('tree-foundMT:', foundCase)
     # if not foundCase and expSolid:
     #     # print('elems2expr/isSolidExpr', expCaseSolids)
     #     for expCase in expCaseSolids:

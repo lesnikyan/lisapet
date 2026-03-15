@@ -176,6 +176,7 @@ class MatchExpr(ControlBlock):
         vv = mval
         mval = var2val(mval)
         # print('Match. mval', self.match, vv, '::',  mval)
+        # print('M !-')
         for cs in self.cases:
             mctx = Context(ctx)
             cs.doExp(mctx)

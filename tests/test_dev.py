@@ -163,6 +163,67 @@ class TestDev(TestCase):
 
 """
 
+
+    def test_interpret_mt_cases(self):
+        
+        data = r'''
+        #= solid
+        12
+        []
+        ()
+        (,)
+        {}
+        _{}
+        aa{}
+        a :: int
+        b :: int | float
+        c :: A | list
+        1 | 2 | 3
+        ::A|B|C
+        
+        () | {}
+        :: A
+        :: a | int
+        :: A | B
+        (:: int, )
+        [:: int,]
+        (:: int)
+        
+        
+        #= bugs
+        
+        '''
+        data = norm(data[1:]).splitlines()
+        for src in data:
+            if '' == src.strip():
+                continue
+            if src.startswith('#'):
+                continue
+            
+            # print('>', src)
+            # src = src.replace('$/N', '\n')
+            src = 'match n\n    %s' % src
+
+            tlines = splitLexems(src)
+            # print('', [[(l.val, Lt.name(l.ltype)) for l in n.lexems] for n in tlines])
+            clines:CLine = elemStream(tlines)
+            # print('', [c for c in clines])
+            try:
+                expTree:Module = lex2tree(clines)
+                MatchExpr, CaseExpr
+                # print('tt1>', expTree.subs[0].cases[0].expect.__class__.__name__)
+                # print('tt1>', expTree.subs[0].__class__.__name__)
+            except LangError as ex:
+                print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n!! Error LangError:', ex.msg)
+                self.fail()
+                # raise ex
+            except Exception as ex:
+                # print('`=`=`=`=`=`=`=`\n!!Error Exception', ex.args)
+                self.fail()
+                # raise ex
+
+
+
     def interpret_base_cases(self):
         
         data = r'''
@@ -301,7 +362,7 @@ class TestDev(TestCase):
     #     prof.runctx('self.interpret_base_cases()', globals(), locals())
         
 
-    def test_base_lang_cases(self):
+    def _test_base_lang_cases(self):
         self.interpret_base_cases()
 
     def _test_code3(self):

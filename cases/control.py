@@ -91,6 +91,8 @@ class CaseMatchCase(SubCase):
         base.left = subs[0]
         if len(subs) > 1 and isinstance(subs[1], Expression):
             base.right = subs[1]
+            # print('$#2 ---- >', subs[1].src)
+        return base
 
 
 # class CaseMatchPattern(SubCase):

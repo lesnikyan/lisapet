@@ -13,6 +13,7 @@ from cases.oper import CaseBrackets, CaseBinOper, CaseVar
 from cases.collection import *
 from cases.structs import *
 from cases.operwords import CaseRegexp
+from cases.matcher import *
 
 
 '''
@@ -87,22 +88,21 @@ class MTVar(MTCase,CaseVar):
 
 
 class MTObjMember(MTCase,CaseDotName):
-    ''' MyEnum.name '''    
+    ''' Pattern should match value from enum.field 
+        or other const/static value field-like (such structures not implemented yet).
+        We can interpret it as a type of const values.
+        expl:
+        Colors.red '''
     
-    
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], n=0) -> bool:
         ''' '''
         if len(elems) != 3:
             return False
         return super().match(elems)
-        # ln = len(elems)
-        # if ln < 3:
-        #     return False
-        # return isField(elems)
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value from context by var name'''
-
+        # print('$.$', elemStr(elems))
         ename = elems[2].text
         objExpr = VarExpr(Var(elems[0].text, TypeAny()))
         member = VarExpr(Var(ename, TypeAny()))
@@ -113,11 +113,12 @@ class MTObjMember(MTCase,CaseDotName):
         return ptt
 
 
-_base_types = "int,float,bool,string,list,tuple,dict,struct,function".split(',')
+# _base_types = "int,float,bool,string,list,tuple,dict,struct,function".split(',')
 
 class MTDuaColon(MTCase):
     ''' :: type  '''
     def match(self, elems:list[Elem])-> bool:
+        # print('$10', elemStr(elems), len(elems) == 2 and isLex(elems[0], Lt.oper, '::') and elems[1].type == Lt.word)
         return len(elems) == 2 and isLex(elems[0], Lt.oper, '::') and elems[1].type == Lt.word
     
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
@@ -138,7 +139,7 @@ class MTTypedVal(MTCase):
         # super().__init__()
         # self.typeOper = IsTypeExpr()
     
-    def match(self, elems:list[Elem])-> bool:
+    def match(self, elems:list[Elem], n=0)-> bool:
         
         if len(elems) != 3:
             # no combo types
@@ -182,12 +183,13 @@ class MTMultiTyped(MTCase):
                 break
         return operInd
 
-    def match(self, elems:list[Elem])-> bool:
-        # print('MTMultiTyped.match', elemStr(elems))
+    def match(self, elems:list[Elem], operInd=None)-> bool:
+        # print('MTMultiTyped.match', elemStr(elems), '<%s>'%operInd)
         if len(elems) < 2:
             return False
         # if isLex(elems[0], Lt.oper, '::')
-        operInd = self.findColons(elems)
+        if operInd is None:
+            operInd = self.findColons(elems)
         if operInd < 0:
             return False
         
@@ -214,7 +216,7 @@ class MTMultiTyped(MTCase):
             elif i % 2 == 1 and not isLex(n, Lt.oper, '|'):
                 # print('MT2', i, elemStr(typeElems), n.text)
                 return False
-        # print('Ok')
+        # print('MTMultiTyped.match', 'Ok')
         return True
 
     def splitTypes(self, elems):
@@ -248,8 +250,8 @@ class MTMultiTyped(MTCase):
         # print()
         operInd = self.findColons(elems)
         typeElems = elems[operInd+1:]
-        # print('$10>>', elemStr(typeElems))
         typeCase = self.splitTypes(typeElems)
+        # print('$10>>', operInd, elemStr(typeElems))
         if not typeCase:
             raise EvalErr("Error during split of type-expr elems in MTTyped")
         # if no var `:: type`
@@ -309,6 +311,33 @@ class MTEQMark(SubElem):
         return MCQMark(src='?')
 
 
+class MTParenth(MTCase):
+    ''' (expr)
+        (1|2)
+        (::int|float) | (A{} | {*})
+        except tuple, empty () also is a tuple
+    '''
+
+    def match(self, elems:list[Elem], ind=None)-> bool:
+        if not (len(elems) > 2 and elems[0].text == '(' and elems[-1].text == ')'):
+            return False
+        ok = True
+        if ind is None:
+            ok, ind = isSolidExpr(elems, getLast=True)
+        if not ok or ind !=0:
+            return False
+        return True
+        # return len(elems) > 2 and elems[0].text == '(' and elems[-1].text == ')'
+
+    def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
+        ''' return base expression, Sub(elems) '''
+        sub = elems[1: -1]
+        scase = findCase(sub)
+        subExp = scase.expr(sub)
+        # print('mt(...).expr:', elemStr(elems), subExp)
+        return subExp
+
+
 class MTContr(MTCase):
     ''' pattern-container:
     collections, structs,etc'''
@@ -326,7 +355,7 @@ class MTComplex(MTCase):
         ptt | ptt
         ptt :? ptt
     '''
-    _priors = '( ) [ ] { } , | , : ,  `1`, :? '
+    _priors = '( ) [ ] { } , | , ::, : ,  `1`, :? '
 
 
 class MTMultiCase(MTComplex):
@@ -339,19 +368,20 @@ class MTMultiCase(MTComplex):
         self.spl = OperSplitter.getInst(MTComplex._priors)
         self.ps = CaseSeq('|')
 
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], opInd=None) -> bool:
         # priors = '( ) [ ] { } , | , : ,  `1`, :? '
-        
-        opInd = self.spl.mainOper(elems)
-        
+        tt = opInd
+        if opInd is None:
+            opInd = self.spl.mainOper(elems)
+        # print('?', tt, opInd, elems[opInd].text)
         # print('MTMultiCase.match:', opInd, elems[opInd].text)
         return opInd > 0 and isLex(elems[opInd], Lt.oper, '|')
 
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         subs = elems
         # print('MTMultiCase.expr:', self.__class__.__name__, '', subs)
-        if self.ps.match(elems):
-            _, subs = self.ps.split(elems)
+        # if self.ps.match(elems):
+        _, subs = self.ps.split(elems)
         mcase = MCMultiCase(src=elems)
         for sub in subs:
             scase = findCase(sub)
@@ -366,19 +396,22 @@ class MTPtGuard(MTComplex, SubCase):
     def __init__(self):
         super().__init__()
         self.spl = OperSplitter.getInst(MTComplex._priors)
-        
+        self.lastId = None
     
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], opInd=None) -> bool:
         # priors = '( ) [ ] { } , | , : ,  `1`, :? '
-        opInd = self.spl.mainOper(elems)
-        
+        self.lastId = None
+        if opInd is None:
+            opInd = self.spl.mainOper(elems)
+        self.lastId = opInd
         # print('MTPtGuard.match:', opInd, elems[opInd].text)
         return opInd > 0 and isLex(elems[opInd], Lt.oper, ':?')
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[Elem]]:
         # priors = '( ) [ ] { } , | , : ,  `1`, :? '
         # spl = OperSplitter(MTComplex._priors)
-        opInd = self.spl.mainOper(elems)
+        # opInd = self.spl.mainOper(elems)
+        opInd = self.lastId
         left = elems[:opInd]
         patCase = findCase(left)
         pattr = patCase.expr(left)
@@ -404,6 +437,7 @@ class CommaSeparatedSequence(MTContr):
         priors = '( ) [ ] { } , | , : ,  `1` '
         self.spl = OperSplitter.getInst(priors)
         self.cs = CaseCommas()
+        self.noSep = True  # separator is not necessary
 
     def matchEdges(self, elems:list[Elem]):
         pass
@@ -413,15 +447,26 @@ class CommaSeparatedSequence(MTContr):
         # prels('CommaSeparatedSequence', elems, show=1)
         if lem < 2:
             return False
+        ok, ind = isSolidExpr(elems, getLast=True)
+        # print(' @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ', elemStr(elems), ok, ind)
+        if not ok or ind != 0:
+            return False
         if not self.matchEdges(elems):
             return False
         if len(elems) == 2:
             return True
-        opInd = self.spl.mainOper(elems)
-        # print('1>>>>>>>>>>>>', opInd,  elems[opInd].text)
-        if opInd != 0:
-            return False
+        
         subElems = elems[1:-1]
+        csOk = self.cs.match(subElems)
+        if csOk:
+            return True
+        # next - if 1 sub elem only [1], {22:222}, (expr)
+        return self.noSep
+        
+        # opInd = self.spl.mainOper(elems)
+        # # print('1>>>>>>>>>>>>', opInd,  elems[opInd].text)
+        # if opInd != 0:
+        #     return False
         opInd = self.spl.mainOper(subElems)
         nosub = ';:'
         if isLex(elems[0], Lt.oper, '{'):
@@ -429,9 +474,11 @@ class CommaSeparatedSequence(MTContr):
             nosub = ';'
         # print('2>>>>>>>>', opInd,  subElems[opInd].text)
         obrs = '([{'
-        return opInd == -1 or (
+        brCond = opInd == -1 or (
             opInd == 0 and subElems[opInd].text in obrs ) or (
             opInd > 0 and subElems[opInd].text not in nosub)
+        
+        
 
     def split(self, elems:list[Elem]):
         sub = elems[1:-1]
@@ -484,9 +531,15 @@ class MTTuple(CommaSeparatedSequence):
     ''' (), (1,), (1,2)
         (_), (1,_),
     '''
+    
+    def __init__(self):
+        super().__init__()
+        self.noSep = False
 
     def matchEdges(self, elems:list[Elem]):
-        return (isLex(elems[0], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')'))
+        if not (isLex(elems[0], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')')):
+            return False
+        return True
 
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         subPtts = self.split(elems)
@@ -564,13 +617,13 @@ class MTDict(CommaSeparatedSequence):
 
 
 class MTStruct(MTContr):
-    ''' '''
+    ''' Name{} , _{} , N{field:val} '''
     
     def __init__(self):
         self.struCase = CaseStructConstr()
     
-    def match(self, elems:list[Elem]) -> bool:
-        return (elems[0].type == Lt.word) and self.struCase.match(elems)
+    def match(self, elems:list[Elem], ind=None) -> bool:
+        return (elems[0].type == Lt.word) and self.struCase.match(elems, ind)
 
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
 
@@ -603,16 +656,43 @@ class MTFail(MTCase):
     ''' case of incorrect pattern-syntax '''
 
     def expr(self, elems:list[Elem]):
-        raise InterpretErr("Incorrect pattern-matching sequence")
+        raise InterpretErr("Incorrect pattern-matching sequence %s" % elemStr(elems))
 
 
 pMListInnerCases:list[MTCase] = [
-    MTMultiCase(), MTTypedVal(), MTDuaColon(), MTMultiTyped(),
+    MTMultiCase(), MTDuaColon(), MTTypedVal(),  MTMultiTyped(),
     MTVal(), MTE_(), MTVar(), MTString(), MTRegexp(), MTObjMember(),
     MTEStar(),  MTEQMark(), MTColPair(),
-    MTList(), MTTuple(), MTDict(), MTStruct(), 
+    MTList(), MTTuple(), MTParenth(), MTDict(), MTStruct(), 
 ]
 
+
+def innerMatcher():
+    ''' case-tree of match-case cases. '''
+    
+    # TODO: MT-cases in CaseOptionPrepared should be fixed to take 3 args
+    
+    wordLim = CaseOption(CaseWord(), [MTVal(), MTE_(), MTVar(), MTEStar(),  MTEQMark(), ])
+    brkLim = CaseOption(CaseGenBrackets(), [MTList(), MTTuple(), MTParenth(), MTDict(),])
+    strLim = CaseOption(CaseStr(), [MTString(), MTRegexp(),])
+    solidRight = CaseOptionPrepared(CaseSolidLeft(), [MTStruct(), MTObjMember(),])
+
+    solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidRight, brkLim])
+    
+    
+    operLim = CaseOptionPrepared(CaseOperLim(), [MTTypedVal(), MTMultiCase(), MTMultiTyped(), MTColPair(),])
+    
+    nonSolLim = CaseOption(NonSolid(), [MTDuaColon(), operLim, MTMultiTyped(),])
+
+    fullMatcher = CaseMatchcher([solidLim, nonSolLim])
+    return fullMatcher
+
+
+_innMatcher = innerMatcher()
+
+def New_findCase(elems:list[Elem])->MTCase:
+    info = CMatchInfo(elems)
+    return _innMatcher.find(info)
 
 def findCase(elems:list[Elem])->MTCase:
     # print('finCase', elems)

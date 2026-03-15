@@ -248,7 +248,7 @@ class OperSplitter:
 
                     return curPos # The main Result
         if isLex(elems[0], Lt.oper, unaryOperators):
-            # dprint('oper-found> unary [0 : %s]' % elems[0].text ) 
+            # print('oper-found> unary [0 : %s]' % elems[0].text ) 
             return 0
         return -1 # debug output, won't happened in real case
 
@@ -325,7 +325,7 @@ def isSolidExpr(elems:list[Elem], getLast=None, skipKeywords = False):
             if _bpairs[etx] != lastObr:
                 # incorrect brackets pair in closing
                 raise InterpretErr(f"incorrect brackets pair in closing `{etx}{_bpairs[etx]}`")
-                return False, -1
+                # return False, -1
             if len(opened) == 0 and getLast:
                 # last closed part found in solidExpr
                 if found == -1:
