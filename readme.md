@@ -102,12 +102,12 @@ Content:
     2. [Usage](#112-enum-usage)
     3. [Matching >>>](#2310-enum-elements)
 
-14. #### Builtin (native) functions and methods
+12. #### Builtin (native) functions and methods
     1. [Global functions: print, iter, etc.](#141-global-native-functions)
     2. [Bind native function as a method `[1,2].join(',')`](#142-binding-method-for-type)
     3. [Methods are already bound](#143-methods--are-already-bound-to-types)
 
-15. #### [Functional features](#15-functional-programming-features)  
+13. #### [Functional features](#15-functional-programming-features)  
     1. [Lambdas `x -> x ** 2`](#151-lambda-functions-right-arrow--)  
     2. [high-order functions `f1(f2)`](#152-high-order-functions)
     3. [Function as object](#153-function-as-an-object)
@@ -119,18 +119,18 @@ Content:
     9. [Builtin `compose`, `g * f`](#159-builtin-composition)
     10. [apply `f $ x`](#1592-apply-operator)
 
-20. Inline syntax.  
+14. Inline syntax.  
     [Few-expressions block `x=1 ; f(x)`](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
 
-21. #### [String features](#21-string-features)
+15. #### [String features](#21-string-features)
     1. [insert `"%s" << x`](#211-percent-formatting)
     2. [include `~"{x}"`](#212-format-by-including-expressions)
     3. [base functions](#213-string-functions)
 
-22. [Modules. `import`](#22-import-modules)
+16. [Modules. `import`](#22-import-modules)
 
-23. #### `match`-statement
+17. #### `match`-statement
     1. [Match, cases, /:`](#23-match-statement)
     2. [List and tuple `[0,x,_,?,*]` `(_,?,*)`](#232-matching-list-and-tuple)
     3. [Dict pattern `{'a':a, _:_, *}`](#233-matching-dict)
@@ -141,7 +141,7 @@ Content:
     8. [Regexp case ```re`abc` ```](#238-regexp-case)
     9. [Type pattern `::`](#239-type-matching-_int)
 
-25. Regular expression:
+18. Regular expression:
     1. [Base syntax ```re`[abc]`i```](#251-regular-expressions-re)
     2. [match `=~`](#252-regexp-match-)
     3. [find `?~`](#253-regexp-find-)
@@ -2750,6 +2750,20 @@ match n
     # tuple
     (3,4,5) /: expr
 ```
+
+Note. Commas in tuple.  
+Empty tuple pattern can have comma or not.  
+Tuple with 1 elem should have comma in the end.  
+```python
+match n:
+    () /: 1 # valid  empty tuple
+    (2,) /: 2 # valid tuple with 1 elem
+    (3) /: 0 # not a tuple, just number in brackets  
+    (:: int) /: 0 # still not a tuple
+    ((5,)) 0 # 1-sub tuple in outer brackets
+```
+
+
 2. Variable in collection `[a,b]`, `(a,b,c)`, named non-constant element.  
     Var in pattern is matched with any element and will be assigned with the value according to position if pattern will be matched.  
     Assigned var can be used in the sub block of current match-case.  
