@@ -64,66 +64,6 @@ class StrFormatter(SFormatter):
         parts = self.fp.parse(src)
         return self.partsToExpr(parts)
 
-_1 = r''' 
-
-single
-
-    brackets
-    ()
-        (,), (expr)
-    []
-        list, slice, [iter: gen], [com;pre;hension], 0x[bytes], [by te s]
-    {}
-        dict
-    
-    right-brackets
-        func-call()
-        collect[elem]
-        struct{constr}
-    
-    expr-chain
-        obj.elem
-        list...
-        expr~>
-        
-        
-    text-line
-        string
-        glif
-        regexp
-    
-    numeric
-        int, float, bool, null
-    
-    word
-        _
-        var
-        keyword-single
-            else, continue, break, return-empty
-
-complex
-    empty, debug
-    unclosed-brackets
-    operator
-        bin-oper
-        unar-left
-    
-    sequence
-        n,n / n;n / n:n /
-    inline-sub /:
-    keyword-line
-        def
-            func, struct, enum, import
-        control
-            if, for, while, match
-            match-case
-        other
-            return-val
-    lambda
-    m-string?
-
-'''
-
 
 # CaseMString
 # CaseBrackets -> CaseBrRound, CaseBrSquare, CaseBrCurl
@@ -166,22 +106,17 @@ complex
 #     CaseLUnar(StrFormatter()),
 # ]
 
-patternMatchCasesSolid = [
-    MT_Other(),
-    MTVal(), MTString(), MTRegexp(), MTList(), MTTuple(), MTDict(), MTStruct(), MTObjMember(),
-]
+# patternMatchCasesSolid = [
+#     MT_Other(),
+#     MTVal(), MTString(), MTRegexp(), MTList(), MTTuple(), MTDict(), MTStruct(), MTObjMember(),
+# ]
 
-patternMatchCasesCplx = [
-    MTPtGuard(), MTMultiCase(), MTTypedVal(), MTDuaColon(), MTMultiTyped(),
-]
+# patternMatchCasesCplx = [
+#     MTPtGuard(), MTMultiCase(), MTTypedVal(), MTDuaColon(), MTMultiTyped(),
+# ]
 
 def mtMatcher():
     ''' case-tree of match-case cases. '''
-    # MTVal(), MTString(), MTRegexp(), MTList(), MTTuple(), MTDict(), MTStruct(), MTObjMember()
-    
-    # sqBrkLim = CaseOption(CaseBrkSquare(), [CaseListGen(), CaseBytes(), CaseListComprehension(), CaseList()])
-    # brkLim = CaseOption(CaseGenBrackets(), [sqBrkLim, CaseTuple(), CaseDictLine(), CaseBrackets()])
-
     
     wordLim = CaseOption(CaseWord(), [MT_Other(), MTVal()])
     brkLim = CaseOption(CaseGenBrackets(), [MTList(), MTTuple(), MTDict(), MTParenth(), ])
@@ -190,7 +125,6 @@ def mtMatcher():
 
     solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidRight, brkLim])
     
-    
     operLim = CaseOptionPrepared(CaseOperLim(), [MTPtGuard(), MTTypedVal(), MTMultiCase(), MTMultiTyped(), ])
     
     nonSolLim = CaseOption(NonSolid(), [MTDuaColon(), operLim, MTMultiTyped(),])
@@ -198,53 +132,55 @@ def mtMatcher():
     fullMatcher = CaseMatchcher([solidLim, nonSolLim])
     return fullMatcher
 
+
 # def getCases()->list[ExpCase]:
 #     return expCaseList
+
+
+# def mtCases(elems:list[Elem], cases: list[ExpCase], parent:ExpCase=None)->MatchingPattern:
+#     # print('mtCases', [repr(cc) for cc in cases])
+#     if isinstance(parent, (MTList)):
+#         cases = pMListInnerCases
+#     for mtCase in cases:
+#         # print('mtC>', mtCase)
+#         if mtCase.match(elems):
+#             # print('mt.found>', mtCase.__class__.__name__, '', elemStr(elems))
+#             if mtCase.hasSubExpr():
+#                 pattr, subElems = mtCase.split(elems)
+#                 subExp = elems2expr(subElems)
+#                 # print('$3>', subExp)
+#                 pattr = mtCase.setSub(pattr, subExp)
+#             else:
+#                 pattr = mtCase.expr(elems)
+#             return pattr
+#     return None
+
+
+
+# def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
+#     # print('#makePMatchExpr:', [(n.text, Lt.name(n.type)) for n in elems])
+#     # print('\n#tree-makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
+#     caseList = patternMatchCasesSolid
+#     ok, _ = isSolidExpr(elems, skipKeywords=True)
+#     if not ok:
+#         caseList = patternMatchCasesCplx
+        
+#     found = mtCases(elems, caseList, parent)
+#     if found:
+#         return found
+    
+#     # print('DEBUG: No current MTCase for `%s` ' % '~'.join([n.text for n in elems]))
+#     raise InterpretErr('No current MTCase for `%s` ' % ''.join([n.text for n in elems]))
+
+
+
+__mtMatcher = mtMatcher()
 
 
 def simpleExpr(expCase:ExpCase, elems)->Expression:
     # print('#simple-case:', expCase)
     return expCase.expr(elems)
 
-
-def mtCases(elems:list[Elem], cases: list[ExpCase], parent:ExpCase=None)->MatchingPattern:
-    # print('mtCases', [repr(cc) for cc in cases])
-    if isinstance(parent, (MTList)):
-        cases = pMListInnerCases
-    for mtCase in cases:
-        # print('mtC>', mtCase)
-        if mtCase.match(elems):
-            # print('mt.found>', mtCase.__class__.__name__, '', elemStr(elems))
-            if mtCase.hasSubExpr():
-                pattr, subElems = mtCase.split(elems)
-                subExp = elems2expr(subElems)
-                # print('$3>', subExp)
-                pattr = mtCase.setSub(pattr, subExp)
-            else:
-                pattr = mtCase.expr(elems)
-            return pattr
-    return None
-
-
-
-def makePMatchExpr(elems:list[Elem], parent:ExpCase=None)->MatchingPattern:
-    # print('#makePMatchExpr:', [(n.text, Lt.name(n.type)) for n in elems])
-    # print('\n#tree-makePMatchExpr/1::', ' '.join(["'%s'"%n.text for n in elems]))
-    caseList = patternMatchCasesSolid
-    ok, _ = isSolidExpr(elems, skipKeywords=True)
-    if not ok:
-        caseList = patternMatchCasesCplx
-        
-    found = mtCases(elems, caseList, parent)
-    if found:
-        return found
-    
-    # print('DEBUG: No current MTCase for `%s` ' % '~'.join([n.text for n in elems]))
-    raise InterpretErr('No current MTCase for `%s` ' % ''.join([n.text for n in elems]))
-
-
-
-__mtMatcher = mtMatcher()
 
 def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     base, subs = expCase.split(elems)
@@ -330,7 +266,7 @@ def subBtContext(elems:list[Elem], blockContext:Expression):
     return None
 
 
-## py -m cProfile -s tottime -m unittest
+
 
 def caseMatcher():
     ''' case-tree of common cases '''

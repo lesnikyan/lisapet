@@ -98,7 +98,7 @@ class CaseList(SubCase, SolidCase):
         if lem == 2:
             return True
         if lem == 3:
-            return elems[1].type != Lt.oper or elems[1].test != ','
+            return elems[1].type != Lt.oper or elems[1].text != ','
         
         # r =  isSolidExpr(elems, getLast=True)
         # # print('CaseList.of solid:', r)
@@ -116,8 +116,8 @@ class CaseList(SubCase, SolidCase):
         # print(' $$$$$$$$$$$$$$$$$$$$ CL.comm', cres)
         
         # if [;]
-        if self.csemic.match(inElems):
-            return False
+        # if self.csemic.match(inElems):
+        #     return False
         
         cres = self.cs.match(inElems)
         # return cres
@@ -138,7 +138,7 @@ class CaseList(SubCase, SolidCase):
             return False
         
         # if one elem but complex expression
-        opInd = self.splitter.mainOper(inElems)
+        opInd = self.splitter.mainOper(inElems, lesser = ',')
         if opInd < 0:
             return True
         # print('CL.opSpl', opInd, inElems[opInd].text)

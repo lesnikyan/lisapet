@@ -80,10 +80,10 @@ class CaseMatchCase(SubCase):
         self.splitter = OperSplitter.getInst()
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        arrInd = self.splitter.mainOper(elems)
+        arrInd = self.splitter.mainOper(elems, lesser='/:')
         exp = MatchPtrCase()
         subs = [elems, []]
-        if isLex(elems[arrInd], Lt.oper, '/:'):
+        if arrInd > -1 and isLex(elems[arrInd], Lt.oper, '/:'):
             subs = [elems[:arrInd], elems[arrInd+1:]]
         return exp, subs
 

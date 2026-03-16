@@ -138,13 +138,17 @@ class MTTypedVal(MTCase):
     # def __init__(self):
         # super().__init__()
         # self.typeOper = IsTypeExpr()
+        
+    def __init__(self):
+        super().__init__()
+        self.validLexTypes = [Lt.word, Lt.num]
     
     def match(self, elems:list[Elem], n=0)-> bool:
         
         if len(elems) != 3:
             # no combo types
             return False
-        if elems[0].type not in [Lt.word, Lt.num]:
+        if elems[0].type not in self.validLexTypes:
             return False
         if not isLex(elems[1], Lt.oper, '::'):
             return False
@@ -153,12 +157,12 @@ class MTTypedVal(MTCase):
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         ''' return base expression, Sub(elems) '''
         tname = elems[2].text
-        typeExpr = VarExpr(Var(tname, TypeAny()))
         lelem = elems[:1]
         leftCase = findCase(lelem)
         if not leftCase:
             raise EvalErr("No correct left for MTTyped")
         left = leftCase.expr(lelem)
+        typeExpr = VarExpr(Var(tname, TypeAny()))
         return MCTypedElem(left, typeExpr, src=elems)
 
 
@@ -174,6 +178,8 @@ class MTMultiTyped(MTCase):
     def __init__(self):
         super().__init__()
         self.splitter = OperSplitter.getInst()
+        self.splitCases = [CaseBrackets(), CaseBinOper(), CaseVar()]
+        self.lastInd = None
     
     def findColons(self, elems):
         operInd = -1
@@ -185,12 +191,15 @@ class MTMultiTyped(MTCase):
 
     def match(self, elems:list[Elem], operInd=None)-> bool:
         # print('MTMultiTyped.match', elemStr(elems), '<%s>'%operInd)
+        self.lastInd = None
         if len(elems) < 2:
             return False
         # if isLex(elems[0], Lt.oper, '::')
         if operInd is None:
             operInd = self.findColons(elems)
         if operInd < 0:
+            return False
+        if not isLex(elems[operInd], Lt.oper, '::'):
             return False
         
         # check left if has: xx :: ...
@@ -200,47 +209,46 @@ class MTMultiTyped(MTCase):
         # print('$MT-1', elemStr(typeElems))
         # has brackets (A | B)
         if isLex(elems[operInd+1], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')'):
-            # print('$2', elemStr(typeElems))
-            ok, _ = isSolidExpr(elems[operInd+1:], skipKeywords=True)
+            ok, _ = isSolidExpr(typeElems, skipKeywords=True)
             if ok:
                 typeElems = typeElems[1:-1]
-                # print('$3', elemStr(typeElems))
         # A | B | C
         elen = len(typeElems)
         for i in range(elen):
             n = typeElems[i]
-            # print('6>>', n.text)
             if i % 2 == 0 and n.type != Lt.word:
-                # print('MT1', i, elemStr(typeElems), n.text)
                 return False
             elif i % 2 == 1 and not isLex(n, Lt.oper, '|'):
-                # print('MT2', i, elemStr(typeElems), n.text)
                 return False
-        # print('MTMultiTyped.match', 'Ok')
+        
+        # print('$1', elemStr(elems))
+        self.lastInd = operInd
         return True
 
     def splitTypes(self, elems):
+        # TODO: think about simplifying of types split. Not sure we need nested subtypes
+        # just uncover brackets, split by `|`
+        
         # print('MT splitTypes', elemStr(elems))
-        cases = [CaseBrackets(), CaseBinOper(), CaseVar()]
+        
         subs = elems
-        mid = self.splitter.mainOper(elems)
-        for cs in cases:
-            if cs.match(subs):
-                if cs.sub():
-                    rexp, rsubs = cs.split(subs)
-                    # print('$1>>', rexp, rsubs)
-                    # subs = rsubs
-                    if rsubs:
-                        inExps = []
-                        for rs in rsubs:
-                            sexp = self.splitTypes(rs)
-                            inExps.append(sexp)
-                        # print('$2>>', rexp, inExps)
-                        rexp = cs.setSub(rexp, inExps)
-                    return rexp
-                    # exp = rexp
-                else:
-                    return cs.expr(subs)
+        for cs in self.splitCases:
+            if not cs.match(subs):
+                continue
+            if not cs.sub():
+                return cs.expr(subs)
+            
+            rexp, rsubs = cs.split(subs)
+            # print('$1>>', rexp, rsubs)
+            # subs = rsubs
+            if rsubs:
+                inExps = []
+                for rs in rsubs:
+                    sexp = self.splitTypes(rs)
+                    inExps.append(sexp)
+                # print('$2>>', rexp, inExps)
+                rexp = cs.setSub(rexp, inExps)
+            return rexp
         raise EvalErr("Incorrect pattern of type, multitype MT-pattern.")
 
     # def split(self, elems:list[Elem])-> tuple[Expression, list[Elem]]:
@@ -248,14 +256,15 @@ class MTMultiTyped(MTCase):
         ''' return base expression, Sub(elems) '''
         # tname = elems[2].text
         # print()
-        operInd = self.findColons(elems)
-        typeElems = elems[operInd+1:]
+        # operInd = self.findColons(elems)
+        typeElems = elems[self.lastInd+1:]
+        
         typeCase = self.splitTypes(typeElems)
         # print('$10>>', operInd, elemStr(typeElems))
         if not typeCase:
             raise EvalErr("Error during split of type-expr elems in MTTyped")
         # if no var `:: type`
-        if operInd == 0:
+        if self.lastInd == 0:
             return MCType(typeCase, src=elems)
         # next for typed Var only
         lelem = elems[:1]
@@ -355,7 +364,7 @@ class MTComplex(MTCase):
         ptt | ptt
         ptt :? ptt
     '''
-    _priors = '( ) [ ] { } , | , ::, : ,  `1`, :? '
+    _priors = '( ) [ ] { } , | , :: , : ,  `1`, :? '
 
 
 class MTMultiCase(MTComplex):
@@ -369,18 +378,14 @@ class MTMultiCase(MTComplex):
         self.ps = CaseSeq('|')
 
     def match(self, elems:list[Elem], opInd=None) -> bool:
-        # priors = '( ) [ ] { } , | , : ,  `1`, :? '
-        tt = opInd
+        # check by operators priority, because of: 
+        # :: A | B
         if opInd is None:
-            opInd = self.spl.mainOper(elems)
-        # print('?', tt, opInd, elems[opInd].text)
-        # print('MTMultiCase.match:', opInd, elems[opInd].text)
+            opInd = self.spl.mainOper(elems, lesser='|')
         return opInd > 0 and isLex(elems[opInd], Lt.oper, '|')
 
     def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
         subs = elems
-        # print('MTMultiCase.expr:', self.__class__.__name__, '', subs)
-        # if self.ps.match(elems):
         _, subs = self.ps.split(elems)
         mcase = MCMultiCase(src=elems)
         for sub in subs:
@@ -397,12 +402,13 @@ class MTPtGuard(MTComplex, SubCase):
         super().__init__()
         self.spl = OperSplitter.getInst(MTComplex._priors)
         self.lastId = None
+        self.ifpref = [Elem(Lt.word, 'if')]
     
     def match(self, elems:list[Elem], opInd=None) -> bool:
         # priors = '( ) [ ] { } , | , : ,  `1`, :? '
         self.lastId = None
         if opInd is None:
-            opInd = self.spl.mainOper(elems)
+            opInd = self.spl.mainOper(elems, ':?')
         self.lastId = opInd
         # print('MTPtGuard.match:', opInd, elems[opInd].text)
         return opInd > 0 and isLex(elems[opInd], Lt.oper, ':?')
@@ -415,7 +421,7 @@ class MTPtGuard(MTComplex, SubCase):
         left = elems[:opInd]
         patCase = findCase(left)
         pattr = patCase.expr(left)
-        right = [Elem(Lt.word, 'if')] + elems[opInd+1:]
+        right = self.ifpref + elems[opInd+1:]
         expr = MCPtGuard()
         expr.pattern = pattr
         return expr, right
@@ -467,16 +473,17 @@ class CommaSeparatedSequence(MTContr):
         # # print('1>>>>>>>>>>>>', opInd,  elems[opInd].text)
         # if opInd != 0:
         #     return False
-        opInd = self.spl.mainOper(subElems)
-        nosub = ';:'
-        if isLex(elems[0], Lt.oper, '{'):
-            # {a:b}
-            nosub = ';'
-        # print('2>>>>>>>>', opInd,  subElems[opInd].text)
-        obrs = '([{'
-        brCond = opInd == -1 or (
-            opInd == 0 and subElems[opInd].text in obrs ) or (
-            opInd > 0 and subElems[opInd].text not in nosub)
+        
+        # opInd = self.spl.mainOper(subElems)
+        # nosub = ';:'
+        # if isLex(elems[0], Lt.oper, '{'):
+        #     # {a:b}
+        #     nosub = ';'
+        # # print('2>>>>>>>>', opInd,  subElems[opInd].text)
+        # obrs = '([{'
+        # brCond = opInd == -1 or (
+        #     opInd == 0 and subElems[opInd].text in obrs ) or (
+        #     opInd > 0 and subElems[opInd].text not in nosub)
         
         
 
@@ -553,12 +560,20 @@ class MTColPair(MTContr, CaseColon):
     ''' pair with colon
         * : * 
     '''
-    def match(self, elems:list[Elem]) -> bool:
+    
+    def __init__(self):
+        super().__init__()
+        self.ccl = CaseColon()
+    
+    def match(self, elems:list[Elem], ind=None) -> bool:
         # print('MTColPair.match')
-        return super(CaseColon,self).match(elems)
+        if ind is not None:
+            return len(elems) > 2 and isLex(elems[ind], Lt.oper, ':')
+        # return super(CaseColon,self).match(elems)
+        return self.ccl.match(elems)
 
     def split(self, elems:list[Elem]):
-        _, parts = super(CaseColon,self).split(elems)
+        _, parts = self.ccl.split(elems)
         if len(parts) != 2:
             raise InterpretErr("Bad count of pair parts in MTColPair")
         # print('MTColPair.expr', parts)
@@ -626,7 +641,6 @@ class MTStruct(MTContr):
         return (elems[0].type == Lt.word) and self.struCase.match(elems, ind)
 
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-
         constr, subs = self.struCase.split(elems)
         stype = elems[0].text
         # print('MTStruct', stype, subs)
@@ -659,12 +673,12 @@ class MTFail(MTCase):
         raise InterpretErr("Incorrect pattern-matching sequence %s" % elemStr(elems))
 
 
-pMListInnerCases:list[MTCase] = [
-    MTMultiCase(), MTDuaColon(), MTTypedVal(),  MTMultiTyped(),
-    MTVal(), MTE_(), MTVar(), MTString(), MTRegexp(), MTObjMember(),
-    MTEStar(),  MTEQMark(), MTColPair(),
-    MTList(), MTTuple(), MTParenth(), MTDict(), MTStruct(), 
-]
+# pMListInnerCases:list[MTCase] = [
+#     MTMultiCase(), MTDuaColon(), MTTypedVal(),  MTMultiTyped(),
+#     MTVal(), MTE_(), MTVar(), MTString(), MTRegexp(), MTObjMember(),
+#     MTEStar(),  MTEQMark(), MTColPair(),
+#     MTList(), MTTuple(), MTParenth(), MTDict(), MTStruct(), 
+# ]
 
 
 def innerMatcher():
@@ -672,36 +686,36 @@ def innerMatcher():
     
     # TODO: MT-cases in CaseOptionPrepared should be fixed to take 3 args
     
-    wordLim = CaseOption(CaseWord(), [MTVal(), MTE_(), MTVar(), MTEStar(),  MTEQMark(), ])
+    wordLim = CaseOption(CaseWord(), [MTVal(), MTE_(), MTVar(), ])
     brkLim = CaseOption(CaseGenBrackets(), [MTList(), MTTuple(), MTParenth(), MTDict(),])
     strLim = CaseOption(CaseStr(), [MTString(), MTRegexp(),])
     solidRight = CaseOptionPrepared(CaseSolidLeft(), [MTStruct(), MTObjMember(),])
 
     solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidRight, brkLim])
     
-    
+    wld = CaseOption(CaseAny(), [MTEStar(),  MTEQMark(), MTFail()])
     operLim = CaseOptionPrepared(CaseOperLim(), [MTTypedVal(), MTMultiCase(), MTMultiTyped(), MTColPair(),])
     
-    nonSolLim = CaseOption(NonSolid(), [MTDuaColon(), operLim, MTMultiTyped(),])
+    nonSolLim = CaseOption(NonSolid(), [MTDuaColon(), operLim, MTMultiTyped(), wld,])
 
-    fullMatcher = CaseMatchcher([solidLim, nonSolLim])
+    fullMatcher = CaseMatchcher([ solidLim, nonSolLim])
     return fullMatcher
 
 
 _innMatcher = innerMatcher()
 
-def New_findCase(elems:list[Elem])->MTCase:
+def findCase(elems:list[Elem])->MTCase:
     info = CMatchInfo(elems)
     return _innMatcher.find(info)
 
-def findCase(elems:list[Elem])->MTCase:
-    # print('finCase', elems)
-    # prels('findCase1:', elems, show=1)
-    for cs in pMListInnerCases:
-        if cs.match(elems):
-            # print('finCase >>> ', cs.__class__.__name__)
-            return cs
-    return MTFail()
+# def old_findCase(elems:list[Elem])->MTCase:
+#     # print('finCase', elems)
+#     # prels('findCase1:', elems, show=1)
+#     for cs in pMListInnerCases:
+#         if cs.match(elems):
+#             # print('finCase >>> ', cs.__class__.__name__)
+#             return cs
+#     return MTFail()
 
 def subPatterns(subs:list[list[Elem]])->list[MTCase]:
     if len(subs) == 0:

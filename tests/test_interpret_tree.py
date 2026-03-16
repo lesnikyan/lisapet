@@ -4,35 +4,39 @@
 
 from unittest import TestCase, main
 
-import lang
-import typex
+# import lang
+# import typex
 from lang import Lt, Mk, CLine
 from parser import splitLine, splitLexems, charType, splitOper, elemStream
 from vars import *
-from vals import numLex
+# from vals import numLex
 # import context
-from context import Context
+# from context import Context
 from bases.strformat import *
 # from nodes.structs import *
 from tree import *
-from eval import rootContext, moduleContext
+# from eval import rootContext, moduleContext
 
-from cases.utils import *
-from nodes.tnodes import Var
-from objects.func import Function
-from nodes.func_expr import setNativeFunc
-from bases.over_ctx import FuncOverSet
+# from cases.utils import *
+# from nodes.tnodes import Var
+# from objects.func import Function
+# from nodes.func_expr import setNativeFunc
+# from bases.over_ctx import FuncOverSet
 from tests.utils import *
-from libs.regexp import *
-from nodes.func_features import *
+# from libs.regexp import *
+# from nodes.func_features import *
 
 
-import cProfile as prof
-import pdb
+# import cProfile as prof
+# import pdb
 
 
             
 class TestInterpretTree(TestCase):
+    '''
+    ## py -m cProfile -s tottime -m unittest
+
+    '''
 
 
 
@@ -72,14 +76,11 @@ class TestInterpretTree(TestCase):
             if src.startswith('#'):
                 continue
             
-            # print('>', src)
-            # src = src.replace('$/N', '\n')
             src = 'match n\n    %s' % src
 
             tlines = splitLexems(src)
             # print('', [[(l.val, Lt.name(l.ltype)) for l in n.lexems] for n in tlines])
             clines:CLine = elemStream(tlines)
-            # print('', [c for c in clines])
             try:
                 expTree:Module = lex2tree(clines)
                 MatchExpr, CaseExpr 
@@ -219,10 +220,9 @@ class TestInterpretTree(TestCase):
             tlines = splitLexems(src)
             # print('', [[(l.val, Lt.name(l.ltype)) for l in n.lexems] for n in tlines])
             clines:CLine = elemStream(tlines)
-            # print('', [c for c in clines])
             try:
                 expTree = lex2tree(clines)
-                # print('tt1>', expTree.subs, src) # 
+                # print('tt1>', expTree.subs, src)
                 self.assertIsInstance(expTree.subs[0], Expression)
             except LangError as ex:
                 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n!! Error LangError:', ex.msg)
@@ -233,9 +233,9 @@ class TestInterpretTree(TestCase):
                 self.fail()
                 # raise ex
 
-    def _test_interpret_profile(self):
-        ''' profiling test '''
-        prof.runctx('self.interpret_base_cases()', globals(), locals())
+    # def _test_interpret_profile(self):
+    #     ''' profiling test '''
+    #     prof.runctx('self.interpret_base_cases()', globals(), locals())
     
 
     def test_base_lang_cases(self):

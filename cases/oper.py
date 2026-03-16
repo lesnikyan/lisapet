@@ -109,7 +109,7 @@ class CaseBinOper(SubCase):
         if ind < 0:
             if self.splitter is None:
                 self.splitter = OperSplitter.getInst()
-            main = self.splitter.mainOper(elems)
+            main = self.splitter.mainOper(elems, lesser='**')
         res =  main > 0 and elems[main].text not in _noOpers and isLex(elems[main], Lt.oper, self.opers)
         self.lastM = main if res else -1
         return res
@@ -446,16 +446,19 @@ class CaseInlineSub(SubCase):
     def __init__(self):
         super().__init__()
         self.spl = OperSplitter.getInst()
+        self.lastId = None
     
     def match(self, elems:list[Elem]) -> bool:
         # print('Case /: >>')
+        self.lastId = None
         if len(elems) < 3:
             return False
         
         if not isLex(elems[0], Lt.word, _inline_contr_keyws):
             return False
 
-        main = self.spl.mainOper(elems)
+        main = self.spl.mainOper(elems, lesser='/:')
+        self.lastId = main
         return elems[main].text == '/:'
         
         # return isLex(elems[main], Lt.oper, '/:')
@@ -463,7 +466,8 @@ class CaseInlineSub(SubCase):
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
         # dprint('CaseInlineSub split', elems)
-        idx = self.spl.mainOper(elems)
+        # idx = self.spl.mainOper(elems)
+        idx = self.lastId
         ctrl = elems[:idx]
         sub = elems[idx+1:]
         # print('', elemStr(ctrl), '<<%s>>' % elems[idx].text, elemStr(sub))

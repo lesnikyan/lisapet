@@ -363,7 +363,7 @@ class CaseSeq(SubCase):
         self.opens = self.brs.keys()
         self.closs = self.brs.values()
 
-    def match(self, elems:list[Elem], ind=-1) -> bool:
+    def match(self, elems:list[Elem], ind=None) -> bool:
         # prels('CaseSeq.match %s'% self.delim, elems, show=1)
         delimord = [':',',',';']
         dmInds = {delimord[i] : i for i in range(len(delimord))}
@@ -542,3 +542,4 @@ class CaseDotName(SubCase, SolidCase):
         objExpr = subs[0]
         # print('O.dot:setSub', objExpr)
         base.setObj(objExpr)
+        return base

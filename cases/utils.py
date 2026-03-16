@@ -144,7 +144,7 @@ class OperSplitter:
         return inst
 
 
-    def mainOper(self, elems:list[Elem])-> int:
+    def mainOper(self, elems:list[Elem], lesser=None)-> int:
         '''
         Find the main operator in the string.
         First operator with lowest priority from the end will be returned.
@@ -162,8 +162,16 @@ class OperSplitter:
         
         lowestPrior = len(self.priorGroups) - 1
         leftOfRarr = False # [\] word [, word]
+        passed = False
         
         for prior in range(lowestPrior, -1, -1):
+            if lesser is not None:
+                if passed:
+                    # It means that the expected operator hasn't been found
+                    # print('~')
+                    return -1
+                if lesser in self.priorGroups[prior]:
+                    passed = True
             curPos = lem
             # obr='([{'
             # cbr = ')]}'
@@ -208,8 +216,6 @@ class OperSplitter:
                     if lebr:
                         last = inBrs.pop() # change br stack
                         lebr = len(inBrs)
-                        # print('inbr pop: ',last, '>>', inBrs)
-                    # dprint(' << ', etx, last)
                     if i == 0 and etx in self.priorGroups[prior]:
                         # print('end of prior / open', obr)
                         return 0
@@ -273,6 +279,8 @@ KEYWORDS_R = ['func','if','else','for','return','struct','match','enum','while',
 KEYR_RX = re.compile('func|if|for|while|match|enum|struct|else|import|return')
 rSolOpers = ['.','~>', '...']
 _bpairs = {'(':')', '[':']', '{':'}'}
+_rob = list('}])')
+_rcb = list('([{')
 
 
 def isSolidExpr(elems:list[Elem], getLast=None, skipKeywords = False):
@@ -300,9 +308,9 @@ def isSolidExpr(elems:list[Elem], getLast=None, skipKeywords = False):
     fopers = _noSolidOpers
     # print('solid-fopers', fopers)
     opened = [] # brackets openede from right
-    # cbr = []
-    rob = list('}])')
-    rcb = list('([{')
+    # # cbr = []
+    # rob = list('}])')
+    # rcb = list('([{')
     # print('ss:', end=' ')
     found = -1
     for i in range(elen-1, -1, -1):
@@ -311,11 +319,11 @@ def isSolidExpr(elems:list[Elem], getLast=None, skipKeywords = False):
         # print('=>', '', etx, end=' ')
         # print('=>', '', etx)
         # et = el.type
-        if isLex(el, Lt.oper, rob):
+        if isLex(el, Lt.oper, _rob):
             # open brackets from right
             opened.append(el.text)
             continue
-        if isLex(el, Lt.oper, rcb):
+        if isLex(el, Lt.oper, _rcb):
             # close brackets
             if len(opened) == 0:
                 # posibly multiline expr
