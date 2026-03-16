@@ -25,11 +25,12 @@ nnChar = '_@$abcdefghijklmnopqrstuvwxyz' + 'abcdefghijklmnopqrstuvwxyz'.upper()
 c_quot = "\'\"`"
 c_regex = '| / % '
 
-opers = [n for n in (
+_opers = [n for n in (
     '; , ... $$ .. ** ++ -- += -= *= /= %=  && || == != <= >= << >>'
     ' => ?> !?> -> <- !- := ?: /: !: :? :> :: =~ ?~ /~ ~> ^/'
     ' < > = + - * / | \\ { } [ ] . , : ? ~ ! % ^ & * $ ( )').split(' ') if n]
 # ' """ \'\'\' ``` '
+_mopers = { n:1 for n in _opers}
 
 
 # if i > 0 and el.text in ['-', '+', '!', '~'] and elems[i-1].type == Lt.oper and elems[i-1].text != ')'
@@ -97,7 +98,7 @@ def charType(prevs:int, s:str, esc_map=None) -> int:
     return base
 
 def findOper(oper, res):
-    for n in opers:
+    for n in _opers:
         # dprint('>> ', oper, n)
         if oper.startswith(n):
             # first correct oper has been found

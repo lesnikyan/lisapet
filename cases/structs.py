@@ -104,7 +104,13 @@ class CaseStructConstr(SubCase, SolidCase):
         right part: 
             TypeName {field: val, field: val}
     '''
-    def match(self, elems:list[Elem], ind=-1) -> bool:
+    
+    def __init__(self):
+        super().__init__()
+        self.dc = CaseDictLine()
+        self.cc = CaseCommas()
+    
+    def match(self, elems:list[Elem], ind=None) -> bool:
         '''
         TypeName {dict-like args}
         module.Typename{args}
@@ -117,10 +123,12 @@ class CaseStructConstr(SubCase, SolidCase):
             return False
         if len(elems) < 2:
             return False
-        dc = CaseDictLine()
+        # dc = CaseDictLine()
         # get curvy brackets part
         # be sure that case already checked as Solid expr
-        ok, pos = isSolidExpr(elems, getLast=True)
+        ok, pos = True, ind
+        if ind is None:
+            ok, pos = isSolidExpr(elems, getLast=True)
         # print('Str.Match', r)
         # if not isinstance(r, tuple):
         #     return False
@@ -128,17 +136,17 @@ class CaseStructConstr(SubCase, SolidCase):
         # print('lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
         if not ok or pos > len(elems)-2 or pos < 1 or not isLex(elems[pos], Lt.oper, '{') : 
             return False
-        return dc.match(elems[pos:])
+        return self.dc.match(elems[pos:])
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         _, pos = isSolidExpr(elems, getLast=True, skipKeywords=True)
         typePart = elems[:pos]
         argPart = elems[pos:]
         argSub = argPart[1:-1]
-        cs = CaseCommas()
+        # cs = CaseCommas()
         subs = [argSub]
-        if cs.match(argSub):
-            _, subs = cs.split(argSub)
+        if len(argSub) > 3 and self.cc.match(argSub):
+            _, subs = self.cc.split(argSub)
         return StructConstr(), [typePart] + subs
 
     def setSub(self, base:StructConstr, subs:Expression|list[Expression])->Expression:

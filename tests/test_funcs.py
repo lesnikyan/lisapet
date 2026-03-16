@@ -1762,18 +1762,21 @@ class TestFuncs(TestCase):
             ('func u:User setName(name:string)', CaseMethodDef),
             ('func setName(name:string)', CaseFuncDef),
         ]
+        matcher = caseMatcher()
         for code, ctype in data:
             # dprint('Code:', code)
             # code = norm(code[1:])
             tlines = splitLexems(code)
             clines:CLine = elemStream(tlines)
             elems = clines[0].code
-            cases = getCases()
-            for cs in cases:
-                if cs.match(elems):
-                    # dprint('#tt found cae: ', cs, 'exp:', ctype)
-                    self.assertIsInstance(cs, ctype)
-                    break
+            lineInfo = CMatchInfo(elems)
+            cs = matcher.find(lineInfo)
+            self.assertIsInstance(cs, ctype)
+            # cases = getCases()
+            # for cs in cases:    
+            #     if cs.match(elems):
+            #         # dprint('#tt found cae: ', cs, 'exp:', ctype)
+            #         break
 
 
     def test_func_return(self):
