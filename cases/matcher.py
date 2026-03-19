@@ -140,28 +140,19 @@ class CaseOption(ExpCase):
     
     def find(self, info:CMatchInfo):
         cs:ExpCase|CaseOption = None
-        # if isinstance(elems, CMatchInfo):
-        #     elems = elems.elems
         for sub in self.subs:
-            # print('co.find: %s %s' % (self.matcher.__class__.__name__, sub.__class__.__name__))
             mtarg = info
             if not sub.isLim():
                 mtarg = info.elems
             if sub.match(mtarg):
                 cs =  sub
-                # rr = '~~'
-                # if sub.isLim():
-                #     rr = 'COp.m=%s' % sub.matcher.__class__.__name__
-                # print('co-found! %s' % sub.__class__.__name__, rr)
                 break
         if cs and cs.isLim():
             # print('sub lim')
             cs = cs.find(info)
         if not cs:
             return False
-        # print('co-res! %s' % cs.__class__.__name__)
         return cs
-
 
 
 
@@ -185,9 +176,6 @@ class CaseOptionPrepared(CaseOption):
             mres = mres[0]
         return bool(mres)
     
-    # def isLim(self):
-    #     return True
-    
     def find(self, info:CMatchInfo):
         cs:ExpCase|CaseOption = None
         for sub in self.subs:
@@ -198,10 +186,6 @@ class CaseOptionPrepared(CaseOption):
             
             if sub.match(info.elems, extrArg):
                 cs =  sub
-                # rr = '~~'
-                # if sub.isLim():
-                #     rr = 'COp.m=%s' % sub.matcher.__class__.__name__
-                # print('co-found! %s' % sub.__class__.__name__, rr)
                 break
         if cs and cs.isLim():
             # print('sub lim')
