@@ -224,9 +224,7 @@ class OpMath(BinOper):
     
     def __init__(self, oper, left:Expression=None, right:Expression=None):
         super().__init__(oper, left, right)
-
-    def do(self, ctx:Context):
-        ff = {
+        self.ff = {
             '+': self.plus, 
             '-': self.minus,
             '*': self.mult,
@@ -235,11 +233,14 @@ class OpMath(BinOper):
             '^/': self.root,
             '%': self.divmod,
         }
-        
-        # Some operations can return another type
-        postType = {
+        self.postType = {
             '/': TypeFloat
         }
+        
+
+    def do(self, ctx:Context):
+        
+        # Some operations can return another type
         
         # eval expressions
         # dprint('#oper-left:', self.left)
@@ -285,12 +286,12 @@ class OpMath(BinOper):
             if isinstance(atype, TypeFloat) or isinstance(btype, TypeFloat):
                 rtype = TypeFloat()
         # get numeric values and call math function 
-        val = ff[self.oper](valFrom(a).getVal(), valFrom(b).getVal())
+        val = self.ff[self.oper](valFrom(a).getVal(), valFrom(b).getVal())
         
         # resolve result type for specific cases
         resType = rtype
-        if self.oper in postType:
-            target = postType[self.oper]
+        if self.oper in self.postType:
+            target = self.postType[self.oper]
             resType = target()
         
         self.res = Val(val, resType)

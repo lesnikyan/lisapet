@@ -12,8 +12,8 @@ c_esc = '\'\"ntr\\/`'
 c_esc_map = {'n':'\n', 't':'\t', 'r':'\r', '\\':'\\', '/':'/', '\'':'\'', '\"':'\"', '`':'`'}
 c_esc_back = '`'
 c_esc_back_map = {'`':'`', '\\':'\\'}
-c_nums = [n for n in '1234567890']
-c_oper = '+~-*/=%^&!?<>()[]:.;,|${}\\'
+c_nums = {n:0  for n in '1234567890'}
+c_oper = {n:0 for n in '+~-*/=%^&!?<>()[]:.;,|${}\\'}
 # single-line comment, to and of line
 c_comm = '#'
 # blok-comment, multiline or inline
@@ -21,7 +21,7 @@ c_opcomm = '#@'
 c_ndcomm = '@#'
 c_mlines = '\'\'\' """ ```'.split(' ')
 rxChar = re.compile(r'[a-zA-Z_@\$]')
-nnChar = '_@$abcdefghijklmnopqrstuvwxyz' + 'abcdefghijklmnopqrstuvwxyz'.upper()
+nnChar = {n:0 for n in '_@$abcdefghijklmnopqrstuvwxyz' + 'abcdefghijklmnopqrstuvwxyz'.upper()}
 c_quot = "\'\"`"
 c_regex = '| / % '
 
@@ -37,74 +37,97 @@ _mopers = { n:1 for n in _opers}
 unarOpers = '- + ! ~'
 
 ext_in = {
-    Lt.num: ['j', 'x', 'b', 'o', 'a', 'b', 'c', 'd', 'e', 'f']
+    Lt.num: { n:0 for n in ['j', 'x', 'b', 'o', 'a', 'b', 'c', 'd', 'e', 'f']}
 }
 
 pref = {
     Lt.num: []
 }
 
-def charType(prevs:int, s:str, esc_map=None) -> int:
-    prevChars, prev = prevs
-    base = Lt.none
-    if s in c_space:
-        base = Lt.space
-    if s in c_oper:
-        base = Lt.oper
-        # dprint('#2: ', prev, s)
-        if prev == Lt.text and s == '\\':
-            base = Lt.esc
-    elif s in c_nums:
-        base = Lt.num
-    elif s in c_comm:
-        base = Lt.comm
-    # elif rxChar.match(s):
-    elif s in nnChar:
-        base = Lt.word
-    elif s in c_quot:
-        base = Lt.quot
 
-    # type correction
-    if prev == Lt.mtcomm:
-        return Lt.mtcomm
+_bsL = '\\'
+_nDottyp = [0, ['.','.'], Lt.oper]
+_dotCh = '.'
+
+# def charType(prevs:int, s:str, esc_map=None) -> int:
+def charType(prevChars, prev, s:str, esc_map=None) -> int:
+    # prevChars, prev = prevs
     if prev == Lt.comm:
         return Lt.comm
+    if prev == Lt.mtcomm:
+        return Lt.mtcomm
     if prev == Lt.esc:
         if s in c_esc:
             return Lt.text
         raise ParseErr('Invalid esc symbol `%s`' % s)
-    if base == Lt.quot:
-        return Lt.quot # TODO: think about different quotes ' " `
-    if prev == Lt.text or prev == Lt.mttext:
-        # dprint('#1 ', s, ' prev / base', Lt.name(prev),  Lt.name(base))
-        if base == Lt.esc:
+    base = Lt.none
+    if s in c_space:
+        base = Lt.space
+    elif s in c_oper:
+        base = Lt.oper
+        # dprint('#2: ', prev, s)
+        if prev == Lt.text and s == _bsL:
             return Lt.esc
+    elif s in c_nums:
+        base = Lt.num
+        if prev == Lt.word:
+            return prev
+    elif s in c_comm:
+        base = Lt.comm
+    # elif rxChar.match(s):
+    elif s in nnChar:
+        if prev == Lt.word:
+            return prev
+        base = Lt.word
+    elif s in c_quot:
+        # base = Lt.quot
+        return Lt.quot
+
+    # if base == Lt.quot:
+    #     return Lt.quot # TODO: think about different quotes ' " `
+
+    if prev == Lt.text or prev == Lt.mttext:
         return prev # TODO: add check for types of strig opener ' , "
-    # dprint(' >> ', Lt.name(prev), Lt.name(base))
-    if prev == Lt.num and s in ext_in[Lt.num]:
-        if s == '.' and s in prevChars:
-            # here we found second dot `.` in number
-            # dprint('Num correction 2')
-            if prevChars[-1] != '.':
-                # wrong syntax
-                raise ParseErr('incorrect sequence of input: %s ' % ''.join(prevChars + [s]))
-            # returned tuple is a sygnal that we have change of expected type
-            return (prevChars[:-1], ['.','.'], Lt.oper)
+
+    # type correction
+
+    if prev != Lt.num:
+        return base
+    if s in ext_in[Lt.num]:
+        return prev
+        
+    if s == _dotCh and s in prevChars:
+        # here we found second dot `.` in number
+        if prevChars[-1] != _dotCh:
+            # wrong syntax
+            raise ParseErr('incorrect sequence of input: %s ' % ''.join(prevChars + [s]))
+        _nDottyp[0] = prevChars[:-1]
+        return _nDottyp
             
-        return prev
-    if prev == Lt.word and base == Lt.num:
-        return prev
+    # if prev == Lt.word and base == Lt.num:
+    #     return prev
     
     return base
 
+# def _findOper(oper, res):
+#     for n in _opers:
+#         # dprint('>> ', oper, n)
+#         if oper.startswith(n):
+#             # first correct oper has been found
+#             res.append(n)
+#             oper = oper[len(n):]
+#             # dprint('#a7:', len(oper), res)
+#             return oper, res
+#     raise ParseErr('Incorrect operator (not found) : `%s`'% oper)
+
 def findOper(oper, res):
-    for n in _opers:
-        # dprint('>> ', oper, n)
-        if oper.startswith(n):
-            # first correct oper has been found
-            res.append(n)
-            oper = oper[len(n):]
-            # dprint('#a7:', len(oper), res)
+    mm = len(oper)
+    for i in range(len(oper)):
+        k = mm - i
+        sub = oper[0:k]
+        if sub in _mopers:
+            res.append(sub)
+            oper = oper[k:]
             return oper, res
     raise ParseErr('Incorrect operator (not found) : `%s`'% oper)
 
@@ -119,6 +142,7 @@ def splitOper(oper:str)->list[str]:
     if oper:
         raise ParseErr('Incorrect operator (left in the end) : `%s`'% oper)
     return res
+
 
 _numOnlyRx = re.compile(r'^[0-9]+$')
 _numDotRx = re.compile(r'^[0-9]+\.$')
@@ -154,12 +178,12 @@ def normilizeLexems(src:list[lex])->list[lex]:
         # i += i
         # dprint('# x', x.val, ':>', Lt.name(x.ltype))
         
-        if prep and x.ltype == Lt.oper and x.val == '.':
+        if prep and x.ltype == Lt.oper and x.val == _dotCh:
             prev = prep[-1]
             # dprint('#// prev1', prev.val)
             if prev.ltype == Lt.num and _numOnlyRx.match(prev.val):
                 # looks like it`s dot of decimal / float
-                prep[-1].val += '.'
+                prep[-1].val += _dotCh
                 continue
 
         if prep and x.ltype == Lt.num and _numOnlyRx.match(x.val):
@@ -175,6 +199,13 @@ def normilizeLexems(src:list[lex])->list[lex]:
     return [s for s in prep if len(s.val) > 0 or s.ltype == Lt.text]
 
 
+_qtnon = [Lt.quot, Lt.none]
+_qbktk = '`'
+_omstr = 'open_m_str'
+_olcomm, _clcomm = '#@', '@#'
+_empt = ''
+_en = '\n'
+
 def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
     '''
     prevType - for multiline cases:
@@ -186,23 +217,23 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
     curType = prevType
     openQuote = None
     openMultStr = None # ''' """ ``` 
-    if 'open_m_str' in kw:
-        openMultStr = kw['open_m_str']
+    if _omstr in kw:
+        openMultStr = kw[_omstr]
         
     escMod = False # if escape case
-    escType = ''
+    # escType = ''
     totalEsc = True
     
     def nextRes(cur, cType, nval=''):
-        wd = ''.join(cur)
+        wd = _empt.join(cur)
         # print('#3 >> p-cur, |%s|' % wd, ' curt = ', Lt.name(cType), '; next=', nval)
-        if cType not in [Lt.quot, Lt.none]:
+        if cType not in _qtnon:
             res.append(lex(wd, Mk.lex, type=cType))
         cur = [nval]
-        return [nval]
+        return cur
     
     if curType == Lt.mttext:
-        src = '\n' + src
+        cur.append(_en) # '\n' + src
 
     i = -1
     slen = len(src)
@@ -213,17 +244,17 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
         esc_map = c_esc_map
         if escMod:
             esc_map = c_esc_map
-            if openQuote == '`':
+            if openQuote == _qbktk:
                 esc_map = c_esc_back_map
             if totalEsc and s not in esc_map:
                 raise ParseErr('Not currect escape sequence: `%s` ' % src[i-1: i + 1])
 
-        sType = charType((cur, curType), s, esc_map=esc_map)
+        sType = charType(cur, curType, s, esc_map=esc_map)
         
-        if isinstance(sType, tuple):
+        if isinstance(sType, list):
             # unexpected changing of prev type
             donePart, nextPart, nextType = sType
-            nextRes(donePart, curType, '')
+            nextRes(donePart, curType, _empt)
             cur, curType = nextPart, nextType
             continue
         # print('#cur-type:', Lt.name(sType), '>>', '<%s>' %s)
@@ -232,9 +263,9 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
         if curType == Lt.mtcomm:
             cur.append(s)
             # dprint('>>mtc:: ', cur, ' >> ', cur[-2:])
-            if ''.join(cur[-2:]) == '@#':
-                cur = nextRes(cur, curType, '')
-                cur = nextRes(cur, Lt.mclose, '')
+            if ''.join(cur[-2:]) == _clcomm:
+                cur = nextRes(cur, curType, _empt)
+                cur = nextRes(cur, Lt.mclose, _empt)
                 curType = Lt.none
             continue
 
@@ -245,13 +276,13 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 # in the string and after esc slash
                 # dprint('## in esc' ,  'multi:', openMultStr , '; cur:', cur, 's:', s)
                 esc_map = c_esc_map
-                if openQuote == '`':
+                if openQuote == _qbktk:
                     esc_map = c_esc_back_map
                 if s not in esc_map:
                     if totalEsc:
                         raise ParseErr('Incorrect escape sequence: `\\%s`' % s)
                     else:
-                        cur.append('\\')
+                        cur.append(_bsL)
                 if s in esc_map:
                     cur.append(esc_map[s])
                 else:
@@ -260,7 +291,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                 continue
         
             # start escape sequences
-            if s == '\\': # sType == Lt.esc:
+            if s == _bsL: # sType == Lt.esc:
                 # dprint('## esc ', s)# esc = True
                 escMod = True
                 continue
@@ -268,9 +299,9 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
             if curType == Lt.text and openQuote == s:
                 # close one-line string
                 # print('text / quote', openQuote ,'::', s, '>>', cur)
-                cur = nextRes(cur, curType, '')
+                cur = nextRes(cur, curType, _empt)
                 curType = Lt.quot
-                cur = nextRes(cur, curType, '')
+                cur = nextRes(cur, curType, _empt)
                 curType = Lt.none
                 openQuote = None
                 escMod = False
@@ -284,7 +315,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                     # print('close m-string', cur, '|', curType, '||', src[i-2: i+1])
                     cur = nextRes(cur, curType, src[i-2: i+1])
                     curType = Lt.mclose
-                    cur = nextRes(cur, Lt.mclose, '')
+                    cur = nextRes(cur, Lt.mclose, _empt)
                     curType = Lt.none
                     openMultStr = None
                     continue
@@ -293,7 +324,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
             continue
         
         if curType == Lt.comm and i < slen:
-            if len(cur) == 1 and cur[0] + s == '#@':
+            if len(cur) == 1 and cur[0] + s == _olcomm:
                 # start of multiline coment found
                 cur.append(s)
                 curType = Lt.mtcomm
@@ -318,10 +349,10 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
                     curType = Lt.mttext
                     continue
                     
-                cur = nextRes(cur, curType, '')
+                cur = nextRes(cur, curType, _empt)
                 curType = Lt.text
                 openQuote = s
-                totalEsc = s != '`'
+                totalEsc = s != _qbktk
                 continue
 
         # finalize word
@@ -338,9 +369,11 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
     # print('#a4:', [(x.val, Lt.name(x.ltype), x.mark) for x in lexems])
     res3 = {}
     if openMultStr is not None:
-        res3['open_m_str'] = openMultStr
+        res3[_omstr] = openMultStr
     return TLine(src, lexems), curType, res3
 
+
+_mtTps = [Lt.mtcomm, Lt.mttext]
 
 def splitLexems(text: str) -> list[TLine]:
     lines = text.splitlines()
@@ -363,7 +396,7 @@ def splitLexems(text: str) -> list[TLine]:
             # print('--- split res --->', Lt.name(lastType), '::', [(x.val, Lt.name(x.ltype)) for x in nextLine.lexems])
             
             # if res and lastType in [Lt.mtcomm, Lt.mttext] and endType == lastType:
-            if lastType in [Lt.mtcomm, Lt.mttext] and nextLine.lexems:
+            if lastType in _mtTps and nextLine.lexems:
                 if nextLine.lexems[0].ltype == lastType:
                     # join cur line to prev
                     lastLine:TLine = res[-1]
@@ -374,7 +407,7 @@ def splitLexems(text: str) -> list[TLine]:
                     lastLine.lexems.extend(nextLine.lexems[1:])
                     res[-1] = lastLine
                     # here we has updated res
-                    lastType = endType if endType in [Lt.mtcomm, Lt.mttext] else Lt.none
+                    lastType = endType if endType in _mtTps else Lt.none
                     continue
             
             if len(nextLine.lexems) == 0:
@@ -382,7 +415,7 @@ def splitLexems(text: str) -> list[TLine]:
             res.append(nextLine)
             lastType = Lt.none
             # lastElemType = nextLine.lexems[-1].ltype
-            if endType in [Lt.mtcomm, Lt.mttext]:
+            if endType in _mtTps:
                 lastType = endType
         except ParseErr as exc:
             exc.src = TLine(s, [])
@@ -394,11 +427,16 @@ def splitLexems(text: str) -> list[TLine]:
     return res
 
 
+_wntxTps = {n:0 for n in [Lt.word, Lt.num, Lt.text, Lt.mttext, Lt.oper]}
+
 def lex2Elem(xx:lex)->Elem:
-    if xx.ltype in [Lt.word, Lt.num, Lt.text, Lt.mttext]:
-        return Elem(xx.ltype, xx.val)
-    if xx.ltype == Lt.oper:
-        return Elem(Lt.oper, xx.val)
+    # return Elem(xx.ltype, xx.val)
+    if xx.ltype not in _wntxTps:
+        return None
+    # if xx.ltype in _wntxTps:
+    return Elem(xx.ltype, xx.val)
+    # if xx.ltype == Lt.oper:
+    #     return Elem(Lt.oper, xx.val)
     # TODO: other type
     # TODO: metadata from comments
 
