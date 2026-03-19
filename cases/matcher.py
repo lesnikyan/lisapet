@@ -118,7 +118,7 @@ class CMatchInfo:
         return ok
 
     def findMain(self):
-        self.mid =self.splitter.mainOper(self.elems)
+        self.mid = self.splitter.mainOper(self.elems)
 
 
 class CaseOption(ExpCase):
@@ -321,14 +321,7 @@ class CaseGenBrackets(CaseLim):
             return False
         if elems[0].text not in _opnenBrs or elems[-1].text not in _closeBrs:
             return False
-        # r =  isSolidExpr(elems, getLast=True)
-        # if not isinstance(r, tuple):
-        #     return False
-        # ok, pos = r
-        # if not ok or pos != 0:
-        #     return False
         return True
-        return info.solid and info.sid == 0
 
 _strPerfs = ['g', 're']
 _strLexTypes =  [Lt.text, Lt.mttext]

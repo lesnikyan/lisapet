@@ -353,6 +353,9 @@ class BlockCase(ExpCase):
         function, for-loop, if-statement, match-case statement
     '''
 
+_rArrCh = '->'
+_bslCh = '\\'
+
 
 class CaseSeq(SubCase):
     ''' sequence of expressions in one line '''
@@ -390,10 +393,10 @@ class CaseSeq(SubCase):
 
             # lambda-args case
             if lamArgs:
-                if ee.text == '->':
+                if ee.text == _rArrCh:
                     lamArgs = False
                 continue
-            if ee.text == '\\':
+            if ee.text == _bslCh:
                 lamArgs = True
 
             if ee.text in dmInds and dmInds[ee.text] > baseDelInd:
@@ -427,10 +430,10 @@ class CaseSeq(SubCase):
             
             # lambda args changes behaviour of separator
             if lamArgs:
-                if ee.text == '->':
+                if ee.text == _rArrCh:
                     lamArgs = False
                 continue
-            if ee.text == '\\':
+            if ee.text == _bslCh:
                 lamArgs = True
                 
             if ee.text == self.delim:

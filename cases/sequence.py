@@ -35,17 +35,21 @@ class CaseString(CaseVal, SolidCase):
 
 class CaseMString(ExpCase):
     ''' '''
+    def __init__(self):
+        super().__init__()
+        self.mqoutes = '""" ``` \'\'\''.split(' ')
+        
+    
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) != 1:
             return False
         if elems[0].type != Lt.mttext:
             return False
-        mqoutes = '""" ``` \'\'\''.split(' ')
         # print('CMSt#1', '|%s|' % elems[0].text[:3], '',  elems[0].text[:3] in mqoutes)
         # print('CMSt#1', '|%s|' % elems[-1].text[-3:], '',  elems[-1].text[-3:] in mqoutes)
-        if elems[0].text[:3] not in mqoutes:
+        if elems[0].text[:3] not in self.mqoutes:
             return False
-        if len(elems[-1].text) < 3 or elems[-1].text[-3:] not in mqoutes:
+        if len(elems[-1].text) < 3 or elems[-1].text[-3:] not in self.mqoutes:
             return False
         
         for el in elems:

@@ -38,6 +38,23 @@ class TestDev(TestCase):
   _<-od
  (+a)(-b)
         
+        
+        
+        DONE: refactor tree.py from loops of cases to pattern-tree
+        
+        DONE: think about performance, decreased after \lambda changes.
+        1) find common cases:
+            solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, single control-keywords, var, val, 
+            no-solid -> definitions, control-statements, bin-opers, 
+        2) dive into sub-cases
+        2.2) refactor list-like expressions to avoid multiple check items in []-brackets
+            first check solid []-case, then find case in []-cases:
+            list, slice, iter-gen, list-gen, bytes
+        
+        DONE: Optimize mtCases using prepared data from upper limit-cases
+        
+        DONE: Sequence  match and split if brackets in quotes: (1, '[', ']')
+        
     # features for for `enum` - not sure
         TODO: Enum.name(11)
         TODO: Enum.value(name)
@@ -59,7 +76,7 @@ class TestDev(TestCase):
             x = &01; 8xff; 8b100; &0xff; |xf0; 8d255
             0xff; 0b10000001
         
-        TODO: (?) bytes oper shift: bb << 4; bb >> 8 # no extend size
+        TODO: (?) bytes 0x[01 02 0f] oper shift: bb << 4; bb >> 8 # no extend size
         
         TODO:? class Null() -> class Null(Val)
         
@@ -70,6 +87,10 @@ class TestDev(TestCase):
             foo(1,2, :...)
             foo(1,2, |...)
             foo(1,2, /...)
+            Thoughts: lokos like curried function can do the same;
+            func foo(a,b,c)...
+            f = foo(1, 2); f(3) ;; g = foo(1); g(2, 3) # partial call
+            f = foo~>(1)(2); f(3) ;; g = foo~>(1); g(2)(3)
         
         TODO: 
             think about escapes in triple-backticks strings
@@ -97,6 +118,10 @@ class TestDev(TestCase):
                     2) child method will add and shoud find func by signature in all parent tree or
                     3) disallow override overloaded func name
         
+        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
+        
+        TODO: error of composition of functions with more than 1 arg
+        
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
         2) extend tail-recur case for earlier returns - not sure 
@@ -104,11 +129,8 @@ class TestDev(TestCase):
         TODO:? var type in for-loop 
             for n:int <- nn
 
-        TODO: think about type casting by colon; type in left
+        TODO:? think about type casting by colon; type in left
             x:int = int: true
-        
-        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
-        TODO: error of composition of functions with more than 1 arg
 
         TODO: 21.1 Multi-reading in loop:
             put at right part one more collections, so assign more var in left: 
@@ -120,12 +142,7 @@ class TestDev(TestCase):
             Like extended enum and struct
                 print(i, x, key, val)
         
-        BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
-        
         TODO: add assertion to cases in test_lists
-        
-        
-        TODO: think about performance, decreased after \lambda changes.
         
         TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
         
@@ -146,17 +163,6 @@ class TestDev(TestCase):
         TODO: fix print(bool): should be false, true, instead of False, True
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
-        
-        DONE: refactor tree.py from loops of cases to pattern-tree
-        1) find common cases:
-            solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, single control-keywords, var, val, 
-            no-solid -> definitions, control-statements, bin-opers, 
-        2) dive into sub-cases
-        2.2) refactor list-like expressions to avoid multiple check items in []-brackets
-            first check solid []-case, then find case in []-cases:
-            list, slice, iter-gen, list-gen, bytes
-        
-        TODO: Optimize mtCases using prepared data from upper limit-cases
         
     '''
 

@@ -14,7 +14,6 @@ oper group replacement:
 
 
 
-
 _hexType = [Lt.word, Lt.num]
 rxHex = re.compile(r'[0-9a-f]+', flags=re.I)
 
@@ -103,6 +102,8 @@ def elemStr(elems:list[Elem], delim=' '):
     # dprint('debug elemStr', elems)
     return delim.join([ee.text for ee in elems])
 
+_rArrCh = '->'
+_commaCh = ','
 
 
 class OperSplitter:
@@ -232,11 +233,11 @@ class OperSplitter:
                     continue
 
                 if leftOfRarr:
-                    if el.text != ',' and i > 0:
+                    if el.text != _commaCh and i > 0:
                         leftOfRarr = False
                     else:
                         continue
-                if el.text == '->':
+                if el.text == _rArrCh:
                     leftOfRarr = True
 
                 # if el.text in ['-', '+', '!', '~']:
