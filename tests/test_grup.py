@@ -35,7 +35,7 @@ class TestGrup(TestCase):
             
             func b()
                 t = bInd
-                bInd +=1
+                x.bInd +=1
                 B(t)
             
             word = 'item'
