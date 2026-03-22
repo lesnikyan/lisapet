@@ -173,6 +173,7 @@ class OpAssign(AssignExpr):
                 destStrict = dest.strictType()
             
             # print('= OpAssign/10 ', dest, val, dest.getType(), val.getType(), 'isStrict', dest.strictType())
+            # print('= OpAssign/10 ', dest, val, dest.getType(), val.getType(), )
             if destStrict:
                 dt, st = dest.getType(), val.getType()
                 if not equalType(dt, st):

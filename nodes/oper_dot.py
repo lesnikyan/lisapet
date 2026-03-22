@@ -60,9 +60,14 @@ class ObjectMember(ObjectElem):
             item = enum.getItem(self.member)
             # print('enum.item:', item)
             return item
+        elif isinstance(sob, Grup):
+            gr:Grup = sob
+            item = gr.getItem(self.member)
+            # print('$4', item)
+            return item
         else:
             # try to find bound method
-            # print('Obj5Mem.get others')
+            # print('Obj5Mem.get others', sob)
             inst = self.object
             fname = self.member
             mctx:Context = ctx
@@ -78,13 +83,24 @@ class ObjectMember(ObjectElem):
     
     def getType(self):
         # print('self.member', self.member)
-        strType = self.object.getFieldType(self.member)
-        return strType
+        match self.object:
+            case StructInstance():
+                return self.object.getFieldType(self.member)
+            case Grup():
+                return self.get().getType()
+        return None
+        # strType = self.object.getFieldType(self.member)
+        # return strType
     
     def set(self, val:Val):
         ''' obj.member = expr; obj.member[key] = expr (looks like a.b[c] is an subcase of a.b) '''
         # dprint('ObjectMember.set self.member, val :: ', self.member, val)
-        self.object.set(self.member, val)
+        
+        match self.object:
+            case StructInstance():
+                self.object.set(self.member, val)
+            case Grup():
+                self.get().set(val)
 
     def __str__(self):
         return "node ObjectMember(inst=%s, name=%s)" % (self.object, self.member)

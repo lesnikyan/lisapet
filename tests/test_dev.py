@@ -137,9 +137,6 @@ class TestDev(TestCase):
             aa = [1,2,3]
             dd = {11:1, 22:2, 33:3}
             for i, x, key, val <- iter(3), aa, dd
-        
-        TODO: group - static block for set of const vals and functions. 
-            Like extended enum and struct
                 print(i, x, key, val)
         
         TODO: add assertion to cases in test_lists
@@ -164,6 +161,49 @@ class TestDev(TestCase):
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
+        TODO: grup - static block for set of const, vals and functions. 
+            Grup is a named sub-level of context of module
+            Like extended enum or static struct
+            grup have declarations or definitions, 
+            no other expressions like controls: for, if, import
+            (but no special limitation of that, thinking about that)
+            I don't like `grup` or `group`. thinking about alternatives 
+            possible aliases:
+                sub, def, nmsp, space, stat, grup, sublvl, box, nest
+                inbox Name
+                nbox Name
+                subox Name
+                object Name
+                place Name
+                nest Name
+            
+            grup Name
+                struct SubStruct a:int
+                
+                func subFunc()
+                    res
+                    
+                enum SubEnum
+                    a = 1
+                    b = 10
+                
+                # vals
+                subVar:type = val
+                subList:list = [1,2,3]
+                strInst = SubStruct{a:5}
+                
+        TODO:
+            grup Auch
+                x = 1
+            
+            grup Boo
+                put Auch # copy and place here all things from Auch
+                
+            
+        TODO: check same name method and func with same full signature 
+        func fname(inst:A, arg:A)
+        func inst:A fname(arg:A)
+        
     '''
 
     _ = r"""
@@ -172,6 +212,41 @@ res = []
 
 """
 
+
+
+
+    def _test_func_meth_same_name(self):
+        ''' '''
+        code = r'''
+        
+        res = []
+        
+        struct A val:int
+        
+        func diff(a:A, b:A)
+            b.val - a.val
+        
+        func inst:A diff(obj:A)
+            [inst.val - obj.val]
+        
+        a1 = A{}
+        a2 = A(2)
+        
+        res <- a1.diff(a2)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
 
     def _test_code3(self):
         ''' '''

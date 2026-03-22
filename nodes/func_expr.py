@@ -138,7 +138,7 @@ class FuncCallExpr(CallExpr):
     def do(self, ctx: Context):
         func, args, named = self.takeFunc(ctx)
         self.func = func
-        # print('#3# func-call do05: ', self.name, 'F:', func)
+        # print('#3# func-call do05: ', self.name, 'F:', func, args)
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
         # print('F.call.do/1', func, args, named)
         self.func.setArgVals(args, named)

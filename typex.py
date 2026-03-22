@@ -98,6 +98,11 @@ class TypeEnum(VType):
     _defVal = None
     th = TH.mk()
 
+class TypeGrup(VType):
+    name='grup'
+    _defVal = None
+    th = TH.mk()
+
 
 class TypeByte(VType):
     nume='byte'

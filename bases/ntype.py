@@ -57,9 +57,9 @@ def resolveVal( desT:VType, val:Val):
 
 def fixType( dest:Var, val:Val):
     ''' not for dest._strict '''
+    valType = val.getType()
     if isinstance(val.val, Null):
         return
-    valType = val.getType()
     if not isinstance(valType, TypeStruct):
         valType = copy.copy(valType)
     if dest.getType() != val.getType():

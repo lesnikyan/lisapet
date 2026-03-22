@@ -276,8 +276,8 @@ _noSolidOpers = flatOpers()
 #     'func if else while for struct import match enum @debug'
 # ).split(' ')
 
-KEYWORDS_R = ['func','if','else','for','return','struct','match','enum','while','import']
-KEYR_RX = re.compile('func|if|for|while|match|enum|struct|else|import|return')
+KEYWORDS_R = {n:0 for n in ['func','if','else','for','return','struct','match','enum','while','import', 'grup']}
+KEYR_RX = re.compile('func|if|for|while|match|enum|grup|struct|else|import|return')
 rSolOpers = ['.','~>', '...']
 _bpairs = {'(':')', '[':']', '{':'}'}
 _rob = list('}])')
@@ -297,7 +297,7 @@ def isSolidExpr(elems:list[Elem], getLast=None, skipKeywords = False):
     if elen == 1 and elems[0].type in [Lt.word, Lt.text, Lt.num]:
         return True, 0
     # print('%')
-    # print('isSolid #2', f"<{elems[0].text}>", elems[0].text in _keyWords)
+    # print('isSolid #2', f"<{elems[0].text}>", elems[0].text in KEYWORDS_R)
     if not skipKeywords and  elems[0].type == Lt.word:
         if KEYR_RX.match(elems[0].text):
         # if elems[0].text in KEYWORDS_R:

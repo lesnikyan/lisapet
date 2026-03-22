@@ -381,6 +381,7 @@ class CaseRWord(CaseLim):
             return False
         if elems[0].type != Lt.word:
             return False
+        # print('$1', elems[0].text)
         return elems[0].text in KEYWORDS_R
 
 

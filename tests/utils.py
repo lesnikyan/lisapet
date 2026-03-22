@@ -96,6 +96,8 @@ def resRepr(src):
             n = resRepr(n)
         if isinstance(n, (bytearray2, bytearray, bytes)):
             n = str(n)
+        if isinstance(n, (ObjectInstance)):
+            n = 'st@%s' % str(n)
         if isinstance(n, (Glif)):
             n = 'g(%s)'%(n.val)
         rr.append(n)
