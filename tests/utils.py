@@ -30,14 +30,16 @@ def ivar(name, value):
 def filepath(fname):
     return Path(__file__).with_name(fname)
     
-def trydo(expr, ctx):
+def trydo(expr, ctx, out=True):
     try:
         expr.do(ctx)
     except LangError as ex:
-        print('\n!! Eval Error:', ex.msg)
+        if out:
+            print('\n!! Eval Error:', ex.msg)
         raise ex
     except Exception as ex:
-        print(ex.args)
+        if out:
+            print(ex.args)
         raise ex
 
 def tryParse(code):

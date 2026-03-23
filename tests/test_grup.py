@@ -14,6 +14,44 @@ from tests.utils import *
 class TestGrup(TestCase):
 
 
+    def test_grup_blocked_outer(self):
+        '''Test that items from context above of grup context 
+            can't by taken directly by grup name. '''
+        code = r'''
+        
+        res = []
+        
+        struct A a:int
+        
+        grup Ggg
+            func a(x:int)
+                A(x)
+        
+        # ok expression
+        res <- Ggg.a(11)
+        
+        # incorrect hack
+        res <- Ggg.A(22)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        
+        with self.assertRaisesRegex(EvalErr, r"Grup Ggg doesn't have item.*") as contx:
+            trydo(ex, ctx, 0)
+            
+        # print('>>TT err:', contx.exception)
+        
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = ['st@A{a: 11}']
+        self.assertEqual(exv, resv)
+
+
     def test_grup_inner_var(self):
         ''' '''
         code = r'''

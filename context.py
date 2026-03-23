@@ -353,20 +353,37 @@ class ModuleBox(ModuleInst):
         return 'ModuleBox(%s)' % (self.name)
 
 
+class FlatContext(Context):
+    
+    def findHere(self, name):
+        src = self
+        # print('ctx cur types:', name, src.types.keys())
+        res = src.findIn(name)
+        # print('Ctx.find res=', res)
+        if res:
+            if isinstance(res, TypeProperty):
+                res = res.type
+            # print('Ctx.find : Found!')
+            return res
+        # raise EvalErr('Can`t find item `%s` in grup context' % name)
+        return None
+
+
 class Grup(NSContext, Container):
     
-    def __init__(self, name, defCtx:Context):
+    def __init__(self, name, defCtx:FlatContext):
         self.vtype = TypeGrup()
         self.name = name
         self.val = None
         # self.items = []
         # self.imap = {}
-        self.context:Context = defCtx # shoul be a child of module
+        self.context:FlatContext = defCtx # shoul be a child of module
     
     def getItem(self, name):
-        found = self.context.get(name)
-        if not found or isinstance(found, VarUndefined):
-            raise EvalErr(f"Grup {self.name} doesn't have item {name}")
+        found = self.context.findHere(name)
+        # if not found or isinstance(found, VarUndefined):
+        if not found:
+            raise EvalErr('No item in grup', f"Grup {self.name} doesn't have item {name}")
         return found
     
     def __str__(self):

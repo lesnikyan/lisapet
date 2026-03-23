@@ -573,7 +573,7 @@ class GrupNode(Block):
         
     def do(self, ctx:Context):
         ''' do definition '''
-        gctx = Context(ctx)
+        gctx = FlatContext(ctx)
         gr = Grup(self.name, gctx)
         ctx.addGrup(gr)
         super().do(gctx)

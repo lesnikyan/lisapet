@@ -55,7 +55,16 @@ class TestDev(TestCase):
         
         DONE: Sequence  match and split if brackets in quotes: (1, '[', ']')
         
-    # features for for `enum` - not sure
+        FIXED: prevent access to upper contetx through name of grup using finding mechanism
+        func f()
+            123
+        grup N
+            v=1
+        N.f() # now can find f() in upper lvl context
+        we need specail context for grup. it should have access for its own needs, but should block direct access by name 
+        
+
+    # features for `enum` - not sure
         TODO: Enum.name(11)
         TODO: Enum.value(name)
         TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
@@ -203,6 +212,7 @@ class TestDev(TestCase):
         TODO: check same name method and func with same full signature 
         func fname(inst:A, arg:A)
         func inst:A fname(arg:A)
+         
         
     '''
 
@@ -215,8 +225,16 @@ res = []
 
 
 
-    def _test_func_meth_same_name(self):
-        ''' '''
+    def _test_func_and_method_with_same_name(self):
+        '''Resolve case if function and method have same full signatue
+        
+        struct Abc
+        
+        func foo(a:Abc, b:Abc)
+        
+        func inst:Abc foo(obj:Abc)
+        
+        '''
         code = r'''
         
         res = []
