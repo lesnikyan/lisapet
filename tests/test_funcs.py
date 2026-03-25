@@ -26,6 +26,89 @@ class TestFuncs(TestCase):
 
 
 
+    def test_func_and_method_with_same_name(self):
+        '''Resolve case if function and method have the same full signature
+        
+        struct Abc
+        
+        func foo(a:Abc, b:Abc)
+        
+        func inst:Abc foo(obj:Abc)
+        
+        '''
+        code = r'''
+        
+        res = []
+        
+        struct A val:int
+        
+        func diff(a:A, b:A)
+            a.val - b.val
+        
+        func inst:A diff(obj:A)
+            [inst.val - obj.val]
+        
+        func dd(a:A, b:A)
+            a.val - b.val
+        
+        func inst:A dd(obj:A)
+            dd(inst, obj)
+        
+        func inst:A ad(obj:A)
+            dd(inst, obj)
+        
+        a1 = A(5)
+        a2 = A(2)
+        
+        res <- a1.diff(a2)
+        res <- diff(a1, a2)
+        res <- a1.dd(a2)
+        res <- a1.ad(a2)
+        
+        # in grup
+        
+        grup G
+            struct A val:int
+            
+            func diff(a:A, b:A)
+                a.val - b.val
+            
+            func inst:A diff(obj:A)
+                [inst.val - obj.val]
+        
+            func dd(a:A, b:A)
+                a.val - b.val
+        
+            func inst:A dd(obj:A)
+                G.dd(inst, obj)
+            
+            func inst:A ad(obj:A)
+                G.dd(inst, obj)
+            
+
+        a3 = G.A(8)
+        a4 = G.A(4)
+        
+        res <- a3.diff(a4)
+        res <- G.diff(a3, a4)
+        res <- a3.ad(a4)
+        res <- a3.dd(a4)
+        
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [[3], 3, 3, 3, [4], 4, 4, 4]
+        self.assertEqual(exv, resv)
+
     def test_method_as_function_object(self):
         ''' obj.method as an object / value 
             to store in container, return, assign to var or field 

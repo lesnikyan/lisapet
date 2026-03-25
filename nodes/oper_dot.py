@@ -78,6 +78,7 @@ class ObjectMember(ObjectElem):
             ctype = mctx.find(inst.getType().name)
             # print('ODt6. type:', inst.getType(), mctx, ctype, fname)
             if isinstance(ctype, TypeProperty):
+                # print('Dot7Oper. type-func=', ctype.funcs)
                 func = ctype.funcs.getMethod(fname)
                 # print('Dot7Oper. type-func=', type(func))
                 if isinstance(func, MethodOfType):

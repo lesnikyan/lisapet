@@ -7,7 +7,7 @@ from nodes.expression import *
 from nodes.keywords import *
 from nodes.base_oper import AssignExpr
 from nodes.oper_dot import ObjectMember
-from objects.func import Function, ObjMethod
+from objects.func import Function, Method, ObjMethod
 
 import inspect
 
@@ -379,7 +379,7 @@ class MethodDefExpr(FuncDefExpr):
         self.instExpr = exp.getTypedVar()
 
     def doFunc(self, ctx):
-        func = Function(self.name)
+        func = Method(self.name)
         self.instExpr.do(ctx)
         inst = self.instExpr.get()
         # dprint('MethodDefExpr.doFunc', inst, self.name)

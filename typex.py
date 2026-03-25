@@ -83,7 +83,7 @@ class TypeString(VType):
     th = TH.mk()
 
 class TypeRegexp(VType):
-    name='re'
+    name='regexp'
     _defVal = None
     th = TH.mk()
 
@@ -278,7 +278,7 @@ def find(self, name)->Base:
 def builtinTypes()->list[VType]:
     return [TypeAny, TypeBool, TypeInt, TypeFloat, TypeComplex, 
             TypeString, TypeList, TypeDict, TypeStruct, TypeTuple, TypeFunc,
-            TypeBytes, TypeGlif, TypeGrup]
+            TypeBytes, TypeGlif, TypeGrup, TypeRegexp]
 
 
 class MultiType(VType):

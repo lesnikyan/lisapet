@@ -210,11 +210,6 @@ class TestDev(TestCase):
             # not sure, maybe simple encapsulating will be enough:
             grup Boo
                 au = Auch
-                
-            
-        TODO: check same name method and func with same full signature 
-        func fname(inst:A, arg:A)
-        func inst:A fname(arg:A)
          
          
          TODO: const value
@@ -226,7 +221,22 @@ class TestDev(TestCase):
             x :int <= 10
             x :int <== 10
             x :int = 10
+                
             
+        DONE: check same name method and func with same full signature 
+        func fname(inst:A, arg:A)
+        func inst:A fname(arg:A)
+        
+        TODO: think about special type for methods. 
+            It can simplify check of tail recursion for case with similar names
+            maybe )
+        
+        TODO: check and optimize if need Function.checkTail process
+        
+        TODO: add typing by regexp
+        
+        
+        
     '''
 
     _ = r"""
@@ -238,46 +248,32 @@ res = []
 
 
 
-    def _test_func_and_method_with_same_name(self):
-        '''Resolve case if function and method have same full signatue
-        
-        struct Abc
-        
-        func foo(a:Abc, b:Abc)
-        
-        func inst:Abc foo(obj:Abc)
-        
+
+    def _test_regexp_type(self):
+        '''
+        =~ operator
         '''
         code = r'''
-        
         res = []
         
-        struct A val:int
+        r1:regexp = re`\d+`
         
-        func diff(a:A, b:A)
-            b.val - a.val
+        res <- r1 =~ '123'
         
-        func inst:A diff(obj:A)
-            [inst.val - obj.val]
         
-        a1 = A{}
-        a2 = A(2)
-        
-        res <- a1.diff(a2)
         
         # print('res = ', res)
         '''
         code = norm(code[1:])
-        ex = tryParse(code)
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
+        ex.do(ctx)
         rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
+        expv = []
+        self.assertEqual(expv, rvar.vals())
 
     def _test_code3(self):
         ''' '''

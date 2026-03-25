@@ -108,10 +108,10 @@ class StructDef(TypeStruct):
 
     # TODO: Think about case with same name func in a child is overloaded for another args
     def getMethod(self, name):
-        # dprint('getMeth', name)
+        # print('getMeth', name, self.__typeMethods.get(name))
         if not name in self.__typeMethods:
             for sname, stype in self.__parents.items():
-                # dprint('StDef.getMethod ', sname, stype)
+                # print('StDef.getMethod ', sname, stype)
                 try:
                     mt = stype.getMethod(name)
                     return mt

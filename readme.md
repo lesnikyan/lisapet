@@ -1019,6 +1019,12 @@ dict([('a',11), ('b',22)]) # {'a':11, 'b':22}
 See `tests/test_builtins.py` for more information.  
 
 
+### 4.5 Special types  
+
+- Type `grup` is used for typing vars / struct members only.  
+Vars / member with `grup` type is a kind of aliases, no more.  
+It doesn't have construct or special methods, and can't be instantiated.  
+
 
 ### 5. `if`-statement, `else`
 `if` statement, comparison operators, bool operators. 
