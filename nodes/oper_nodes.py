@@ -787,9 +787,10 @@ class IsInExpr(BinOper):
         val = self.valExpr.get()
         val = valFrom(self.valExpr.get())
         self.collExp.do(ctx)
-        coll = valFrom(self.collExp.get())
+        # coll = valFrom(self.collExp.get())
+        coll = var2val(self.collExp.get())
         res = False
-        # dprint('IsInExpr ?>>', coll)
+        # print('IsInExpr ?>>', coll)
         if isinstance(coll, (ListVal, DictVal, TupleVal, Maybe)):
             res = coll.has(val)
         if isinstance(coll.getType(), TypeString):

@@ -38,19 +38,23 @@ class ObjectMember(ObjectElem):
         sob:StructInstance = self.object
         # print('obJ1:', sob.vtype.name,  sob.vtype)
         # print('obJ:', sob.vtype.name,  sob.vtype.debug())
-        # print('self.member, get :: obj2:',self.object, ':', type(self.object), '; .member:', self.member)
+        # print('self.member, get :: obj2:',self.object, ':', type(self.object), ', sob=', sob, '; .member:', self.member)
+        if isinstance(sob, Var):
+            # mostly for grups
+            sob = var2val(sob)
+            
         if isinstance(sob, StructInstance) :
             # print('Obj3Mem.get if Struct')
             # self.membExpr = MethodCallExpr(self.membExpr)
-            if self.object.vtype.hasField(self.member):
-                val = self.object.get(self.member)
+            if sob.vtype.hasField(self.member):
+                val = sob.get(self.member)
                 # print('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
                 if isinstance(val, (StructInstance, Val)):
                     # print('membrr get struct')
                     return val
                 return val.get()
             # print('Obj55Mem')
-            if self.object.vtype.hasMethod(self.member):
+            if sob.vtype.hasMethod(self.member):
                 # print('ObjectMember (checkMethod), get :: obj, method-name: ', self.object, self.member)
                 meth = self.getTypeMethod()
                 return ObjMethod(sob, meth)
@@ -68,7 +72,7 @@ class ObjectMember(ObjectElem):
         else:
             # try to find bound method
             # print('Obj5Mem.get others', sob)
-            inst = self.object
+            inst = sob
             fname = self.member
             mctx:Context = ctx
             ctype = mctx.find(inst.getType().name)
@@ -77,7 +81,7 @@ class ObjectMember(ObjectElem):
                 func = ctype.funcs.getMethod(fname)
                 # print('Dot7Oper. type-func=', type(func))
                 if isinstance(func, MethodOfType):
-                    return func.instCase(self.object)
+                    return func.instCase(sob)
                 return func
                 # self.membExpr = BoundMethodCall(func, fcall)
     

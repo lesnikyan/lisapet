@@ -369,7 +369,7 @@ class FlatContext(Context):
         return None
 
 
-class Grup(NSContext, Container):
+class Grup(NSContext, Container, Space):
     
     def __init__(self, name, defCtx:FlatContext):
         self.vtype = TypeGrup()
@@ -386,6 +386,7 @@ class Grup(NSContext, Container):
             raise EvalErr('No item in grup', f"Grup {self.name} doesn't have item {name}")
         return found
     
+    
     def __str__(self):
-        return f"grup {self.name}"
+        return f"<grup {self.name}>"
 

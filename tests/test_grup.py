@@ -14,9 +14,97 @@ from tests.utils import *
 class TestGrup(TestCase):
 
 
-    def test_grup_blocked_outer(self):
-        '''Test that items from context above of grup context 
-            can't by taken directly by grup name. '''
+    def test_grup_var_in_grup(self):
+        '''Test access to grup members through member incapsulated in another grup or struct. '''
+        code = r'''
+        
+        res = []
+        
+        struct A a:int
+        
+        grup G
+            num = 100
+            a0 = A{}
+            aa = {}
+            
+            func nn(x:int)
+                G.num * x
+            
+            func addA(x:int)
+                G.aa[x] = A(x)
+        
+        # in grup
+        
+        grup H
+            g = G
+            
+            func foo(y)
+                g.nn(y)
+
+            func a()
+                g.a0
+        
+            func getA(x:int)
+                if x !?> g.aa
+                    return null
+                g.aa[x]
+        
+        
+        res <- H.g
+        
+        res <- H.foo(1)
+        res <- H.foo(7)
+        
+        res <- H.a()
+        
+        G.addA(3)
+        H.g.addA(5)
+        gaa = G.aa.filter(\k,v -> true)
+        # print('--gaa', gaa)
+        res <- gaa
+        res <- G.aa[3]
+        
+        res <- H.getA(3)
+        
+        res <- ('key 1', H.getA(1))
+        res <- H.getA(5)
+        
+        # in struct
+        
+        grup J
+            a = 1
+            b = 2
+            s = 'Hello J'
+        
+        struct B num:int, g:grup
+        
+        b1 = B(1, G)
+        b2 = B(2, H)
+        b3 = B(3, J)
+        
+        b1.g.addA(17)
+        res <- b2.g.getA(17)
+        
+        res <- (b3.g.a, b3.g.s)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = ['<grup G>', 100, 700, 'st@A{a: 0}', {3: 'st@A{a: 3}', 5: 'st@A{a: 5}'}, 'st@A{a: 3}', 'st@A{a: 3}', ('key 1', null), 'st@A{a: 5}',
+               'st@A{a: 17}', (1, 'Hello J')]
+        self.assertEqual(exv, resv)
+
+    def test_grup_block_direct_upper_ctx(self):
+        '''Test that items from context above (out) of grup context 
+            can't be taken directly by grup name. '''
         code = r'''
         
         res = []
@@ -50,7 +138,6 @@ class TestGrup(TestCase):
         # print(resv)
         exv = ['st@A{a: 11}']
         self.assertEqual(exv, resv)
-
 
     def test_grup_inner_var(self):
         ''' '''
@@ -105,7 +192,10 @@ class TestGrup(TestCase):
         self.assertEqual(exv, resv)
 
     def test_grup_definition(self):
-        ''' '''
+        ''' test definition of grup, 
+            var type :grup,
+            basic usage of grup and its members
+            '''
         code = r'''
         
         res = []
@@ -162,7 +252,7 @@ class TestGrup(TestCase):
         res <- Vect.name
         
         Vect.num = 23456
-        v = Vect
+        v:grup = Vect
         res <- v.num
         
         res <- v.point0

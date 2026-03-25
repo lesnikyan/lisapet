@@ -206,7 +206,11 @@ class ListVal(Collection):
             if isinstance(n, (FuncInst, ObjectInstance)):
                 r.append(n)
                 continue
-            r.append(n.get())
+            # print('$5', n)
+            nv = n
+            if not isinstance(n, (Space)):
+                nv = n.get()
+            r.append(nv)
         return r
         # return [(n.get()) for n in self.elems]
         # return [(n.get() if not isinstance(n, Collection) else n.vals()) for n in self.elems]
@@ -315,9 +319,10 @@ class DictVal(Collection):
     
     def getElem(self, key:Val):
         k = key.getVal()
+        # print('dict get k=', k, key)
         if k in self.data:
             return self.data[k]
-        raise EvalErr('List out of range by key %s ' % k)
+        raise EvalErr('Dict doesn"t have the key %s ' % k)
     
     def get(self):
         return  self.vals() # debug
@@ -327,11 +332,12 @@ class DictVal(Collection):
 
     def has(self, key:Val):
         k = key.getVal()
+        # print('dict has', key, k)
         return k in self.data
 
     def setVal(self, key:Val, val:Val):
         # k = self.inKey(key)
-        self.data[key.get()] = val
+        self.data[key.getVal()] = val
 
     def keys(self) -> ListVal:
         kk = [dkeyCover(k) for k in self.data.keys()]

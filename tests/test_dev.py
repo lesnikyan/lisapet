@@ -170,7 +170,7 @@ class TestDev(TestCase):
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
-        TODO: grup - static block for set of const, vals and functions. 
+        DONE: grup - static block for set of const, vals and functions. 
             Grup is a named sub-level of context of module
             Like extended enum or static struct
             grup have declarations or definitions, 
@@ -201,19 +201,32 @@ class TestDev(TestCase):
                 subList:list = [1,2,3]
                 strInst = SubStruct{a:5}
                 
-        TODO:
+        TODO (?): put - inherit / include / mixin of a grup into an another grup
             grup Auch
                 x = 1
             
             grup Boo
                 put Auch # copy and place here all things from Auch
+            # not sure, maybe simple encapsulating will be enough:
+            grup Boo
+                au = Auch
                 
             
         TODO: check same name method and func with same full signature 
         func fname(inst:A, arg:A)
         func inst:A fname(arg:A)
          
-        
+         
+         TODO: const value
+            const x: int = 10
+            x :int := 10
+            x := 10
+            <x> :int = 10
+            |x| :int = 10 ;; !x ; ^x ; $x ; /x ; x= = 1; x> = 1; x! = 1; x: = 1 ; 
+            x :int <= 10
+            x :int <== 10
+            x :int = 10
+            
     '''
 
     _ = r"""

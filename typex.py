@@ -149,6 +149,10 @@ class MethodInst(FuncInst):
     ''''''
 
 
+class Space:
+    ''' grup, etc'''
+
+
 class ConstSet(TypeContainer):
     ''' enum, etc '''
 
@@ -274,7 +278,7 @@ def find(self, name)->Base:
 def builtinTypes()->list[VType]:
     return [TypeAny, TypeBool, TypeInt, TypeFloat, TypeComplex, 
             TypeString, TypeList, TypeDict, TypeStruct, TypeTuple, TypeFunc,
-            TypeBytes, TypeGlif]
+            TypeBytes, TypeGlif, TypeGrup]
 
 
 class MultiType(VType):
@@ -314,6 +318,7 @@ def typeCompat(dest:VType, stype:VType):
         case 'float': return sclass in [TypeBool, TypeInt, TypeNull]
         case 'int': return sclass in [TypeBool, TypeNull]
         case 'glif': return sclass in [TypeInt]
+        case 'grup': return sclass in [TypeNull]
         case 'list'|'dict'|'struct': return sclass in [TypeNull]
         case _: return False
 
@@ -344,7 +349,7 @@ def converVal(dest:VType, val:Val):
             if isinstance(vval, int):
                 vval = chr(vval)
             return Val(Glif(vval), TypeGlif())
-        case 'list'|'dict'|'struct':
+        case 'list' | 'dict' | 'struct' | 'grup':
             if isinstance(vtype, TypeNull):
                 return val
         # case _:

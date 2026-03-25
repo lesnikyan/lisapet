@@ -9,6 +9,8 @@ from eval import rootContext
 from vars import *
 
 
+null = Null()
+
 def norm(code):
     ''' Normalize input code: 
     - cut extra indent'''
@@ -100,6 +102,8 @@ def resRepr(src):
             n = str(n)
         if isinstance(n, (ObjectInstance)):
             n = 'st@%s' % str(n)
+        if isinstance(n, (Space)):
+            n = '%s' % str(n)
         if isinstance(n, (Glif)):
             n = 'g(%s)'%(n.val)
         rr.append(n)

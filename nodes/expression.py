@@ -408,10 +408,11 @@ class TypedVarExpr(VarExpr):
         self.val = None
 
     def do(self, ctx:NSContext):
-        # print('TypedVarExpr.do-0', self.right)
+        # print('TypedVarExpr.do-0', self.left, self.right)
         self.right.do(ctx)
         tpv = self.right.get()
         name = self.left.get().name
+        # print('name:', name, ', type:', tpv)
         # print('TPV:', tpv)
         tpVal = TypeAny()
         if isinstance(tpv, TypeVal):
