@@ -148,6 +148,19 @@ Content:
     4. [Replace by regexp](#254-regexp-replace)
     5. [Split by regexp](#255-regexp-split)
 
+19. [`grup` blok](#190-grup)  
+    1. [Declaration](#191-declaration)  
+    2. [Nested definitions](#192-nested-definitions)  
+    3. [Static content vs instances](#193-static-content-vs-instances)  
+    4. [Sub level of module](#194-sub-level-of-module)  
+ 
+Grup can contain variables and function which can read and change value of variables. It looks similar to field of struct but grup don't have instances instead of struct. All calls of function from grup work with the same variable.  
+Another aspect od grup is a names space withid module (or grup).  
+Grup can be used like a module (except importing direct names).
+
+It make sense to use grup like a static object, or singleton object, or like tool for grouping things with common goals.  
+
+
 *
 ## Status.
 Actually it's on-dev. Most basic features and needed things is done. Author doing something more each week.  
@@ -1005,6 +1018,12 @@ dict([('a',11), ('b',22)]) # {'a':11, 'b':22}
 ```
 See `tests/test_builtins.py` for more information.  
 
+
+### 4.5 Special types  
+
+- Type `grup` is used for typing vars / struct members only.  
+Vars / member with `grup` type is a kind of aliases, no more.  
+It doesn't have construct or special methods, and can't be instantiated.  
 
 
 ### 5. `if`-statement, `else`
@@ -3237,6 +3256,84 @@ for s <- split(src, re`[\s/;-]+`)
 
 >> ['<h88>', '<i99>', '<j101>', '<k202>', '<n204>']
 ```
+
+
+### 19.0 Grup
+`grup` (shortening of 'group') is a block that defines sub-space in module.  
+In grup place we can declare and define other things like: varialbes, functions, structs, enums.  
+
+### 19.1 Declaration
+Grup is created by keyword `grup`.  
+```golang
+grup A
+    n = 1
+    func foo(x)
+        x + n
+
+A.foo(10) # >> 11
+```
+
+### 19.2 Nested definitions  
+Things that has been defined  in the `grup` can be used by the grup name over comma like things from imported module or member of struct instance.  
+```golang
+grup G1
+    name = 'Group1'
+    num = 100
+
+    struct A a:int, s:string
+
+    func v:A inf()
+        ~'A: {v.a}, <{v.s}>'
+    
+    func a0()
+        A(0, '')
+
+#// usage
+
+a = G1.a0()
+a1 = G1.A(1, 'Aa')
+
+gg = G1 #// assign grup into var
+gg.a1.inf() # >> 'A: 1, <Aa>'
+
+```
+
+### 19.3 Static content vs instances.
+
+Grup can contain variables and function which can read and change value of variables. It looks similar to field of struct but grup don't have instances instead of struct. All calls of function from grup work with the same variable.  
+
+```golang
+grup A
+    n = 1
+
+    func foo(x)
+        x + n
+
+    func setN(x)
+        A.n = x
+
+A.foo(10) # >> 11
+A.setN(5)
+A.foo(20) # >> 25
+
+```
+
+### 19.4 Sub level of module.
+
+Another aspect is that the `grup` is a named space within module (or grup).  
+So we can separate some related things from other into special named place.  
+```golang
+grup Colors
+    red = '#ff0000'
+    orange = '#ff8800'
+    yellow = 'ffff00'
+    green = '#00ff00'
+    blue = '#0000ff'
+
+print(Colors.green)
+```
+
+Conclusion:  It make sense to use `grup` like a static object, or singleton object, or like a tool fo grouping things with common goals.  
 
 
 

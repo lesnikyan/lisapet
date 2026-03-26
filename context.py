@@ -18,16 +18,18 @@ class Context(NSContext):
     def __init__(self, parent:'Context'=None):
         self.vars:dict = dict()
         self.types:dict[str, TypeProperty] = {}
-        self.enums:dict[str, ConstSet] = {}
         self.funcs:dict[str,FuncInst] = {}
+        self.enums:dict[str, ConstSet] = {}
+        self.grups:dict[str, ConstSet] = {}
         self.upper:Context = parent # upper level context
 
     def copy(self):
         ctx = Context(self.upper)
         ctx.vars = self.vars
         ctx.types = self.types
-        ctx.enums = self.enums
         ctx.funcs = self.funcs
+        ctx.enums = self.enums
+        ctx.grups = self.grups
         return ctx
 
     def depth(self):
@@ -46,12 +48,16 @@ class Context(NSContext):
             if ctx.upper is None:
                 return ctx
             ctx = ctx.upper
-        
 
     def addEnum(self, enum:ConstSet):
         if enum.name in self.enums:
             raise EvalErr(f"Trying to registed enum {enum.name} that is already exists.")
         self.enums[enum.name] = enum
+
+    def addGrup(self, grup:ConstSet):
+        if grup.name in self.grups:
+            raise EvalErr(f"Trying to registed grup {grup.name} that is already exists.")
+        self.grups[grup.name] = grup
 
     def addType(self, tp:VType):
         # print('ctx.addType: ', tp, '::', type(tp), tp.get())
@@ -164,6 +170,8 @@ class Context(NSContext):
             return src.funcs[name]
         if name in src.enums:
             return src.enums[name]
+        if name in src.grups:
+            return src.grups[name]
 
         return None
 
@@ -189,9 +197,9 @@ class Context(NSContext):
             return
         c:Context = self
         while c:
-            ttt = ['vars', 'types', 'funcs']
+            ttt = ['vars', 'types', 'funcs', 'enums', 'grups']
             iii = 0
-            for data in [c.vars, c.types, c.funcs]:
+            for data in [c.vars, c.types, c.funcs, c.enums, c.grups]:
                 print('.' * ind, '  > ', ttt[iii])
                 iii += 1
                 for k, v in data.items():
@@ -308,6 +316,8 @@ class ModuleBox(ModuleInst):
         nn.extend([n for n in self.mcontext.vars.keys()])
         nn.extend([n for n in self.mcontext.funcs.keys()])
         nn.extend([n for n in self.mcontext.types.keys()])
+        nn.extend([n for n in self.mcontext.enums.keys()])
+        nn.extend([n for n in self.mcontext.grups.keys()])
         self.inames = nn
 
     def importThing(self, name):
@@ -341,3 +351,42 @@ class ModuleBox(ModuleInst):
 
     def __str__(self):
         return 'ModuleBox(%s)' % (self.name)
+
+
+class FlatContext(Context):
+    
+    def findHere(self, name):
+        src = self
+        # print('ctx cur types:', name, src.types.keys())
+        res = src.findIn(name)
+        # print('Ctx.find res=', res)
+        if res:
+            if isinstance(res, TypeProperty):
+                res = res.type
+            # print('Ctx.find : Found!')
+            return res
+        # raise EvalErr('Can`t find item `%s` in grup context' % name)
+        return None
+
+
+class Grup(NSContext, Container, Space):
+    
+    def __init__(self, name, defCtx:FlatContext):
+        self.vtype = TypeGrup()
+        self.name = name
+        self.val = None
+        # self.items = []
+        # self.imap = {}
+        self.context:FlatContext = defCtx # shoul be a child of module
+    
+    def getItem(self, name):
+        found = self.context.findHere(name)
+        # if not found or isinstance(found, VarUndefined):
+        if not found:
+            raise EvalErr('No item in grup', f"Grup {self.name} doesn't have item {name}")
+        return found
+    
+    
+    def __str__(self):
+        return f"<grup {self.name}>"
+

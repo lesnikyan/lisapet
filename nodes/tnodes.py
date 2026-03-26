@@ -7,7 +7,7 @@ from lang import *
 from vars import *
 from nodes.expression import *
 from context import Context, ModuleContext
-from nodes.base_oper import AssignExpr
+# from nodes.base_oper import AssignExpr
 
 
 # Expression
@@ -125,44 +125,6 @@ class ImportExpr(Expression):
             ctx.addAlias(alias, orig)
 
 
-class EnumDef(Expression):
-    
-    def __init__(self, name, src = ''):
-        super().__init__(None, src)
-        self.name = name
-        self.items = []
-
-    def add(self, item:Expression):
-        # print('enum.add', item)
-        self.items.append(item)
-
-    def fillEnum(self, ctx):
-        enum = Enum(self.name)
-        prev = -1
-        for exitem in self.items:
-            # print('Enum.do/1:', exitem)
-            prev += 1
-            val = prev
-            name = ''
-            match exitem:
-                case VarExpr():
-                    name = exitem.name
-                case AssignExpr():
-                    exitem.do(ctx)
-                    ival = exitem.get()
-                    prev = var2val(ival).getVal()
-                    val = prev
-                    name = exitem.left.name
-            # ival can be var or assign expr
-            # print('Enum.do/2:', val, name)
-            item = EnumItem(name, val) # Val(val, TypeInt())
-            enum.add(item)
-        return enum
-
-    def do(self, ctx:Context):
-        enum:Enum = self.fillEnum(ctx)
-        ctx.addEnum(enum)
-
 
 # Future cases 
 
@@ -185,6 +147,7 @@ class PossiblyConstSet(Val):
         if equalType(dtype, itype) or equalType(dtype, _Any):
             return True
         return isCompatible(dtype, itype)
+
 
 class ConstSetExpr(Expression):
     

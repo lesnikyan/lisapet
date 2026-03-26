@@ -108,10 +108,10 @@ class StructDef(TypeStruct):
 
     # TODO: Think about case with same name func in a child is overloaded for another args
     def getMethod(self, name):
-        # dprint('getMeth', name)
+        # print('getMeth', name, self.__typeMethods.get(name))
         if not name in self.__typeMethods:
             for sname, stype in self.__parents.items():
-                # dprint('StDef.getMethod ', sname, stype)
+                # print('StDef.getMethod ', sname, stype)
                 try:
                     mt = stype.getMethod(name)
                     return mt
@@ -257,6 +257,7 @@ class StructInstance(ObjectInstance, NSContext):
         self.initSuper()
 
     def initSuper(self):
+        # print('$5', self.vtype)
         self.ifields = self.vtype.nfields[:]
 
 
@@ -296,16 +297,6 @@ class StructInstance(ObjectInstance, NSContext):
             raise EvalErr(f'Incorrect number of values in constructor of struct {self.vtype.name}')
         for i in range(len(vals)):
             self.set(self.vtype.fields[i], vals[i])
-
-    # def _set(self, fname:str, val:Val):
-    #     # check type
-    #     # print('StructInstance.set:', fname, val)
-    #     # print('StructInstance.set types:', self.vtype.name, '>', self.vtype.types)
-    #     if fname in self.vtype.nfields:
-    #         self.checkType(fname, val)
-    #         self.data[fname] = val
-    #         return
-    #     raise EvalErr(f'Incorrect field `{fname}` of Type `{self.vtype.name}`')
 
     def set(self, fname:str, val:Val):
         ''' check type and set new value '''
@@ -474,6 +465,8 @@ class StructConstr(Expression):
         self.objExpr.do(ctx)
         # print('finfT.obj', self.objExpr, self.objExpr.get())
         stype = self.objExpr.get()
+        if isinstance(stype, ObjectElem):
+            stype = stype.get(ctx)
         # stype = ctx.getType(self.typeName)
         if isinstance(stype, TypeVal):
             return stype.get()
@@ -516,4 +509,74 @@ class StructConstr(Expression):
 class StructConstrBegin(StructConstr, MultilineVal):
     def __init__(self, typeName):
         super().__init__(typeName)
+
+
+
+from nodes.base_oper import AssignExpr
+
+class EnumDef(Expression):
+    
+    def __init__(self, name, src = ''):
+        super().__init__(None, src)
+        self.name = name
+        self.items = []
+
+    def add(self, item:Expression):
+        # print('enum.add', item)
+        self.items.append(item)
+
+    def fillEnum(self, ctx):
+        enum = Enum(self.name)
+        prev = -1
+        for exitem in self.items:
+            # print('Enum.do/1:', exitem)
+            prev += 1
+            val = prev
+            name = ''
+            match exitem:
+                case VarExpr():
+                    name = exitem.name
+                case AssignExpr():
+                    right = exitem.right
+                    right.do(ctx)
+                    ival = right.get()
+                    prev = var2val(ival).getVal()
+                    val = prev
+                    name = exitem.left.name
+            # ival can be var or assign expr
+            # print('Enum.do/2:', val, name)
+            item = EnumItem(name, val) # Val(val, TypeInt())
+            enum.add(item)
+        return enum
+
+    def do(self, ctx:Context):
+        enum:Enum = self.fillEnum(ctx)
+        ctx.addEnum(enum)
+
+
+class GrupNode(Block):
+    ''' definition of grup
+        space of declarations of grouped things
+        sub-level of module or another grup '''
+    
+    def __init__(self, name, src=''):
+        super().__init__()
+        self.src = src
+        self.name = name
+        self.context:Context = None # shoul be a child of module
+        
+    def getName(self):
+        return self.name
+
+    def setContext(self, ctx:Context):
+        self.context = ctx
+        
+    def do(self, ctx:Context):
+        ''' do definition '''
+        gctx = FlatContext(ctx)
+        gr = Grup(self.name, gctx)
+        ctx.addGrup(gr)
+        super().do(gctx)
+
+
 

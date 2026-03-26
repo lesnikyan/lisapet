@@ -38,19 +38,23 @@ class ObjectMember(ObjectElem):
         sob:StructInstance = self.object
         # print('obJ1:', sob.vtype.name,  sob.vtype)
         # print('obJ:', sob.vtype.name,  sob.vtype.debug())
-        # print('self.member, get :: obj2:',self.object, ':', type(self.object), '; .member:', self.member)
+        # print('self.member, get :: obj2:',self.object, ':', type(self.object), ', sob=', sob, '; .member:', self.member)
+        if isinstance(sob, Var):
+            # mostly for grups
+            sob = var2val(sob)
+            
         if isinstance(sob, StructInstance) :
             # print('Obj3Mem.get if Struct')
             # self.membExpr = MethodCallExpr(self.membExpr)
-            if self.object.vtype.hasField(self.member):
-                val = self.object.get(self.member)
+            if sob.vtype.hasField(self.member):
+                val = sob.get(self.member)
                 # print('ObjectMember, get :: obj, member, val: ', self.object, self.member, val)
                 if isinstance(val, (StructInstance, Val)):
                     # print('membrr get struct')
                     return val
                 return val.get()
             # print('Obj55Mem')
-            if self.object.vtype.hasMethod(self.member):
+            if sob.vtype.hasMethod(self.member):
                 # print('ObjectMember (checkMethod), get :: obj, method-name: ', self.object, self.member)
                 meth = self.getTypeMethod()
                 return ObjMethod(sob, meth)
@@ -60,31 +64,48 @@ class ObjectMember(ObjectElem):
             item = enum.getItem(self.member)
             # print('enum.item:', item)
             return item
+        elif isinstance(sob, Grup):
+            gr:Grup = sob
+            item = gr.getItem(self.member)
+            # print('$4', item)
+            return item
         else:
             # try to find bound method
-            # print('Obj5Mem.get others')
-            inst = self.object
+            # print('Obj5Mem.get others', sob)
+            inst = sob
             fname = self.member
             mctx:Context = ctx
             ctype = mctx.find(inst.getType().name)
             # print('ODt6. type:', inst.getType(), mctx, ctype, fname)
             if isinstance(ctype, TypeProperty):
+                # print('Dot7Oper. type-func=', ctype.funcs)
                 func = ctype.funcs.getMethod(fname)
                 # print('Dot7Oper. type-func=', type(func))
                 if isinstance(func, MethodOfType):
-                    return func.instCase(self.object)
+                    return func.instCase(sob)
                 return func
                 # self.membExpr = BoundMethodCall(func, fcall)
     
     def getType(self):
         # print('self.member', self.member)
-        strType = self.object.getFieldType(self.member)
-        return strType
+        match self.object:
+            case StructInstance():
+                return self.object.getFieldType(self.member)
+            case Grup():
+                return self.get().getType()
+        return None
+        # strType = self.object.getFieldType(self.member)
+        # return strType
     
     def set(self, val:Val):
         ''' obj.member = expr; obj.member[key] = expr (looks like a.b[c] is an subcase of a.b) '''
         # dprint('ObjectMember.set self.member, val :: ', self.member, val)
-        self.object.set(self.member, val)
+        
+        match self.object:
+            case StructInstance():
+                self.object.set(self.member, val)
+            case Grup():
+                self.get().set(val)
 
     def __str__(self):
         return "node ObjectMember(inst=%s, name=%s)" % (self.object, self.member)

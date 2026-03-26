@@ -55,7 +55,16 @@ class TestDev(TestCase):
         
         DONE: Sequence  match and split if brackets in quotes: (1, '[', ']')
         
-    # features for for `enum` - not sure
+        FIXED: prevent access to upper contetx through name of grup using finding mechanism
+        func f()
+            123
+        grup N
+            v=1
+        N.f() # now can find f() in upper lvl context
+        we need specail context for grup. it should have access for its own needs, but should block direct access by name 
+        
+
+    # features for `enum` - not sure
         TODO: Enum.name(11)
         TODO: Enum.value(name)
         TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
@@ -137,9 +146,6 @@ class TestDev(TestCase):
             aa = [1,2,3]
             dd = {11:1, 22:2, 33:3}
             for i, x, key, val <- iter(3), aa, dd
-        
-        TODO: group - static block for set of const vals and functions. 
-            Like extended enum and struct
                 print(i, x, key, val)
         
         TODO: add assertion to cases in test_lists
@@ -164,6 +170,75 @@ class TestDev(TestCase):
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
+        DONE: grup - static block for set of const, vals and functions. 
+            Grup is a named sub-level of context of module
+            Like extended enum or static struct
+            grup have declarations or definitions, 
+            no other expressions like controls: for, if, import
+            (but no special limitation of that, thinking about that)
+            I don't like `grup` or `group`. thinking about alternatives 
+            possible aliases:
+                sub, def, nmsp, space, stat, grup, sublvl, box, nest
+                inbox Name
+                nbox Name
+                subox Name
+                object Name
+                place Name
+                nest Name
+            
+            grup Name
+                struct SubStruct a:int
+                
+                func subFunc()
+                    res
+                    
+                enum SubEnum
+                    a = 1
+                    b = 10
+                
+                # vals
+                subVar:type = val
+                subList:list = [1,2,3]
+                strInst = SubStruct{a:5}
+            
+        DONE: check same name method and func with same full signature 
+        func fname(inst:A, arg:A)
+        func inst:A fname(arg:A)
+        
+        
+        TODO (?): put - inherit / include / mixin of a grup into an another grup
+            # not sure, maybe simple encapsulating will be enough:
+            grup Auch
+                x = 1
+            
+            grup Boo
+                put Auch # copy and place here all things from Auch
+            
+            grup Boo
+                au = Auch
+         
+         
+         TODO: const value
+            const x: int = 10
+            x :int := 10
+            x := 10
+            <x> :int = 10
+            |x| :int = 10 ;; !x ; ^x ; $x ; /x ; x= = 1; x> = 1; x! = 1; x: = 1 ; 
+            x :int <= 10
+            x :int <== 10
+            x :int = 10
+                
+        
+        TODO: think about special type for methods. 
+            It can simplify check of tail recursion for case with similar names
+            maybe )
+        
+        TODO: check and optimize if need Function.checkTail process
+        
+        TODO: add typing by regexp
+        
+        
+        
     '''
 
     _ = r"""
@@ -172,6 +247,33 @@ res = []
 
 """
 
+
+
+    def _test_regexp_type(self):
+        '''
+        =~ operator
+        '''
+        code = r'''
+        res = []
+        
+        r1:regexp = re`\d+`
+        
+        res <- r1 =~ '123'
+        
+        
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        expv = []
+        self.assertEqual(expv, rvar.vals())
 
     def _test_code3(self):
         ''' '''

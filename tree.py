@@ -266,8 +266,6 @@ def subBtContext(elems:list[Elem], blockContext:Expression):
     return None
 
 
-
-
 def caseMatcher():
     ''' case-tree of common cases '''
     strLim = CaseOption(CaseStr(), [CaseRegexp(), CaseGlif(), CaseString(), CaseMString()])
@@ -285,11 +283,12 @@ def caseMatcher():
     solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidLeft, brkLim, solidOther])
 
     # ===
-    # def match\(self, elems:list\[Elem\]\)
 
     servLim = CaseOption(CaseServ(), [CaseEmpty(), CaseDebug(),])
     
-    kewRList = [CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(), CaseImport(), CaseEnum(), 
+    kewRList = [
+        CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(), 
+        CaseImport(), CaseEnum(), CaseGrup(),
         CaseFuncDef(), CaseMethodDef(), CaseStructDef(), CaseStructBlockDef(),]
     
     keywRs = CaseOption(CaseAny(), kewRList)

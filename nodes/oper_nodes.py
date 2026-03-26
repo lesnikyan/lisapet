@@ -173,6 +173,7 @@ class OpAssign(AssignExpr):
                 destStrict = dest.strictType()
             
             # print('= OpAssign/10 ', dest, val, dest.getType(), val.getType(), 'isStrict', dest.strictType())
+            # print('= OpAssign/10 ', dest, val, dest.getType(), val.getType(), )
             if destStrict:
                 dt, st = dest.getType(), val.getType()
                 if not equalType(dt, st):
@@ -786,9 +787,10 @@ class IsInExpr(BinOper):
         val = self.valExpr.get()
         val = valFrom(self.valExpr.get())
         self.collExp.do(ctx)
-        coll = valFrom(self.collExp.get())
+        # coll = valFrom(self.collExp.get())
+        coll = var2val(self.collExp.get())
         res = False
-        # dprint('IsInExpr ?>>', coll)
+        # print('IsInExpr ?>>', coll)
         if isinstance(coll, (ListVal, DictVal, TupleVal, Maybe)):
             res = coll.has(val)
         if isinstance(coll.getType(), TypeString):

@@ -9,6 +9,8 @@ from eval import rootContext
 from vars import *
 
 
+null = Null()
+
 def norm(code):
     ''' Normalize input code: 
     - cut extra indent'''
@@ -30,14 +32,16 @@ def ivar(name, value):
 def filepath(fname):
     return Path(__file__).with_name(fname)
     
-def trydo(expr, ctx):
+def trydo(expr, ctx, out=True):
     try:
         expr.do(ctx)
     except LangError as ex:
-        print('\n!! Eval Error:', ex.msg)
+        if out:
+            print('\n!! Eval Error:', ex.msg)
         raise ex
     except Exception as ex:
-        print(ex.args)
+        if out:
+            print(ex.args)
         raise ex
 
 def tryParse(code):
@@ -96,6 +100,10 @@ def resRepr(src):
             n = resRepr(n)
         if isinstance(n, (bytearray2, bytearray, bytes)):
             n = str(n)
+        if isinstance(n, (ObjectInstance)):
+            n = 'st@%s' % str(n)
+        if isinstance(n, (Space)):
+            n = '%s' % str(n)
         if isinstance(n, (Glif)):
             n = 'g(%s)'%(n.val)
         rr.append(n)
