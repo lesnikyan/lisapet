@@ -200,14 +200,20 @@ class TestDev(TestCase):
                 subVar:type = val
                 subList:list = [1,2,3]
                 strInst = SubStruct{a:5}
-                
+            
+        DONE: check same name method and func with same full signature 
+        func fname(inst:A, arg:A)
+        func inst:A fname(arg:A)
+        
+        
         TODO (?): put - inherit / include / mixin of a grup into an another grup
+            # not sure, maybe simple encapsulating will be enough:
             grup Auch
                 x = 1
             
             grup Boo
                 put Auch # copy and place here all things from Auch
-            # not sure, maybe simple encapsulating will be enough:
+            
             grup Boo
                 au = Auch
          
@@ -222,10 +228,6 @@ class TestDev(TestCase):
             x :int <== 10
             x :int = 10
                 
-            
-        DONE: check same name method and func with same full signature 
-        func fname(inst:A, arg:A)
-        func inst:A fname(arg:A)
         
         TODO: think about special type for methods. 
             It can simplify check of tail recursion for case with similar names
@@ -244,8 +246,6 @@ class TestDev(TestCase):
 res = []
 
 """
-
-
 
 
 
