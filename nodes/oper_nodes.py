@@ -192,6 +192,7 @@ class OpAssign(AssignExpr):
                 fixType(dest, val)
                 
             dest.set(val)
+            # print('Op.assign11:', dest, val)
             
             if isinstance(dest, ObjectMember):
                 return
@@ -901,12 +902,12 @@ class RegexpMatchOper(RegexpOper):
         self.left.do(ctx)
         rx = self.left.get()
         if isinstance(rx, (Var)):
-            rx = rx.getVal()
+            rx = rx.get()
         self.right.do(ctx)
         src = self.right.get()
         src = var2val(src)
         res = rx.match(src)
-        self.res = Val(res, TypeBool())
+        self.res = Val(bool(res), TypeBool())
 
 
 class RegexpSearchOper(RegexpOper):

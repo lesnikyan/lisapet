@@ -30,7 +30,7 @@ def getVal(arg):
         v = t
     elif isinstance(v, (DictVal)):
         v = {k: getVal(vv) for k,vv in v.data.items()}
-    elif isinstance(v, (Function, FuncOverSet, ObjMethod)):
+    elif isinstance(v, (Function, FuncOverSet, ObjMethod, Regexp)):
         v = str(v)
     elif isinstance(v, Val):
         v = v.getVal()

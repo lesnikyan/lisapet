@@ -235,8 +235,10 @@ class TestDev(TestCase):
         
         TODO: check and optimize if need Function.checkTail process
         
-        TODO: add typing by regexp
+        DONE: add typing by regexp
         
+        TODO: add regexp construct
+            regexp(`[a-z]+`, 'ui')
         
         
     '''
@@ -248,47 +250,15 @@ res = []
 """
 
 
-
-    def _test_regexp_type(self):
-        '''
-        =~ operator
-        '''
-        code = r'''
-        res = []
-        
-        r1:regexp = re`\d+`
-        
-        res <- r1 =~ '123'
-        
-        
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        rvar = ctx.get('res').get()
-        expv = []
-        self.assertEqual(expv, rvar.vals())
-
-    def _test_code3(self):
+    def _test_regexp_construct(self):
         ''' '''
         code = r'''
         
         res = []
         
-        x = 1
-        y = 0
-        if x > 5
-            res <- 2
-        else if x > 0
-            res <- 3
-        else
-            res <- 7
+        r1 = regexp('', '')
+        
+        r2 = regexp('')
         
         # print('res = ', res)
         '''
