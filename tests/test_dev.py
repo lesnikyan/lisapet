@@ -235,8 +235,10 @@ class TestDev(TestCase):
         
         TODO: check and optimize if need Function.checkTail process
         
-        TODO: add typing by regexp
+        DONE: add typing by regexp
         
+        TODO: add regexp construct
+            regexp(`[a-z]+`, 'ui')
         
         
     '''
@@ -248,47 +250,27 @@ res = []
 """
 
 
-
-    def _test_regexp_type(self):
-        '''
-        =~ operator
-        '''
-        code = r'''
-        res = []
-        
-        r1:regexp = re`\d+`
-        
-        res <- r1 =~ '123'
-        
-        
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        tlines = splitLexems(code)
-        clines:CLine = elemStream(tlines)
-        ex = lex2tree(clines)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        ex.do(ctx)
-        rvar = ctx.get('res').get()
-        expv = []
-        self.assertEqual(expv, rvar.vals())
-
-    def _test_code3(self):
+    def test_regexp_construct(self):
         ''' '''
         code = r'''
         
         res = []
         
-        x = 1
-        y = 0
-        if x > 5
-            res <- 2
-        else if x > 0
-            res <- 3
-        else
-            res <- 7
+        # pattern and flags
+        r1 = regexp('[123]+', 'i')
+        
+        res <- r1
+        res <- ('11', r1 =~ '11')
+        res <- ('23321', r1 =~ '23321')
+        res <- ('a1', r1 =~ 'a1')
+        
+        # default flags
+        pts = `[\-\=\+]`
+        r2:regexp = regexp(pts)
+        
+        res <- r2
+        res <- ('11-22-33', '11-22-33'.split(r2))
+        res <- ('11=22_44', '11=22_44'.split(r2))
         
         # print('res = ', res)
         '''
@@ -300,9 +282,11 @@ res = []
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
         resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
+        # print(resv)
+        exv = [
+            're`[123]+`', ('11', True), ('23321', True), ('a1', False), 
+            're`[\\-\\=\\+]`', ('11-22-33', ['11', '22', '33']), ('11=22_44', ['11', '22_44'])]
+        self.assertEqual(exv, resv)
 
 
     def _test_code(self):

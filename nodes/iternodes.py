@@ -412,6 +412,7 @@ class LeftArrowExpr(BinOper):
             ltArg  = self.leftExpr.get()
         
         self.rightExpr.do(ctx) # make iter object
+        # print('Arr <- do3', self.leftExpr, '<-', self.rightExpr)
         rtArg = self.rightExpr.get()
 
         # print('Arr <-2 init ltArg', ltArg, ltArg.__class__)

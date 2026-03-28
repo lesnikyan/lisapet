@@ -95,17 +95,19 @@ def resRepr(src):
     from nodes.builtins import pstr
     rr = []
     for n in src:
-        # print('>>', n)
+        # print('>>', n, type(n))
         if isinstance(n, (list, tuple)):
             n = resRepr(n)
-        if isinstance(n, (bytearray2, bytearray, bytes)):
+        elif isinstance(n, (bytearray2, bytearray, bytes)):
             n = str(n)
-        if isinstance(n, (ObjectInstance)):
+        elif isinstance(n, (ObjectInstance)):
             n = 'st@%s' % str(n)
-        if isinstance(n, (Space)):
+        elif isinstance(n, (Space)):
             n = '%s' % str(n)
-        if isinstance(n, (Glif)):
+        elif isinstance(n, (Glif)):
             n = 'g(%s)'%(n.val)
+        elif isinstance(n, (Regexp)):
+            n = '%s'%str(n)
         rr.append(n)
     if isinstance(src, tuple):
         rr = tuple(rr)

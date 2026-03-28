@@ -26,6 +26,61 @@ class TestRegexp(TestCase):
     ''' Test builtin regexp lib. '''
 
 
+    def test_regexp_type(self):
+        '''
+        test fixes of type regexp
+        '''
+        code = r'''
+        res = []
+        
+        r1:regexp = re`\d+`
+        
+        res <- r1
+        
+        res <- r1 =~ '123'
+        
+        res <- r1 ?~ '12 as 34 ff gg 671'
+        
+        r2 = re`\s+`
+        res <- 'aa bb cc 44 5678 Hello! <!:?//>'.split(r2)
+        
+        res <- ('is regexp', r2 :: regexp)
+        res <- ('is string', r2 :: string)
+        
+        rmt = []
+        ss = [1, 'a', [], (1,2), {}, r1, r2, re`123`]
+        for n <- ss
+            match n
+                r :: regexp
+                    rmt <- ('re', r)
+                s :: string
+                    rmt <- ('s', s)
+                _
+                    rmt <- ('_', n)
+        
+        res <- rmt
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        tlines = splitLexems(code)
+        clines:CLine = elemStream(tlines)
+        ex = lex2tree(clines)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        ex.do(ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        expv = [
+            're`\\d+`', True, 
+            [['12'], ['34'], ['671']], 
+            ['aa', 'bb', 'cc', '44', '5678', 'Hello!', '<!:?//>'], 
+            ('is regexp', True), ('is string', False), 
+            [('_', 1), ('s', 'a'), ('_', []), ('_', (1, 2)), ('_', {}), 
+             ('re', re.compile('\\d+')), ('re', re.compile('\\s+')), ('re', re.compile('123'))]]
+        self.assertEqual(expv, resv)
+
     def test_regexp_replace(self):
         ''' replace(src, rx, repl) '''
         code = r'''

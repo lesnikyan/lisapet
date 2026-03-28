@@ -203,7 +203,7 @@ class ListVal(Collection):
     def vals(self):
         r = []
         for n in self.elems:
-            if isinstance(n, (FuncInst, ObjectInstance)):
+            if isinstance(n, (FuncInst, ObjectInstance, Regexp)):
                 r.append(n)
                 continue
             # print('$5', n)
@@ -504,6 +504,9 @@ class Regexp(Val):
             grval.extend(groups)
             rvals.append(ListVal(elems=[StringVal(s) for s in grval]))
         return ListVal(elems=rvals)
+
+    def __str__(self):
+        return 're`%s`' %(self.pattern.pattern)
 
 
 class EnumItem(Val):
