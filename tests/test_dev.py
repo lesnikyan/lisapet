@@ -40,29 +40,6 @@ class TestDev(TestCase):
         
         
         
-        DONE: refactor tree.py from loops of cases to pattern-tree
-        
-        DONE: think about performance, decreased after \lambda changes.
-        1) find common cases:
-            solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, single control-keywords, var, val, 
-            no-solid -> definitions, control-statements, bin-opers, 
-        2) dive into sub-cases
-        2.2) refactor list-like expressions to avoid multiple check items in []-brackets
-            first check solid []-case, then find case in []-cases:
-            list, slice, iter-gen, list-gen, bytes
-        
-        DONE: Optimize mtCases using prepared data from upper limit-cases
-        
-        DONE: Sequence  match and split if brackets in quotes: (1, '[', ']')
-        
-        FIXED: prevent access to upper contetx through name of grup using finding mechanism
-        func f()
-            123
-        grup N
-            v=1
-        N.f() # now can find f() in upper lvl context
-        we need specail context for grup. it should have access for its own needs, but should block direct access by name 
-        
 
     # features for `enum` - not sure
         TODO: Enum.name(11)
@@ -170,41 +147,6 @@ class TestDev(TestCase):
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
-        DONE: grup - static block for set of const, vals and functions. 
-            Grup is a named sub-level of context of module
-            Like extended enum or static struct
-            grup have declarations or definitions, 
-            no other expressions like controls: for, if, import
-            (but no special limitation of that, thinking about that)
-            I don't like `grup` or `group`. thinking about alternatives 
-            possible aliases:
-                sub, def, nmsp, space, stat, grup, sublvl, box, nest
-                inbox Name
-                nbox Name
-                subox Name
-                object Name
-                place Name
-                nest Name
-            
-            grup Name
-                struct SubStruct a:int
-                
-                func subFunc()
-                    res
-                    
-                enum SubEnum
-                    a = 1
-                    b = 10
-                
-                # vals
-                subVar:type = val
-                subList:list = [1,2,3]
-                strInst = SubStruct{a:5}
-            
-        DONE: check same name method and func with same full signature 
-        func fname(inst:A, arg:A)
-        func inst:A fname(arg:A)
-        
         
         TODO (?): put - inherit / include / mixin of a grup into an another grup
             # not sure, maybe simple encapsulating will be enough:
@@ -216,6 +158,13 @@ class TestDev(TestCase):
             
             grup Boo
                 au = Auch
+                
+        
+        TODO: think about special type for methods. 
+            It can simplify check of tail recursion for case with similar names
+            maybe )
+        
+        TODO: check and optimize if need Function.checkTail process
          
          
          TODO: const value
@@ -227,18 +176,6 @@ class TestDev(TestCase):
             x :int <= 10
             x :int <== 10
             x :int = 10
-                
-        
-        TODO: think about special type for methods. 
-            It can simplify check of tail recursion for case with similar names
-            maybe )
-        
-        TODO: check and optimize if need Function.checkTail process
-        
-        DONE: add typing by regexp
-        
-        TODO: add regexp construct
-            regexp(`[a-z]+`, 'ui')
         
         
     '''
@@ -250,27 +187,18 @@ res = []
 """
 
 
-    def test_regexp_construct(self):
+
+    def _test_const(self):
         ''' '''
         code = r'''
-        
         res = []
         
-        # pattern and flags
-        r1 = regexp('[123]+', 'i')
-        
-        res <- r1
-        res <- ('11', r1 =~ '11')
-        res <- ('23321', r1 =~ '23321')
-        res <- ('a1', r1 =~ 'a1')
-        
-        # default flags
-        pts = `[\-\=\+]`
-        r2:regexp = regexp(pts)
-        
-        res <- r2
-        res <- ('11-22-33', '11-22-33'.split(r2))
-        res <- ('11=22_44', '11=22_44'.split(r2))
+        const a = 123
+        const s = "Hello there!"
+        grup G
+            const n2 = 2
+            const ne6 = 1000000
+            const pi = 3.141592653589793
         
         # print('res = ', res)
         '''
@@ -282,11 +210,9 @@ res = []
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
         resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = [
-            're`[123]+`', ('11', True), ('23321', True), ('a1', False), 
-            're`[\\-\\=\\+]`', ('11-22-33', ['11', '22', '33']), ('11=22_44', ['11', '22_44'])]
-        self.assertEqual(exv, resv)
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
 
 
     def _test_code(self):

@@ -540,6 +540,69 @@ Fixes:
 # DONE
         
         
+        DONE: refactor tree.py from loops of cases to pattern-tree
+        
+        DONE: think about performance, decreased after \lambda changes.
+        1) find common cases:
+            solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, single control-keywords, var, val, 
+            no-solid -> definitions, control-statements, bin-opers, 
+        2) dive into sub-cases
+        2.2) refactor list-like expressions to avoid multiple check items in []-brackets
+            first check solid []-case, then find case in []-cases:
+            list, slice, iter-gen, list-gen, bytes
+        
+        DONE: Optimize mtCases using prepared data from upper limit-cases
+        
+        DONE: Sequence  match and split if brackets in quotes: (1, '[', ']')
+        
+        DONE: grup - static block for set of const, vals and functions. 
+            Grup is a named sub-level of context of module
+            Like extended enum or static struct
+            grup have declarations or definitions, 
+            no other expressions like controls: for, if, import
+            (but no special limitation of that, thinking about that)
+            I don't like `grup` or `group`. thinking about alternatives 
+            possible aliases:
+                sub, def, nmsp, space, stat, grup, sublvl, box, nest
+                inbox Name
+                nbox Name
+                subox Name
+                object Name
+                place Name
+                nest Name
+            
+            grup Name
+                struct SubStruct a:int
+                
+                func subFunc()
+                    res
+                    
+                enum SubEnum
+                    a = 1
+                    b = 10
+                
+                # vals
+                subVar:type = val
+                subList:list = [1,2,3]
+                strInst = SubStruct{a:5}
+        
+        FIXED: prevent access to upper contetx through name of grup using finding mechanism
+        func f()
+            123
+        grup N
+            v=1
+        N.f() # now can find f() in upper lvl context
+        we need specail context for grup. it should have access for its own needs, but should block direct access by name 
+            
+        DONE: check same name method and func with same full signature 
+        func fname(inst:A, arg:A)
+        func inst:A fname(arg:A)
+        
+        DONE: add typing by regexp
+        
+        DONE: add regexp construct
+            regexp(`[a-z]+`, 'ui')
+        
         DONE: root, square root operator, the same precedence as **
             ^/  3^/8 
         
