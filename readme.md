@@ -1012,6 +1012,8 @@ float(1) # 1.0
 bool(5) # true
 string(123) # '123'
 bytes('Hello!') # '0x[48 65 6c 6c 6f 21]'
+glif('A') # g'A'
+regexp('[a-z]+', 'iu') # regexp: re`[a-z]+`ui
 list('Cats') # ['C','a','t','s']
 tuple([1,2,3]) # (1,2,3)
 dict([('a',11), ('b',22)]) # {'a':11, 'b':22}
@@ -3167,8 +3169,16 @@ re`(group) (?:ignored group)` #// groups
 
 2. Flags.  
 `re`-syntax allows native [(pythons) regexp flags](https://docs.python.org/3/library/re.html#flags): `a,i,L,m,s,u,x`.  
-Flag or flags can be added to pattern right after pattern quotes without white spaces or separators.  
+
+Flag or flags can be added to the pattern right after pattern quotes, like a suffix, without white spaces or separators.  
 Flags set is corresponding to pythons flags of regexp.  
+- a - ASCII only for \w, \W, \b, \B, \d, \D, \s, \S = (?a)   
+- i - ignorecase = (?i)  
+- L - locale, not sure we need it for strings  
+- m - multiline = (?m)  
+- s - dotall, including `\n` = (?s)  
+- u - unicode (default case)  
+- x - verbose, igrored whitespaces, and endline comments `# smth` = (?x)  
 ```golang
 re`pattern`is
 re`pattern`aim
@@ -3180,6 +3190,27 @@ Just put variable on the flags position in the curly brackets (it looks similar 
 flags = 'muL'
 rx = re`pattern`{flags}
 ```
+3. Functional type-constructor is yet one way to make the regexp.  
+It has 2 args.  
+- pattern: string with regexp pattern  
+- flags: string with flags, optional  
+```golang
+rx1 = regexp('Hello, [a-z]+', 'ui')
+rx2 = regexp('Bye, [A-Z][a-z]+')
+```
+
+4. Regexp hat its own type `regexp`.  
+it can be applyed to variable or argument.  
+Also `regexp` type can be used for in type-check operator in conditional expressions or patter-matching.  
+```golang
+rx:regexp = re`Hello\S+`i
+
+if rx :: regexp /: #// code
+
+match rx
+    :: regexp /: #// code
+```
+
 
 Regexp objects have its own set of operators and can be used as a pattern of match-cases (in dev).
 

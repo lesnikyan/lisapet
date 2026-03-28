@@ -250,15 +250,27 @@ res = []
 """
 
 
-    def _test_regexp_construct(self):
+    def test_regexp_construct(self):
         ''' '''
         code = r'''
         
         res = []
         
-        r1 = regexp('', '')
+        # pattern and flags
+        r1 = regexp('[123]+', 'i')
         
-        r2 = regexp('')
+        res <- r1
+        res <- ('11', r1 =~ '11')
+        res <- ('23321', r1 =~ '23321')
+        res <- ('a1', r1 =~ 'a1')
+        
+        # default flags
+        pts = `[\-\=\+]`
+        r2:regexp = regexp(pts)
+        
+        res <- r2
+        res <- ('11-22-33', '11-22-33'.split(r2))
+        res <- ('11=22_44', '11=22_44'.split(r2))
         
         # print('res = ', res)
         '''
@@ -270,9 +282,11 @@ res = []
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
         resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
+        # print(resv)
+        exv = [
+            're`[123]+`', ('11', True), ('23321', True), ('a1', False), 
+            're`[\\-\\=\\+]`', ('11-22-33', ['11', '22', '33']), ('11=22_44', ['11', '22_44'])]
+        self.assertEqual(exv, resv)
 
 
     def _test_code(self):
