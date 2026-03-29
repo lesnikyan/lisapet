@@ -12,69 +12,74 @@ from nodes.func_opers import FuncApplyOper
 from nodes.datanodes import *
 
 
-class CaseAssign(SubCase):
+# class _CaseAssign(SubCase):
 
-    def match(self, elems:list[Elem]) -> bool:
-        '''
-        abc123 = 123.123
-        var1 = foo(123, [1,2,3]), 
-        arr[index] = 2
-        a,b,c = 1, var1, foo(10, 20) '''
-        if elems[0].type != Lt.word:
-            return False
-        if len(elems) < 2:
-            # TODO: need dev for assignment with blocks
-            return False
-        
-        for el in elems:
-            # left part
-            if el.type == Lt.word:
-                continue
-            if el.type == Lt.oper and el.text in '[],.:':
-                continue
-            # found operator
-            if el.type == Lt.oper and el.text == '=':
-                return True
-        return False
+#     def match(self, elems:list[Elem]) -> bool:
+#         '''
+#         abc123 = 123.123
+#         var1 = foo(123, [1,2,3]), 
+#         arr[index] = 2
+#         v = foo(m=5)
+#         a,b,c = 1, var1, foo(10, 20)
+#         const a = 123
+#         const x, const y = 1,2
+#         const n:int = 5
+#         '''
+#         if elems[0].type != Lt.word:
+#             return False
+#         if len(elems) < 2:
+#             # TODO: need dev for assignment with blocks
+#             return False
+#         print('is assign:', elemStr(elems))
+#         for el in elems:
+#             # left part
+#             if el.type == Lt.word:
+#                 continue
+#             if el.type == Lt.oper and el.text in '[],.:':
+#                 continue
+#             # found operator
+#             if el.type == Lt.oper and el.text == '=':
+#                 return True
+#         return False
 
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        # simple case a = expr
-        src = elemStr(elems)
-        left:list[Elem] = [] # vars only
-        right:list[Elem] = [] # vars, vals, funcs, methods
-        # slice
-        # prels('# OpAsgn split1: ', elems)
-        opInd = afterLeft(elems)
-        # dprint('Assign-split opInd:', opInd, elems[opInd].text)
-        left = elems[:opInd]
-        right = elems[opInd+1:]
-        # TODO: Implement multi-assign case
-        expr = OpAssign()
-        expr.src = elems
-        return expr, [left, right]
+#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+#         # simple case a = expr
+#         src = elemStr(elems)
+#         left:list[Elem] = [] # vars only
+#         right:list[Elem] = [] # vars, vals, funcs, methods
+#         # slice
+#         # prels('# OpAsgn split1: ', elems)
+#         opInd = afterLeft(elems)
+#         # dprint('Assign-split opInd:', opInd, elems[opInd].text)
+#         left = elems[:opInd]
+#         right = elems[opInd+1:]
+#         # TODO: Implement multi-assign case
+#         expr = OpAssign()
+#         expr.src = elems
+#         return expr, [left, right]
 
-    def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
-        # waiting: OpAssign, [right]
-        # print('CaseAssign setSub:',base,  subs)
-        lsub = len(subs)
-        if lsub % 2 > 0:
-            # can be changed after tuple case implementation
-            raise InterpretErr('number of sub-expressions for assignment looks incorrect: %d ' % lsub)
-        hsize = int (lsub  / 2) # half of size
-        left = subs[:hsize]
-        right = subs[hsize:]
-        # dprint('CaseAssign sesubs L/R:', left, right)
-        tl = left
-        left = []
-        for tex in tl:
-            if isinstance(tex, ServPairExpr):
-                # dprint('pair tex =  ', tex.left, tex.right)
-                left.append(tex.getTypedVar())
-            else:
-                left.append(tex)
-        base.setArgs(left, right)
+#     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
+#         # waiting: OpAssign, [right]
+#         # print('CaseAssign setSub:',base,  subs)
+#         lsub = len(subs)
+#         if lsub % 2 > 0:
+#             # can be changed after tuple case implementation
+#             raise InterpretErr('number of sub-expressions for assignment looks incorrect: %d ' % lsub)
+#         hsize = int (lsub  / 2) # half of size
+#         left = subs[:hsize]
+#         right = subs[hsize:]
+#         # dprint('CaseAssign sesubs L/R:', left, right)
+#         tl = left
+#         left = []
+#         for tex in tl:
+#             if isinstance(tex, ServPairExpr):
+#                 # dprint('pair tex =  ', tex.left, tex.right)
+#                 left.append(tex.getTypedVar())
+#             else:
+#                 left.append(tex)
+#         base.setArgs(left, right)
 
-        return base
+#         return base
 
 
 _operPrior = ('() [] {} , . , ~> , ... , -x ! ~ , ** ^/ , * / % , + - ,'
@@ -112,6 +117,7 @@ class CaseBinOper(SubCase):
             main = self.splitter.mainOper(elems, lesser='**')
         res =  main > 0 and elems[main].text not in _noOpers and isLex(elems[main], Lt.oper, self.opers)
         self.lastM = main if res else -1
+        # print('bin-op->', res)
         return res
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:

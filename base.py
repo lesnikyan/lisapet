@@ -160,6 +160,9 @@ class Var(Base):
 
     def strictType(self):
         return self._strict
+    
+    def initSet(self, val):
+        self.val = val
 
     def set(self, val):
         if self.val is not None and not self._mutable:

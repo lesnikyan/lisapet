@@ -84,6 +84,19 @@ class RegexpExpr(Expression):
         rule = compile(self.pattern, numFlags)
         self.rule = Regexp(rule)
 
-
     def get(self) -> Regexp:
         return self.rule
+
+
+# class _ConstVarExpr(Expression):
+#     '''const varname = value'''
+
+#     def __init__(self, sub:VarExpr, src=None):
+#         super().__init__(None, src)
+#         self.sub = sub
+
+#     def do(self, ctx:Context):
+#         self.sub.do(ctx)
+
+
+

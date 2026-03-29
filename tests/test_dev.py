@@ -188,17 +188,32 @@ res = []
 
 
 
-    def _test_const(self):
+    def test_const(self):
         ''' '''
         code = r'''
         res = []
         
         const a = 123
+        const b: int = 5
+        const k, const t = 11, 12
         const s = "Hello there!"
+        
         grup G
             const n2 = 2
             const ne6 = 1000000
             const pi = 3.141592653589793
+            const nf1:float = 1.25
+            const tnums = (1, 2, 3, 128)
+        
+        res <- a
+        res <- b
+        res <- (k, t)
+        res <- s
+        res <- G.n2
+        res <- G.ne6
+        res <- G.pi
+        res <- G.nf1
+        res <- G.tnums
         
         # print('res = ', res)
         '''
@@ -210,9 +225,9 @@ res = []
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
         resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
+        # print(resv)
+        exv = [123, 5, (11, 12), 'Hello there!', 2, 1000000, 3.141592653589793, 1.25, (1, 2, 3, 128)]
+        self.assertEqual(exv, resv)
 
 
     def _test_code(self):

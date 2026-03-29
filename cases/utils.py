@@ -27,7 +27,7 @@ def isHexBytes(elems:list[Elem]):
 
 
 operPrior = ('( ) [ ] { } , . , ~> , ... , -x ! ~ , ** ^/ , * / % , + - ,'
-' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , || , \\ , ->, $, ?: , : , ?, `1`, .. , <- , = += -= *= /= %= , ; , !: :? => , /: ')
+' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , || , \\ , ->, $, ?: , : , ?, `1`, const, .. , <- , = += -= *= /= %= , ; , !: :? => , /: ')
 
 unaryOperators = '- ! ~ +'.split(' ')
 
@@ -277,11 +277,12 @@ _noSolidOpers = flatOpers()
 # ).split(' ')
 
 KEYWORDS_R = {n:0 for n in ['func','if','else','for','return','struct','match','enum','while','import', 'grup']}
-KEYR_RX = re.compile('func|if|for|while|match|enum|grup|struct|else|import|return')
+KEYR_RX = re.compile('func|if|for|while|match|enum|grup|struct|else|import|return|const')
 rSolOpers = ['.','~>', '...']
 _bpairs = {'(':')', '[':']', '{':'}'}
 _rob = list('}])')
 _rcb = list('([{')
+_operandTypes = [Lt.word, Lt.text, Lt.num]
 
 
 def isSolidExpr(elems:list[Elem], getLast=None, skipKeywords = False):
@@ -289,12 +290,12 @@ def isSolidExpr(elems:list[Elem], getLast=None, skipKeywords = False):
     
         getLast - get pos of lastsubpart like word after dot, brackets
     '''
-    # print('isSolid #1', elemStr(elems))
+    # print('isSolid #1', elemStr(elems), '', len(elems))
     elen = len(elems)
     if elen == 0:
         return False, -1
     
-    if elen == 1 and elems[0].type in [Lt.word, Lt.text, Lt.num]:
+    if elen == 1 and elems[0].type in _operandTypes:
         return True, 0
     # print('%')
     # print('isSolid #2', f"<{elems[0].text}>", elems[0].text in KEYWORDS_R)

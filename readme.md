@@ -32,6 +32,7 @@ Content:
     6. [`glif` `g'G'`](#16-glif-gg)
     7. [Multiline expressions](#17-multiline-expressions-if-for-math-expr)
     8. [Code blocks and formatting.](#18-sub-blocks-code-formatting)
+    9. [`const`](#19-const)
 
 2. Operators.  
     1. [Math operators](#21-arithmetic-operators)
@@ -304,6 +305,7 @@ lastName = names[2]
 # multiple assignment
 a, b, c = 10, 20, 30
 ```
+
 Alternatives see in next sections: [`<-` operator](#6-for-statement---operator).
 
 ### 1.2 Execution context.  
@@ -445,6 +447,25 @@ if a < b
 Data structures can have block version of definition (`struct`) or constructor (`dict` and `list`).  
 Some blocks also can have inline version of syntax (controls, sequence of expressions).  
 See more about inline syntax [in next sections](#20-one-line-block---operators).  
+
+
+### 1.9 `const`  
+Var declaration with assignment can be modified by modifier `const`.  
+`const` fixes value and prevent to change it.  
+Attempt to change const element will cause the error.  
+```golang
+const name = 'Vasya'
+const num = 17
+```
+Doesn't make sense to add var type for the constant elem because it will never changed.  
+
+Most useful `const` will be in grup or module vars.  
+```golang
+grup Colors
+    const white = '#ffffff'
+    const black = '#000000'
+    const red = '#ff0000'
+```
 
 
 
