@@ -157,6 +157,8 @@ class OpAssign(AssignExpr):
                 isNew = True
                 newVar = Var(dest.name, valType)
                 # dprint('Assign new var', newVar, 'val-type:', valType)
+                # print('Op=, mut:', dest._mutable)
+                newVar._mutable = dest._mutable
                 ctx.addVar(newVar)
                 dest = newVar
             

@@ -82,10 +82,13 @@ class VarExpr(Expression):
         super().__init__(var)
         # self.val = var # or name,type ?
         self.name = var.name
+        self.const = False
     
     def do(self, ctx:NSContext):
-        newVal = ctx.get(self.name)
-        self.val = newVal
+        newVar:Var = ctx.get(self.name)
+        if self.const:
+            newVar._mutable = False
+        self.val = newVar
 
     def get(self)->Var:
         return self.val

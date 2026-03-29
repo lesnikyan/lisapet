@@ -217,11 +217,8 @@ class CaseMatchcher:
 
 class CaseSolid(CaseLim):
     ''' any solid expr '''
-    # def __init__(self):
-    #     super().__init__()
     
     def match(self, info:CMatchInfo)-> bool:
-        # ok, _ = isSolidExpr(info.elems)
         info.isSolid()
         return info.solid
     
@@ -238,44 +235,16 @@ class CaseSolidLeft(CaseLim):
     
     def match(self, info:CMatchInfo)-> bool:
         # ok, ind = isSolidExpr(elems, True)
-        # print('1>> CaseSolidLeft >> ', elemStr(elems), (ok, ind ),  ok and ind > 0)
-        # if not isinstance(r, tuple):
-        #     return False
-        # ok, ind = r
         ok, ind = info.solid, info.sid
         # print('$2', ok, ind, ok and ind > 0)
         return (ok and ind > 0), ind
 
-
-# class CaseCateg:
-#     ''' General (parent) case '''
-    
-#     def __init__(self):
-#         self.subs = []
-    
-#     def isGen(self):
-#         return True
-    
-#     def match(self, elems:list[Elem])-> bool:
-#         return False
-    
-#     def matchNot(self, elems:list[Elem])-> bool:
-#         return False
-    
-#     def matchSubs(self, elems:list[Elem]):
-#         for sub in self.subs:
-#             if sub.match(elems):
-#                 return sub
-#         return False
 
 _numWordTypes = [Lt.word, Lt.num]
 
 class CaseWord(CaseLim):
     ''' vars, nums, break, etc '''
     
-    # def __init__(self):
-    #     super().__init__()
-    #     self.subs = [CaseBreak(), CaseContinue(), CaseReturn(), CaseVar_(), CaseVar(), CaseNumVal()]
     
     def match(self, info:CMatchInfo)-> bool:
         if len(info.elems) != 1:
@@ -292,10 +261,6 @@ class CaseBrkSquare(CaseLim):
     [expr]
     '''
     
-    # def __init__(self):
-    #     super().__init__()
-    #     self.subs = [ CaseSlice(), CaseListGen(), CaseBytes(), CaseListComprehension(), CaseList(),]
-        
     def match(self, info:CMatchInfo)-> bool:
         return info.elems[0].text =='[' or info.elems[-1].text == ']'
     
@@ -325,6 +290,7 @@ class CaseGenBrackets(CaseLim):
 
 _strPerfs = ['g', 're']
 _strLexTypes =  [Lt.text, Lt.mttext]
+_str_elemLens = [1, 2, 3, 5]
 
 # ! String cases check by not-match
 class CaseStr(CaseLim):
@@ -347,7 +313,7 @@ class CaseStr(CaseLim):
         False - is not certain result'''
         elen = len(elems)
         # print('strLim', elen)
-        if elen not in [1, 2, 3, 5]:
+        if elen not in _str_elemLens:
             return True
         strInd = 0
         if elen > 1:
@@ -359,11 +325,6 @@ class CaseStr(CaseLim):
             return True
         # print('$4', len(elems))
         match elen:
-            # case 1:
-            #     return elems[0].type not in [Lt.text, Lt.mttext]
-            # case 2:
-            # case 3 if elems[0].text in ["'''", '"""', '```']:
-            #     return elems[-1].text in ["'''", '"""', '```']
             case 3:
                 return elems[-1].type != Lt.word
             case 5:
@@ -383,6 +344,22 @@ class CaseRWord(CaseLim):
             return False
         # print('$1', elems[0].text)
         return elems[0].text in KEYWORDS_R
+
+
+_modWords = ['const']
+
+class CaseModWord(CaseLim):
+    ''' modifier expression
+        mod expr'''
+    
+    def match(self, info:CMatchInfo)-> bool:
+        elems = info.elems
+        if len(elems) < 2:
+            return False
+        if elems[0].type != Lt.word:
+            return False
+        # print('$-mod', elemStr(elems))
+        return elems[0].text in _modWords
 
 
 class CaseOperLim(CaseLim):

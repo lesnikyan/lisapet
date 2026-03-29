@@ -11,6 +11,7 @@ from vars import *
 from cases.tcases import *
 from cases.control import *
 from cases.oper import *
+from cases.modifier import *
 from cases.collection import *
 from cases.mt_cases import *
 
@@ -227,7 +228,7 @@ def complexExpr(expCase:SubCase, elems:list[Elem])->Expression:
     
     subExp:list[Expression] = []
     for sub in subs:
-        # prels('#complexExpr1:', sub)
+        # prels('#complexExpr1:', sub, show=1)
         texpr = elems2expr(sub)
         # if isinstance(texpr, NothingExpr):
         #     continue
@@ -287,7 +288,7 @@ def caseMatcher():
     servLim = CaseOption(CaseServ(), [CaseEmpty(), CaseDebug(),])
     
     kewRList = [
-        CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(), 
+        CaseIf(), CaseElse(), CaseWhile(), CaseFor(),  CaseMatch(), CaseReturn(), CaseConst(),
         CaseImport(), CaseEnum(), CaseGrup(),
         CaseFuncDef(), CaseMethodDef(), CaseStructDef(), CaseStructBlockDef(),]
     
@@ -298,8 +299,10 @@ def caseMatcher():
 
     operLim = CaseOptionPrepared(CaseOperLim(), [CaseLambda(), CaseBinOper(), CaseCommas(), CaseSemic(), ])
 
+    modLim = CaseOptionPrepared(CaseModWord(), [CaseConst()])
+
     # should apply after solid
-    nonSolLim = CaseOption(NonSolid(), [servLim, CaseUnclosedBrackets(), keyrwLim, operLim, CaseLUnar(StrFormatter()),])
+    nonSolLim = CaseOption(NonSolid(), [servLim, CaseUnclosedBrackets(), keyrwLim, operLim, modLim, CaseLUnar(StrFormatter()),])
 
     fullMatcher = CaseMatchcher([solidLim, nonSolLim])
     return fullMatcher
@@ -317,27 +320,7 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
     # check context-dependent
     if blockContext:
         foundCase = subBtContext(elems, blockContext)
-    
-    # # check Solid:
-    # expSolid = isSolidExpr(elems)
-    # print('tree-foundMT:', foundCase)
-    # if not foundCase and expSolid:
-    #     # print('elems2expr/isSolidExpr', expCaseSolids)
-    #     for expCase in expCaseSolids:
-    #         # print('elems2expr/Solid', expCase.__class__)
-    #         if expCase.match(elems):
-    #             foundCase = expCase
-    #             break
-    
-    # # check non-Solid
-    # if not foundCase:
-    #     for expCase in getCases():
-    #         # print('elems2expr/NoSolid', expCase.__class__)
-    #         if expCase.match(elems):
-    #             foundCase = expCase
-    #             break
-    
-    
+
     if not foundCase:
         lineInfo = CMatchInfo(elems)
         foundCase = __genMatcher.find(lineInfo)
