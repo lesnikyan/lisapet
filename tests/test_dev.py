@@ -40,6 +40,9 @@ class TestDev(TestCase):
         
         
         
+         
+        DONE: const value
+            const x: int = 10
 
     # features for `enum` - not sure
         TODO: Enum.name(11)
@@ -115,15 +118,9 @@ class TestDev(TestCase):
         TODO:? var type in for-loop 
             for n:int <- nn
 
-        TODO:? think about type casting by colon; type in left
+        TODO:not. think about type casting by colon; type in left
             x:int = int: true
-
-        TODO: 21.1 Multi-reading in loop:
-            put at right part one more collections, so assign more var in left: 
-            aa = [1,2,3]
-            dd = {11:1, 22:2, 33:3}
-            for i, x, key, val <- iter(3), aa, dd
-                print(i, x, key, val)
+            # type-constructor is enough 
         
         TODO: add assertion to cases in test_lists
         
@@ -131,7 +128,7 @@ class TestDev(TestCase):
         
         TODO: think about import native lib / module into LP code.
             eval.py: importLib('math', math)
-            code.et: import math
+            code.et: import python.math
         
         TODO: math functions:
             log(x, base), ln(x), lg(x),
@@ -158,7 +155,28 @@ class TestDev(TestCase):
             
             grup Boo
                 au = Auch
-                
+        
+        TODO: if conditional expr is a last node of function then
+            last executed expression (sub-part of conditional) should be a result of function
+        func foo()
+            if cond
+                ...
+                expr1 # result
+            else if cond
+                expr2 # result
+            else
+                expr3 # result
+        func foo()
+            match n
+                1 /: 10 # result
+                2
+                    20 # result
+                a :: type
+                    b = f(a)
+                    b + 30 # result
+                _
+                    50 # default result
+
         
         TODO: think about special type for methods. 
             It can simplify check of tail recursion for case with similar names
@@ -166,16 +184,13 @@ class TestDev(TestCase):
         
         TODO: check and optimize if need Function.checkTail process
          
-         
-         TODO: const value
-            const x: int = 10
-            x :int := 10
-            x := 10
-            <x> :int = 10
-            |x| :int = 10 ;; !x ; ^x ; $x ; /x ; x= = 1; x> = 1; x! = 1; x: = 1 ; 
-            x :int <= 10
-            x :int <== 10
-            x :int = 10
+
+        TODO: 21.1 Multi-reading in loop:
+            put at right part one more collections, so assign more var in left: 
+            aa = [1,2,3]
+            dd = {11:1, 22:2, 33:3}
+            for i, x, key, val <- iter(3), aa, dd
+                print(i, x, key, val)
         
         
     '''
@@ -187,47 +202,6 @@ res = []
 """
 
 
-
-    def test_const(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        const a = 123
-        const b: int = 5
-        const k, const t = 11, 12
-        const s = "Hello there!"
-        
-        grup G
-            const n2 = 2
-            const ne6 = 1000000
-            const pi = 3.141592653589793
-            const nf1:float = 1.25
-            const tnums = (1, 2, 3, 128)
-        
-        res <- a
-        res <- b
-        res <- (k, t)
-        res <- s
-        res <- G.n2
-        res <- G.ne6
-        res <- G.pi
-        res <- G.nf1
-        res <- G.tnums
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = [123, 5, (11, 12), 'Hello there!', 2, 1000000, 3.141592653589793, 1.25, (1, 2, 3, 128)]
-        self.assertEqual(exv, resv)
 
 
     def _test_code(self):

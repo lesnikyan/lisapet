@@ -24,6 +24,47 @@ from tests.utils import *
 class TestKeywords(TestCase):
     ''' Operators defined by word '''
 
+    def test_const(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        const a = 123
+        const b: int = 5
+        const k, const t = 11, 12
+        const s = "Hello there!"
+        
+        grup G
+            const n2 = 2
+            const ne6 = 1000000
+            const pi = 3.141592653589793
+            const nf1:float = 1.25
+            const tnums = (1, 2, 3, 128)
+        
+        res <- a
+        res <- b
+        res <- (k, t)
+        res <- s
+        res <- G.n2
+        res <- G.ne6
+        res <- G.pi
+        res <- G.nf1
+        res <- G.tnums
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [123, 5, (11, 12), 'Hello there!', 2, 1000000, 3.141592653589793, 1.25, (1, 2, 3, 128)]
+        self.assertEqual(exv, resv)
+
     def test_break_continue(self):
         ''' Loop in loop with break and continue '''
         code = r'''

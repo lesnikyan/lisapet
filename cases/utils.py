@@ -27,7 +27,7 @@ def isHexBytes(elems:list[Elem]):
 
 
 operPrior = ('( ) [ ] { } , . , ~> , ... , -x ! ~ , ** ^/ , * / % , + - ,'
-' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , || , \\ , ->, $, ?: , : , ?, `1`, const, .. , <- , = += -= *= /= %= , ; , !: :? => , /: ')
+' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , || , \\ , ->, $, ?: , : , ?, `1`, .. , <- , = += -= *= /= %= , ; , !: :? => , /: ')
 
 unaryOperators = '- ! ~ +'.split(' ')
 
@@ -270,11 +270,9 @@ def flatOpers():
         fopers.extend([n for n in oops.split(' ') if n and  n not in ' .'])
     return fopers
 
+
 _noSolidOpers = flatOpers()
 
-# _keyWords = (
-#     'func if else while for struct import match enum @debug'
-# ).split(' ')
 
 KEYWORDS_R = {n:0 for n in ['func','if','else','for','return','struct','match','enum','while','import', 'grup']}
 KEYR_RX = re.compile('func|if|for|while|match|enum|grup|struct|else|import|return|const')

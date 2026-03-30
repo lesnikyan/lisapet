@@ -12,76 +12,6 @@ from nodes.func_opers import FuncApplyOper
 from nodes.datanodes import *
 
 
-# class _CaseAssign(SubCase):
-
-#     def match(self, elems:list[Elem]) -> bool:
-#         '''
-#         abc123 = 123.123
-#         var1 = foo(123, [1,2,3]), 
-#         arr[index] = 2
-#         v = foo(m=5)
-#         a,b,c = 1, var1, foo(10, 20)
-#         const a = 123
-#         const x, const y = 1,2
-#         const n:int = 5
-#         '''
-#         if elems[0].type != Lt.word:
-#             return False
-#         if len(elems) < 2:
-#             # TODO: need dev for assignment with blocks
-#             return False
-#         print('is assign:', elemStr(elems))
-#         for el in elems:
-#             # left part
-#             if el.type == Lt.word:
-#                 continue
-#             if el.type == Lt.oper and el.text in '[],.:':
-#                 continue
-#             # found operator
-#             if el.type == Lt.oper and el.text == '=':
-#                 return True
-#         return False
-
-#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-#         # simple case a = expr
-#         src = elemStr(elems)
-#         left:list[Elem] = [] # vars only
-#         right:list[Elem] = [] # vars, vals, funcs, methods
-#         # slice
-#         # prels('# OpAsgn split1: ', elems)
-#         opInd = afterLeft(elems)
-#         # dprint('Assign-split opInd:', opInd, elems[opInd].text)
-#         left = elems[:opInd]
-#         right = elems[opInd+1:]
-#         # TODO: Implement multi-assign case
-#         expr = OpAssign()
-#         expr.src = elems
-#         return expr, [left, right]
-
-#     def setSub(self, base:Expression, subs:Expression|list[Expression])->Expression:
-#         # waiting: OpAssign, [right]
-#         # print('CaseAssign setSub:',base,  subs)
-#         lsub = len(subs)
-#         if lsub % 2 > 0:
-#             # can be changed after tuple case implementation
-#             raise InterpretErr('number of sub-expressions for assignment looks incorrect: %d ' % lsub)
-#         hsize = int (lsub  / 2) # half of size
-#         left = subs[:hsize]
-#         right = subs[hsize:]
-#         # dprint('CaseAssign sesubs L/R:', left, right)
-#         tl = left
-#         left = []
-#         for tex in tl:
-#             if isinstance(tex, ServPairExpr):
-#                 # dprint('pair tex =  ', tex.left, tex.right)
-#                 left.append(tex.getTypedVar())
-#             else:
-#                 left.append(tex)
-#         base.setArgs(left, right)
-
-#         return base
-
-
 _operPrior = ('() [] {} , . , ~> , ... , -x ! ~ , ** ^/ , * / % , + - ,'
 ' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , ||, $, ?: , : , ?, \\ , -> , .. , <- , = += -= *= /= %= , ; , !: :? , /: ') #
 
@@ -144,6 +74,7 @@ boolOpers = '&& ||'.split(' ')
 cmpOpers = '== != > < >= < <='.split(' ')
 btOpers = '& | ^ << >>'.split(' ')
 binAssgn = '+= -= *= /= %='.split(' ')
+
 
 def makeOperExp(elem:Elem)->OperCommand:
     # TODO: make oper command by cases: math, logical, assign and math+assign, bit operators, brackets
@@ -293,14 +224,6 @@ class CaseBrackets(SubCase, SolidCase):
             # only if other operator cases was failed
             return False
         return True
-        # r =  isSolidExpr(elems, getLast=True, skipKeywords=True)
-        # if not isinstance(r, tuple):
-        #     return False
-        # ok, pos = r
-        # return ok and pos == 0
-        # if not ok or pos != 0:
-        #     return False
-        # return True
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
@@ -334,22 +257,8 @@ class CaseListGen(SubCase, SolidCase):
         self.cs = CaseSeq('..')
     
     def match(self, elems:list[Elem]) -> bool:
-        # trivial check
-        # TODO: add check for complex cases like [] + []
-        # if isLex(elems[0], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']'):
-        #     return True
-        
         if not isLex(elems[-1], Lt.oper, ']'):
             return False
-        # opInd = findLastBrackets(elems)
-        # if opInd != 0:
-        #     return False
-        # r =  isSolidExpr(elems, getLast=True, skipKeywords=True)
-        # if not isinstance(r, tuple):
-        #     return False
-        # ok, pos = r
-        # if not ok:
-        #     return False
         return self.cs.match(elems[1:-1])
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
@@ -403,25 +312,10 @@ class CaseListComprehension(SubCase, SolidCase):
         if not (isLex(elems[0], Lt.oper, '[') and isLex(elems[-1], Lt.oper, ']') ):
             return False
         
-        # opInd = findLastBrackets(elems)
-        # if opInd != 0:
-        #     return False
-        
-        
-        # opInd = self.spl.mainOper(elems)
-        # if opInd != 0:
-        #     return False
-        # subElems = elems[1:-1]
-        # opInd = self.spl.mainOper(subElems)
         return self.cs.match(elems[1:-1])
-        # return opInd > 0 and subElems[opInd].text == ';'
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         sub = elems[1:-1]
-        # subs = []
-        # if self.cs.match(sub):
-        #     _, subs = self.cs.split(sub)
-        # subs = []
         _, subs = self.cs.split(sub)
         exp = ListComprExpr()
         subs = [s for s in subs if len(s)]
@@ -472,7 +366,6 @@ class CaseInlineSub(SubCase):
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         ''' '''
         # dprint('CaseInlineSub split', elems)
-        # idx = self.spl.mainOper(elems)
         idx = self.lastId
         ctrl = elems[:idx]
         sub = elems[idx+1:]
