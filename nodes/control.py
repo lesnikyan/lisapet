@@ -34,7 +34,8 @@ class ElseExpr(Block):
         self.subIf = sub
         self.add(sub)
 
-class IfExpr(ControlBlock):
+
+class IfExpr(IfNode):
     
     def __init__(self, cond:Expression=None):
         # super().__init__()
@@ -42,10 +43,11 @@ class IfExpr(ControlBlock):
         self.elseBlock:Block = None
         self.cond = cond
         self.preSubs:list[Expression] = [] # sub-expressions before conditions
-        self.lastRes = None
+        # self.lastRes = None
         self.curBlock = self.mainBlock
         self.condRes = None
         self.inCtx = None
+        self.lastTarget = None
 
     def setCond(self, expr:Expression, subExp:list[Expression]=[]):
         # print('#IfExpr setCond ', expr, subExp)
@@ -69,8 +71,9 @@ class IfExpr(ControlBlock):
         for sub in self.preSubs:
             sub.do(inCtx)
         self.cond.do(inCtx)
+        self.lastTarget = None
         target:Block = self.mainBlock
-        self.lastRes = None
+        # self.lastRes = None
         self.condRes = self.cond.get()
         self.inCtx = None
         # print('# IfExpr.do02 ', condRes, type(condRes))
@@ -85,11 +88,15 @@ class IfExpr(ControlBlock):
         # print('# IfExpr.do2 ', target)
         self.inCtx = inCtx
         target.do(inCtx)
-        self.lastRes = target.get() # for case if we need result from if block or one-line-if
+        self.lastTarget = target
+        # self.lastRes = target.get() # for case if we need result from if block or one-line-if
         # print('# IfExpr.do2 ', self.lastRes)
 
     def get(self):
-        return self.lastRes
+        # return self.lastRes
+        if not self.lastTarget:
+            return None
+        return self.lastTarget.subs[-1].get()
 
 
 class ElsFold:

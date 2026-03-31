@@ -62,7 +62,8 @@ Content:
 5. `if`-statement
     1. [if - else](#5-if-statement-else)
     2. [if sub-expr; cond](#52-if-sub-expression)
-    3. [See also `match` statement >>>](#match-statement)
+    3. [result of `if`](#53-result-of-if)
+    4. [See also `match` statement >>>](#match-statement)
 
 6. `while`, `for`-statement 
     1. [Classic `for` loop by counter](#6-while-for-statement)
@@ -154,32 +155,27 @@ Content:
     2. [Nested definitions](#192-nested-definitions)  
     3. [Static content vs instances](#193-static-content-vs-instances)  
     4. [Sub level of module](#194-sub-level-of-module)  
- 
-Grup can contain variables and function which can read and change value of variables. It looks similar to field of struct but grup don't have instances instead of struct. All calls of function from grup work with the same variable.  
-Another aspect od grup is a names space withid module (or grup).  
-Grup can be used like a module (except importing direct names).
-
-It make sense to use grup like a static object, or singleton object, or like tool for grouping things with common goals.  
 
 
 *
 ## Status.
-Actually it's on-dev. Most basic features and needed things is done. Author doing something more each week.  
+It's still on-dev. Most things are done. Small issues and nicer solutions in the order for implementation.  
 Bugs still lives in there. I catching them every time. But they hides very nice.  
-Details see next, in `syntax` section.  
-As an one-hands made project (withous users) all updates are committed into dev and almost immediately merged into main branch, without version numeration.  
+Details see next, in `syntax` section. Here I wrote only completed and working things.  
+As an one-hands made project (withous users) small updates are committed into dev, more complex changes are merged into dev (now dev is a default branch), without version numeration.  
 Tests covers all changes whenever possible.  
 Therefore, critical changes to previously added things happen extremely rarely.  
 
 *
-Basic principles.
-1. No extra thingth, block is defined by line shifting without endline operator.
+## Basic principles.
+1. No extra thingth, block is defined by line shifting without endline/sub-block operator or brackets.
 2. Basic collections: list, dict, tuple
 3. Arithmetic expressions - python-like syntax: (a + 1/2) * b - c ** 2 .
 4. Control structs: `if-else`, `match`, `for`, `while`.
-5. Functions: value of last expression is a returning result. Explicit `return` works too.  Function is an object. Lambdas `x -> y`.
-6. `struct` is a main complex type. struct can have methods. Inheritance works too.
-7. Vars, struct fields, func args have type `x : type`, internal `Any` type by default.
+5. Functions: value of last expression is a returning result. Explicit `return` works too.  
+    Functional approach: Function is an object. Lambda is a native thing `\x -> y`. Closures. Currying and composition.  
+6. `struct` is a main complex type. Struct can have methods. Inheritance works too.
+7. Vars, struct fields, function args have type `x : type`, internal `any` type is applyed by default.
 8. Import modules or things from modules.
 9. Syntax sugar and useful operators is ok. For example: list slice, list generator, `<-`, `?>`, `?:`, `::` operators, multiple assignment, inline syntax of blocks.
 10. Native regexp.
@@ -187,12 +183,13 @@ Basic principles.
 *
 
 ## Usage.
-Note: `python run` command is one line, splitted in examples just for better readability. 
-run file  
+Note: `python run` command is one line, splitted in examples just for better readability.   
+Run the file:  
 ```console
 $ python -m run tests/simple_test.et
 ...
 ```
+Run the code string:  
 ```console
 ## run code line
 ## -c --codeline
@@ -211,7 +208,7 @@ $ python -m run \
 10049
 10081
 ```
-Features of `run`.  
+Features / options of the `run`.  
 ```console
 ## show result
 ## -r --result : name of resulting variable
@@ -262,24 +259,26 @@ Traceback (most recent call last):
 ZeroDivisionError: division by zero
 ```
 
-See code of tests, run.py, loader.py, eval.py for understanding how to use LISAPET as an imbedded engine, add custom python functions for using in LP code, etc.  
+### Usage in python code. 
+See examples in the `/tests/..` (a lot of) , `run.py`, `loader.py`, `eval.py` for understanding how to use LP as an embedded engine, add custom python functions for using in LP code, etc.  
 
 ## Syntax.
-The Syntax section is updated as new features are added to the code, so it looks a bit chaotic.  
+The Syntax section is updated as soon as new features are added to the code, so it looks a bit chaotic. Working on it.  
 Done parts:  
 
 ### 0. Comments.
 Operators of comment lines:  
-`#` inline, up to end of line.  
+`#` one-line, up to the end of line.  
 `#@`(open)  
-multiline (sub-line)  
+multiline (sub-line) comment:  
 all text between open and close operators.   
 `@#`(close)  
 ```
 # one-line comment
 
 #@
-multiline comment
+multiline
+comment
 @#
 
 x = #@ in-line comment @# 2 + 5
@@ -309,22 +308,29 @@ a, b, c = 10, 20, 30
 Alternatives see in next sections: [`<-` operator](#6-for-statement---operator).
 
 ### 1.2 Execution context.  
-In the mechanics of language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
+In the mechanics of this language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
 Context-object is responsible of search datatypes, variables, functions etc in current execution context.  
-So we can use all local things and any things defined in all levels above: module-level - in the function, function- and module- level - in the control sub-level (for, if, match), and so on.  
-See more about visibility of things in sections of functions, closures, structs, importing.  
+Each context serves its block of code.  
+Sub-blocks have sub-contexts.  
+So whole execution context is a tree of local contexts, but in-the-moment it works more like a stack  current context can look in upper level, but can't see neabors.  
+So we can use all local things and any things defined in all levels above: the module-level is available in the function, function and module level - in the control sub-level (for, if, match), and so on.  
+See more about visibility of things in sections of `function`, `closure`, `struct`, `import`.  
 
 ### 1.3 Numeric types.  
+We have traditional numeric type: bool, int, float.  
+The `null` type is a mostly empty-value for complex types.  
 ```python
 nums = [
-    true, # bool
-    123, # int, decimal
-    0123, # decimal, leading 0 will be irnored 
+    true, false, # bool
+    0, 123, # int, decimal
+    0333, # decimal, leading 0 will be irnored 
     0b1111, # int, binary
-    0o777, # int octa
+    0o777, # int octal
     0xfba01, # int hex
     0.15]   # float
+obj = null
 ```
+Complex numbers have been planned, but haven't been fully implemented.  
 
 ### 1.4 Strings.  
 Strings can be defined by several type of quotes.  
@@ -332,7 +338,7 @@ Strings can be defined by several type of quotes.
 hello = "hello somebody!"
 us = 'unary-quotes'
 ```
-Classic escape sequences is work.
+Classic escape sequences work.  
 ```golang
 print("Hello there! \n\t Here new line, \\ back-slash and \"Words in quotes.\" ")
 ```
@@ -341,7 +347,7 @@ Hello there!
          Here new line, \ back-slash and "Words in quotes."
 ```
 Backticks is an yet one type of quotes, designed to create little more ascetic strings.  
-In backticks sequences like `\s` doesn't try to be  interpreted as an escape sequence.  
+In backticks sequences like `\s` doesn't try to be  interpreted as an escape sequences.  
 It's very useful for making strings with slashes, quotes, etc, like regexp needs.  
 ```golang
 s = `\s\w\b\d` #// no errors about incorrect escaping
@@ -358,7 +364,7 @@ print(`\n\t\'\" `)
 
 ### 1.5 Multiline strings.  
 Triple quotes is a main way to create multiline string.  
-Triple backticks work too. Thinking about escape sequences. Now it  just works like other, except warnings of wrong sequences like ``` \w \s ```.  
+Triple backticks work too. Thinking about escape sequences for triple backticks. Now it  just works like other, except warnings of wrong sequences like ``` \w \s ```.  
 ````golang
 '''multiline
 string'''
@@ -372,8 +378,8 @@ in b\acktick\s
 String operators:  
 Concatenation: `string + string`  
 Get sub element (like list): `string[index]`  
-Formatting operators see in [`"%s"<<` ](#211-percent-formatting) and 
-[`"~{s}"`](#212-format-by-including-expressions) formatting.
+Formatting operators see in [`"%s"<< s` ](#211-percent-formatting) and 
+[`"~{s}"`](#212-format-by-including-expressions) formatting sections.
 
 
 ### 1.6 Glif `g'G'`
@@ -1089,6 +1095,7 @@ else
     y = x ** 2
     res = 10 * y
 ```
+
 ### 5.2 if-sub-expression
 `if` statement can have sub-expression before condition.  
 Usually it uses for local assignment or initialization that have relation to condition expression only (and maybe to sub-block).  
@@ -1104,6 +1111,25 @@ Inline operator `/:` has less priority than `;` so we have to cover whole `if` e
 ```python
 a = 10; b = 2; (if x = a + 1; x > b /: print(a, b, x))
 ```
+
+### 5.3 result of `if`  
+If the `if`-statement is a last expression of function then sub-expressions of `if` will be resulting expressions.  
+```golang
+func foo(x)
+    if x == 1
+        10
+    else if x == 2
+        n = 10
+        x * n
+    else
+        3 * 10
+
+foo(1) # >> 10
+foo(2) # >> 20
+foo(5) # >> 30
+```
+
+
 See more about [inline control expressions](#20-one-line-block---operators).  
 
 
