@@ -6,7 +6,7 @@ from bases.ntype import *
 from vars import ListVal
 from nodes.expression import Expression, Block, ArgSetOrd, ValExpr
 from context import Context
-from nodes.expression import CallExpr
+from nodes.expression import CallExpr, IfNode
 from nodes.base_oper import AssignExpr
 
 
@@ -206,7 +206,11 @@ class Function(FuncInst):
         else:
             self.block.do(inCtx)
             res = self.block.get()
-        
+        # print('F.do5', self.block.subs[-1])
+        if res is None:
+            # print('F.no res')
+            if isinstance(self.block.subs[-1], IfNode):
+                res = self.block.subs[-1].get()
         # print('Func.do res=', res)
         if isinstance(res, FuncRes):
             res = res.get()

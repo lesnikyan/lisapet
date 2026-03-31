@@ -259,6 +259,10 @@ class ControlBlock(Block, ControlExpr):
     ''''''
 
 
+class IfNode(ControlBlock):
+    ''' Abstract layer of IF '''
+
+
 class LoopBlock(ControlBlock):
     ''' '''
     

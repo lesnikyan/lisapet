@@ -30,6 +30,120 @@ from tests.utils import *
 class TestControl(TestCase):
 
 
+    def test_if_result(self):
+        ''' `if` as a last expression of function returns result '''
+        code = r'''
+        res = []
+        
+        func foo(x)
+            if x == 1
+                n = 8
+                n + 2
+            else if x == 2
+                20
+            else
+                3 * 10
+        
+        r1 = foo(1)
+        res <- r1
+        
+        res <- foo(2)
+        res <- foo(5)
+        
+        # nested if
+        
+        func foo2(x, y)
+            if x == 1
+                if y == 1
+                    11
+                else
+                    12
+            else if x == 2
+                if y  == 1
+                    21
+                else if y == 2
+                    22
+                else
+                    23
+            else if x == 3
+                30
+            else
+                50
+
+        res <- 'foo2'
+        res <- foo2(1,1)
+        res <- foo2(1,3)
+        res <- foo2(2,1)
+        res <- foo2(2,2)
+        res <- foo2(2,6)
+        res <- foo2(3,100)
+        res <- foo2(4,200)
+        
+        # deep nesting
+        
+        func foo3(x)
+            if x > 1
+                if x > 2
+                    if x > 3
+                        if x > 4
+                            if x > 5
+                                10
+                            else
+                                5
+                        else
+                            4
+                    else
+                        3
+                else
+                    2
+            else
+                1
+            # end of function
+        
+        res <- 'foo3'
+        res <- foo3(1)
+        res <- foo3(2)
+        res <- foo3(3)
+        res <- foo3(4)
+        res <- foo3(5)
+        res <- foo3(6)
+
+        # in method
+        
+        struct A a:int
+        
+        func n:A f()
+            if n.a == 1
+                11
+            else if n.a == 2
+                22
+            else
+                33
+        
+        res <- 'A.f'
+        
+        a1 = A(1)
+        res <- a1.f()
+        
+        a2 = A(2)
+        res <- a2.f()
+        
+        a3 = A(12)
+        res <- a3.f()
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [10, 20, 30, 'foo2', 11, 12, 21, 22, 23, 30, 50, 'foo3', 1, 2, 3, 4, 5, 10, 'A.f', 11, 22, 33]
+        self.assertEqual(exv, resv)
+
     def test_for_arrow_multival(self):
         ''' test arrow-assign `a <- b` 
             unpack and multiassign if several vars in left: a,b,c <- data
