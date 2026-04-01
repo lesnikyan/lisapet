@@ -493,6 +493,7 @@ class SequenceExpr(Expression):
         for sub in self.subs:
             # dprint('SEQ getTuple:', sub)
             sub.do(ctx)
+            # print('Seq.getVals.sub=', sub, sub.get())
             res.append(sub.get())
         return res
 

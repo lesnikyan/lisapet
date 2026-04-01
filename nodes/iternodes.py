@@ -19,6 +19,12 @@ from nodes.datanodes import DictVal, ListVal, TupleVal
 class NIterator:
     ''' '''
     
+    def __init__(self):
+        self.vtype = TypeIterator()
+    
+    def getType(self):
+        return self.vtype
+    
     def start(self):
         ''' reset iterator to start position '''
         pass
@@ -60,18 +66,18 @@ class IterAssignExpr(Expression):
     def setSrc(self, exp:Expression):
         self.srcExpr = exp
 
-    def _start(self, ctx:Context):
-        self.srcExpr.do(ctx) # make iter object
-        iterSrc = self.srcExpr.get()
-        if isinstance(iterSrc, Var):
-            iterSrc = iterSrc.get() # extract collection from var
-        if isinstance(iterSrc, (ListVal, DictVal)):
-            self.itExp = SrcIterator(iterSrc)
-        elif isinstance(iterSrc.get(), (NIterator)):
-            self.itExp = iterSrc.get()
+    # def _start(self, ctx:Context):
+    #     self.srcExpr.do(ctx) # make iter object
+    #     iterSrc = self.srcExpr.get()
+    #     if isinstance(iterSrc, Var):
+    #         iterSrc = iterSrc.get() # extract collection from var
+    #     if isinstance(iterSrc, (ListVal, DictVal)):
+    #         self.itExp = SrcIterator(iterSrc)
+    #     elif isinstance(iterSrc.get(), (NIterator)):
+    #         self.itExp = iterSrc.get()
             
-        self.itExp.start()
-        self._first_iter = True
+    #     self.itExp.start()
+    #     self._first_iter = True
     
     def setIter(self, itExp:NIterator):
         # dprint('@# setIter', itExp)
@@ -111,15 +117,16 @@ class IterAssignExpr(Expression):
         # print('IterAssignExpr.do2 val=', val)
         valSet = []
         
-        if isinstance(val, (TupleVal, ListVal)):
-            valSet = val.elems
-        
         largLen = len(self.loopVars)
         
-        if largLen == 2 and isinstance(val, tuple):
-            # dict elem here, need to unpack
+        if isinstance(val, (TupleVal, ListVal)):
+            valSet = val.elems
+        elif isinstance(val, (list)):
+            # multi-source case
             valSet = val
-        elif largLen == 1:
+        
+        
+        if largLen == 1:
             if isinstance(val, tuple):
                 # dict elem, convert to TupleVal
                 valSet = TupleVal(elems=[n for n in val])
@@ -127,6 +134,12 @@ class IterAssignExpr(Expression):
                 # whole data into 1 var
                 valSet = val
             valSet = [valSet]
+        elif largLen == 2 and isinstance(val, tuple):
+            # dict elem here, need to unpack
+            valSet = val
+        # else:
+            # print('valSet', valSet)
+        
 
         vlen = len(valSet)
         # print('$1>>', vlen, valSet)
@@ -174,9 +187,17 @@ class IndexIterator(NIterator):
 
 
 class SrcIterator(NIterator):
-    ''' x <- [10,20,30] '''
-    def __init__(self, src:ListVal|DictVal|TupleVal):
+    ''' x <- [10,20,30] 
+        k, v <- {1:11, 2:22}
+        x, y, z <- [1, 2], [3,4], (5,6)
+    '''
+    
+    def __init__(self, src:ListVal|DictVal|TupleVal=None):
         self.src = None
+        self.iter = None
+        self.vtype = TypeIterator()
+        if not src:
+            return
         match src:
             case BytesVal():
                 self.src = src.val
@@ -184,27 +205,22 @@ class SrcIterator(NIterator):
                 self.src = src.elems
             case DictVal():
                 self.src = src.data
+            case _ if src:
+                self.src = src
         # print('SrcIterator.__init:', src, self.src)
         self._isDict = isinstance(src, DictVal)
-        # self.iterFunc = self._iterList
         self._keys = None
-        # if self._isDict:
-            # self.iterFunc = self._iterDict
-        self.iter = None
-        self.vtype = TypeIterator()
 
     def start(self):
         seq = self.src
-        # print('ITER / 1', self, seq)
+        # print('for n <- m / 1', self, seq)
         if self._isDict:
             seq = list(seq.keys())
             self._keys = seq
-            # self.iterFunc = self._iterDict
         self.iter = IndexIterator(0, len(seq))
 
     def step(self):
         self.iter.step()
-        # self.iterFunc()
 
     def hasNext(self):
         return self.iter.hasNext()
@@ -217,10 +233,50 @@ class SrcIterator(NIterator):
             # dprint('Iter-dict get: key, val', key, val)
             return (raw2val(key), val)
         val = self.src[key]
+        # print('IterSrc.get:', val)
         if isinstance(self.src, bytearray):
             val = Val(val, TypeInt())
         return val
 
+
+class MultiSrcIterator(SrcIterator):
+    
+    def __init__(self, src:list):
+        super().__init__(None)
+        self.sources:list[NIterator] = []
+        self.initSrc(src)
+        
+    def initSrc(self, srcSet:list):
+        for src in srcSet:
+            if not isinstance(src, NIterator):
+                # print('MSIt,init', src)
+                src = SrcIterator(src)
+            self.sources.append(src)
+    
+    def start(self):
+        ''''''
+        for srs in self.sources:
+            srs.start()
+        
+
+    def step(self):
+        for srs in self.sources:
+            srs.step()
+    
+    def hasNext(self):
+        ''' Iter count by 1-st sub-source '''
+        return self.sources[0].hasNext()
+
+
+    def get(self):
+        res = []
+        for srs in self.sources:
+            r = srs.get()
+            if isinstance(r, tuple):
+                res.extend(r)
+            else:
+                res.append(r)
+        return res
 
 
 class ListGenIterator(NIterator, SequenceGen):
@@ -397,6 +453,7 @@ class LeftArrowExpr(BinOper):
         # print('..')
         # print('Arr <- init1', self.leftExpr, '<-', self.rightExpr)
         ltArg = None
+        rtArg = None
         if isinstance(self.leftExpr, SequenceExpr):
             if self.leftExpr.getDelim() == ',':
                 # comma-separated sequence, can interpret as a tuple
@@ -413,16 +470,22 @@ class LeftArrowExpr(BinOper):
         
         self.rightExpr.do(ctx) # make iter object
         # print('Arr <- do3', self.leftExpr, '<-', self.rightExpr)
-        rtArg = self.rightExpr.get()
+        
+        if isinstance(self.rightExpr, SequenceExpr):
+            if self.rightExpr.getDelim() == ',':
+                rtArg = self.rightExpr.getVals(ctx)
+        else:
+            rtArg = self.rightExpr.get()
 
         # print('Arr <-2 init ltArg', ltArg, ltArg.__class__)
-        # print('Arr <-3 init rtArg:', rtArg)
+        # print(' <- init rtArg:', rtArg)
         if isinstance(ltArg, Var) and isinstance(ltArg.getType(), (TypeList, TypeDict, TypeBytes)):
             # print('Arr <-22 init ltArg', ltArg.getType())
             ltArg = var2val(ltArg)
             
         # print('Arr <-4 init ltArg', ltArg, ltArg.__class__)
-        # append case: ListVal/DictVal <- val
+        
+        # Found: append case: ListVal/DictVal <- val
         # if not isinstance(ltArg, list) and isinstance(ltArg, (ListVal, DictVal)):
         if isinstance(ltArg, (ListVal, DictVal, BytesVal)):
             if rtArg :
@@ -430,14 +493,31 @@ class LeftArrowExpr(BinOper):
             self.expr = Append(ltArg, rtArg)
             return
 
-        # next - iterator case
+        # Found: iterator case
+        rtSet = None
         if isinstance(rtArg, Var):
             rtArg = rtArg.get() # extract collection from var
+        elif isinstance(rtArg, list):
+            # multi-source
+            # print('rtArg:', rtArg)
+            rtSet = []
+            for rarg in rtArg:
+                # print('rarg:', rarg, rarg.get(), rarg.getType())
+                rarg = var2val(rarg)
+                if isinstance(rarg, (ListVal, TupleVal, DictVal)):
+                    ''
+                elif isinstance(rarg, Val):
+                    rarg = rarg.get()
+                rtSet.append(rarg)
+        
+        # print('rtSet', rtSet)
         # print('Arr <- init4 rtArg:', rtArg)
         # print('Arr <- init4 ltArg:', ltArg)
         itExp = None
         if isinstance(rtArg, (Collection, BytesVal)):
             itExp = SrcIterator(rtArg)
+        elif rtSet:
+            itExp = MultiSrcIterator(rtSet)
         elif isinstance(rtArg.get(), (NIterator)):
             itExp = rtArg.get()
         
