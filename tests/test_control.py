@@ -50,12 +50,23 @@ class TestControl(TestCase):
             r2 <- (a, b)
         res <- r2
         
-        
         # iter-gen, list-get
         r3 = []
         for a, b <- [1..5], [x ; x <- [11..15]]
             r3 <- (a, b)
         res <- r3
+        
+        # function results
+        func foo(n)
+            [1 .. n]
+        
+        func bar(s, sep)
+            s.split(sep)
+        
+        r4 = []
+        for a, b <- foo(3), bar('aa, bb, cc,', ' ')
+            r4 <- (a, b)
+        res <- r4
         
         # print('res = ', res)
         '''
@@ -70,7 +81,8 @@ class TestControl(TestCase):
         exv = [
             [(101, 11), (102, 22), (103, 33), (104, 44)], 
             [(0, 21), (1, 22), (2, 23), (3, 24), (4, 25)], 
-            [(1, 11), (2, 12), (3, 13), (4, 14), (5, 15)]]
+            [(1, 11), (2, 12), (3, 13), (4, 14), (5, 15)],
+            [(1, 'aa,'), (2, 'bb,'), (3, 'cc,')]]
         self.assertEqual(exv, resv)
         
     def test_for_loop_multisource(self):

@@ -1918,11 +1918,11 @@ sliced = [x ; x <- src][2:5]
 
 ### 12.2 List comprehension / sequence generator
 Sequence generator (aka list comprehansion) is a shortened syntax (sugar) for making lists by another list or any sourec of sequence.  
-Basic syntax:  
+- Basic syntax:  
 ```python
 [elem; src-expr ;...]
 ```
-Expressions in the generator is divided by `;`.   
+- Expressions in the generator is divided by `;`.   
 Generator has such segments / expressions:  
 Second expression is a loop-iterator with arrow-assignment like `for` statement.  
 ```python
@@ -1931,7 +1931,7 @@ for x <- src
 # the same as
 [...; x <- src]
 ```
-First expression is an element of result.  
+- First expression is an element of result.  
 ```python
 res = []
 for x <- src
@@ -1940,7 +1940,7 @@ for x <- src
 # the same as
 res = [x; x <- src]
 ```
-Generator can have more expressions:
+- Generator can have more expressions:
 ```python
 [  
     elem-expr;       # 1) result element expression ;  
@@ -1951,7 +1951,7 @@ Generator can have more expressions:
 # 2-4 is a generator-block.  
 # 3-4 are optional  
 ```
-Generator should contain at least 2 segments:  
+- Generator should contain at least 2 segments:  
 ```python
 [n; n <- values]
 ```
@@ -1965,7 +1965,7 @@ src = [1..5]
 ]
 >> [101, 303, 505]
 ```
-Generator can have sub-iterations, ie 2-4 is a repeatable part, like:
+- Generator can have sub-iterations, ie 2-4 is a repeatable part, like:
 ```python
 arr1, arr2, arr3 # source lists
 [aa + bb + c ; 
@@ -1973,13 +1973,13 @@ arr1, arr2, arr3 # source lists
     b <- arr2; bb = b * b; 
     c <- arr3; c < 10 ]
 ```
-Next gen-blocks can use values from previous.
+- Next gen-blocks can use values from previous.
 ```python
 [x ; a <- [1..3] ; b <- [10,20]; c <-[400, 500]; 
     x = a + b + c; x % 7 == 0]
 >> [511, 413]
 ```
-Result-expr can see all values from all gen-blocks.
+- Result-expression can see all values from all gen-blocks.
 
 ```python
 # simple
@@ -2002,7 +2002,7 @@ src = [[x, y] ; x <- [5..7]; y <- [1..3]]
 # flatten source, make plane list
 nums = [ x ; sub <- src ; x <- sub]
 ```
-Too long expression can be formatted into multiple lines.
+- Too long expression can be formatted into multiple lines.
 ```python
 # generator: multi-expressions, multiline expression
 nums = [
@@ -2021,17 +2021,32 @@ nums = [
     a + b + c < 1000
 ]
 ```
-Now strings are not a valid native source for comprehansions. But it can be resolve by `tolist()` function.
+- Now strings are not a valid native source for comprehansions. But it can be resolve by `tolist()` function or `list()` constructor.
 ```python
 # list comprehension by converted string
 src = "ABCdef123"
 res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
 ```
-
-Here just syntax joke :)  
-But it works, it returns list of lambdas which return generators.  
+- Multi-source expression in arrow-assigning is available here in the same way as in `for`-loop.  
 ```python
-[ x -> [x .. y] ; y <- [1 .. 10]]
+aa = [1,2,3]
+dd = {'a':'aa', 'b':'bb', 'c':'cc'}
+[ (a, k, v) ; a, k, v <- aa, dd ]
+```
+
+_Here just syntax joke :)_  
+```python
+c, d = 1, 5
+rr = [ a -> [a .. b] ; b <- [c .. d]]
+```
+But it works, it returns list of lambdas which return generator.  
+```python
+res = []
+for r <- rr
+    res <- [x; x <- r(0)]
+
+res # >>
+[[0, 1], [0, 1, 2], [0, 1, 2, 3], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5]]
 ```
 
 ### 14. Builtin functions:  

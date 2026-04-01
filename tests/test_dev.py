@@ -157,8 +157,6 @@ class TestDev(TestCase):
         
         TODO: add assertion to cases in test_lists
         
-        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
-        
         TODO: think about import native lib / module into LP code.
             eval.py: importLib('math', math)
             code.et: import python.math
@@ -193,8 +191,10 @@ class TestDev(TestCase):
             for i, x, key, val <- iter(3), aa, dd
                 print(i, x, key, val)
         
-        TODO: 21.2 Mult-reading in list-gen:
+        DONE: 21.2 Mult-reading in list-gen:
             [ x + y ; x, y <- nn, mm]
+        
+        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
         
         TODO: dict-gen
             dict2 = { k: v + 10 ; k, v <- dict1; v > 0 && k != ''}
@@ -207,6 +207,7 @@ res = []
 """
 
 
+    
     
     def _test_code(self):
         ''' '''
