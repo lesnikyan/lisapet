@@ -186,7 +186,7 @@ class TestDev(TestCase):
         TODO: check and optimize if need Function.checkTail process
          
 
-        TODO: 21.1 Multi-reading in loop:
+        DONE: 21.1 Multi-reading in loop:
             put at right part one more collections, so assign more var in left: 
             aa = [1,2,3]
             dd = {11:1, 22:2, 33:3}
@@ -212,7 +212,6 @@ res = []
         ''' '''
         code = r'''
         res = []
-        
         
         # print('res = ', res)
         '''
