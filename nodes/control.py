@@ -141,7 +141,7 @@ class ElsFold:
 
 # # MATCH-CASE
 
-class MatchExpr(ControlBlock):
+class MatchExpr(MatchNode):
     ''' 
     1. for unpack multiresults.
     2. for pattern matching like switch/case 
@@ -164,6 +164,7 @@ class MatchExpr(ControlBlock):
         super().__init__()
         self.match:Expression = None
         self.cases:list[CaseExpr] = []
+        self.lastCase = None
 
     def add(self, xcase:CaseExpr):
         if not isinstance(xcase, CaseExpr):
@@ -176,9 +177,12 @@ class MatchExpr(ControlBlock):
     def do(self, ctx:Context):
         self.lastVal = None
         self.match.do(ctx)
-        self.doCases(ctx)
+        did = self.doCases(ctx)
+        if not did:
+            return
 
     def doCases(self, ctx:Context):
+        self.lastCase = None
         mval = self.match.get()
         vv = mval
         mval = var2val(mval)
@@ -189,9 +193,15 @@ class MatchExpr(ControlBlock):
             cs.doExp(mctx)
             if cs.match(mval):
                 cs.do(mctx)
+                self.lastCase = cs
                 self.lastVal = cs.get()
                 return True
         return False
+
+    def get(self):
+        if not self.lastCase:
+            return None
+        return self.lastCase.block.subs[-1].get()
 
 
 # LOOP-FOR

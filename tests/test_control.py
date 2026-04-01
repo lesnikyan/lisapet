@@ -30,6 +30,177 @@ from tests.utils import *
 class TestControl(TestCase):
 
 
+    def test_match_result(self):
+        ''' match-statement return result in the end of function '''
+        code = r'''
+        res = []
+        
+        func foo(x)
+            match x
+                1 /: 101
+                2 /: 202
+                :: int /: (300, x)
+                :: float /: (400, x)
+                [*] /: (500, len(x), x)
+                s::string /: ('string', s)
+                _ /: -11111
+        
+        ss = [0, 1, 1.2, [], [1,2,3], (1,2), {}, 's1']
+        
+        res <- 'foo'
+        res <- foo(2)
+        
+        for n <- ss
+            res <- foo(n)
+        
+        # nested control-tails
+        
+        # match-other
+        func foo2(x, y)
+            match x
+                1
+                    if y == 1
+                        101
+                    else if y  == 2
+                        102
+                    else
+                        103
+                2
+                    match y
+                        1 /: 201
+                        2 /: 202
+                        :: int /: ('m-int', x, y)
+                        :: float /: ('m-float', x, y)
+                        _ /: ('_', x, y)
+                _
+                    if x == y
+                        (301, x, y)
+                    else
+                        (302, x, y)
+        
+        res <- 'foo2'
+        res <- foo2(1,1)
+        
+        ss2 = [
+            (1,2), (1,6), 
+            (2,1), (2,2), (2,5), (2, 3.5), (2, [12,34]), 
+            (3,1), (3,3), 
+            (0,1), (0,0)]
+        
+        for a, b <- ss2
+            res <- foo2(a, b)
+        
+        # if-other
+        
+        func foo3(x, y)
+            if x == 1
+                match y
+                    1 /: (101, x, y)
+                    2 /: (102, x, y)
+                    _ /: (104, x, y)
+            else if x > 5
+                match y
+                    :: int /: ('6-int', x, y)
+                    :: float /: ('6-float', x, y)
+                    :: list /: ('6-list', x, y)
+                    _ /: ('_', x, y)
+            else if x  < 0
+                match y
+                    :: tuple /: ('/tuple', x, y)
+                    :: dict /: ('/dict', x, y)
+            else
+                match y
+                    1 /: (401, x, y)
+                    :: int /: (402, x, y)
+                    _ /: (403, x, y)
+            # end of func
+        
+        res <- 'foo3'
+        ss3 = [
+            (1,1), (1,2), (1,5),
+            (6,1), (7, 2.5), (8, []), (9, [1,2]), (10, {1:1}), 
+            (-1, 1), (-2, (,)), (-3, (1,2)), (-4, {}), (-5, {2:22}), 
+            (0, 1), (2, 2), (3, 3), (3, null), (3, true), (3, {}), 
+        ]
+        for a, b <- ss3
+            res <- foo3(a, b)
+        
+        # deep match
+        
+        func foo4(a, b, c, d, e, f)
+            match a
+                1 /: 101
+                _ 
+                    match b
+                        1 /: 201
+                        _
+                            match c
+                                1 /: 301
+                                _
+                                    match d
+                                        1 /: 401
+                                        _
+                                            match e
+                                                1 /: 501
+                                                _
+                                                    match f
+                                                        1 /: 601
+                                                        2 /: 602
+                                                        _ /: ('f', f)
+            #...
+        
+        ss4 = [
+            (1,1,1,1,1,1),
+            (2,1,1,1,1,1),
+            (2,2,1,1,1,1),
+            (2,2,2,1,1,1),
+            (2,2,2,2,1,1),
+            (2,2,2,2,2,1),
+            (2,2,2,2,2,2),
+            (2,2,2,2,2,3),
+        ]
+        
+        res <- 'foo4'
+        for args <- ss4
+            res <- foo4(args...)
+        
+        # not last control
+        
+        func foo5(x)
+            if x == 1
+                return 1001
+            else 
+                2
+            3003
+        
+        res <- foo5(1)
+        res <- foo5(2)
+        res <- foo5(100)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            'foo', 202, (300, 0), 101, (400, 1.2), (500, 0, []), (500, 3, [1, 2, 3]), 
+            -11111, -11111, ('string', 's1'), 
+            'foo2', 101, 102, 103, 201, 202, ('m-int', 2, 5), ('m-float', 2, 3.5), 
+            ('_', 2, [12, 34]), (302, 3, 1), (301, 3, 3), (302, 0, 1), (301, 0, 0), 
+            'foo3', (101, 1, 1), (102, 1, 2), (104, 1, 5), 
+            ('6-int', 6, 1), ('6-float', 7, 2.5), 
+            ('6-list', 8, []), ('6-list', 9, [1, 2]), ('_', 10, {1: 1}), null, 
+            ('/tuple', -2, ()), ('/tuple', -3, (1, 2)), ('/dict', -4, {}), ('/dict', -5, {2: 22}), 
+            (401, 0, 1), (402, 2, 2), (402, 3, 3), (403, 3, null), (403, 3, True), (403, 3, {}),
+            'foo4', 101, 201, 301, 401, 501, 601, 602, ('f', 3),
+            1001, 3003, 3003]
+        self.assertEqual(exv, resv)
+    
     def test_if_result(self):
         ''' `if` as a last expression of function returns result '''
         code = r'''

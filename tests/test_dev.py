@@ -43,6 +43,27 @@ class TestDev(TestCase):
          
         DONE: const value
             const x: int = 10
+        
+        DONE: if conditional expr is a last node of function then
+            last executed expression (sub-part of conditional) should be a result of function
+        func foo()
+            if cond
+                ...
+                expr1 # result
+            else if cond
+                expr2 # result
+            else
+                expr3 # result
+        func foo()
+            match n
+                1 /: 10 # result
+                2
+                    20 # result
+                a :: type
+                    b = f(a)
+                    b + 30 # result
+                _
+                    50 # default result
 
     # features for `enum` - not sure
         TODO: Enum.name(11)
@@ -156,26 +177,6 @@ class TestDev(TestCase):
             grup Boo
                 au = Auch
         
-        TODO: if conditional expr is a last node of function then
-            last executed expression (sub-part of conditional) should be a result of function
-        func foo()
-            if cond
-                ...
-                expr1 # result
-            else if cond
-                expr2 # result
-            else
-                expr3 # result
-        func foo()
-            match n
-                1 /: 10 # result
-                2
-                    20 # result
-                a :: type
-                    b = f(a)
-                    b + 30 # result
-                _
-                    50 # default result
 
         
         TODO: think about special type for methods. 
@@ -202,6 +203,7 @@ res = []
 """
 
 
+        
     def _test_code(self):
         ''' '''
         code = r'''
@@ -221,6 +223,7 @@ res = []
         print(resv)
         exv = []
         # self.assertEqual(exv, resv)
+        
 
 
     def _test_match_last_expr_of_case_as_result(self):

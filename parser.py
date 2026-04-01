@@ -363,7 +363,7 @@ def splitLine(src: str, prevType:int=Lt.none, **kw) -> tuple[TLine, int]:
         nextRes(cur, curType, None)
     
     if curType == Lt.text and openMultStr is None:
-        raise ParseErr('Unclosed string in the and of line `%s`'% s)
+        raise ParseErr('Unclosed string in the end of line `%s`'% s)
     # print('#a3:', [(x.val, Lt.name(x.ltype), x.mark) for x in res])
     lexems = normilizeLexems(res)
     # print('#a4:', [(x.val, Lt.name(x.ltype), x.mark) for x in lexems])

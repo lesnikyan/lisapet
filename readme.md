@@ -305,7 +305,7 @@ lastName = names[2]
 a, b, c = 10, 20, 30
 ```
 
-Alternatives see in next sections: [`<-` operator](#6-for-statement---operator).
+Alternatives see in next sections: [`<-` operator](#91-arrow-appendset-operator--).
 
 ### 1.2 Execution context.  
 In the mechanics of this language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
@@ -2759,8 +2759,8 @@ $ py -m run -p "tests" \
 ```
 
 
-### 23. match-statement.  
-`match` keyword  .
+### 23. `match`-statement.  
+- `match` keyword  .
 The `match` statement implements a pattern matching functionality.  
 In the block of `match` we have sub-expressions (`cases`). Each case have its own `pattern` and executable block.  
 If the pattern was matched with the value from `match` statement then executable block will evaluate.  
@@ -2777,7 +2777,7 @@ match n
     _
         default-expr
 ```
-The inline-block operator `/:` separates pattern and sub-block in one-line `case`.  
+- The inline-block operator `/:` separates pattern and sub-block in one-line `case`.  
 ```python
 match n
     pattern /: sub-expression
@@ -2800,7 +2800,24 @@ match a
             r1 = 5
     _  /: r1 = -2
 ```
-TODO: Maybe-cases, result from `match` (?)
+
+- In case, if `match` is a last expression in function or control-statement like `if` or `match`, last line in matched `case` is e resulting expression.  
+
+```golang
+
+func foo(x)
+    match x
+        1 /: 101
+        2 /: 202
+        [*] /: 303
+        s::string /: 404
+        _ /: 505
+
+foo(1) # >> 101
+foo([1,2]) # >> 303
+foo('Hello!') # >> 404
+foo(100500) # >> 505
+```
 
 ### 23.2 Matching list and tuple.
 List or tuple can be matched by special collection-patterns. They look similar to regular collections, but have some special features.  
@@ -3189,9 +3206,8 @@ for n <- nn
         A{a: N.e} /: # A{5}
 ```
 
+TODO: Maybe-cases, (?)
 
-
-### 24. Nothing yet
 
 
 ### 25.1 Regular expressions. `re`
