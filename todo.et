@@ -500,6 +500,15 @@ _{s name: 'Bob', age: 25}
     (1,2,3) =?> nums # all in the same order: 1,?,2,3,?
 
 
+
+# LP - projects 
+console game.
+
+    - shooter1. 
+        - Person simple figure, have shild and gun. 
+        - shild - vertical line. can move up and down, blocks shots
+        - gun - shoot enemies
+
 # -------------------
 
 Fixes:
