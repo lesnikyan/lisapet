@@ -89,9 +89,11 @@ Content:
     3. [plus for lists `[] + []`](#93-list-plus---)
     4. [Triple dots `[]...`](#94-triple-dots)
 
-9. #### List features:
-    1. [Slice, iteration generator: `[ : ]`, `[ .. ]`](#121-list-features-slice-iteration-generator-tolist)
-    2. [Sequence generator `[ ; ; ]`](#122-list-comprehension--sequence-generator)
+9. #### Collection generation:
+    1. [Iteration generator `[ .. ]`](#91-iteration-generator-)
+    2. [Slice `[ : ]`, `tolist()` ](#92-list-features-slice---tolist)
+    2. [`list` generator `[ ; ; ]`](#93-list-comprehension--sequence-generator)
+    3. [`dict` generator `{ ; ; }`](#94-dict-comprehension-generator).
 
 10. #### Structs `A{}` 
     1. [Definition of `struct`, base constructor `A{a:b}`, fields](#101-struct)
@@ -1886,22 +1888,32 @@ for n <- [Num.one .. Num.five]
 - Pattern matching.  
 [See `match` section](#2310-enum-elements)
 
-### 12.1 List features: slice, iteration generator, `tolist()`.
+
+### 9 Collection generation.  
+
+### 9.1 Iteration generator `[..]`.  
+Iteration generator `[a .. b]` returns generator object thar makes sequence of int numbers from a to b.  
 ```python
-# Slice
+# syntax: [startVal .. endVal]
+nums = [1..5] # -->> [1,2,3,4,5]
+```
+
+### 9.2 List features: slice `[:]` , `tolist()`.  
+- Slice `[a:b]` returns part of list.  
+```python
 # syntax: [firstIndex : IdexAfterLast]
 nums = [1,2,3,4,5]
 sliced = nums[2:4]
+```
 
-# Iteration generator is a simple sequence of integers.
-# syntax: [startVal .. endVal]
-nums = [1..5] # -->> [1,2,3,4,5]
-
-# tolist() - explicit cast to list of other sequences 
+- `tolist()` - explicit cast to list of other sequences 
+```python
 # or generators (comprehantion, string)
 nums = tolist([1..5])
+```
 
-# Slice following by sequence expression:
+- Slice following by sequence expression:  
+```python
 
 # list slice
 sliced = [1,2,3,4,5][2:4]
@@ -1916,7 +1928,7 @@ sliced = [1..100][3:10]
 sliced = [x ; x <- src][2:5]
 ```
 
-### 12.2 List comprehension / sequence generator
+### 9.3 List comprehension / sequence generator
 Sequence generator (aka list comprehansion) is a shortened syntax (sugar) for making lists by another list or any sourec of sequence.  
 - Basic syntax:  
 ```python
@@ -2048,6 +2060,29 @@ for r <- rr
 res # >>
 [[0, 1], [0, 1, 2], [0, 1, 2, 3], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5]]
 ```
+
+### 9.4 Dict comprehension generator.  
+Dict can be made by comprehension generator too.  
+There is a little different syntax.  
+Unlike the list-gen dict-gen internal expressions is covered by curvy brackets.  
+The result expression should be a par ov values arounf `:` operator, it produces `key:value` pair of resulting value.  
+
+```python
+nn = [1,2,3,4,5]
+tt = ('a', 'b', 'c', 'd', 'e')
+
+d2 = { c : n ; n, c <- nn, tt}
+```
+Other options of comprehensive generator is available: multi source, conditions, pre-assignments, several loop levels.  
+```python
+res = {
+    k: i * 100 + j ; 
+    n <- src; p = [1..n]; 
+    i <- p; s = ~'k{i}'; q = [i .. 4]; 
+    j <- q; k = ~'{s}-{j}'; i > 1 && j > 2
+}
+```
+
 
 ### 14. Builtin functions:  
 ### 14.1 Global native functions
