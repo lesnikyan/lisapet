@@ -30,6 +30,143 @@ from tests.utils import *
 class TestControl(TestCase):
 
 
+    def test_for_multisource_gen(self):
+        ''' test fix for iter-gen and list-expression in for-loop '''
+        code = r'''
+        res = []
+        
+        
+        # iter-gen, list-expr
+        
+        r1 = []
+        # aa = [11,22,33,44]
+        for a, b <- [101..104], [11,22,33,44]
+            r1 <- (a,b)
+        res <- r1
+        
+        # index-gen, iter-gen
+        r2 = []
+        for a, b <- iter(5), [21..25]
+            r2 <- (a, b)
+        res <- r2
+        
+        # iter-gen, list-get
+        r3 = []
+        for a, b <- [1..5], [x ; x <- [11..15]]
+            r3 <- (a, b)
+        res <- r3
+        
+        # function results
+        func foo(n)
+            [1 .. n]
+        
+        func bar(s, sep)
+            s.split(sep)
+        
+        r4 = []
+        for a, b <- foo(3), bar('aa, bb, cc,', ' ')
+            r4 <- (a, b)
+        res <- r4
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [(101, 11), (102, 22), (103, 33), (104, 44)], 
+            [(0, 21), (1, 22), (2, 23), (3, 24), (4, 25)], 
+            [(1, 11), (2, 12), (3, 13), (4, 14), (5, 15)],
+            [(1, 'aa,'), (2, 'bb,'), (3, 'cc,')]]
+        self.assertEqual(exv, resv)
+        
+    def test_for_loop_multisource(self):
+        ''' Iterating by several collection sources.
+            for a, b, c <- s1, s2, s3  '''
+        code = r'''
+        res = []
+        
+        # 2 lists
+        nn = [1,2,3,4,5]
+        mm = [10, 20, 30, 40, 50]
+        
+        rr = []
+        for x, y <- nn, mm
+            rr <- (~'{x}+{y}', x + y)
+        res <- rr
+        
+        # 3 lists
+        
+        aa = [1,2,3]
+        bb = [4,5,6]
+        cc = [7,8,9]
+        r2 = []
+        for x, y, z <- aa, bb, cc
+            r2 <- (x, y, z)
+        res <- r2
+        
+        # 5 lists
+        a1 = [1,2,3,4]
+        a2 = [11,22,33,44]
+        a3 = [5,6,7,8]
+        a4 = [55,66,77,88]
+        a5 = [10, 20, 30, 40]
+        r3 = []
+        for q, w, e, r, t <- a1, a2, a3, a4, a5
+            r3 <- (q,w,e,r,t)
+        res <- r3
+        
+        # list, tuple
+        
+        aa = [1,2,3,4,5]
+        tt = ('a','b','c','d','e')
+        r4 = []
+        for a, t <- aa, tt
+            r4 <- (a, t)
+        res <- r4
+        
+        # list, dict
+        
+        aa = [1,2,3,4,5]
+        dd = {'a':'aaa', 'b':'bbb', 'c':'ccc', 'd':'ddd', 'e':'eee'}
+        r5 = []
+        for x, k, v <- aa, dd
+            r5 <- (x, k, v)
+        res <- r5
+        
+        # list, tuple, dict
+        aa = [1,2,3]
+        tt = ('A','B','C')
+        dd = {'aa':111, 'bb':222, 'cc':333}
+        r6 = []
+        for a, t, k, v <- aa, tt, dd
+            r6 <- (a, t, k, v)
+        res <- r6
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [('1+10', 11), ('2+20', 22), ('3+30', 33), ('4+40', 44), ('5+50', 55)], 
+            [(1, 4, 7), (2, 5, 8), (3, 6, 9)], 
+            [(1, 11, 5, 55, 10), (2, 22, 6, 66, 20), (3, 33, 7, 77, 30), (4, 44, 8, 88, 40)], 
+            [(1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e')], 
+            [(1, 'a', 'aaa'), (2, 'b', 'bbb'), (3, 'c', 'ccc'), (4, 'd', 'ddd'), (5, 'e', 'eee')], 
+            [(1, 'A', 'aa', 111), (2, 'B', 'bb', 222), (3, 'C', 'cc', 333)]]
+        self.assertEqual(exv, resv)
+
     def test_match_result(self):
         ''' match-statement return result in the end of function '''
         code = r'''

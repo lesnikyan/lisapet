@@ -65,11 +65,11 @@ class TestDev(TestCase):
                 _
                     50 # default result
 
-    # features for `enum` - not sure
-        TODO: Enum.name(11)
-        TODO: Enum.value(name)
-        TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
-        TODO: 22 ?> Enum # after methods
+        # (?) features for `enum` - not sure
+            TODO: Enum.name(11)
+            TODO: Enum.value(name)
+            TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
+            TODO: 22 ?> Enum # after methods
 
         TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
@@ -101,6 +101,18 @@ class TestDev(TestCase):
             func foo(a,b,c)...
             f = foo(1, 2); f(3) ;; g = foo(1); g(2, 3) # partial call
             f = foo~>(1)(2); f(3) ;; g = foo~>(1); g(2)(3)
+        
+        
+        TODO (?): put - inherit / include / mixin of a grup into an another grup
+            grup Auch
+                x = 1
+            
+            grup Boo
+                put Auch # copy and place here all things from Auch
+            
+            # not sure, maybe simple encapsulating will be enough:
+            grup Boo
+                au = Auch
         
         TODO: 
             think about escapes in triple-backticks strings
@@ -145,8 +157,6 @@ class TestDev(TestCase):
         
         TODO: add assertion to cases in test_lists
         
-        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
-        
         TODO: think about import native lib / module into LP code.
             eval.py: importLib('math', math)
             code.et: import python.math
@@ -165,18 +175,6 @@ class TestDev(TestCase):
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
-        
-        TODO (?): put - inherit / include / mixin of a grup into an another grup
-            # not sure, maybe simple encapsulating will be enough:
-            grup Auch
-                x = 1
-            
-            grup Boo
-                put Auch # copy and place here all things from Auch
-            
-            grup Boo
-                au = Auch
-        
 
         
         TODO: think about special type for methods. 
@@ -186,14 +184,20 @@ class TestDev(TestCase):
         TODO: check and optimize if need Function.checkTail process
          
 
-        TODO: 21.1 Multi-reading in loop:
+        DONE: 21.1 Multi-reading in loop:
             put at right part one more collections, so assign more var in left: 
             aa = [1,2,3]
             dd = {11:1, 22:2, 33:3}
             for i, x, key, val <- iter(3), aa, dd
                 print(i, x, key, val)
         
+        DONE: 21.2 Mult-reading in list-gen:
+            [ x + y ; x, y <- nn, mm]
         
+        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        
+        TODO: dict-gen
+            dict2 = { k: v + 10 ; k, v <- dict1; v > 0 && k != ''}
     '''
 
     _ = r"""
@@ -203,12 +207,12 @@ res = []
 """
 
 
-        
+    
+    
     def _test_code(self):
         ''' '''
         code = r'''
         res = []
-        
         
         # print('res = ', res)
         '''

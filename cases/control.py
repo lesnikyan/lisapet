@@ -95,40 +95,14 @@ class CaseMatchCase(SubCase):
         return base
 
 
-# class CaseMatchPattern(SubCase):
-#     '''
-#     left of `!-` operator.
-#     [*], {_:_}, (_,?), ...
-#     '''
-#     def __init__(self):
-#         super().__init__()
-#         self.splitter = OperSplitter()
-
-#     def match(self, elems:list[Elem]) -> bool:
-#         '''
-#         expr !- expr '''
-#         return False
-#         if len(elems) < 2:
-#             return False
-
-#         main = self.splitter.mainOper(elems)
-#         # dprint('CaseMatchCase elems[main]', elems[main].text, main)
-#         return isLex(elems[main], Lt.oper, '!-')
-
-#     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-#         arrInd = self.splitter.mainOper(elems)
-#         exp = ArrOper()
-#         subs = [elems[:arrInd], elems[arrInd+1:]]
-#         return exp, subs
-
-#     def setSub(self, base:ArrOper, subs:list[Expression])->Expression:
-#         base.left = subs[0]
-#         if len(subs) > 1 and isinstance(subs[1], Expression):
-#             base.right = subs[1]
-
-
 class CaseFor(BlockCase, SubCase):
     ''' '''
+    
+    def __init__(self):
+        super().__init__()
+        self.brc = CaseBrackets()
+        self.cs = CaseSemic()
+    
     def match(self, elems:list[Elem]) -> bool:
         if elems[0].text == 'for':
             return True
@@ -136,9 +110,9 @@ class CaseFor(BlockCase, SubCase):
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
 
         expSub = elems[1:]
-        if CaseBrackets().match(expSub):
+        if self.brc.match(expSub):
             expSub = expSub[1:-1]
-        _, subs = CaseSemic().split(expSub)
+        _, subs = self.cs.split(expSub)
 
         exp:LoopBlock = None
         match len(subs):
@@ -152,12 +126,12 @@ class CaseFor(BlockCase, SubCase):
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
         ''' nothing in minimal impl''' 
         slen = len(subs)
-        dprint('# CaseFor.setSub-', slen, subs)
+        # print('# CaseFor.setSub-', slen, subs)
         match slen:
             # iterator case
             case 1 if isinstance(base, LoopIterExpr):
                 base.setIter(subs[0])
-                # dprint('(=1)', subs[0] )
+                # print('For.case(=1)', subs[0] )
             # pre, cond
             case 2 if isinstance(base, LoopExpr): base.setExpr(pre=subs[0], cond=subs[1])
             # init, cond, post

@@ -5,16 +5,16 @@ LISAPET is an object-oriented interpretable language with functional elements.
 Syntax is similar to mix of Python, Golang and some functional langs. It's written with python.  
 
 Name: Linear Interpreter of Scripting And Processing Expression Tree.  
-(LP, this code, miniscript)
-Alter name: FOTEX - Functional-object tree of expressions.
-possible ico: Fox pet on the bicycle
+(LP, this code, miniscript)  
+Alter name: FOTEX - Functional-object tree of expressions.  
+possible ico: Fox pet on the bicycle with headlight.  
 
 LP was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run within the python project but without direct execution of native python code on the python interpreter (bad and unsafe way).  
 Instead of line-by-line execution, interpreter builds executable object, actually - tree of actions (expressions).  
 Than this object can be executed with some data. Once or many times, if needed.  
 Executable tree uses internal [Context](#12-execution-context)-container with working data (variables, values, types, etc).  
 Utility `run.py` can run LP code from file or string in console with the set of arguments (see [Usage](#usage) section).  
-Another way - call parser and interpreter manually from your code and run built object with context. It's the way to embed Lisapet into your own project (no examples here, see `run.py` and all tests in /`tests` dir).  
+Another way - call parser and interpreter manually from your code and run built object with context. It's the way to embed Lisapet into your own project.  
 
 --------------------------------------------------------
 --------------------------------------------------------
@@ -69,7 +69,8 @@ Content:
     1. [Classic `for` loop by counter](#6-while-for-statement)
     2. [`for i <- [1..5]`](#62-for-iterator-arrow-assign-operator--)
     3. [`for i <- iter(n)`](#63-function-iter)
-    4. [Keywords `continue`, `break`](#64-keywords-continue-break)
+    4. [`for a, b <- s1, s2` by multi-source](#64-multi-source-iterator-in-for-loop)
+    5. [Keywords `continue`, `break`](#65-keywords-continue-break)
 
 7. Functions:  
     1. [Definition and usage `func f()`](#7-function-definition-return)  
@@ -1173,6 +1174,7 @@ Left-arrow `<-` operator has several options.
 Here we use left-arrow as an iterative assignment in `for` statement.  
 It looks, like we pick the element from the sequence one-by-one.  
 - Iteration by `iter()` builtin function.  
+See details about `iter` [little later >>](#63-function-iter)
 ```python
 arr = [1,2,3]
 r = 0
@@ -1224,8 +1226,6 @@ for item <- dd
 ('b', 2)
 ```
 
-
-
 ### 6.3 Function `iter()`  
 Function `iter` can be used with several sets of arguments.  
 `iter(start, [last+1 [, step]])`  
@@ -1243,7 +1243,45 @@ iter(1, 5) # >> 1,2,3,4
 iter(1,7,2) # >> 1,3,5
 ```
 
-### 6.4 Keywords `continue`, `break`.  
+
+
+### 6.4 Multi-source iterator in `for`-loop.  
+`for` loop can iterate several sources (collection, iterator, generator) at the same time.  
+```python
+for a, b, c <- src1, src2, src3
+```
+In common case each source produce value for current iteration and assigning operator puts values into variables in the same order, like multiassign `=` does.  
+Count of elements (key : val pairs for `dict`) in all sources should be the same or at least first source should not be longer then any of other.  
+Dictionary produces key and value in this case.  
+Examples.  
+Collections:
+```python
+nums = [1,2,3]
+tt = (11, 22, 33)
+dd = {'a':'aa', 'b':'bb', 'c':'cc'}
+for a, b, k, v <- nums, tt, dd
+    print(a, b, k, v)
+```
+out:
+```
+1 11 a aa
+2 22 b bb
+3 33 c cc
+```
+Iterator or generators:
+```python
+for a, b, c <- iter(3), [21..23], [x * 5 ; x <- [1..3]]
+    print(a, b, c)
+```
+out:
+```
+0 21 5
+1 22 10
+2 23 15
+```
+
+
+### 6.5 Keywords `continue`, `break`.  
 Classic `break` and `continue`.  
 `continue` stops current iteration and goes to next.  
 `break` stops current iteration and whole loop.  
@@ -1880,11 +1918,11 @@ sliced = [x ; x <- src][2:5]
 
 ### 12.2 List comprehension / sequence generator
 Sequence generator (aka list comprehansion) is a shortened syntax (sugar) for making lists by another list or any sourec of sequence.  
-Basic syntax:  
+- Basic syntax:  
 ```python
 [elem; src-expr ;...]
 ```
-Expressions in the generator is divided by `;`.   
+- Expressions in the generator is divided by `;`.   
 Generator has such segments / expressions:  
 Second expression is a loop-iterator with arrow-assignment like `for` statement.  
 ```python
@@ -1893,7 +1931,7 @@ for x <- src
 # the same as
 [...; x <- src]
 ```
-First expression is an element of result.  
+- First expression is an element of result.  
 ```python
 res = []
 for x <- src
@@ -1902,7 +1940,7 @@ for x <- src
 # the same as
 res = [x; x <- src]
 ```
-Generator can have more expressions:
+- Generator can have more expressions:
 ```python
 [  
     elem-expr;       # 1) result element expression ;  
@@ -1913,7 +1951,7 @@ Generator can have more expressions:
 # 2-4 is a generator-block.  
 # 3-4 are optional  
 ```
-Generator should contain at least 2 segments:  
+- Generator should contain at least 2 segments:  
 ```python
 [n; n <- values]
 ```
@@ -1927,7 +1965,7 @@ src = [1..5]
 ]
 >> [101, 303, 505]
 ```
-Generator can have sub-iterations, ie 2-4 is a repeatable part, like:
+- Generator can have sub-iterations, ie 2-4 is a repeatable part, like:
 ```python
 arr1, arr2, arr3 # source lists
 [aa + bb + c ; 
@@ -1935,13 +1973,13 @@ arr1, arr2, arr3 # source lists
     b <- arr2; bb = b * b; 
     c <- arr3; c < 10 ]
 ```
-Next gen-blocks can use values from previous.
+- Next gen-blocks can use values from previous.
 ```python
 [x ; a <- [1..3] ; b <- [10,20]; c <-[400, 500]; 
     x = a + b + c; x % 7 == 0]
 >> [511, 413]
 ```
-Result-expr can see all values from all gen-blocks.
+- Result-expression can see all values from all gen-blocks.
 
 ```python
 # simple
@@ -1964,7 +2002,7 @@ src = [[x, y] ; x <- [5..7]; y <- [1..3]]
 # flatten source, make plane list
 nums = [ x ; sub <- src ; x <- sub]
 ```
-Too long expression can be formatted into multiple lines.
+- Too long expression can be formatted into multiple lines.
 ```python
 # generator: multi-expressions, multiline expression
 nums = [
@@ -1983,17 +2021,32 @@ nums = [
     a + b + c < 1000
 ]
 ```
-Now strings are not a valid native source for comprehansions. But it can be resolve by `tolist()` function.
+- Now strings are not a valid native source for comprehansions. But it can be resolve by `tolist()` function or `list()` constructor.
 ```python
 # list comprehension by converted string
 src = "ABCdef123"
 res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
 ```
-
-Here just syntax joke :)  
-But it works, it returns list of lambdas which return generators.  
+- Multi-source expression in arrow-assigning is available here in the same way as in `for`-loop.  
 ```python
-[ x -> [x .. y] ; y <- [1 .. 10]]
+aa = [1,2,3]
+dd = {'a':'aa', 'b':'bb', 'c':'cc'}
+[ (a, k, v) ; a, k, v <- aa, dd ]
+```
+
+_Here just syntax joke :)_  
+```python
+c, d = 1, 5
+rr = [ a -> [a .. b] ; b <- [c .. d]]
+```
+But it works, it returns list of lambdas which return generator.  
+```python
+res = []
+for r <- rr
+    res <- [x; x <- r(0)]
+
+res # >>
+[[0, 1], [0, 1, 2], [0, 1, 2, 3], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5]]
 ```
 
 ### 14. Builtin functions:  
@@ -2790,18 +2843,23 @@ a, b, r1 = 4, 3, 0
 
 match a
     1  /: r1 = 100 # one-line case block
-    10 /: r1 = 200 # value-pattern
+    10 /: r1 = 200 # value-matching pattern
+
     # var-pattern (no check, just assign a to b)
-    x  /: c = x * 1000 
+    x  /: c = x * 1000 # starting cases sub-block
+        # sub-block continues on next line
         r1 = [c, x]
-    # sub-control
-    20
+    
+    20      # pattern
+        # sub-control
         if a > b
             r1 = 5
+    
+    # default case
     _  /: r1 = -2
 ```
 
-- In case, if `match` is a last expression in function or control-statement like `if` or `match`, last line in matched `case` is e resulting expression.  
+- In case, if `match` is a last expression in function or control-statement like `if` or `match`, last line in matched `case` is a resulting expression.  
 
 ```golang
 
