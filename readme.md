@@ -2064,8 +2064,8 @@ res # >>
 ### 9.4 Dict comprehension generator.  
 Dict can be made by comprehension generator too.  
 There is a little different syntax.  
-Unlike the list-gen dict-gen internal expressions is covered by curvy brackets.  
-The result expression should be a par ov values arounf `:` operator, it produces `key:value` pair of resulting value.  
+Unlike the list-gen internal expressions of the dict-gen are covered by curvy brackets.  
+The result expression should be a pair of values around `:` operator, it produces current `key:value` pair of resulting value (dict).  
 
 ```python
 nn = [1,2,3,4,5]
