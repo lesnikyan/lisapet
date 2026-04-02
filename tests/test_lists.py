@@ -20,6 +20,101 @@ class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
 
+    def test_dict_generator(self):
+        ''' dict generator
+            { key: val ; key, val <- src; expr; condition }
+        '''
+        code = r'''
+        res = []
+        
+        # simplest case
+        
+        pairs = [('aa', 11), ('bb',22), ('cc',33), ('dd',44)]
+        dd = {k:v ; k, v <- pairs}
+        res <- dd
+        
+        # from list, tuple
+        
+        nn = [1,2,3,4,5]
+        tt = ('a', 'b', 'c', 'd', 'e')
+        
+        d2 = { c : n ; n, c <- nn, tt}
+        d3 = { n : c ; n, c <- nn, tt}
+        
+        res <- d2
+        res <- d3
+        
+        # from slices
+        
+        ss = [1,2,3,4,5, 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', [0]]
+        d4 = { k: v ; v, k <- ss[5:10], ss[:5]}
+        res <- d4
+        
+        # from dict
+        
+        ds = {'a1':'aaa', 'b1':'bbb', 'c1':'ccc', 'd1':'ddd', }
+        d5 = { k:v ; k, v <- ds}
+        res <- d5
+        d6 = { v:k ; k, v <- ds}
+        res <- d6
+        
+        # + condition
+        
+        d7 = { c : n ; n, c <- nn, tt; n > 1 && n % 2 > 0}
+        res <- d7
+        
+        # + pre + condition
+        
+        d8 = { c : s ; n, c <- nn, tt; s = ~'{n:03d}@{c}'; n % 2 > 0}
+        res <- d8
+        
+        # 3 sub levels
+        
+        n9 = [1,2,3]
+        d9 = {
+            k: i * 100 + j ; 
+            n <- n9; p = [1..n]; 
+            i <- p; s = ~'k{i}'; q = [i .. 4]; 
+            j <- q; k = ~'{s}-{j}'; i > 1 && j > 2
+        }
+        res <- d9
+        
+        # unpack list of lists
+        
+        s10 = [
+            [11, 12, 13],
+            [21, 22, 23],
+            [31, 32, 33],
+        ]
+        d10 = {
+            ~'{p}.{n}': n ; 
+            s1 <- s10; 
+            n <- s1; p = s1.fold(n*100, \s, c -> s + c)}
+        res <- d10
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            {'aa': 11, 'bb': 22, 'cc': 33, 'dd': 44}, 
+            {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}, 
+            {1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e'}, 
+            {1: 'f', 2: 'g', 3: 'h', 4: 'i', 5: 'j'}, 
+            {'a1': 'aaa', 'b1': 'bbb', 'c1': 'ccc', 'd1': 'ddd'}, 
+            {'aaa': 'a1', 'bbb': 'b1', 'ccc': 'c1', 'ddd': 'd1'}, 
+            {'c': 3, 'e': 5}, {'a': '001@a', 'c': '003@c', 'e': '005@e'}, 
+            {'k2-3': 203, 'k2-4': 204, 'k3-3': 303, 'k3-4': 304},
+            {'1136.11': 11, '1236.12': 12, '1336.13': 13, '2166.21': 21, '2266.22': 22, '2366.23': 23, '3196.31': 31, '3296.32': 32, '3396.33': 33}]
+        self.assertEqual(exv, resv)
+
     def test__listgen_with_multisource(self):
         '''Multi-source in list-generator
             [expr ; a, b, c <- s1, s2, s3 ] '''

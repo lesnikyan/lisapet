@@ -265,6 +265,15 @@ class CaseBrkSquare(CaseLim):
         return info.elems[0].text =='[' or info.elems[-1].text == ']'
     
 
+class CaseBrkCurv(CaseLim):
+    '''
+    [expr]
+    '''
+    
+    def match(self, info:CMatchInfo)-> bool:
+        return info.elems[0].text =='{' or info.elems[-1].text == '}'
+    
+
 _opnenBrs = ['(','[','{']
 _closeBrs = ['}',']',')']
 

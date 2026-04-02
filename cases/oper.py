@@ -276,7 +276,36 @@ class CaseListGen(SubCase, SolidCase):
         return base
 
 
-class CaseListComprehension(SubCase, SolidCase):
+class CaseComprehension(SubCase, SolidCase):
+    '''
+    Basic class for comprehension expressions
+    '''
+    
+    
+    def __init__(self):
+        super().__init__()
+        self.spl = OperSplitter.getInst()
+        self.cs = CaseSemic()
+
+    def getExpr(self) -> ComprehensionGen:
+        return ListComprExpr()
+
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        sub = elems[1:-1]
+        _, subs = self.cs.split(sub)
+        exp = self.getExpr()
+        subs = [s for s in subs if len(s)]
+        # prels('LC.elems = :', elems, show=1) 
+        # prels('ListComr subs=', subs, show=1)
+        return exp, subs
+
+    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
+        # dprint('CaseListComprehension.setSub: ', base, subs)
+        base.setInner(subs)
+        return base
+
+
+class CaseListComprehension(CaseComprehension):
     '''
     List comprehantion. As possible used haskell-like syntax.
     We don`t use verticall bar (| as haskell) because it olready is used as a bitwise OR with another precedence.
@@ -299,11 +328,6 @@ class CaseListComprehension(SubCase, SolidCase):
     [x ; sub <- listOfLists ; x <- sub ; len(sub) > 2] # if next part is iterator - run loop
     [x ; sub <- listOfLists , x <- sub ; len(sub) > 2] # the same as Case3 ??
      '''
-    
-    def __init__(self):
-        super().__init__()
-        self.spl = OperSplitter.getInst()
-        self.cs = CaseSemic()
          
     def match(self, elems:list[Elem]) -> bool:
         
@@ -314,21 +338,37 @@ class CaseListComprehension(SubCase, SolidCase):
         
         return self.cs.match(elems[1:-1])
 
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        sub = elems[1:-1]
-        _, subs = self.cs.split(sub)
-        exp = ListComprExpr()
-        subs = [s for s in subs if len(s)]
-        # prels('LC.elems = :', elems, show=1) 
-        # prels('ListComr subs=', subs, show=1)
-        return exp, subs
+    def getExpr(self) -> ComprehensionGen:
+        return ListComprExpr()
 
-    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        # dprint('CaseListComprehension.setSub: ', base, subs)
-        base.setInner(subs)
-        return base
+
+class CaseDictComprehension(CaseComprehension):
+    '''
+    Comprehension generator for dict
+    {k:v ; k, v <- src; x = k; x != v}
+    '''
+    
+    def __init__(self):
+        super().__init__()
+        self.spl = OperSplitter.getInst()
+        self.cs = CaseSemic()
+    
+         
+    def match(self, elems:list[Elem]) -> bool:
+        
+        if len(elems) < 11:
+            return False
+        if not (isLex(elems[0], Lt.oper, '{') and isLex(elems[-1], Lt.oper, '}') ):
+            return False
+        
+        return self.cs.match(elems[1:-1])
+
+    def getExpr(self) -> ComprehensionGen:
+        return DictComprExpr()
+
 
 _inline_contr_keyws = ['if','for','while']
+
 
 class CaseInlineSub(SubCase):
     ''' 1-line sub-block
