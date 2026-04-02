@@ -551,23 +551,12 @@ class EmptyFilter(Expression):
         return Val(True, TypeBool())
 
 
-class ListComprExpr(Expression):
+class ComprehensionGen(Expression):
+    ''' Base functionality of comprehension generator.
+        This class can't be used as is.
+        Methods `resultObject`, `doElem` should be implemented for each final case
     '''
-    List comprehantion. As possible used haskell-like syntax.
-    We don`t use verticall bar (| as haskell) because it olready is used as a bitwise OR with another precedence.
-    Semicolon (;) is used for split internal sub-parts instead.
-    cases:
-    [x ; x <- listVar] # just one-2-one copy Case0
-    [ x + 2 ; x <- [a .. b]] # with simple modificator of each element Case1
-    [ x ; x <- listVar ; x > 5 ] # with filtering conditions. Last sub-part will be an condition of filter. Case2
-    [ x ; x <- listVar ; y, z = x ** 2 , 2 * x ; x + y > 100 && y - z < 1000 ] # with declaration part. Case3
-    [x + y ; x <- list1, y <- list2 ; x != y] # several iterators, next in loop of prev. Case3
-
-    Actually comprehantion implements: map, filter (possibly - flat)
     
-    [result ; iterator1 ; iteratorN; declarations; filter-condition ]
-    
-     '''
     def __init__(self):
         super().__init__()
         self.iter:NIterator = None
@@ -575,8 +564,8 @@ class ListComprExpr(Expression):
         self.resExpr = None # result expression, first in parts
         self.declarations:list[list[OpAssign]] = [] # declaration expressions, pre-last part
         self.filter = [] # filter condition, last part
-        self.res:ListVal = None # result of comprehansion expression
-
+        self.res = None
+    
     def setInner(self, subs:Expression):
         ''' set of expression lists
             1. result-expr
@@ -594,14 +583,8 @@ class ListComprExpr(Expression):
         curIt = -1
         for exp in subs[1:]:
             # dprint('ListComprExpr.setInner' ,exp, type(exp), 'curIt=', curIt)
-            # if isinstance(exp, LeftArrowExpr):
-            #     exp.init()
             if isinstance(exp, (LeftArrowExpr,IterAssignExpr)):
                 # basic case
-                # if curIt > 0 and len(self.filter) == 0:
-                #     # fix prev empty filter by True condition
-                #     # dprint(' ### EMPTY FILtER for ', curIt)
-                #     self.filter[curIt] = EmptyFilter()
                 curIt += 1
                 self.iterNodes.append(exp)
                 self.declarations.append([])
@@ -621,15 +604,14 @@ class ListComprExpr(Expression):
                 # ctx.print()
                 dex.do(ctx)
 
+    def resultObject(self) -> Collection:
+        ''' result instance: ListVal, DictVal, etc '''
+
     def doElem(self, ctx:Context):
-        self.resExpr.do(ctx)
-        res = self.resExpr.get()
-        # dprint('COMPRH . doElem. rexpr:', self.resExpr, 'res:', res, 'val:', var2val(res))
-        self.res.addVal(var2val(res))
-        
+        '''result-related method'''
 
     def iterLoop(self, index, ctx:Context):
-        # dprint('ListComprExpr.iterLoop %d of %d ' % (index, len(self.iterNodes)), self.iterNodes)
+        # print('ListComprExpr.iterLoop %d of %d ' % (index, len(self.iterNodes)), self.iterNodes)
         q='''
         [a, b, c] ; a <- aaa; a > 10;    b <- bbb; c = a + b;  b > 20;   
         '''
@@ -641,14 +623,14 @@ class ListComprExpr(Expression):
             inod.start()
         decl = self.declarations[index]
         filt = self.filter[index]
-        # dprint(' $$ 1',)
+        # print(' $$ 1',)
         # ctx.print()
         while inod.cond():
             subCtx = Context(ctx) # ctx for sub-iter
             inod.do(subCtx) # make iterator
             self.doDecl(subCtx, decl)
-            # dprint('iterLoop.. filt:', self.filter, index)
-            # dprint(' $$ 2 ',)
+            # print('iterLoop.. filt:', self.filter, index)
+            # print(' $$ 2 ',)
             # subCtx.print()
             filt.do(subCtx)
             fcond = filt.get().get()
@@ -663,7 +645,8 @@ class ListComprExpr(Expression):
 
     def do(self, ctx:Context):
         # dprint('ListComprExpr.do0')
-        self.res = ListVal()
+        self.res = None # reset prev
+        self.resultObject()
         if len(self.iterNodes) == 0:
             return
         self.iterLoop(0, ctx)
@@ -673,3 +656,55 @@ class ListComprExpr(Expression):
     
 
 
+class ListComprExpr(ComprehensionGen):
+    '''
+    List comprehantion. As possible used haskell-like syntax.
+    We don`t use verticall bar (| as haskell) because it olready is used as a bitwise OR with another precedence.
+    Semicolon (;) is used for split internal sub-parts instead.
+    cases:
+    [x ; x <- listVar] # just one-2-one copy Case0
+    [ x + 2 ; x <- [a .. b]] # with simple modificator of each element Case1
+    [ x ; x <- listVar ; x > 5 ] # with filtering conditions. Last sub-part will be an condition of filter. Case2
+    [ x ; x <- listVar ; y, z = x ** 2 , 2 * x ; x + y > 100 && y - z < 1000 ] # with declaration part. Case3
+    [x + y ; x <- list1, y <- list2 ; x != y] # several iterators, next in loop of prev. Case3
+
+    Actually comprehantion implements: map, filter (possibly - flat)
+    
+    [result ; iterator1 ; iteratorN; declarations; filter-condition ]
+    
+     '''
+    def __init__(self):
+        super().__init__()
+        self.res:ListVal = None
+
+    def resultObject(self):
+        ''' '''
+        self.res = ListVal()
+    
+    def doElem(self, ctx:Context):
+        self.resExpr.do(ctx)
+        res = self.resExpr.get()
+        # print('L-COMPRH . doElem. rexpr:', self.resExpr, 'res:', res, 'val:', var2val(res))
+        self.res.addVal(var2val(res))
+    
+
+class DictComprExpr(ComprehensionGen):
+    '''
+        {k:v ; k, v <- src; expr ; cond}
+    '''
+    def __init__(self):
+        super().__init__()
+        self.resExpr:ServPairExpr
+        self.res:DictVal = None
+
+    def resultObject(self):
+        ''' '''
+        self.res = DictVal()
+    
+    def doElem(self, ctx:Context):
+        self.resExpr.do(ctx)
+        k, v = self.resExpr.get()
+        key = var2val(k)
+        val = var2val(v)
+        # print('D-COMPRH . doElem. rexpr:', self.resExpr, 'res:', k,v) #  'val:', var2val(res)
+        self.res.setVal(key, val)

@@ -277,7 +277,8 @@ def caseMatcher():
         CaseRTildArroy(), CaseSlice(), CaseCollectElem(), CaseBytesExplicit()])
     
     sqBrkLim = CaseOption(CaseBrkSquare(), [CaseListGen(), CaseBytes(), CaseListComprehension(), CaseList()])
-    brkLim = CaseOption(CaseGenBrackets(), [sqBrkLim, CaseTuple(), CaseDictLine(), CaseBrackets()])
+    cvBrLim = CaseOption(CaseBrkCurv(), [CaseDictComprehension(), CaseDictLine()])
+    brkLim = CaseOption(CaseGenBrackets(), [sqBrkLim, CaseTuple(), cvBrLim, CaseBrackets()])
     
     solidOther = CaseOption(CaseAny(), [])
 

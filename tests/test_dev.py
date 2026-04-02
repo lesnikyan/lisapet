@@ -194,9 +194,27 @@ class TestDev(TestCase):
         DONE: 21.2 Mult-reading in list-gen:
             [ x + y ; x, y <- nn, mm]
         
+        TODO: to think: change const from left-modifier to right-operand of `:`
+            var : const = val # const elem
+            var : const(int) = val # strict typed const elem
+        
         TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
         
-        TODO: dict-gen
+        BUG: if we have predefined list / dict and try to use same name in the iterative assign by `<-` it breaks code
+            File "C:\Users\admin\Documents\python_examples\minilang\nodes\oper_nodes.py", line 68, in doRight
+                src.do(ctx)
+            File "C:\Users\admin\Documents\python_examples\minilang\nodes\iternodes.py", line 652, in do
+                self.iterLoop(0, ctx)
+            File "C:\Users\admin\Documents\python_examples\minilang\nodes\iternodes.py", line 623, in iterLoop
+                inod.start()
+        
+        TODO: think about deletion of var by name
+            delete(x)
+            del(x)
+            --- x ; -/- x
+            @delete x
+        
+        DONE: dict-gen
             dict2 = { k: v + 10 ; k, v <- dict1; v > 0 && k != ''}
     '''
 
