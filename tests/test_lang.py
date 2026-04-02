@@ -58,7 +58,7 @@ class TestLang(TestCase):
             if not cline.code:
                 continue
             # print('', elemStr(cline.code))
-            res = isSolidExpr(cline.code)
+            res = isSolidExpr(cline.code, skipKeywords=True)
             # print('', res)
             self.assertTrue(res)
             
@@ -82,8 +82,8 @@ class TestLang(TestCase):
             if not cline.code:
                 continue
             # print('', elemStr(cline.code))
-            res = isSolidExpr(cline.code)
-            # print('', res)
+            res, _ = isSolidExpr(cline.code)
+            # print('', elemStr(cline.code),  res)
             self.assertFalse(res)
 
     def test_multiline_base(self):
@@ -850,7 +850,7 @@ class TestLang(TestCase):
         ex.do(ctx)
 
     def test_lex_type(self):
-        ''' charType(prev:int, s:str) '''
+        ''' charType(prevChars, prev, s:str) '''
         args = [(' ',0,Lt.space), ('\t', 0,Lt.space), ('\n', 0,Lt.space), ('\r', 0,Lt.space), 
                 (' ', Lt.text, Lt.text), ('\t', Lt.text, Lt.text),
                 (' ',Lt.word,Lt.space),('\t',Lt.word,Lt.space),('\n',Lt.word,Lt.space),
@@ -876,7 +876,7 @@ class TestLang(TestCase):
                 ]
         # dprint('space %d, word %d, num %d, oper %d, text %d, quot %d, esc %d' % (Lt.space, Lt.word, Lt.num, Lt.oper, Lt.text, Lt.quot, Lt.esc))
         for tt in args:
-            rt = charType(([], tt[1]), tt[0])
+            rt = charType([], tt[1], tt[0])
             # dprint("Args: '%s', %s; exp: %s ? %s" % (tt[0], Lt.name(tt[1]), Lt.name(tt[2]), Lt.name(rt)))
             errmsg = "Args: '%s', %s, %s res = %s" % (tt[0], Lt.name(tt[1]), Lt.name(tt[2]), Lt.name(rt))
             self.assertEqual(rt, tt[2], errmsg)

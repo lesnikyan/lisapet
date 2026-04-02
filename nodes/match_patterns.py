@@ -91,7 +91,7 @@ class MCType(MatchingPattern):
         
     def match(self, val:Val):
         xtype = self.xtype.get()
-        # print('MCType', val, val.getType(), ' :: ', xtype, xtype.get())
+        # print('MCType', val.getType(), ' :: ',  xtype.get(), ' ->>', valHasType(val, xtype))
         return valHasType(val, xtype)
         # return equalType(var2val(val), xtype)
 
@@ -148,10 +148,6 @@ class MCObjMember(MatchingPattern):
         return exp.getVal() == val.getVal()
 
 
-class MCElem(MatchingPattern):
-    ''' element of complex pattern '''
-
-
 class MCRegexp(MatchingPattern):
     ''' re`` !- ..
         re`pattern`mix !-
@@ -170,6 +166,24 @@ class MCRegexp(MatchingPattern):
         if not isinstance(val.getType(), TypeString):
             return False
         return self.pattern.match(val)
+
+
+class MTGroup(MatchingPattern):
+
+    def __init__(self, expVal:Expression,  src=None):
+        super().__init__(src)
+        self.exp:Expression = expVal
+
+    def do(self, ctx:Context):
+        self.exp.do(ctx)
+        
+    def match(self, val:StringVal):
+        # print('(expr).match', self.exp)
+        return self.exp.match(val)
+
+
+class MCElem(MatchingPattern):
+    ''' element of complex pattern '''
 
 
 # ------------------------ Sub-elements of sequence ---------------------- #
@@ -290,7 +304,6 @@ class MCQMark(MCSub):
         
         '''
         return True
-
 
 # -------------------- Ordered sequences ---------------- #
 

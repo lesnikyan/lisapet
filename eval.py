@@ -25,6 +25,7 @@ def initFuncs(ctx:Context):
     addTypeConstr(ctx, tuple_constr, TypeTuple())
     addTypeConstr(ctx, dict_constr, TypeDict())
     addTypeConstr(ctx, glif_constr, TypeGlif())
+    addTypeConstr(ctx, regexp_constr, TypeRegexp())
     
     # global funcs
     setNativeFunc(ctx, 'print', buit_print, TypeNull)

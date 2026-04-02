@@ -5,16 +5,16 @@ LISAPET is an object-oriented interpretable language with functional elements.
 Syntax is similar to mix of Python, Golang and some functional langs. It's written with python.  
 
 Name: Linear Interpreter of Scripting And Processing Expression Tree.  
-(LP, this code, miniscript)
-Alter name: FOTEX - Functional-object tree of expressions.
-possible ico: Fox pet on the bicycle
+(LP, this code, miniscript)  
+Alter name: FOTEX - Functional-object tree of expressions.  
+possible ico: Fox pet on the bicycle with headlight.  
 
 LP was started as a pet-project (and still is) - simple and small scripting language  (not so small already [facepalm]) for short scripts which could be run within the python project but without direct execution of native python code on the python interpreter (bad and unsafe way).  
 Instead of line-by-line execution, interpreter builds executable object, actually - tree of actions (expressions).  
 Than this object can be executed with some data. Once or many times, if needed.  
 Executable tree uses internal [Context](#12-execution-context)-container with working data (variables, values, types, etc).  
 Utility `run.py` can run LP code from file or string in console with the set of arguments (see [Usage](#usage) section).  
-Another way - call parser and interpreter manually from your code and run built object with context. It's the way to embed Lisapet into your own project (no examples here, see `run.py` and all tests in /`tests` dir).  
+Another way - call parser and interpreter manually from your code and run built object with context. It's the way to embed Lisapet into your own project.  
 
 --------------------------------------------------------
 --------------------------------------------------------
@@ -32,6 +32,7 @@ Content:
     6. [`glif` `g'G'`](#16-glif-gg)
     7. [Multiline expressions](#17-multiline-expressions-if-for-math-expr)
     8. [Code blocks and formatting.](#18-sub-blocks-code-formatting)
+    9. [`const`](#19-const)
 
 2. Operators.  
     1. [Math operators](#21-arithmetic-operators)
@@ -61,13 +62,15 @@ Content:
 5. `if`-statement
     1. [if - else](#5-if-statement-else)
     2. [if sub-expr; cond](#52-if-sub-expression)
-    3. [See also `match` statement >>>](#match-statement)
+    3. [result of `if`](#53-result-of-if)
+    4. [See also `match` statement >>>](#match-statement)
 
 6. `while`, `for`-statement 
     1. [Classic `for` loop by counter](#6-while-for-statement)
     2. [`for i <- [1..5]`](#62-for-iterator-arrow-assign-operator--)
     3. [`for i <- iter(n)`](#63-function-iter)
-    4. [Keywords `continue`, `break`](#64-keywords-continue-break)
+    4. [`for a, b <- s1, s2` by multi-source](#64-multi-source-iterator-in-for-loop)
+    5. [Keywords `continue`, `break`](#65-keywords-continue-break)
 
 7. Functions:  
     1. [Definition and usage `func f()`](#7-function-definition-return)  
@@ -102,12 +105,12 @@ Content:
     2. [Usage](#112-enum-usage)
     3. [Matching >>>](#2310-enum-elements)
 
-14. #### Builtin (native) functions and methods
+12. #### Builtin (native) functions and methods
     1. [Global functions: print, iter, etc.](#141-global-native-functions)
     2. [Bind native function as a method `[1,2].join(',')`](#142-binding-method-for-type)
     3. [Methods are already bound](#143-methods--are-already-bound-to-types)
 
-15. #### [Functional features](#15-functional-programming-features)  
+13. #### [Functional features](#15-functional-programming-features)  
     1. [Lambdas `x -> x ** 2`](#151-lambda-functions-right-arrow--)  
     2. [high-order functions `f1(f2)`](#152-high-order-functions)
     3. [Function as object](#153-function-as-an-object)
@@ -119,18 +122,18 @@ Content:
     9. [Builtin `compose`, `g * f`](#159-builtin-composition)
     10. [apply `f $ x`](#1592-apply-operator)
 
-20. Inline syntax.  
+14. Inline syntax.  
     [Few-expressions block `x=1 ; f(x)`](#20-one-line-block---operators)  
     [Controls (`if`, `for`, etc) `/:`](#20-one-line-block---operators)  
 
-21. #### [String features](#21-string-features)
+15. #### [String features](#21-string-features)
     1. [insert `"%s" << x`](#211-percent-formatting)
     2. [include `~"{x}"`](#212-format-by-including-expressions)
     3. [base functions](#213-string-functions)
 
-22. [Modules. `import`](#22-import-modules)
+16. [Modules. `import`](#22-import-modules)
 
-23. #### `match`-statement
+17. #### `match`-statement
     1. [Match, cases, /:`](#23-match-statement)
     2. [List and tuple `[0,x,_,?,*]` `(_,?,*)`](#232-matching-list-and-tuple)
     3. [Dict pattern `{'a':a, _:_, *}`](#233-matching-dict)
@@ -141,31 +144,39 @@ Content:
     8. [Regexp case ```re`abc` ```](#238-regexp-case)
     9. [Type pattern `::`](#239-type-matching-_int)
 
-25. Regular expression:
+18. Regular expression:
     1. [Base syntax ```re`[abc]`i```](#251-regular-expressions-re)
     2. [match `=~`](#252-regexp-match-)
     3. [find `?~`](#253-regexp-find-)
     4. [Replace by regexp](#254-regexp-replace)
     5. [Split by regexp](#255-regexp-split)
 
+19. [`grup` blok](#190-grup)  
+    1. [Declaration](#191-declaration)  
+    2. [Nested definitions](#192-nested-definitions)  
+    3. [Static content vs instances](#193-static-content-vs-instances)  
+    4. [Sub level of module](#194-sub-level-of-module)  
+
+
 *
 ## Status.
-Actually it's on-dev. Most basic features and needed things is done. Author doing something more each week.  
+It's still on-dev. Most things are done. Small issues and nicer solutions in the order for implementation.  
 Bugs still lives in there. I catching them every time. But they hides very nice.  
-Details see next, in `syntax` section.  
-As an one-hands made project (withous users) all updates are committed into dev and almost immediately merged into main branch, without version numeration.  
+Details see next, in `syntax` section. Here I wrote only completed and working things.  
+As an one-hands made project (withous users) small updates are committed into dev, more complex changes are merged into dev (now dev is a default branch), without version numeration.  
 Tests covers all changes whenever possible.  
 Therefore, critical changes to previously added things happen extremely rarely.  
 
 *
-Basic principles.
-1. No extra thingth, block is defined by line shifting without endline operator.
+## Basic principles.
+1. No extra thingth, block is defined by line shifting without endline/sub-block operator or brackets.
 2. Basic collections: list, dict, tuple
 3. Arithmetic expressions - python-like syntax: (a + 1/2) * b - c ** 2 .
 4. Control structs: `if-else`, `match`, `for`, `while`.
-5. Functions: value of last expression is a returning result. Explicit `return` works too.  Function is an object. Lambdas `x -> y`.
-6. `struct` is a main complex type. struct can have methods. Inheritance works too.
-7. Vars, struct fields, func args have type `x : type`, internal `Any` type by default.
+5. Functions: value of last expression is a returning result. Explicit `return` works too.  
+    Functional approach: Function is an object. Lambda is a native thing `\x -> y`. Closures. Currying and composition.  
+6. `struct` is a main complex type. Struct can have methods. Inheritance works too.
+7. Vars, struct fields, function args have type `x : type`, internal `any` type is applyed by default.
 8. Import modules or things from modules.
 9. Syntax sugar and useful operators is ok. For example: list slice, list generator, `<-`, `?>`, `?:`, `::` operators, multiple assignment, inline syntax of blocks.
 10. Native regexp.
@@ -173,12 +184,13 @@ Basic principles.
 *
 
 ## Usage.
-Note: `python run` command is one line, splitted in examples just for better readability. 
-run file  
+Note: `python run` command is one line, splitted in examples just for better readability.   
+Run the file:  
 ```console
 $ python -m run tests/simple_test.et
 ...
 ```
+Run the code string:  
 ```console
 ## run code line
 ## -c --codeline
@@ -197,7 +209,7 @@ $ python -m run \
 10049
 10081
 ```
-Features of `run`.  
+Features / options of the `run`.  
 ```console
 ## show result
 ## -r --result : name of resulting variable
@@ -248,24 +260,26 @@ Traceback (most recent call last):
 ZeroDivisionError: division by zero
 ```
 
-See code of tests, run.py, loader.py, eval.py for understanding how to use LISAPET as an imbedded engine, add custom python functions for using in LP code, etc.  
+### Usage in python code. 
+See examples in the `/tests/..` (a lot of) , `run.py`, `loader.py`, `eval.py` for understanding how to use LP as an embedded engine, add custom python functions for using in LP code, etc.  
 
 ## Syntax.
-The Syntax section is updated as new features are added to the code, so it looks a bit chaotic.  
+The Syntax section is updated as soon as new features are added to the code, so it looks a bit chaotic. Working on it.  
 Done parts:  
 
 ### 0. Comments.
 Operators of comment lines:  
-`#` inline, up to end of line.  
+`#` one-line, up to the end of line.  
 `#@`(open)  
-multiline (sub-line)  
+multiline (sub-line) comment:  
 all text between open and close operators.   
 `@#`(close)  
 ```
 # one-line comment
 
 #@
-multiline comment
+multiline
+comment
 @#
 
 x = #@ in-line comment @# 2 + 5
@@ -291,25 +305,33 @@ lastName = names[2]
 # multiple assignment
 a, b, c = 10, 20, 30
 ```
-Alternatives see in next sections: [`<-` operator](#6-for-statement---operator).
+
+Alternatives see in next sections: [`<-` operator](#91-arrow-appendset-operator--).
 
 ### 1.2 Execution context.  
-In the mechanics of language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
+In the mechanics of this language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
 Context-object is responsible of search datatypes, variables, functions etc in current execution context.  
-So we can use all local things and any things defined in all levels above: module-level - in the function, function- and module- level - in the control sub-level (for, if, match), and so on.  
-See more about visibility of things in sections of functions, closures, structs, importing.  
+Each context serves its block of code.  
+Sub-blocks have sub-contexts.  
+So whole execution context is a tree of local contexts, but in-the-moment it works more like a stack  current context can look in upper level, but can't see neabors.  
+So we can use all local things and any things defined in all levels above: the module-level is available in the function, function and module level - in the control sub-level (for, if, match), and so on.  
+See more about visibility of things in sections of `function`, `closure`, `struct`, `import`.  
 
 ### 1.3 Numeric types.  
+We have traditional numeric type: bool, int, float.  
+The `null` type is a mostly empty-value for complex types.  
 ```python
 nums = [
-    true, # bool
-    123, # int, decimal
-    0123, # decimal, leading 0 will be irnored 
+    true, false, # bool
+    0, 123, # int, decimal
+    0333, # decimal, leading 0 will be irnored 
     0b1111, # int, binary
-    0o777, # int octa
+    0o777, # int octal
     0xfba01, # int hex
     0.15]   # float
+obj = null
 ```
+Complex numbers have been planned, but haven't been fully implemented.  
 
 ### 1.4 Strings.  
 Strings can be defined by several type of quotes.  
@@ -317,7 +339,7 @@ Strings can be defined by several type of quotes.
 hello = "hello somebody!"
 us = 'unary-quotes'
 ```
-Classic escape sequences is work.
+Classic escape sequences work.  
 ```golang
 print("Hello there! \n\t Here new line, \\ back-slash and \"Words in quotes.\" ")
 ```
@@ -326,7 +348,7 @@ Hello there!
          Here new line, \ back-slash and "Words in quotes."
 ```
 Backticks is an yet one type of quotes, designed to create little more ascetic strings.  
-In backticks sequences like `\s` doesn't try to be  interpreted as an escape sequence.  
+In backticks sequences like `\s` doesn't try to be  interpreted as an escape sequences.  
 It's very useful for making strings with slashes, quotes, etc, like regexp needs.  
 ```golang
 s = `\s\w\b\d` #// no errors about incorrect escaping
@@ -343,7 +365,7 @@ print(`\n\t\'\" `)
 
 ### 1.5 Multiline strings.  
 Triple quotes is a main way to create multiline string.  
-Triple backticks work too. Thinking about escape sequences. Now it  just works like other, except warnings of wrong sequences like ``` \w \s ```.  
+Triple backticks work too. Thinking about escape sequences for triple backticks. Now it  just works like other, except warnings of wrong sequences like ``` \w \s ```.  
 ````golang
 '''multiline
 string'''
@@ -357,8 +379,8 @@ in b\acktick\s
 String operators:  
 Concatenation: `string + string`  
 Get sub element (like list): `string[index]`  
-Formatting operators see in [`"%s"<<` ](#211-percent-formatting) and 
-[`"~{s}"`](#212-format-by-including-expressions) formatting.
+Formatting operators see in [`"%s"<< s` ](#211-percent-formatting) and 
+[`"~{s}"`](#212-format-by-including-expressions) formatting sections.
 
 
 ### 1.6 Glif `g'G'`
@@ -383,7 +405,8 @@ c = glif(g'c') # c
 # by bytes
 n100 = glif(0x[e7 99 be]) # 百
 ```
-... other features in dev
+`glif` has builtin methods: `g'x'.int()`, `g'x'.bytes()`  
+Operator `+` has been overloaded and returns `string`.  
 
 
 ### 1.7 Multiline expressions: `if`, `for`, math expr.  
@@ -433,13 +456,33 @@ Some blocks also can have inline version of syntax (controls, sequence of expres
 See more about inline syntax [in next sections](#20-one-line-block---operators).  
 
 
+### 1.9 `const`  
+Var declaration with assignment can be modified by modifier `const`.  
+`const` fixes value and prevent to change it.  
+Attempt to change const element will cause the error.  
+```golang
+const name = 'Vasya'
+const num = 17
+```
+Doesn't make sense to add var type for the constant elem because it will never changed.  
+
+Most useful `const` will be in grup or module vars.  
+```golang
+grup Colors
+    const white = '#ffffff'
+    const black = '#000000'
+    const red = '#ff0000'
+```
+
+
 
 ### 2. Operators.
 
 ### 2.1 Arithmetic operators    
 Arithmetic `+` `-` `*` `/` operators works as usual.  
 `%` - mod operator, returns remainder of division.  
-`**` - pow operator. `2 ** 3` = 8.  
+`**` - pow operator. `2 ** 3` => 8  
+`^/` - root operator. `3 ^/ 8` => 2  
 Math operators is used in math expressions, using braces if need.  
 ```python
 y = 5 + x * -3
@@ -454,7 +497,7 @@ x = -2
 b=100 
 c=4
 d=3
-res = 5 + 6 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8
+res = 5 + 2 ^/ 36 - 7*(b - c * 12 - 15) / 11 + 3 ** d - 0xe * 8
 ```
 ### 2.2 Other unary operators.  
 `!` logical NOT  
@@ -484,7 +527,7 @@ Others, have specific behaviour, and will be explained further:
 . 
 ...
 -x !x ~x 
-** 
+** ^/
 * / % 
 + - 
 << >> 
@@ -997,12 +1040,20 @@ float(1) # 1.0
 bool(5) # true
 string(123) # '123'
 bytes('Hello!') # '0x[48 65 6c 6c 6f 21]'
+glif('A') # g'A'
+regexp('[a-z]+', 'iu') # regexp: re`[a-z]+`ui
 list('Cats') # ['C','a','t','s']
 tuple([1,2,3]) # (1,2,3)
 dict([('a',11), ('b',22)]) # {'a':11, 'b':22}
 ```
 See `tests/test_builtins.py` for more information.  
 
+
+### 4.5 Special types  
+
+- Type `grup` is used for typing vars / struct members only.  
+Vars / member with `grup` type is a kind of aliases, no more.  
+It doesn't have construct or special methods, and can't be instantiated.  
 
 
 ### 5. `if`-statement, `else`
@@ -1045,6 +1096,7 @@ else
     y = x ** 2
     res = 10 * y
 ```
+
 ### 5.2 if-sub-expression
 `if` statement can have sub-expression before condition.  
 Usually it uses for local assignment or initialization that have relation to condition expression only (and maybe to sub-block).  
@@ -1060,6 +1112,25 @@ Inline operator `/:` has less priority than `;` so we have to cover whole `if` e
 ```python
 a = 10; b = 2; (if x = a + 1; x > b /: print(a, b, x))
 ```
+
+### 5.3 result of `if`  
+If the `if`-statement is a last expression of function then sub-expressions of `if` will be resulting expressions.  
+```golang
+func foo(x)
+    if x == 1
+        10
+    else if x == 2
+        n = 10
+        x * n
+    else
+        3 * 10
+
+foo(1) # >> 10
+foo(2) # >> 20
+foo(5) # >> 30
+```
+
+
 See more about [inline control expressions](#20-one-line-block---operators).  
 
 
@@ -1103,6 +1174,7 @@ Left-arrow `<-` operator has several options.
 Here we use left-arrow as an iterative assignment in `for` statement.  
 It looks, like we pick the element from the sequence one-by-one.  
 - Iteration by `iter()` builtin function.  
+See details about `iter` [little later >>](#63-function-iter)
 ```python
 arr = [1,2,3]
 r = 0
@@ -1154,8 +1226,6 @@ for item <- dd
 ('b', 2)
 ```
 
-
-
 ### 6.3 Function `iter()`  
 Function `iter` can be used with several sets of arguments.  
 `iter(start, [last+1 [, step]])`  
@@ -1173,7 +1243,45 @@ iter(1, 5) # >> 1,2,3,4
 iter(1,7,2) # >> 1,3,5
 ```
 
-### 6.4 Keywords `continue`, `break`.  
+
+
+### 6.4 Multi-source iterator in `for`-loop.  
+`for` loop can iterate several sources (collection, iterator, generator) at the same time.  
+```python
+for a, b, c <- src1, src2, src3
+```
+In common case each source produce value for current iteration and assigning operator puts values into variables in the same order, like multiassign `=` does.  
+Count of elements (key : val pairs for `dict`) in all sources should be the same or at least first source should not be longer then any of other.  
+Dictionary produces key and value in this case.  
+Examples.  
+Collections:
+```python
+nums = [1,2,3]
+tt = (11, 22, 33)
+dd = {'a':'aa', 'b':'bb', 'c':'cc'}
+for a, b, k, v <- nums, tt, dd
+    print(a, b, k, v)
+```
+out:
+```
+1 11 a aa
+2 22 b bb
+3 33 c cc
+```
+Iterator or generators:
+```python
+for a, b, c <- iter(3), [21..23], [x * 5 ; x <- [1..3]]
+    print(a, b, c)
+```
+out:
+```
+0 21 5
+1 22 10
+2 23 15
+```
+
+
+### 6.5 Keywords `continue`, `break`.  
 Classic `break` and `continue`.  
 `continue` stops current iteration and goes to next.  
 `break` stops current iteration and whole loop.  
@@ -1810,11 +1918,11 @@ sliced = [x ; x <- src][2:5]
 
 ### 12.2 List comprehension / sequence generator
 Sequence generator (aka list comprehansion) is a shortened syntax (sugar) for making lists by another list or any sourec of sequence.  
-Basic syntax:  
+- Basic syntax:  
 ```python
 [elem; src-expr ;...]
 ```
-Expressions in the generator is divided by `;`.   
+- Expressions in the generator is divided by `;`.   
 Generator has such segments / expressions:  
 Second expression is a loop-iterator with arrow-assignment like `for` statement.  
 ```python
@@ -1823,7 +1931,7 @@ for x <- src
 # the same as
 [...; x <- src]
 ```
-First expression is an element of result.  
+- First expression is an element of result.  
 ```python
 res = []
 for x <- src
@@ -1832,7 +1940,7 @@ for x <- src
 # the same as
 res = [x; x <- src]
 ```
-Generator can have more expressions:
+- Generator can have more expressions:
 ```python
 [  
     elem-expr;       # 1) result element expression ;  
@@ -1843,7 +1951,7 @@ Generator can have more expressions:
 # 2-4 is a generator-block.  
 # 3-4 are optional  
 ```
-Generator should contain at least 2 segments:  
+- Generator should contain at least 2 segments:  
 ```python
 [n; n <- values]
 ```
@@ -1857,7 +1965,7 @@ src = [1..5]
 ]
 >> [101, 303, 505]
 ```
-Generator can have sub-iterations, ie 2-4 is a repeatable part, like:
+- Generator can have sub-iterations, ie 2-4 is a repeatable part, like:
 ```python
 arr1, arr2, arr3 # source lists
 [aa + bb + c ; 
@@ -1865,13 +1973,13 @@ arr1, arr2, arr3 # source lists
     b <- arr2; bb = b * b; 
     c <- arr3; c < 10 ]
 ```
-Next gen-blocks can use values from previous.
+- Next gen-blocks can use values from previous.
 ```python
 [x ; a <- [1..3] ; b <- [10,20]; c <-[400, 500]; 
     x = a + b + c; x % 7 == 0]
 >> [511, 413]
 ```
-Result-expr can see all values from all gen-blocks.
+- Result-expression can see all values from all gen-blocks.
 
 ```python
 # simple
@@ -1894,7 +2002,7 @@ src = [[x, y] ; x <- [5..7]; y <- [1..3]]
 # flatten source, make plane list
 nums = [ x ; sub <- src ; x <- sub]
 ```
-Too long expression can be formatted into multiple lines.
+- Too long expression can be formatted into multiple lines.
 ```python
 # generator: multi-expressions, multiline expression
 nums = [
@@ -1913,17 +2021,32 @@ nums = [
     a + b + c < 1000
 ]
 ```
-Now strings are not a valid native source for comprehansions. But it can be resolve by `tolist()` function.
+- Now strings are not a valid native source for comprehansions. But it can be resolve by `tolist()` function or `list()` constructor.
 ```python
 # list comprehension by converted string
 src = "ABCdef123"
 res = [s+'|'+s ; s <- tolist(src); !(s ?> '123')]
 ```
-
-Here just syntax joke :)  
-But it works, it returns list of lambdas which return generators.  
+- Multi-source expression in arrow-assigning is available here in the same way as in `for`-loop.  
 ```python
-[ x -> [x .. y] ; y <- [1 .. 10]]
+aa = [1,2,3]
+dd = {'a':'aa', 'b':'bb', 'c':'cc'}
+[ (a, k, v) ; a, k, v <- aa, dd ]
+```
+
+_Here just syntax joke :)_  
+```python
+c, d = 1, 5
+rr = [ a -> [a .. b] ; b <- [c .. d]]
+```
+But it works, it returns list of lambdas which return generator.  
+```python
+res = []
+for r <- rr
+    res <- [x; x <- r(0)]
+
+res # >>
+[[0, 1], [0, 1, 2], [0, 1, 2, 3], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5]]
 ```
 
 ### 14. Builtin functions:  
@@ -2689,8 +2812,8 @@ $ py -m run -p "tests" \
 ```
 
 
-### 23. match-statement.  
-`match` keyword  .
+### 23. `match`-statement.  
+- `match` keyword  .
 The `match` statement implements a pattern matching functionality.  
 In the block of `match` we have sub-expressions (`cases`). Each case have its own `pattern` and executable block.  
 If the pattern was matched with the value from `match` statement then executable block will evaluate.  
@@ -2707,7 +2830,7 @@ match n
     _
         default-expr
 ```
-The inline-block operator `/:` separates pattern and sub-block in one-line `case`.  
+- The inline-block operator `/:` separates pattern and sub-block in one-line `case`.  
 ```python
 match n
     pattern /: sub-expression
@@ -2720,17 +2843,39 @@ a, b, r1 = 4, 3, 0
 
 match a
     1  /: r1 = 100 # one-line case block
-    10 /: r1 = 200 # value-pattern
+    10 /: r1 = 200 # value-matching pattern
+
     # var-pattern (no check, just assign a to b)
-    x  /: c = x * 1000 
+    x  /: c = x * 1000 # starting cases sub-block
+        # sub-block continues on next line
         r1 = [c, x]
-    # sub-control
-    20
+    
+    20      # pattern
+        # sub-control
         if a > b
             r1 = 5
+    
+    # default case
     _  /: r1 = -2
 ```
-TODO: Maybe-cases, result from `match` (?)
+
+- In case, if `match` is a last expression in function or control-statement like `if` or `match`, last line in matched `case` is a resulting expression.  
+
+```golang
+
+func foo(x)
+    match x
+        1 /: 101
+        2 /: 202
+        [*] /: 303
+        s::string /: 404
+        _ /: 505
+
+foo(1) # >> 101
+foo([1,2]) # >> 303
+foo('Hello!') # >> 404
+foo(100500) # >> 505
+```
 
 ### 23.2 Matching list and tuple.
 List or tuple can be matched by special collection-patterns. They look similar to regular collections, but have some special features.  
@@ -2748,6 +2893,20 @@ match n
     # tuple
     (3,4,5) /: expr
 ```
+
+Note. Commas in tuple.  
+Empty tuple pattern can have comma or not.  
+Tuple with 1 elem should have comma in the end.  
+```python
+match n:
+    () /: 1 # valid  empty tuple
+    (2,) /: 2 # valid tuple with 1 elem
+    (3) /: 0 # not a tuple, just number in brackets  
+    (:: int) /: 0 # still not a tuple
+    ((5,)) 0 # 1-sub tuple in outer brackets
+```
+
+
 2. Variable in collection `[a,b]`, `(a,b,c)`, named non-constant element.  
     Var in pattern is matched with any element and will be assigned with the value according to position if pattern will be matched.  
     Assigned var can be used in the sub block of current match-case.  
@@ -3105,9 +3264,8 @@ for n <- nn
         A{a: N.e} /: # A{5}
 ```
 
+TODO: Maybe-cases, (?)
 
-
-### 24. Nothing yet
 
 
 ### 25.1 Regular expressions. `re`
@@ -3132,8 +3290,16 @@ re`(group) (?:ignored group)` #// groups
 
 2. Flags.  
 `re`-syntax allows native [(pythons) regexp flags](https://docs.python.org/3/library/re.html#flags): `a,i,L,m,s,u,x`.  
-Flag or flags can be added to pattern right after pattern quotes without white spaces or separators.  
+
+Flag or flags can be added to the pattern right after pattern quotes, like a suffix, without white spaces or separators.  
 Flags set is corresponding to pythons flags of regexp.  
+- a - ASCII only for \w, \W, \b, \B, \d, \D, \s, \S = (?a)   
+- i - ignorecase = (?i)  
+- L - locale, not sure we need it for strings  
+- m - multiline = (?m)  
+- s - dotall, including `\n` = (?s)  
+- u - unicode (default case)  
+- x - verbose, igrored whitespaces, and endline comments `# smth` = (?x)  
 ```golang
 re`pattern`is
 re`pattern`aim
@@ -3145,6 +3311,27 @@ Just put variable on the flags position in the curly brackets (it looks similar 
 flags = 'muL'
 rx = re`pattern`{flags}
 ```
+3. Functional type-constructor is yet one way to make the regexp.  
+It has 2 args.  
+- pattern: string with regexp pattern  
+- flags: string with flags, optional  
+```golang
+rx1 = regexp('Hello, [a-z]+', 'ui')
+rx2 = regexp('Bye, [A-Z][a-z]+')
+```
+
+4. Regexp hat its own type `regexp`.  
+it can be applyed to variable or argument.  
+Also `regexp` type can be used for in type-check operator in conditional expressions or patter-matching.  
+```golang
+rx:regexp = re`Hello\S+`i
+
+if rx :: regexp /: #// code
+
+match rx
+    :: regexp /: #// code
+```
+
 
 Regexp objects have its own set of operators and can be used as a pattern of match-cases (in dev).
 
@@ -3221,6 +3408,84 @@ for s <- split(src, re`[\s/;-]+`)
 
 >> ['<h88>', '<i99>', '<j101>', '<k202>', '<n204>']
 ```
+
+
+### 19.0 Grup
+`grup` (shortening of 'group') is a block that defines sub-space in module.  
+In grup place we can declare and define other things like: varialbes, functions, structs, enums.  
+
+### 19.1 Declaration
+Grup is created by keyword `grup`.  
+```golang
+grup A
+    n = 1
+    func foo(x)
+        x + n
+
+A.foo(10) # >> 11
+```
+
+### 19.2 Nested definitions  
+Things that has been defined  in the `grup` can be used by the grup name over comma like things from imported module or member of struct instance.  
+```golang
+grup G1
+    name = 'Group1'
+    num = 100
+
+    struct A a:int, s:string
+
+    func v:A inf()
+        ~'A: {v.a}, <{v.s}>'
+    
+    func a0()
+        A(0, '')
+
+#// usage
+
+a = G1.a0()
+a1 = G1.A(1, 'Aa')
+
+gg = G1 #// assign grup into var
+gg.a1.inf() # >> 'A: 1, <Aa>'
+
+```
+
+### 19.3 Static content vs instances.
+
+Grup can contain variables and function which can read and change value of variables. It looks similar to field of struct but grup don't have instances instead of struct. All calls of function from grup work with the same variable.  
+
+```golang
+grup A
+    n = 1
+
+    func foo(x)
+        x + n
+
+    func setN(x)
+        A.n = x
+
+A.foo(10) # >> 11
+A.setN(5)
+A.foo(20) # >> 25
+
+```
+
+### 19.4 Sub level of module.
+
+Another aspect is that the `grup` is a named space within module (or grup).  
+So we can separate some related things from other into special named place.  
+```golang
+grup Colors
+    red = '#ff0000'
+    orange = '#ff8800'
+    yellow = 'ffff00'
+    green = '#00ff00'
+    blue = '#0000ff'
+
+print(Colors.green)
+```
+
+Conclusion:  It make sense to use `grup` like a static object, or singleton object, or like a tool fo grouping things with common goals.  
 
 
 

@@ -35,6 +35,25 @@ class CaseReturn(SubCase):
         return base
 
 
+class CaseReturnVal(SubCase):
+    
+    def match(self, elems:list[Elem])-> bool:
+        if len(elems) < 2:
+            return False
+        return isLex(elems[0], Lt.word, 'return')
+    
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        ''' We have to 
+        1. store result of next after return expr
+        2. stop execution next lines'''
+        subs = [elems[1:]]
+        exp = ReturnExpr()
+        return exp, subs
+    
+    def setSub(self, base:ReturnExpr, subs:list[Expression])->Expression:
+        base.setSub(subs[0])
+        return base
+
 
 class CaseBreak(SubCase):
     ''' break '''
@@ -73,6 +92,7 @@ class CaseContinue(SubCase):
         # base.setSub(subs[0])
         return base
 
+_flagsRx = re.compile(r'^[aiLmsux]+$')
 
 class CaseRegexp(SubCase):
     ''' re`pattern`, re'...', re"123"
@@ -88,31 +108,47 @@ class CaseRegexp(SubCase):
         think about:
         re {patternVar} {flagsVar}
     '''
-    
+
     def match(self, elems:list[Elem])-> bool:
         # re`abc`: 2
         # re`abc`imu: 3
         # re`abc`{flags}: 2
+        elen = len(elems)
+        # print('$1>>', elen)
+        if elen < 2:
+            return False
         if not isLex(elems[0], Lt.word, 're'):
             return False
-        elen = len(elems)
-        if elen not in [2,3,5]:
+        if elen < 3:
+            return True
+        # opRx = re.compile(r'^[aiLmsux]+$')
+        opInd = -1
+        if elen == 5:
+            opInd = -2
+        if elems[opInd].type != Lt.word:
             return False
-        res = True
-        if elen > 1:
-            # print('r-match:', Lt.name(elems[1].type), 'len=', elen)
-            # print('r-match:', elemStr(elems, ','))
-            res &= elems[1].type in (Lt.text, Lt.mttext)
-        if res and elen == 3:
-            # if native flags
-            res &= elems[2].type == Lt.word and math.prod([s in 'aiLmsux' for s in elems[2].text])
-        if res and elen > 4:
-            # if flags in var
-            # print('r-match:5len', elemStr(elems, ','))
-            res &= (isLex(elems[2], Lt.oper, '{') 
-                and isLex(elems[4], Lt.oper, '}')
-                and elems[3].type == Lt.word)
-        return res
+        match elen:
+            case 3:
+                return bool(_flagsRx.match(elems[opInd].text))
+            case 5:
+                return True
+        return False
+        
+        # res = True
+        # if elen > 1:
+        #     # print('r-match:', Lt.name(elems[1].type), 'len=', elen)
+        #     # print('r-match:', elemStr(elems, ','))
+        #     res &= elems[1].type in (Lt.text, Lt.mttext)
+        # if res and elen == 3:
+        #     # if native flags
+        #     res &= elems[2].type == Lt.word and math.prod([s in 'aiLmsux' for s in elems[2].text])
+        # if res and elen > 4:
+        #     # if flags in var
+        #     # print('r-match:5len', elemStr(elems, ','))
+        #     res &= (isLex(elems[2], Lt.oper, '{') 
+        #         and isLex(elems[4], Lt.oper, '}')
+        #         and elems[3].type == Lt.word)
+        # return res
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         # elems[0]: re
@@ -135,7 +171,7 @@ class CaseRegexp(SubCase):
         return base
 
 
-class CaseGlif(CaseVal):
+class CaseGlif(CaseNumVal):
     '''
     g'A' , g`E` , g"$"
     '''

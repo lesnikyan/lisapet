@@ -6,7 +6,7 @@ from bases.ntype import *
 from vars import ListVal
 from nodes.expression import Expression, Block, ArgSetOrd, ValExpr
 from context import Context
-from nodes.expression import CallExpr
+from nodes.expression import CallExpr, IfNode
 from nodes.base_oper import AssignExpr
 
 
@@ -156,45 +156,61 @@ class Function(FuncInst):
 
     def checkTailSame(self,  ctx: Context, lastExpr:Expression):
         isTail = False
-        if isinstance(lastExpr, CallExpr):
-            # print('F.do last callExpr', self, 'name:', lastExpr.name)
-            # if method
-            ''
-            lastName = lastExpr.name
-            if self.objInst and lastExpr.name.find('.') > -1:
-                lastName = lastExpr.name.split('.')[-1]
-                # print('Method of', self.objInst, lastName, 'self.getName()', self.getName(), self.getName() == lastName)
+        if not isinstance(lastExpr, CallExpr):
+            return False
+        # print('F.do last callExpr', self, 'obj:', self.objInst, 'name:', lastExpr, lastExpr.name, 'n-don pos:', lastExpr.name.find('.'))
+        # if method
+        ''
+        lastName = lastExpr.name
+        if self.objInst: 
+            if lastExpr.name.find('.') > -1:
+                lastParts = lastExpr.name.split('.')
+                lastName = lastParts[-1]
+                obj = lastParts[0]
+                # print('Method of', self.objInst, lastName, 'self.getName()', self.getName(), self.getName() == lastName, ':',obj)
+                if self.callArgs[0].name != obj:
+                    return False
                 # print('method',' lastName `%s` self.getName() `%s`' % (lastName, self.getName()), self.getName() == lastName)
-            if self.getName() == lastName:
-                rname = lastName
-                rfunc = None
-                # print('same name', rname, rfunc)
-                if self.objInst and isinstance(self.objInst, ObjectInstance):
-                    stype = self.objInst.vtype
-                    rfunc = stype.getMethod(rname)
-                else:
-                    rfunc = self.defCtx.get(rname)
-                if rfunc == self:
-                    # print('-- same fn:', rname, rfunc)
-                    isTail = True
+            else:
+                return False
+        if self.getName() != lastName:
+            return False
+        rname = lastName
+        rfunc = None
+        # print('same name', rname, rfunc)
+        if self.objInst and isinstance(self.objInst, ObjectInstance):
+            # print('F.checkTail', 'structMeth', self.objInst)
+            # for carg in self.callArgs: print(carg)
+            stype = self.objInst.vtype
+            rfunc = stype.getMethod(rname)
+        else:
+            rfunc = self.defCtx.get(rname)
+        if rfunc == self:
+            # print('-- same fn:', rname, 'finsts:', self, rfunc)
+            isTail = True
         return isTail
 
     def do(self, ctx: Context):
         self.res = None
         self.block.storeRes = True # save last expr value
         inCtx = Context(self.defCtx) # inner context, empty new for each call
-        
+        # print('F.do-0', self._name, 'obj:', self.objInst)
         # trying to detect tail recursion
         lastExpr = self.block.subs[-1]
         isTail = self.checkTailSame(ctx, lastExpr)
 
         self.fillArgs(inCtx)
         if isTail:
+            # exit()
             res = self.tailRecur(inCtx)
         else:
             self.block.do(inCtx)
             res = self.block.get()
-        
+        # print('F.do5', self.block.subs[-1])
+        if res is None:
+            # print('F.no res')
+            if isinstance(self.block.subs[-1], IfNode):
+                res = self.block.subs[-1].get()
         # print('Func.do res=', res)
         if isinstance(res, FuncRes):
             res = res.get()
@@ -214,6 +230,10 @@ class Function(FuncInst):
         for arg in self.argVars:
             args.append('%s' % arg.name)
         return 'func %s(%s)' % (self._name, ', '.join(args))
+
+
+class Method(Function):
+    ''' Instance of structs method '''
 
 
 class ResursionLoop(Block):

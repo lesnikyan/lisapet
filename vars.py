@@ -203,10 +203,14 @@ class ListVal(Collection):
     def vals(self):
         r = []
         for n in self.elems:
-            if isinstance(n, (FuncInst, ObjectInstance)):
+            if isinstance(n, (FuncInst, ObjectInstance, Regexp)):
                 r.append(n)
                 continue
-            r.append(n.get())
+            # print('$5', n)
+            nv = n
+            if not isinstance(n, (Space)):
+                nv = n.get()
+            r.append(nv)
         return r
         # return [(n.get()) for n in self.elems]
         # return [(n.get() if not isinstance(n, Collection) else n.vals()) for n in self.elems]
@@ -248,7 +252,7 @@ class TupleVal(Collection):
         return len(self.elems)
     
     def get(self):
-        return tuple([n.get() for n in self.elems])
+        return tuple(n.get() for n in self.elems)
         # return tuple(self.elems)
 
     def addVal(self, val:Val):
@@ -315,9 +319,10 @@ class DictVal(Collection):
     
     def getElem(self, key:Val):
         k = key.getVal()
+        # print('dict get k=', k, key)
         if k in self.data:
             return self.data[k]
-        raise EvalErr('List out of range by key %s ' % k)
+        raise EvalErr('Dict doesn"t have the key %s ' % k)
     
     def get(self):
         return  self.vals() # debug
@@ -327,11 +332,12 @@ class DictVal(Collection):
 
     def has(self, key:Val):
         k = key.getVal()
+        # print('dict has', key, k)
         return k in self.data
 
     def setVal(self, key:Val, val:Val):
         # k = self.inKey(key)
-        self.data[key.get()] = val
+        self.data[key.getVal()] = val
 
     def keys(self) -> ListVal:
         kk = [dkeyCover(k) for k in self.data.keys()]
@@ -399,7 +405,7 @@ def strShiftArgs(src, opts=None):
         match n.getType():
             case TypeGlif():
                 v = n.get().val
-                if op in 'dxXo':
+                if op in 'dbxXo':
                     v = ord(v)
             case _:
                 v = n.getVal()
@@ -499,6 +505,9 @@ class Regexp(Val):
             rvals.append(ListVal(elems=[StringVal(s) for s in grval]))
         return ListVal(elems=rvals)
 
+    def __str__(self):
+        return 're`%s`' %(self.pattern.pattern)
+
 
 class EnumItem(Val):
     def __init__(self, name, val):
@@ -589,9 +598,10 @@ class Thing(Maybe):
     def has(self, val:Val):
         return self.val == val
 
+vt_01 = (Val, Collection, StringVal, Regexp)
 
 def valFrom(src:Var|Val):
-    if isinstance(src, (Val, Collection, StringVal, Regexp)):
+    if isinstance(src, vt_01):
         return src
     if isinstance(src, (Var)):
         return src.get()
@@ -603,6 +613,9 @@ def isBaseTypeMember(var):
     return isinstance(var, ObjectElem) and not isinstance(var.getInst(), ObjectInstance)
         
 
+vt_02 = (Val, Collection, Regexp, StringVal, FuncInst)
+vt_03 = (Val, Collection, ObjectInstance, BytesVal, FuncInst)
+
 def var2val(var:Var|Val):
     ''' Convert Var to Val instance  '''
     # print('var2val 1 :', var, type(var), var.__class__)
@@ -610,10 +623,10 @@ def var2val(var:Var|Val):
     
     if isinstance(var, (ObjectElem)):
         var = var.get()
-    if isinstance(var, (Val, Collection, Regexp, StringVal, FuncInst)):
+    if isinstance(var, vt_02):
         return var
     val = var.getVal()
-    if isinstance(val, (Val, Collection, ObjectInstance, BytesVal, FuncInst)):
+    if isinstance(val, vt_03):
         return val
     tp = var.getType()
     return Val(val, tp)

@@ -26,6 +26,7 @@ from libs.regexp import *
 from nodes.func_features import *
 
 
+import cProfile as prof
 import pdb
 
 
@@ -37,11 +38,38 @@ class TestDev(TestCase):
   _<-od
  (+a)(-b)
         
-    # features for for `enum` - not sure
-        TODO: Enum.name(11)
-        TODO: Enum.value(name)
-        TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
-        TODO: 22 ?> Enum # after methods
+        
+        
+         
+        DONE: const value
+            const x: int = 10
+        
+        DONE: if conditional expr is a last node of function then
+            last executed expression (sub-part of conditional) should be a result of function
+        func foo()
+            if cond
+                ...
+                expr1 # result
+            else if cond
+                expr2 # result
+            else
+                expr3 # result
+        func foo()
+            match n
+                1 /: 10 # result
+                2
+                    20 # result
+                a :: type
+                    b = f(a)
+                    b + 30 # result
+                _
+                    50 # default result
+
+        # (?) features for `enum` - not sure
+            TODO: Enum.name(11)
+            TODO: Enum.value(name)
+            TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
+            TODO: 22 ?> Enum # after methods
 
         TODO:? add shorten alias for the struct: stru A a:int
             shorten of string: name:strn
@@ -58,7 +86,7 @@ class TestDev(TestCase):
             x = &01; 8xff; 8b100; &0xff; |xf0; 8d255
             0xff; 0b10000001
         
-        TODO: (?) bytes oper shift: bb << 4; bb >> 8 # no extend size
+        TODO: (?) bytes 0x[01 02 0f] oper shift: bb << 4; bb >> 8 # no extend size
         
         TODO:? class Null() -> class Null(Val)
         
@@ -69,6 +97,22 @@ class TestDev(TestCase):
             foo(1,2, :...)
             foo(1,2, |...)
             foo(1,2, /...)
+            Thoughts: lokos like curried function can do the same;
+            func foo(a,b,c)...
+            f = foo(1, 2); f(3) ;; g = foo(1); g(2, 3) # partial call
+            f = foo~>(1)(2); f(3) ;; g = foo~>(1); g(2)(3)
+        
+        
+        TODO (?): put - inherit / include / mixin of a grup into an another grup
+            grup Auch
+                x = 1
+            
+            grup Boo
+                put Auch # copy and place here all things from Auch
+            
+            # not sure, maybe simple encapsulating will be enough:
+            grup Boo
+                au = Auch
         
         TODO: 
             think about escapes in triple-backticks strings
@@ -96,6 +140,10 @@ class TestDev(TestCase):
                     2) child method will add and shoud find func by signature in all parent tree or
                     3) disallow override overloaded func name
         
+        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
+        
+        TODO: error of composition of functions with more than 1 arg
+        
         TODO: tail recursion:
         1) tail optimization by func name, during interpretation (before add to ctx)
         2) extend tail-recur case for earlier returns - not sure 
@@ -103,43 +151,16 @@ class TestDev(TestCase):
         TODO:? var type in for-loop 
             for n:int <- nn
 
-        TODO: think about type casting by colon; type in left
+        TODO:not. think about type casting by colon; type in left
             x:int = int: true
-        
-        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
-        TODO: error of composition of functions with more than 1 arg
-
-        TODO: 21.1 Multi-reading in loop:
-            put at right part one more collections, so assign more var in left: 
-            aa = [1,2,3]
-            dd = {11:1, 22:2, 33:3}
-            for i, x, key, val <- iter(3), aa, dd
-        
-        TODO: group - static block for set of const vals and functions. 
-            Like extended enum and struct
-                print(i, x, key, val)
-        
-        BUG: Sequence  match and split if brackets in quotes: (1, '[', ']')
+            # type-constructor is enough 
         
         TODO: add assertion to cases in test_lists
         
-        TODO: refactor tree.py from loops of cases to pattern-tree
-        1) find common cases:
-            solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, single control-keywords, var, val, 
-            no-solid -> definitions, control-statements, bin-opers, 
-        2) dive into sub-cases
-        2.2) refactor list-like expressions to avoid multiple check items in []-brackets
-            first check solid []-case, then find case in []-cases:
-            list, slice, iter-gen, list-gen, bytes
+        TODO: think about import native lib / module into LP code.
+            eval.py: importLib('math', math)
+            code.et: import python.math
         
-        
-        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
-        
-        TODO: root, square root operator, the same precedence as **
-            |/ _/ -/ */ ~* ^* ^/  3^/8 
-            -/4 # 2;  3-/ 8 # 2
-            */4 # 2;  3*/ 8 # 2
-            
         TODO: math functions:
             log(x, base), ln(x), lg(x),
             abs(), sum(list), prod(list), rem(a, b)->>(int, int)
@@ -147,28 +168,51 @@ class TestDev(TestCase):
             ceil(), floor(), round()
         
         TODO: bytes.replace({old:new,...}) # replace by table in dict, overloading replace
+        
         TODO: string.replace({dict}) # check, implement if not
         
         TODO: fix print(bool): should be false, true, instead of False, True
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
-        TODO: think about performance, decreased after \lambda changes.
+
+        
+        TODO: think about special type for methods. 
+            It can simplify check of tail recursion for case with similar names
+            maybe )
+        
+        TODO: check and optimize if need Function.checkTail process
+         
+
+        DONE: 21.1 Multi-reading in loop:
+            put at right part one more collections, so assign more var in left: 
+            aa = [1,2,3]
+            dd = {11:1, 22:2, 33:3}
+            for i, x, key, val <- iter(3), aa, dd
+                print(i, x, key, val)
+        
+        DONE: 21.2 Mult-reading in list-gen:
+            [ x + y ; x, y <- nn, mm]
+        
+        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        
+        TODO: dict-gen
+            dict2 = { k: v + 10 ; k, v <- dict1; v > 0 && k != ''}
     '''
 
     _ = r"""
 # guides
-
+res = []
 
 """
 
 
-
+    
+    
     def _test_code(self):
         ''' '''
         code = r'''
         res = []
-        
         
         # print('res = ', res)
         '''
@@ -183,6 +227,7 @@ class TestDev(TestCase):
         print(resv)
         exv = []
         # self.assertEqual(exv, resv)
+        
 
 
     def _test_match_last_expr_of_case_as_result(self):

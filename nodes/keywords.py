@@ -84,6 +84,7 @@ class RegexpExpr(Expression):
         rule = compile(self.pattern, numFlags)
         self.rule = Regexp(rule)
 
-
     def get(self) -> Regexp:
         return self.rule
+
+

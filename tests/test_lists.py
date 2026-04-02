@@ -20,6 +20,54 @@ class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
 
+    def test__listgen_with_multisource(self):
+        '''Multi-source in list-generator
+            [expr ; a, b, c <- s1, s2, s3 ] '''
+        code = r'''
+        res = []
+        
+        # list, tuple
+        aa = [1,2,3]
+        bb = [5,6,7]
+        tt = ('A', 'B', 'C')
+        r1 = []
+        r1 = [{c:(a,b)} ; a, b, c <- aa, bb, tt]
+        res <- r1
+        
+        # iter-gen, dict
+        dd = {'a':'aaa', 'b':'bbb', 'c':'ccc'}
+        r2 = [ ~'{a}:({k},{v})'; a, k, v <- [1 .. len(dd.keys()) ], dd ]
+        res <- r2
+        
+        # index-gen, slice
+        aa = [11, 22, 33, 44, 55, 66, 77]
+        r3 = [(i + 10, x) ; i, x <- iter(3), aa[1:4]]
+        res <- r3
+        
+        # strings
+        s1 = 'RGB'
+        s2 = 'red green blue'
+        r4 = [ ~'{b}:{c}' ; b, c <- list(s1), s2.split(' ') ]
+        res <- r4
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [{'A': (1, 5)}, {'B': (2, 6)}, {'C': (3, 7)}], 
+            ['1:(a,aaa)', '2:(b,bbb)', '3:(c,ccc)'], 
+            [(10, 22), (11, 33), (12, 44)],
+            ['R:red', 'G:green', 'B:blue']]
+        self.assertEqual(exv, resv)
+
     def test_triple_dots_unpack_to_args(self):
         ''' '''
         code = r'''

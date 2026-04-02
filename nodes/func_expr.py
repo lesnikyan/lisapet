@@ -7,7 +7,7 @@ from nodes.expression import *
 from nodes.keywords import *
 from nodes.base_oper import AssignExpr
 from nodes.oper_dot import ObjectMember
-from objects.func import Function, ObjMethod
+from objects.func import Function, Method, ObjMethod
 
 import inspect
 
@@ -138,7 +138,7 @@ class FuncCallExpr(CallExpr):
     def do(self, ctx: Context):
         func, args, named = self.takeFunc(ctx)
         self.func = func
-        # print('#3# func-call do05: ', self.name, 'F:', func)
+        # print('#3# func-call do05: ', self.name, 'F:', func, args)
         # print('#2# func-call do02: ', self.name, 'F:', self.func, 'line:', self.src)
         # print('F.call.do/1', func, args, named)
         self.func.setArgVals(args, named)
@@ -379,7 +379,7 @@ class MethodDefExpr(FuncDefExpr):
         self.instExpr = exp.getTypedVar()
 
     def doFunc(self, ctx):
-        func = Function(self.name)
+        func = Method(self.name)
         self.instExpr.do(ctx)
         inst = self.instExpr.get()
         # dprint('MethodDefExpr.doFunc', inst, self.name)

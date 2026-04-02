@@ -30,6 +30,428 @@ from tests.utils import *
 class TestControl(TestCase):
 
 
+    def test_for_multisource_gen(self):
+        ''' test fix for iter-gen and list-expression in for-loop '''
+        code = r'''
+        res = []
+        
+        
+        # iter-gen, list-expr
+        
+        r1 = []
+        # aa = [11,22,33,44]
+        for a, b <- [101..104], [11,22,33,44]
+            r1 <- (a,b)
+        res <- r1
+        
+        # index-gen, iter-gen
+        r2 = []
+        for a, b <- iter(5), [21..25]
+            r2 <- (a, b)
+        res <- r2
+        
+        # iter-gen, list-get
+        r3 = []
+        for a, b <- [1..5], [x ; x <- [11..15]]
+            r3 <- (a, b)
+        res <- r3
+        
+        # function results
+        func foo(n)
+            [1 .. n]
+        
+        func bar(s, sep)
+            s.split(sep)
+        
+        r4 = []
+        for a, b <- foo(3), bar('aa, bb, cc,', ' ')
+            r4 <- (a, b)
+        res <- r4
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [(101, 11), (102, 22), (103, 33), (104, 44)], 
+            [(0, 21), (1, 22), (2, 23), (3, 24), (4, 25)], 
+            [(1, 11), (2, 12), (3, 13), (4, 14), (5, 15)],
+            [(1, 'aa,'), (2, 'bb,'), (3, 'cc,')]]
+        self.assertEqual(exv, resv)
+        
+    def test_for_loop_multisource(self):
+        ''' Iterating by several collection sources.
+            for a, b, c <- s1, s2, s3  '''
+        code = r'''
+        res = []
+        
+        # 2 lists
+        nn = [1,2,3,4,5]
+        mm = [10, 20, 30, 40, 50]
+        
+        rr = []
+        for x, y <- nn, mm
+            rr <- (~'{x}+{y}', x + y)
+        res <- rr
+        
+        # 3 lists
+        
+        aa = [1,2,3]
+        bb = [4,5,6]
+        cc = [7,8,9]
+        r2 = []
+        for x, y, z <- aa, bb, cc
+            r2 <- (x, y, z)
+        res <- r2
+        
+        # 5 lists
+        a1 = [1,2,3,4]
+        a2 = [11,22,33,44]
+        a3 = [5,6,7,8]
+        a4 = [55,66,77,88]
+        a5 = [10, 20, 30, 40]
+        r3 = []
+        for q, w, e, r, t <- a1, a2, a3, a4, a5
+            r3 <- (q,w,e,r,t)
+        res <- r3
+        
+        # list, tuple
+        
+        aa = [1,2,3,4,5]
+        tt = ('a','b','c','d','e')
+        r4 = []
+        for a, t <- aa, tt
+            r4 <- (a, t)
+        res <- r4
+        
+        # list, dict
+        
+        aa = [1,2,3,4,5]
+        dd = {'a':'aaa', 'b':'bbb', 'c':'ccc', 'd':'ddd', 'e':'eee'}
+        r5 = []
+        for x, k, v <- aa, dd
+            r5 <- (x, k, v)
+        res <- r5
+        
+        # list, tuple, dict
+        aa = [1,2,3]
+        tt = ('A','B','C')
+        dd = {'aa':111, 'bb':222, 'cc':333}
+        r6 = []
+        for a, t, k, v <- aa, tt, dd
+            r6 <- (a, t, k, v)
+        res <- r6
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [('1+10', 11), ('2+20', 22), ('3+30', 33), ('4+40', 44), ('5+50', 55)], 
+            [(1, 4, 7), (2, 5, 8), (3, 6, 9)], 
+            [(1, 11, 5, 55, 10), (2, 22, 6, 66, 20), (3, 33, 7, 77, 30), (4, 44, 8, 88, 40)], 
+            [(1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e')], 
+            [(1, 'a', 'aaa'), (2, 'b', 'bbb'), (3, 'c', 'ccc'), (4, 'd', 'ddd'), (5, 'e', 'eee')], 
+            [(1, 'A', 'aa', 111), (2, 'B', 'bb', 222), (3, 'C', 'cc', 333)]]
+        self.assertEqual(exv, resv)
+
+    def test_match_result(self):
+        ''' match-statement return result in the end of function '''
+        code = r'''
+        res = []
+        
+        func foo(x)
+            match x
+                1 /: 101
+                2 /: 202
+                :: int /: (300, x)
+                :: float /: (400, x)
+                [*] /: (500, len(x), x)
+                s::string /: ('string', s)
+                _ /: -11111
+        
+        ss = [0, 1, 1.2, [], [1,2,3], (1,2), {}, 's1']
+        
+        res <- 'foo'
+        res <- foo(2)
+        
+        for n <- ss
+            res <- foo(n)
+        
+        # nested control-tails
+        
+        # match-other
+        func foo2(x, y)
+            match x
+                1
+                    if y == 1
+                        101
+                    else if y  == 2
+                        102
+                    else
+                        103
+                2
+                    match y
+                        1 /: 201
+                        2 /: 202
+                        :: int /: ('m-int', x, y)
+                        :: float /: ('m-float', x, y)
+                        _ /: ('_', x, y)
+                _
+                    if x == y
+                        (301, x, y)
+                    else
+                        (302, x, y)
+        
+        res <- 'foo2'
+        res <- foo2(1,1)
+        
+        ss2 = [
+            (1,2), (1,6), 
+            (2,1), (2,2), (2,5), (2, 3.5), (2, [12,34]), 
+            (3,1), (3,3), 
+            (0,1), (0,0)]
+        
+        for a, b <- ss2
+            res <- foo2(a, b)
+        
+        # if-other
+        
+        func foo3(x, y)
+            if x == 1
+                match y
+                    1 /: (101, x, y)
+                    2 /: (102, x, y)
+                    _ /: (104, x, y)
+            else if x > 5
+                match y
+                    :: int /: ('6-int', x, y)
+                    :: float /: ('6-float', x, y)
+                    :: list /: ('6-list', x, y)
+                    _ /: ('_', x, y)
+            else if x  < 0
+                match y
+                    :: tuple /: ('/tuple', x, y)
+                    :: dict /: ('/dict', x, y)
+            else
+                match y
+                    1 /: (401, x, y)
+                    :: int /: (402, x, y)
+                    _ /: (403, x, y)
+            # end of func
+        
+        res <- 'foo3'
+        ss3 = [
+            (1,1), (1,2), (1,5),
+            (6,1), (7, 2.5), (8, []), (9, [1,2]), (10, {1:1}), 
+            (-1, 1), (-2, (,)), (-3, (1,2)), (-4, {}), (-5, {2:22}), 
+            (0, 1), (2, 2), (3, 3), (3, null), (3, true), (3, {}), 
+        ]
+        for a, b <- ss3
+            res <- foo3(a, b)
+        
+        # deep match
+        
+        func foo4(a, b, c, d, e, f)
+            match a
+                1 /: 101
+                _ 
+                    match b
+                        1 /: 201
+                        _
+                            match c
+                                1 /: 301
+                                _
+                                    match d
+                                        1 /: 401
+                                        _
+                                            match e
+                                                1 /: 501
+                                                _
+                                                    match f
+                                                        1 /: 601
+                                                        2 /: 602
+                                                        _ /: ('f', f)
+            #...
+        
+        ss4 = [
+            (1,1,1,1,1,1),
+            (2,1,1,1,1,1),
+            (2,2,1,1,1,1),
+            (2,2,2,1,1,1),
+            (2,2,2,2,1,1),
+            (2,2,2,2,2,1),
+            (2,2,2,2,2,2),
+            (2,2,2,2,2,3),
+        ]
+        
+        res <- 'foo4'
+        for args <- ss4
+            res <- foo4(args...)
+        
+        # not last control
+        
+        func foo5(x)
+            if x == 1
+                return 1001
+            else 
+                2
+            3003
+        
+        res <- foo5(1)
+        res <- foo5(2)
+        res <- foo5(100)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            'foo', 202, (300, 0), 101, (400, 1.2), (500, 0, []), (500, 3, [1, 2, 3]), 
+            -11111, -11111, ('string', 's1'), 
+            'foo2', 101, 102, 103, 201, 202, ('m-int', 2, 5), ('m-float', 2, 3.5), 
+            ('_', 2, [12, 34]), (302, 3, 1), (301, 3, 3), (302, 0, 1), (301, 0, 0), 
+            'foo3', (101, 1, 1), (102, 1, 2), (104, 1, 5), 
+            ('6-int', 6, 1), ('6-float', 7, 2.5), 
+            ('6-list', 8, []), ('6-list', 9, [1, 2]), ('_', 10, {1: 1}), null, 
+            ('/tuple', -2, ()), ('/tuple', -3, (1, 2)), ('/dict', -4, {}), ('/dict', -5, {2: 22}), 
+            (401, 0, 1), (402, 2, 2), (402, 3, 3), (403, 3, null), (403, 3, True), (403, 3, {}),
+            'foo4', 101, 201, 301, 401, 501, 601, 602, ('f', 3),
+            1001, 3003, 3003]
+        self.assertEqual(exv, resv)
+    
+    def test_if_result(self):
+        ''' `if` as a last expression of function returns result '''
+        code = r'''
+        res = []
+        
+        func foo(x)
+            if x == 1
+                n = 8
+                n + 2
+            else if x == 2
+                20
+            else
+                3 * 10
+        
+        r1 = foo(1)
+        res <- r1
+        
+        res <- foo(2)
+        res <- foo(5)
+        
+        # nested if
+        
+        func foo2(x, y)
+            if x == 1
+                if y == 1
+                    11
+                else
+                    12
+            else if x == 2
+                if y  == 1
+                    21
+                else if y == 2
+                    22
+                else
+                    23
+            else if x == 3
+                30
+            else
+                50
+
+        res <- 'foo2'
+        res <- foo2(1,1)
+        res <- foo2(1,3)
+        res <- foo2(2,1)
+        res <- foo2(2,2)
+        res <- foo2(2,6)
+        res <- foo2(3,100)
+        res <- foo2(4,200)
+        
+        # deep nesting
+        
+        func foo3(x)
+            if x > 1
+                if x > 2
+                    if x > 3
+                        if x > 4
+                            if x > 5
+                                10
+                            else
+                                5
+                        else
+                            4
+                    else
+                        3
+                else
+                    2
+            else
+                1
+            # end of function
+        
+        res <- 'foo3'
+        res <- foo3(1)
+        res <- foo3(2)
+        res <- foo3(3)
+        res <- foo3(4)
+        res <- foo3(5)
+        res <- foo3(6)
+
+        # in method
+        
+        struct A a:int
+        
+        func n:A f()
+            if n.a == 1
+                11
+            else if n.a == 2
+                22
+            else
+                33
+        
+        res <- 'A.f'
+        
+        a1 = A(1)
+        res <- a1.f()
+        
+        a2 = A(2)
+        res <- a2.f()
+        
+        a3 = A(12)
+        res <- a3.f()
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [10, 20, 30, 'foo2', 11, 12, 21, 22, 23, 30, 50, 'foo3', 1, 2, 3, 4, 5, 10, 'A.f', 11, 22, 33]
+        self.assertEqual(exv, resv)
+
     def test_for_arrow_multival(self):
         ''' test arrow-assign `a <- b` 
             unpack and multiassign if several vars in left: a,b,c <- data

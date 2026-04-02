@@ -14,24 +14,24 @@ oper group replacement:
 
 
 
+_hexType = [Lt.word, Lt.num]
+rxHex = re.compile(r'[0-9a-f]+', flags=re.I)
 
 def isHexBytes(elems:list[Elem]):
-    rx = re.compile(r'[0-9a-f]+', flags=re.I)
     if len(elems) < 2:
         return False
-    xtype = [Lt.word, Lt.num]
     for el in elems:
-        if el.type not in xtype or not rx.match(el.text):
+        if el.type not in _hexType or not rxHex.match(el.text):
             return False
     return True
 
-operPrior = ('( ) [ ] { } , . , ~> , ... , -x ! ~ , ** , * / % , + - ,'
+
+operPrior = ('( ) [ ] { } , . , ~> , ... , -x ! ~ , ** ^/ , * / % , + - ,'
 ' << >> , =~ ?~ /~, < <= > >= !> ?> !?>, == != , &, ^ , | , ::, && , || , \\ , ->, $, ?: , : , ?, `1`, .. , <- , = += -= *= /= %= , ; , !: :? => , /: ')
 
-unaryOperators = '- ! ~'.split(' ')
+unaryOperators = '- ! ~ +'.split(' ')
 
-SPEC_WORDS = 'for while if else func type def struct var match case'.split(' ')
-
+SPEC_WORDS = 'func if for while match enum struct else import return'.split(' ')
 
 def getOperPriors():
     return [raw.replace('`1`', ',') for raw in operPrior.split(',')]
@@ -102,7 +102,14 @@ def elemStr(elems:list[Elem], delim=' '):
     # dprint('debug elemStr', elems)
     return delim.join([ee.text for ee in elems])
 
+_rArrCh = '->'
+_commaCh = ','
+
+
 class OperSplitter:
+    
+    __politon = {}
+    
     def __init__(self, priors=None):
         priorSrc = operPrior
         self.defPrior = True
@@ -113,9 +120,32 @@ class OperSplitter:
         priorGroups = [raw.replace('`1`', ',') for raw in priorSrc.split(',')]
         self.priorGroups = [[ n for n in g.split(' ') if n.strip()] for g in priorGroups]
         self.opers = [oper for nn in self.priorGroups[:] for oper in nn]
+        self.unarIndex = -111
+        if self.defPrior:
+            self.unarIndex = [gi for gi in range(len(self.priorGroups)) if '-x' in self.priorGroups[gi]].pop()
+            
+        self.brbr = ('([{',
+                ')]}')
+        self.backAssoc = ['/:']
+
+    @classmethod
+    def getInst(cl, priors=None):
+        # print('getInst', priors)
+        key = 0
+        if key is None:
+            priors = None
+        else:
+            key = priors
+        inst = None
+        if key not in cl.__politon:
+            inst = OperSplitter(priors)
+            cl.__politon[key] = inst
+        else:
+            inst = cl.__politon[key]
+        return inst
 
 
-    def mainOper(self, elems:list[Elem])-> int:
+    def mainOper(self, elems:list[Elem], lesser=None)-> int:
         '''
         Find the main operator in the string.
         First operator with lowest priority from the end will be returned.
@@ -123,40 +153,45 @@ class OperSplitter:
         or || for logical expressions. 
         '''
         
-        # print('OperSplitter #a51:', [n.text for n in elems])
-        # src = elemStr(elems)
-        lowesPrior = len(self.priorGroups) - 1
-        obr='([{'
-        cbr = ')]}'
-        leftOfRarr = False # [\] word [, word]
-        backAssoc = ['/:']
-        unarIndex = -111
-        if self.defPrior:
-            unarIndex = [gi for gi in range(len(self.priorGroups)) if '-x' in self.priorGroups[gi]].pop()
         # print('u-unar', unarIndex, self.priorGroups[unarIndex])
         # print('~- OperSplitter', len(elems))
         # prels('~~ OperSplitter', elems, show=1)
-        if len(elems) < 2:
-            return -1
+        
         lem = len(elems)
-        if lem == 0:
-            return -1 # empty input
-        for prior in range(lowesPrior, -1, -1):
+        if lem < 2:
+            return -1
+        
+        lowestPrior = len(self.priorGroups) - 1
+        leftOfRarr = False # [\] word [, word]
+        passed = False
+        
+        for prior in range(lowestPrior, -1, -1):
+            if lesser is not None:
+                if passed:
+                    # It means that the expected operator hasn't been found
+                    # print('~')
+                    return -1
+                if lesser in self.priorGroups[prior]:
+                    passed = True
             curPos = lem
-            obr='([{'
-            cbr = ')]}'
+            # obr='([{'
+            # cbr = ')]}'
+            cbrInd = 1
+            obrInd = 0
             # if len(self.priorGroups) < 500:
             #     print('prior=', prior, self.priorGroups[prior] )
             step = -1
             elIter = range(lem - 1, -1, -1)
-            if self.priorGroups[prior][0] in backAssoc:
+            if self.priorGroups[prior][0] in self.backAssoc:
                 # means that all opers in group have the same direction of assoc
                 # print('OperSplitter. back-assoc', self.priorGroups[prior])
                 step = 1
                 curPos = -1
                 elIter = range(0, lem)
-                cbr='([{'
-                obr = ')]}'
+                # cbr='([{'
+                # obr = ')]}'
+                cbrInd = 0
+                obrInd = 1
             inBrs = [] # brackets which was opened from behind
             # print('$prior: ', self.priorGroups[prior])
             leftOfRarr = False
@@ -172,22 +207,23 @@ class OperSplitter:
                 
                 # counting brackets from tne end, closed is first
                 # dprint('ue:', i, ':', etx, '>>', '`'.join(inBrs))
-                if etx and etx in cbr:
+                # if etx and (etx in cbr):
+                if etx and (etx in self.brbr[cbrInd]):
                     inBrs.append(etx)
                     # print('inbr append: ', '>>', inBrs)
                     continue
-                if etx and etx in obr:
-                    if len(inBrs):
-                        last = inBrs.pop()
-                        # print('inbr pop: ',last, '>>', inBrs)
-                    # dprint(' << ', etx, last)
+                lebr = len(inBrs)
+                if etx and (etx in self.brbr[obrInd]):
+                    if lebr:
+                        last = inBrs.pop() # change br stack
+                        lebr = len(inBrs)
                     if i == 0 and etx in self.priorGroups[prior]:
                         # print('end of prior / open', obr)
                         return 0
                     continue
                 # print('@#', etx, 'br:', inBrs)
                     # TODO: check equality of brackets pairs (not actual for valid code, because [(]) is invalid )
-                if len(inBrs) > 0:
+                if lebr > 0:
                     continue
                 # if self.priorGroups[prior][0] in backAssoc:
                     # print('>>>>>>>> DEBUG 1')
@@ -197,19 +233,20 @@ class OperSplitter:
                     continue
 
                 if leftOfRarr:
-                    if el.text != ',' and i > 0:
+                    if el.text != _commaCh and i > 0:
                         leftOfRarr = False
                     else:
                         continue
-                if el.text == '->':
+                if el.text == _rArrCh:
                     leftOfRarr = True
 
-                if el.text in ['-', '+', '!', '~']:
-                    if i > 0 and elems[i-1].type == Lt.oper and elems[i-1].text not in ')]}':
+                # if el.text in ['-', '+', '!', '~']:
+                if el.text in unaryOperators:
+                    if i > 0 and elems[i-1].type == Lt.oper and elems[i-1].text not in self.brbr[1]:
                         # unary case found, skip current pos
                         # print(' >> == unary case found:', i, el.text)
                         continue
-                    if i == 0 and prior != unarIndex:
+                    if i == 0 and prior != self.unarIndex:
                         # print(' >> == unary case in 0:', i, el.text)
                         continue
                 if el.text in self.priorGroups[prior]:
@@ -218,7 +255,7 @@ class OperSplitter:
 
                     return curPos # The main Result
         if isLex(elems[0], Lt.oper, unaryOperators):
-            # dprint('oper-found> unary [0 : %s]' % elems[0].text ) 
+            # print('oper-found> unary [0 : %s]' % elems[0].text ) 
             return 0
         return -1 # debug output, won't happened in real case
 
@@ -226,76 +263,104 @@ class OperSplitter:
 
 def flatOpers():
     opers = getOperPriors()[4:]
+    # print(opers)
     fopers = []
     for oops in opers:
         # print(oops.split(' '))
         fopers.extend([n for n in oops.split(' ') if n and  n not in ' .'])
     return fopers
 
+
 _noSolidOpers = flatOpers()
 
-_keyWords = (
-    'if else while for match func struct import @debug'
-).split(' ')
 
-def isSolidExpr(elems:list[Elem], getLast=None):
+KEYWORDS_R = {n:0 for n in ['func','if','else','for','return','struct','match','enum','while','import', 'grup']}
+KEYR_RX = re.compile('func|if|for|while|match|enum|grup|struct|else|import|return|const')
+rSolOpers = ['.','~>', '...']
+_bpairs = {'(':')', '[':']', '{':'}'}
+_rob = list('}])')
+_rcb = list('([{')
+_operandTypes = [Lt.word, Lt.text, Lt.num]
+
+
+def isSolidExpr(elems:list[Elem], getLast=None, skipKeywords = False):
     ''' single varName or chain of fields, subelem, call 
     
         getLast - get pos of lastsubpart like word after dot, brackets
     '''
-    # print('isSolid #1', elemStr(elems))
+    # print('isSolid #1', elemStr(elems), '', len(elems))
     elen = len(elems)
     if elen == 0:
-        return False
+        return False, -1
     
-    if elen == 1 and elems[0].type in [Lt.word, Lt.text, Lt.num]:
-        return True
-    
-    # print('isSolid #2', f"<{elems[0].text}>", elems[0].text in _keyWords)
-    if elems[0].type == Lt.word and elems[0].text in _keyWords:
-        return False
+    if elen == 1 and elems[0].type in _operandTypes:
+        return True, 0
+    # print('%')
+    # print('isSolid #2', f"<{elems[0].text}>", elems[0].text in KEYWORDS_R)
+    if not skipKeywords and  elems[0].type == Lt.word:
+        if KEYR_RX.match(elems[0].text):
+        # if elems[0].text in KEYWORDS_R:
+            return False, -1
     
     if isHexBytes(elems):
-        return False
+        return False, -1
 
     fopers = _noSolidOpers
     # print('solid-fopers', fopers)
     opened = [] # brackets openede from right
-    # cbr = []
-    rob = list('}])')
-    rcb = list('([{')
-    bpairs = {'(':')', '[':']', '{':'}'}
+    # # cbr = []
+    # rob = list('}])')
+    # rcb = list('([{')
     # print('ss:', end=' ')
+    found = -1
     for i in range(elen-1, -1, -1):
         el = elems[i]
         etx = el.text
         # print('=>', '', etx, end=' ')
-        et = el.type
-        if isLex(el, Lt.oper, rob):
+        # print('=>', '', etx)
+        # et = el.type
+        if isLex(el, Lt.oper, _rob):
             # open brackets from right
             opened.append(el.text)
             continue
-        if isLex(el, Lt.oper, rcb):
+        if isLex(el, Lt.oper, _rcb):
             # close brackets
             if len(opened) == 0:
                 # posibly multiline expr
                 # print('No-solid?', len(opened))
-                return False
+                return False, -1
             lastObr = opened.pop()
-            if bpairs[etx] != lastObr:
+            if _bpairs[etx] != lastObr:
                 # incorrect brackets pair in closing
-                raise InterpretErr(f"incorrect brackets pair in closing `{etx}{bpairs[etx]}`")
-                # return False
+                raise InterpretErr(f"incorrect brackets pair in closing `{etx}{_bpairs[etx]}`")
+                # return False, -1
             if len(opened) == 0 and getLast:
                 # last closed part found in solidExpr
-                return True, i
+                if found == -1:
+                    found = i
+                # return True
             continue
-        if not opened and isLex(el, Lt.oper, fopers):
+        # print('2>>')
+        if opened:
+            continue
+        if getLast and isLex(el, Lt.oper, rSolOpers):
+            if found == -1:
+                found = i
+            # return True
+        # print('back-i:%d'%i, 'No Solid because of ', etx)
+        # return False
+        if isLex(el, Lt.oper, fopers):
             # any operator has been found not in brackets a + b, excepr [. ~>]
             # print('back-i:%d'%i, 'No Solid because of ', etx)
-            return False
+            return False, -1
+        # elif isLex(el, Lt.word, KEYWORDS_R):
+        #     return False
     # print('\n>> ', opened, ' //')
-    return not opened
+    res = (not opened)
+    # if getLast:
+    #     return res, found
+    # print('isSolid-11', res, found)
+    return res, found
 
 def isFuncCall(elems:list[Elem]):
     ''' solid expr with func call in the end

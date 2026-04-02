@@ -55,9 +55,9 @@ class CaseMatch(SubCase):
         ''' match expr '''
         if len(elems) < 1:
             return False
-        if isLex(elems[0], Lt.word, 'match'):
-            return True
-        return False
+        return isLex(elems[0], Lt.word, 'match')
+            # return True
+        # return False
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         return MatchExpr(), [elems[1:]]
@@ -77,13 +77,13 @@ class CaseMatchCase(SubCase):
         '''
     def __init__(self):
         super().__init__()
-        self.splitter = OperSplitter()
+        self.splitter = OperSplitter.getInst()
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        arrInd = self.splitter.mainOper(elems)
+        arrInd = self.splitter.mainOper(elems, lesser='/:')
         exp = MatchPtrCase()
         subs = [elems, []]
-        if isLex(elems[arrInd], Lt.oper, '/:'):
+        if arrInd > -1 and isLex(elems[arrInd], Lt.oper, '/:'):
             subs = [elems[:arrInd], elems[arrInd+1:]]
         return exp, subs
 
@@ -91,41 +91,18 @@ class CaseMatchCase(SubCase):
         base.left = subs[0]
         if len(subs) > 1 and isinstance(subs[1], Expression):
             base.right = subs[1]
-
-
-class CaseMatchPattern(SubCase):
-    '''
-    left of `!-` operator.
-    [*], {_:_}, (_,?), ...
-    '''
-    def __init__(self):
-        super().__init__()
-        self.splitter = OperSplitter()
-
-    def match(self, elems:list[Elem]) -> bool:
-        '''
-        expr !- expr '''
-        if len(elems) < 2:
-            return False
-
-        main = self.splitter.mainOper(elems)
-        # dprint('CaseMatchCase elems[main]', elems[main].text, main)
-        return isLex(elems[main], Lt.oper, '!-')
-
-    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        arrInd = self.splitter.mainOper(elems)
-        exp = ArrOper()
-        subs = [elems[:arrInd], elems[arrInd+1:]]
-        return exp, subs
-
-    def setSub(self, base:ArrOper, subs:list[Expression])->Expression:
-        base.left = subs[0]
-        if len(subs) > 1 and isinstance(subs[1], Expression):
-            base.right = subs[1]
+            # print('$#2 ---- >', subs[1].src)
+        return base
 
 
 class CaseFor(BlockCase, SubCase):
     ''' '''
+    
+    def __init__(self):
+        super().__init__()
+        self.brc = CaseBrackets()
+        self.cs = CaseSemic()
+    
     def match(self, elems:list[Elem]) -> bool:
         if elems[0].text == 'for':
             return True
@@ -133,9 +110,9 @@ class CaseFor(BlockCase, SubCase):
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
 
         expSub = elems[1:]
-        if CaseBrackets().match(expSub):
+        if self.brc.match(expSub):
             expSub = expSub[1:-1]
-        _, subs = CaseSemic().split(expSub)
+        _, subs = self.cs.split(expSub)
 
         exp:LoopBlock = None
         match len(subs):
@@ -149,12 +126,12 @@ class CaseFor(BlockCase, SubCase):
     def setSub(self, base:LoopExpr, subs:Expression|list[Expression])->Expression:
         ''' nothing in minimal impl''' 
         slen = len(subs)
-        dprint('# CaseFor.setSub-', slen, subs)
+        # print('# CaseFor.setSub-', slen, subs)
         match slen:
             # iterator case
             case 1 if isinstance(base, LoopIterExpr):
                 base.setIter(subs[0])
-                # dprint('(=1)', subs[0] )
+                # print('For.case(=1)', subs[0] )
             # pre, cond
             case 2 if isinstance(base, LoopExpr): base.setExpr(pre=subs[0], cond=subs[1])
             # init, cond, post
@@ -219,9 +196,8 @@ class CaseElse(BlockCase, SubCase):
     '''
         
     def match(self, elems:list[Elem]) -> bool:
-        if elems[0].text == 'else':
-            # TODO: possible case in feature: else if sub-cond
-            return True
+        return elems[0].text == 'else'
+            # return True
     
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         exp = ElseExpr()

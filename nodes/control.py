@@ -34,7 +34,8 @@ class ElseExpr(Block):
         self.subIf = sub
         self.add(sub)
 
-class IfExpr(ControlBlock):
+
+class IfExpr(IfNode):
     
     def __init__(self, cond:Expression=None):
         # super().__init__()
@@ -42,10 +43,11 @@ class IfExpr(ControlBlock):
         self.elseBlock:Block = None
         self.cond = cond
         self.preSubs:list[Expression] = [] # sub-expressions before conditions
-        self.lastRes = None
+        # self.lastRes = None
         self.curBlock = self.mainBlock
         self.condRes = None
         self.inCtx = None
+        self.lastTarget = None
 
     def setCond(self, expr:Expression, subExp:list[Expression]=[]):
         # print('#IfExpr setCond ', expr, subExp)
@@ -69,8 +71,9 @@ class IfExpr(ControlBlock):
         for sub in self.preSubs:
             sub.do(inCtx)
         self.cond.do(inCtx)
+        self.lastTarget = None
         target:Block = self.mainBlock
-        self.lastRes = None
+        # self.lastRes = None
         self.condRes = self.cond.get()
         self.inCtx = None
         # print('# IfExpr.do02 ', condRes, type(condRes))
@@ -85,11 +88,15 @@ class IfExpr(ControlBlock):
         # print('# IfExpr.do2 ', target)
         self.inCtx = inCtx
         target.do(inCtx)
-        self.lastRes = target.get() # for case if we need result from if block or one-line-if
+        self.lastTarget = target
+        # self.lastRes = target.get() # for case if we need result from if block or one-line-if
         # print('# IfExpr.do2 ', self.lastRes)
 
     def get(self):
-        return self.lastRes
+        # return self.lastRes
+        if not self.lastTarget:
+            return None
+        return self.lastTarget.subs[-1].get()
 
 
 class ElsFold:
@@ -134,7 +141,7 @@ class ElsFold:
 
 # # MATCH-CASE
 
-class MatchExpr(ControlBlock):
+class MatchExpr(MatchNode):
     ''' 
     1. for unpack multiresults.
     2. for pattern matching like switch/case 
@@ -157,6 +164,7 @@ class MatchExpr(ControlBlock):
         super().__init__()
         self.match:Expression = None
         self.cases:list[CaseExpr] = []
+        self.lastCase = None
 
     def add(self, xcase:CaseExpr):
         if not isinstance(xcase, CaseExpr):
@@ -169,21 +177,31 @@ class MatchExpr(ControlBlock):
     def do(self, ctx:Context):
         self.lastVal = None
         self.match.do(ctx)
-        self.doCases(ctx)
+        did = self.doCases(ctx)
+        if not did:
+            return
 
     def doCases(self, ctx:Context):
+        self.lastCase = None
         mval = self.match.get()
         vv = mval
         mval = var2val(mval)
         # print('Match. mval', self.match, vv, '::',  mval)
+        # print('M !-')
         for cs in self.cases:
             mctx = Context(ctx)
             cs.doExp(mctx)
             if cs.match(mval):
                 cs.do(mctx)
+                self.lastCase = cs
                 self.lastVal = cs.get()
                 return True
         return False
+
+    def get(self):
+        if not self.lastCase:
+            return None
+        return self.lastCase.block.subs[-1].get()
 
 
 # LOOP-FOR

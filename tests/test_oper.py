@@ -20,6 +20,51 @@ class TestOper(TestCase):
 
 
 
+    def test_math_root(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        func root(a, b)
+            a ^/ b
+        
+        res <- 3 ^/ 8
+        res <- 1 ^/ 0
+        res <- 1 ^/ 100
+        res <- 2 ^/ 100
+        res <- 2^/4
+        res <- 2 ^/ 25
+        res <- root(1, 3)
+        res <- root(2, 9)
+        res <- root(3, 27)
+        
+        res <- 10 + 2 ^/ 49
+        
+        res <- 5 * 3 ^/ 27
+        
+        res <- (18 / 2 ^/ 81) ^/(2 ** 2 * 10 + 17 - (4 ^/ 16 * 2 + 4 ^/ 81 + 1 ^/ 1)) # 7
+        res <- 11 * 2 ^/ 25
+        res <- 7 * 3 ^/ 27 ** 2 - 4  ^/ 81 # 60
+        
+        p = 4096
+        r2 = \ a -> root(a, 4096)
+        
+        res <- (1 ^/ p, 2 ^/ p, r2(4), r2(12))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [2.0, 0.0, 100.0, 10.0, 2.0, 5.0, 3.0, 3.0, 3.0, 17.0, 15.0, 7.0, 55.0, 60.0, (4096.0, 64.0, 8.0, 2.0)]
+        self.assertEqual(exv, resv)
+
     def test_string_plus(self):
         ''' fixed bug: 
             result of ` "" << val `
@@ -688,7 +733,7 @@ class TestOper(TestCase):
         '''
         code = norm(code[1:])
         src = code.splitlines()
-        spl = OperSplitter()
+        spl = OperSplitter.getInst()
         for sline in src:
             if len(sline) == 0:
                 continue

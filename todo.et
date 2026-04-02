@@ -35,42 +35,8 @@ NEED FIX:
 
 
 
-1.02 container of functions aka namespace or static methods. 
-# call
-A.foo(a, b)
-# def
-A func foo(a, b)
-    ..
-func A foo(a, b)
-    ..
-
-group A
-func A.foo(a, b)
-    ..
-
--- named group of funcs and consts
-    have own definition block
-    have own context (sub related to module)
-    Think about internal context of group, how function can get access to vals
-    should it be like static class or namespace?
-    should allow making sub-groups?
-
-group Math
-    P = 3.141592653589793
-    E = 2.718281828459045
-
-    func f1(a, b)
-        a + b
-
-    func bar(x) 
-        x ** 2
-
-print(Math.P)
-
-print(Math.f1(2,3))
-
-
 2.0 module math
+
 2.1 module `file`
     read(filepath)
     write(filepath, content)
@@ -132,6 +98,44 @@ catch crit
     1) data objects (collections, struct inst) 
     2) executive tree (prepared exec file)
 
+
+
+
+1.02 container of functions aka namespace or static methods. 
+# call
+A.foo(a, b)
+# def
+A func foo(a, b)
+    ..
+func A foo(a, b)
+    ..
+
+group A
+func A.foo(a, b)
+    ..
+
+-- named group of funcs and consts
+    have own definition block
+    have own context (sub related to module)
+    Think about internal context of group, how function can get access to vals
+    should it be like static class or namespace?
+    should allow making sub-groups?
+
+group Math
+    P = 3.141592653589793
+    E = 2.718281828459045
+
+    func f1(a, b)
+        a + b
+
+    func bar(x) 
+        x ** 2
+
+print(Math.P)
+
+print(Math.f1(2,3))
+
+
 12 Functions: 
     - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but thinkable
     - unused/unnamed var `_` for function args foo(_, x), 
@@ -143,9 +147,7 @@ catch crit
 13. Interfaces as a some list of method signatures.
 
 
-t.1.1
-
-        TODO: add type `glif` - one readable symbol
+t.1.1 # DONE: add type `glif` - one readable symbol
             glif should represent any-bytes length symbol, starting ASCII to eastern hieroglyphs
             solution: symbol or 1-elem string right after backslash \N \'N'
                 \`汉`; \'A'
@@ -158,8 +160,7 @@ t.1.1
                 tostring - put glif in string
                 tobytes - make object `bytes` joining all bytes of glif
                 string.glifes() -> list of glifs
-t1.2
-        TODO: add bytes.
+t1.2 #DONE: add bytes.
             bb = [00 01 fa d8]
             bb = [^ 00 01 fa d8]
             bb = &[00 01 fa d8]            
@@ -211,7 +212,7 @@ func foo(a)
             b
 
 
-# unpack list using it as many vals
+#== DONE unpack list using it as many vals
     # def
     func foo3(args...)
         for val <- args
@@ -317,6 +318,7 @@ match nn
 24. TODO: Should we implement full inline block syntax?   
 Like `for a <- b /: expr :/ ; next-block`  
 if cond /: expr :/ else /: expr :/
+if cond /: expr <: else /: expr <:
 Thinking
 
 16.1 inline shortening (?):
@@ -347,16 +349,13 @@ func d:D f1(x, y)
 # Perspective things: 
 0. build.py - builder of *.et files with resulting binary files (serialized executable object).
 1. Maybe type 
-# DONE 2. default, unnecessary and named function args
-3. tail-recursion optimization
+#==
+# Maybe type: Nothing, Thing
+x = maybe(1) # @yep(1), (? val)
+x = nothing # @nop , (?-)
+
 4.1 Duck-type for structs:: func f(arg:struct{foo(int, float), bar(string)}) // ? not sure
 4.2 anonimous structs inst = struct{name: 'Abc', num: 123}; possible sugar: ${name: '', num:123}
-5. composition of functions: foo . bar : arg ;; foo . bar < arg
-6. carrying
-    foo(a,b)
-    foo2 = foo(a;) -> func.carr[foo, a] -> foo2(b)
-    foo(a;) >> | (arg2) -> foo(a, arg2) |
-    foo2(arg2) -> foo(a, arg2) 
 7. common types: (tree, queue, set, pair ) with operations: applay func to each, clone, merge, insert, fold, map, etc.
 8. ~[s, s <- "..."] gen by string: solution (1) `~` operator as a list-to-string convertor
 9.
@@ -374,13 +373,6 @@ foo = func (args...)
 [1,2,3] + [4,5] --> [1,2,3,4,5]
 
 
-
-#==
-# Maybe type: Nothing, Thing
-x = maybe(1) # @yep(1), (? val)
-x = nothing # @nop , (?-)
-
-
 #==
 # unary increment, decrement
 i++ # i += 1
@@ -388,6 +380,7 @@ i-- # i -= 1
 
 
 #== store content of comments as a runtime metadata
+
 
 #== multiline expr
 
@@ -432,22 +425,33 @@ foo(a, b)
     a + b
 
 
-#==
-# composition of functions are possible, by `.` or another
-func foo(a)
-func bar(a)
-func buz(a)
+ 
+2. # DONE default, unnecessary and named function args
+3. # DONE tail-recursion optimization
+5. DONE composition of functions: foo . bar : arg ;; foo . bar < arg
+6. # DONE carrying
+    foo(a,b)
+    foo2 = foo(a;) -> func.carr[foo, a] -> foo2(b)
+    foo(a;) >> | (arg2) -> foo(a, arg2) |
+    foo2(arg2) -> foo(a, arg2) 
 
-buz(bar(foo(12)))
-foo . bar . buz : (12)
-foo bar buz $ 12
-foo * bar * buz(12)
-foo + bar + buz(12)
-foo ~~ bar ~~ buz : 12
+#== DONE
+# composition of functions are possible
+    func foo(a)
+    func bar(a)
+    func buz(a)
+
+    buz(bar(foo(12)))
+    foo * bar * buz(12)
+    DONE: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
+        =>> curried_foo(1)(2)(3)
+    DONE: composition foo * bar (x)
 
 
+TODO: prevent overloading of func with default/named args or variadic list args...
 
 TODO: partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
+
 # not sure, partial usage of operator - make lambda:
             (2 +) =>> x -> 2 + x
             (-(2)) =>> x -> x - 2, or -1 # problem here
@@ -455,15 +459,11 @@ TODO: partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _
             looks mostly as a shorten syntax of lambdas
             (2 + _) =>> x -> 2 + x
             (_ - 2) =>> x -> x - 2
-TODO: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
-    =>> curried_foo(1)(2)(3)
-TODO: composition foo * bar (x)
-TODO: prevent overloading of func with default/named args or variadic list args...
 
 # -------------------------
 Not sure:
 
-26. anonimous struct - not sure mow.
+26. anonimous struct - not sure.
 Idea was make thing object in JS.
 But we have dict - flexible container with keys.
 and struct - container with fixed structure (obviuosly).
@@ -539,6 +539,72 @@ Fixes:
 
 # DONE
         
+        
+        DONE: refactor tree.py from loops of cases to pattern-tree
+        
+        DONE: think about performance, decreased after \lambda changes.
+        1) find common cases:
+            solid -> in-brackets, dot.name, solid(brackets), solid-rUnar, single control-keywords, var, val, 
+            no-solid -> definitions, control-statements, bin-opers, 
+        2) dive into sub-cases
+        2.2) refactor list-like expressions to avoid multiple check items in []-brackets
+            first check solid []-case, then find case in []-cases:
+            list, slice, iter-gen, list-gen, bytes
+        
+        DONE: Optimize mtCases using prepared data from upper limit-cases
+        
+        DONE: Sequence  match and split if brackets in quotes: (1, '[', ']')
+        
+        DONE: grup - static block for set of const, vals and functions. 
+            Grup is a named sub-level of context of module
+            Like extended enum or static struct
+            grup have declarations or definitions, 
+            no other expressions like controls: for, if, import
+            (but no special limitation of that, thinking about that)
+            I don't like `grup` or `group`. thinking about alternatives 
+            possible aliases:
+                sub, def, nmsp, space, stat, grup, sublvl, box, nest
+                inbox Name
+                nbox Name
+                subox Name
+                object Name
+                place Name
+                nest Name
+            
+            grup Name
+                struct SubStruct a:int
+                
+                func subFunc()
+                    res
+                    
+                enum SubEnum
+                    a = 1
+                    b = 10
+                
+                # vals
+                subVar:type = val
+                subList:list = [1,2,3]
+                strInst = SubStruct{a:5}
+        
+        FIXED: prevent access to upper contetx through name of grup using finding mechanism
+        func f()
+            123
+        grup N
+            v=1
+        N.f() # now can find f() in upper lvl context
+        we need specail context for grup. it should have access for its own needs, but should block direct access by name 
+            
+        DONE: check same name method and func with same full signature 
+        func fname(inst:A, arg:A)
+        func inst:A fname(arg:A)
+        
+        DONE: add typing by regexp
+        
+        DONE: add regexp construct
+            regexp(`[a-z]+`, 'ui')
+        
+        DONE: root, square root operator, the same precedence as **
+            ^/  3^/8 
         
         DONE: add type `glif` - 1 multibyte symbol
             glif represents one char with any byte-size

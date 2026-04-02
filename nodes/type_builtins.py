@@ -13,6 +13,7 @@ from nodes.builtins import built_list, built_foldl, built_tostr
 
 import libs.str as libst
 import libs.bytes as lbytes
+import libs.regexp as rexp
 
 
 
@@ -71,6 +72,17 @@ def string_constr(ctx, arg:Val):
     if isinstance(arg.getType(), TypeGlif):
         arg = arg.get().val
     return built_tostr(ctx, arg)
+
+
+def regexp_constr(ctx, pattern:Val, flags:Val=None):
+    pval = pattern.getVal()
+    fval = ''
+    if flags:
+        fval = flags.getVal()
+    # print('$1', fval, flags)
+    ptr = rexp.compile(pval, rexp.str2flags(fval))
+    
+    return Regexp(ptr)
 
 
 def glif_constr(ctx, arg:Val):

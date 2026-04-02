@@ -82,10 +82,13 @@ class VarExpr(Expression):
         super().__init__(var)
         # self.val = var # or name,type ?
         self.name = var.name
+        self.const = False
     
     def do(self, ctx:NSContext):
-        newVal = ctx.get(self.name)
-        self.val = newVal
+        newVar:Var = ctx.get(self.name)
+        if self.const:
+            newVar._mutable = False
+        self.val = newVar
 
     def get(self)->Var:
         return self.val
@@ -256,6 +259,15 @@ class ControlBlock(Block, ControlExpr):
     ''''''
 
 
+class IfNode(ControlBlock):
+    ''' Abstract layer of IF '''
+    ''''''
+
+
+class MatchNode(ControlBlock):
+    ''' Abstract layer of IF '''
+
+
 class LoopBlock(ControlBlock):
     ''' '''
     
@@ -408,10 +420,11 @@ class TypedVarExpr(VarExpr):
         self.val = None
 
     def do(self, ctx:NSContext):
-        # print('TypedVarExpr.do-0', self.right)
+        # print('TypedVarExpr.do-0', self.left, self.right)
         self.right.do(ctx)
         tpv = self.right.get()
         name = self.left.get().name
+        # print('name:', name, ', type:', tpv)
         # print('TPV:', tpv)
         tpVal = TypeAny()
         if isinstance(tpv, TypeVal):
@@ -480,6 +493,7 @@ class SequenceExpr(Expression):
         for sub in self.subs:
             # dprint('SEQ getTuple:', sub)
             sub.do(ctx)
+            # print('Seq.getVals.sub=', sub, sub.get())
             res.append(sub.get())
         return res
 

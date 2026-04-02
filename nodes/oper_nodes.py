@@ -135,7 +135,7 @@ class OpAssign(AssignExpr):
             val = resSet[i]
             
             val = self.readVal(val)
-            # print('$1', val)
+            # print('ON$1', val)
             valType = val.getType()
             if isinstance(left[i], CollectElem):
                 ''' '''
@@ -157,6 +157,8 @@ class OpAssign(AssignExpr):
                 isNew = True
                 newVar = Var(dest.name, valType)
                 # dprint('Assign new var', newVar, 'val-type:', valType)
+                # print('Op=, mut:', dest._mutable)
+                newVar._mutable = dest._mutable
                 ctx.addVar(newVar)
                 dest = newVar
             
@@ -173,6 +175,7 @@ class OpAssign(AssignExpr):
                 destStrict = dest.strictType()
             
             # print('= OpAssign/10 ', dest, val, dest.getType(), val.getType(), 'isStrict', dest.strictType())
+            # print('= OpAssign/10 ', dest, val, dest.getType(), val.getType(), )
             if destStrict:
                 dt, st = dest.getType(), val.getType()
                 if not equalType(dt, st):
@@ -191,6 +194,7 @@ class OpAssign(AssignExpr):
                 fixType(dest, val)
                 
             dest.set(val)
+            # print('Op.assign11:', dest, val)
             
             if isinstance(dest, ObjectMember):
                 return
@@ -224,21 +228,23 @@ class OpMath(BinOper):
     
     def __init__(self, oper, left:Expression=None, right:Expression=None):
         super().__init__(oper, left, right)
-
-    def do(self, ctx:Context):
-        ff = {
+        self.ff = {
             '+': self.plus, 
             '-': self.minus,
             '*': self.mult,
             '/': self.div,
             '**': self.pow,
+            '^/': self.root,
             '%': self.divmod,
         }
-        
-        # Some operations can return another type
-        postType = {
+        self.postType = {
             '/': TypeFloat
         }
+        
+
+    def do(self, ctx:Context):
+        
+        # Some operations can return another type
         
         # eval expressions
         # dprint('#oper-left:', self.left)
@@ -284,12 +290,12 @@ class OpMath(BinOper):
             if isinstance(atype, TypeFloat) or isinstance(btype, TypeFloat):
                 rtype = TypeFloat()
         # get numeric values and call math function 
-        val = ff[self.oper](valFrom(a).getVal(), valFrom(b).getVal())
+        val = self.ff[self.oper](valFrom(a).getVal(), valFrom(b).getVal())
         
         # resolve result type for specific cases
         resType = rtype
-        if self.oper in postType:
-            target = postType[self.oper]
+        if self.oper in self.postType:
+            target = self.postType[self.oper]
             resType = target()
         
         self.res = Val(val, resType)
@@ -308,6 +314,9 @@ class OpMath(BinOper):
 
     def pow(self, a, b):
         return a ** b
+
+    def root(self, a, b):
+        return b ** (1/a)
 
     def divmod(self, a, b):
         return a % b
@@ -781,9 +790,10 @@ class IsInExpr(BinOper):
         val = self.valExpr.get()
         val = valFrom(self.valExpr.get())
         self.collExp.do(ctx)
-        coll = valFrom(self.collExp.get())
+        # coll = valFrom(self.collExp.get())
+        coll = var2val(self.collExp.get())
         res = False
-        # dprint('IsInExpr ?>>', coll)
+        # print('IsInExpr ?>>', coll)
         if isinstance(coll, (ListVal, DictVal, TupleVal, Maybe)):
             res = coll.has(val)
         if isinstance(coll.getType(), TypeString):
@@ -894,12 +904,12 @@ class RegexpMatchOper(RegexpOper):
         self.left.do(ctx)
         rx = self.left.get()
         if isinstance(rx, (Var)):
-            rx = rx.getVal()
+            rx = rx.get()
         self.right.do(ctx)
         src = self.right.get()
         src = var2val(src)
         res = rx.match(src)
-        self.res = Val(res, TypeBool())
+        self.res = Val(bool(res), TypeBool())
 
 
 class RegexpSearchOper(RegexpOper):

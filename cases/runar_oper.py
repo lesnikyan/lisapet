@@ -19,7 +19,7 @@ class CaseRTildArroy(SubCase, SolidCase):
     ''' solid~> '''
     # RTildArrowExpr
     
-    def match(self, elems:list[Elem]) -> bool:
+    def match(self, elems:list[Elem], ind=-1) -> bool:
         ''' '''
         if len(elems) < 2:
             return False
@@ -43,10 +43,11 @@ class CaseRTildArroy(SubCase, SolidCase):
 
 class CaseArgExtraList(SubCase, SolidCase):
     ''' varname... '''
-    def match(self, elems:list[Elem]) -> bool:
+        
+    def match(self, elems:list[Elem], ind=-1) -> bool:
         if len(elems) < 2:
             return False
-        if not isSolidExpr(elems[:-1]):
+        if not isSolidExpr(elems[:-1], skipKeywords=True)[0]:
             return False
         # print('CaseArgExtraList', isSolidExpr(elems[:-1]), elemStr(elems[:-1]))
         # print('$2 ', )
@@ -95,7 +96,7 @@ class RUnaryOper(SubCase, SolidCase):
     def match(self, elems:list[Elem]) -> bool:
         if len(elems) < 2:
             return False
-        if not isSolidExpr(elems[:-1]):
+        if not isSolidExpr(elems[:-1], skipKeywords=True)[0]:
             return False
         if isLex(elems[-1], Lt.oper, '...'):
             return True
