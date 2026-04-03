@@ -1549,6 +1549,8 @@ res <- {'c': 44, 'b':33} # add / update vals
 
 >> {'a':11, 'b':33, 'c': 44}
 ```
+Note.  
+Within a comprehension expression (list or dict) `<-` operator is always interpreted as an [iterative-assignation](#62-for-iterator-arrow-assign-operator--).  
 
 ### 9.2 Minus key `- [key]` (delete) operator
 Minus operator for collections.  
@@ -1937,6 +1939,8 @@ Sequence generator (aka list comprehansion) is a shortened syntax (sugar) for ma
 - Expressions in the generator is divided by `;`.   
 Generator has such segments / expressions:  
 Second expression is a loop-iterator with arrow-assignment like `for` statement.  
+Note.  
+left-arrow `<-` within a comprehension expression is always interpreted as an iterative assignation.  
 ```python
 for x <- src
     ...
@@ -1952,7 +1956,12 @@ for x <- src
 # the same as
 res = [x; x <- src]
 ```
-- Generator can have more expressions:
+
+- Generator should contain at least 2 segments:  
+```python
+[n; n <- values]
+```
+- Generator can have more expressions with one source:
 ```python
 [  
     elem-expr;       # 1) result element expression ;  
@@ -1963,10 +1972,14 @@ res = [x; x <- src]
 # 2-4 is a generator-block.  
 # 3-4 are optional  
 ```
-- Generator should contain at least 2 segments:  
-```python
-[n; n <- values]
-```
+- 1st - resulting of each element expression.  
+
+- 2nd - reading current element and assign value to local variable (or variables) using `<-` operator.
+
+- 3-rd segment (actually it can be several expressions) should be an assign operator `v = expr`. Optional.   
+
+- Last segment that isn't an assigning expression will be interpreted as an conditional expression. Optional.  
+
 Full syntax of 1 iterator:
 ```python
 src = [1..5]
@@ -1977,9 +1990,10 @@ src = [1..5]
 ]
 >> [101, 303, 505]
 ```
-- Generator can have sub-iterations, ie 2-4 is a repeatable part, like:
+
+- Generator can have sub-iterations, i.e. 2-4 is a repeatable parts, using outer or internal sources in next iterative assignations like:
 ```python
-arr1, arr2, arr3 # source lists
+arr1, arr2, arr3 # outer source lists
 [aa + bb + c ; 
     a <- arr1; aa = a * 2; a > 5; 
     b <- arr2; bb = b * b; 
@@ -2033,7 +2047,7 @@ nums = [
     a + b + c < 1000
 ]
 ```
-- Now strings are not a valid native source for comprehansions. But it can be resolve by `tolist()` function or `list()` constructor.
+- Now strings are not a valid native source for comprehansion. But it can be resolve by `tolist()` function or `list()` constructor.
 ```python
 # list comprehension by converted string
 src = "ABCdef123"

@@ -20,6 +20,83 @@ class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
 
+    def test_gen_arrow_assign(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        s = [111]
+        ss = [1,2,3]
+        
+        r1 = [s ; s <- ss]
+        
+        res <- r1
+        res <- s
+        
+        # local context over upper
+        ss = [[1,2], [3,4]]
+        s = [5,6,7]
+        r2 = [(s, n) ; s <- ss; n <- s]
+        res <- 'r2'
+        res <- r2
+        res <- s
+        
+        # for loop
+        s = [1,2,3]
+        ss = [4,5,6]
+        r3 = []
+        for s <- ss
+            r3 <- s
+        res <- 'r3'
+        res <- r3
+        
+        # in dict 
+        
+        s = [111]
+        k = [222]
+        tt = ('qq','ww','ee')
+        ss = [11,22,33]
+        
+        r4 = {k: s ; k, s <- tt, ss}
+        res <- 'r4'
+        res <- r4
+        
+        # `append` huck in gen
+        
+        rt = []
+        func f4(x)
+            rt <- x
+            
+        rp = []
+        f5 = \x -> (rp <- x)
+        
+        s = []
+        ss = [21, 22, 23]
+        
+        r5 = [100 + s ; s <- ss ; _ = f4(s + 200); _= f5(s + 300)]
+        res <- 'r5'
+        res <- r5
+        res <- rt
+        res <- rp
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [1, 2, 3], 3, 
+            'r2', [([1, 2], 1), ([1, 2], 2), ([3, 4], 3), ([3, 4], 4)], [3, 4], 
+            'r3', [4, 5, 6], 
+            'r4', {'qq': 11, 'ww': 22, 'ee': 33}, 
+            'r5', [121, 122, 123], [221, 222, 223], [321, 322, 323]]
+        self.assertEqual(exv, resv)
+        
     def test_dict_generator(self):
         ''' dict generator
             { key: val ; key, val <- src; expr; condition }

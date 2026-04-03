@@ -216,8 +216,8 @@ class LoopIterExpr(LoopBlock):
     def __init__(self):
         super().__init__()
         
-        self.iter:LeftArrowExpr = None
-        self._origIter = None
+        self.iter = None
+        self._origIter:LeftArrowExpr = None
         # self.iter:IterAssignExpr = None
         self.storeRes = False
 
@@ -236,6 +236,7 @@ class LoopIterExpr(LoopBlock):
         subCtx = Context(ctx)
         if isinstance(self._origIter, LeftArrowExpr):
             # print('For iter')
+            self._origIter.setAssign()
             self._origIter.init(subCtx)
             if isinstance(self._origIter.expr, IterAssignExpr):
                 self.iter = self._origIter.expr

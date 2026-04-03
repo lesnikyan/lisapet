@@ -433,6 +433,7 @@ class LeftArrowExpr(BinOper):
         self.right:Var|NIterator = None
         self.expr = None
         self.isIter = False
+        self.isAssign = None
         
     def setArgs(self, left, right):
         # print('Arr <- setArgs1', left, right)
@@ -443,13 +444,22 @@ class LeftArrowExpr(BinOper):
         ''' where right is MultilineVal '''
         self.rightExpr.add(expr)
     
+    def setAssign(self):
+        self.isAssign = True
+    
     # def start(self, ctx:Context):
     #     self.expr.start()
     
     def init(self, ctx:Context):
         ''' get left, right, decide what the case here: iter or append '''
         # left expression defines type of case
-        self.leftExpr.do(ctx)
+        varParent = ctx
+        # make
+        # if self.isAssign:
+        #     varParent = None
+        varCtx = Context(varParent)
+            
+        self.leftExpr.do(varCtx)
         # print('..')
         # print('Arr <- init1', self.leftExpr, '<-', self.rightExpr)
         ltArg = None
@@ -463,7 +473,7 @@ class LeftArrowExpr(BinOper):
                 # 2 for dict - key,val
                 # 1 for dict - tuple (key, val) to assign 
                 # 2 or more for list - unpack current elem into vars [(,,), (,,)]
-                ltVals = self.leftExpr.getVals(ctx)
+                ltVals = self.leftExpr.getVals(varCtx)
                 ltArg = ltVals
         else:
             ltArg  = self.leftExpr.get()
@@ -479,21 +489,22 @@ class LeftArrowExpr(BinOper):
 
         # print('Arr <-2 init ltArg', ltArg, ltArg.__class__)
         # print(' <- init rtArg:', rtArg)
-        if isinstance(ltArg, Var) and isinstance(ltArg.getType(), (TypeList, TypeDict, TypeBytes)):
-            # print('Arr <-22 init ltArg', ltArg.getType())
-            ltArg = var2val(ltArg)
-            
-        # print('Arr <-4 init ltArg', ltArg, ltArg.__class__)
         
-        # Found: append case: ListVal/DictVal <- val
-        # if not isinstance(ltArg, list) and isinstance(ltArg, (ListVal, DictVal)):
-        if isinstance(ltArg, (ListVal, DictVal, BytesVal)):
-            if rtArg :
-                rtArg = var2val(rtArg)
-            self.expr = Append(ltArg, rtArg)
-            return
+        # try check append
+        if not self.isAssign:
+            if isinstance(ltArg, Var) and isinstance(ltArg.getType(), (TypeList, TypeDict, TypeBytes)):
+                ltArg = var2val(ltArg)
+                
+            # print('Arr <-4 init ltArg', ltArg, ltArg.__class__)
+            
+            # Found: append case: ListVal|DictVal|BytesVal <- val
+            if isinstance(ltArg, (ListVal, DictVal, BytesVal)):
+                if rtArg :
+                    rtArg = var2val(rtArg)
+                self.expr = Append(ltArg, rtArg)
+                return
 
-        # Found: iterator case
+        # Found: iteration assign case
         rtSet = None
         if isinstance(rtArg, Var):
             rtArg = rtArg.get() # extract collection from var
@@ -505,7 +516,7 @@ class LeftArrowExpr(BinOper):
                 # print('rarg:', rarg, rarg.get(), rarg.getType())
                 rarg = var2val(rarg)
                 if isinstance(rarg, (ListVal, TupleVal, DictVal)):
-                    ''
+                    pass # already valid operand
                 elif isinstance(rarg, Val):
                     rarg = rarg.get()
                 rtSet.append(rarg)
@@ -582,10 +593,11 @@ class ComprehensionGen(Expression):
         self.resExpr = subs[0]
         curIt = -1
         for exp in subs[1:]:
-            # dprint('ListComprExpr.setInner' ,exp, type(exp), 'curIt=', curIt)
+            # print('ComprExpr.setInner' ,exp, type(exp), 'curIt=', curIt)
             if isinstance(exp, (LeftArrowExpr,IterAssignExpr)):
                 # basic case
                 curIt += 1
+                exp.setAssign()
                 self.iterNodes.append(exp)
                 self.declarations.append([])
                 self.filter.append(EmptyFilter())
