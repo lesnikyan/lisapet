@@ -207,12 +207,23 @@ class TestDev(TestCase):
                 self.iterLoop(0, ctx)
             File "C:\Users\admin\Documents\python_examples\minilang\nodes\iternodes.py", line 623, in iterLoop
                 inod.start()
+            == solution: deprecate use list <- val in the generators.
+            == solution: add alter operator instead of universal <- .  <:  <=  <--  <<  
+            == solution: deprecate <- for append elem in generator, 
+                add alter oper for explicit append action: << <-- 
+        
+        DONE: deprecate list/dict <- append operator inside of comprehension
+        
+        TODO: add explicit append operator: list << val, dict << val. to use into comprehensions  
+        
+        TODO: match-case: assign val in pattern
+            var @ [1, 2, v2 @ _] /: print(var, v2)
+            `x @ _` the same as simple var-pattern `x` that matches any single value
         
         TODO: think about deletion of var by name
-            delete(x)
-            del(x)
+            delete(x); del(x)
             --- x ; -/- x
-            @delete x
+            @delete x; @del x
         
         DONE: dict-gen
             dict2 = { k: v + 10 ; k, v <- dict1; v > 0 && k != ''}
@@ -226,6 +237,8 @@ res = []
 
 
     
+    
+
     
     def _test_code(self):
         ''' '''
