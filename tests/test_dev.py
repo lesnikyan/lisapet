@@ -151,7 +151,7 @@ class TestDev(TestCase):
         TODO:? var type in for-loop 
             for n:int <- nn
 
-        TODO:not. think about type casting by colon; type in left
+        TODO: nop. think about type casting by colon; type in left
             x:int = int: true
             # type-constructor is enough 
         
@@ -175,7 +175,6 @@ class TestDev(TestCase):
         
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
-
         
         TODO: think about special type for methods. 
             It can simplify check of tail recursion for case with similar names
@@ -194,11 +193,14 @@ class TestDev(TestCase):
         DONE: 21.2 Mult-reading in list-gen:
             [ x + y ; x, y <- nn, mm]
         
-        TODO: to think: change const from left-modifier to right-operand of `:`
-            var : const = val # const elem
-            var : const(int) = val # strict typed const elem
+        DONE: deprecate list/dict <- append operator inside of comprehension
         
-        BUG: if we have predefined list / dict and try to use same name in the iterative assign by `<-` it breaks code
+        DONE: dict-gen
+            dict2 = { k: v + 10 ; k, v <- dict1; v > 0 && k != ''}
+        
+        DONE: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        
+        FIXED: if we have predefined list / dict and try to use same name in the iterative assign by `<-` it breaks code
             File "C:\Users\admin\Documents\python_examples\minilang\nodes\oper_nodes.py", line 68, in doRight
                 src.do(ctx)
             File "C:\Users\admin\Documents\python_examples\minilang\nodes\iternodes.py", line 652, in do
@@ -210,24 +212,21 @@ class TestDev(TestCase):
             == solution: deprecate <- for append elem in generator, 
                 add alter oper for explicit append action: << <-- 
         
-        DONE: deprecate list/dict <- append operator inside of comprehension
-        
         TODO (?): add explicit append operator: list << val, dict << val. to use into comprehensions  
             alters:   <:  <=  <--  <<  
         
-        TODO: match-case: assign val in pattern
-            var @ [1, 2, v2 @ _] /: print(var, v2)
-            `x @ _` the same as simple var-pattern `x` that matches any single value
+        TODO: to think: change const from left-modifier to right-operand of `:`
+            var : const = val # const elem
+            var : const(int) = val # strict typed const elem
         
         TODO: think about deletion of var by name
             delete(x); del(x)
             --- x ; -/- x
             @delete x; @del x
         
-        DONE: dict-gen
-            dict2 = { k: v + 10 ; k, v <- dict1; v > 0 && k != ''}
-        
-        TODO: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        TODO: match-case: assign val in pattern
+            var @ [1, 2, v2 @ _] /: print(var, v2)
+            `x @ _` the same as simple var-pattern `x` that matches any single value
     '''
 
     _ = r"""
@@ -241,75 +240,21 @@ res = []
     
 
     
-    def test_bytes_gen(self):
-        '''
-        test comprehension generator of bytes
-        0x[byte(); n <- src ; ? ]
-        '''
+    def _test_code_mtcase_at_assign(self):
+        ''' '''
         code = r'''
         res = []
         
-        # simplest
-        ss1 = [1..8]
-        r1 = 0x[ n ; n <- ss1]
-        res <- r1
+        ss = []
         
-        
-        # by list of bytes
-        ss2 = [0x[11 22], 0x[33 44], 0x[aa bb], 0x[ee ff]]
-        r2 = 0x[ n ; n <- ss2]
-        res <- r2
-        
-        # by iter gen
-        ss3 = [0xff8 .. 0xfff]
-        r3 = 0x[n % 255 ; n <- ss3]
-        res <- r3
-        
-        # 2 loops + assign
-        ss4 = [(4, 1), (2,205), (4, 64), (4, 252)]
-        r4 = 0x[ x ; n, v <- ss4 ; k <- iter(n) ; x = v + k]
-        res <- r4
-        
-        # filter
-        nn5 = [128 .. 144]
-        r5 = 0x[n ; n <- nn5 ; n % 2 != 0 && n % 3 != 0]
-        res <- r5
-        
-        # filter by func call
-        func f6(x, nums)
-            for n <- nums
-                if x % n == 0
-                    return false
-            return true
-        
-        nn6 = [145 .. 196]
-        div = [2,3,5,7, 11, 13, 17, 19, 23]
-        r6 = 0x[n ; n <- nn6 ; f6(n, div)]
-        res <- r6
-        
-        # by bytes
-        bb7 = 0x[1 2 3 4 5 6 7 8 9 a b c d e f]
-        r7 = 0x[xb + b ; b <- bb7 ; xb = b * 16 ; b > 7]
-        res <- r7
-        
-        # blocks by bytes
-        bb8 = bytes('ABCDEFGHIJKLMNOP')
-        r8 = 0x[bytes([c + 32, 0x20]) ; c <- bb8]
-        s8 = r8.string()
-        res <- r8
-        res<- s8
-        
-        # from struct fields
-        struct A nn:list, tt:tuple
-        
-        a9 = A(
-            [1,2,3,4], 
-            (bytes('a'), bytes('h'), bytes('m'), bytes('x') ))
-        # res <- [0x[ y ; y <- [ n + 0x30,  b]] ; n, bb <- a9.nn, a9.tt ; b = bb[0]]
-        
-        r9 = 0x[ 0x[ y ; y <- [ n + 0x30,  b]] ; n, bb <- a9.nn, a9.tt ; b = bb[0]]
-        res <- r9
-        res <- r9.string()
+        for n <- ss
+            match n
+                a @ ::int
+                    res <- ('int', a, n)
+                [a @ _] 
+                    res ('[int]', a, n)
+                _ /: ('_', n)
+                
         
         # print('res = ', res)
         '''
@@ -318,22 +263,12 @@ res = []
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
         resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = [
-            '0x[01 02 03 04 05 06 07 08]', 
-            '0x[11 22 33 44 aa bb ee ff]', 
-            '0x[08 09 0a 0b 0c 0d 0e 0f]', 
-            '0x[01 02 03 04 cd ce 40 41 42 43 fc fd fe ff]', 
-            '0x[83 85 89 8b 8f]', 
-            '0x[95 97 9d a3 a7 ad b3 b5 bf c1]', 
-            '0x[88 99 aa bb cc dd ee ff]', 
-            '0x[61 20 62 20 63 20 64 20 65 20 66 20 67 20 68 20 69 20 6a 20 6b 20 6c 20 6d 20 6e 20 6f 20 70 20]', 
-            'a b c d e f g h i j k l m n o p ', 
-            '0x[31 61 32 68 33 6d 34 78]', 
-            '1a2h3m4x']
-        self.assertEqual(exv, resv)
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
         
     
     def _test_code(self):
