@@ -167,7 +167,7 @@ class CaseOptionPrepared(CaseOption):
         self.matcher:CaseLim = matcher
         self.found = None
     
-    def match(self, info:CMatchInfo)-> bool:
+    def match(self, info:CMatchInfo, ext=None)-> bool:
         # print('COP.match by %s' % (self.matcher.__class__.__name__), self.matcher.match(info))
         self.found = None
         mres = self.matcher.match(info)
@@ -184,12 +184,20 @@ class CaseOptionPrepared(CaseOption):
             if self.found is not None:
                 extrArg = self.found
             
-            if sub.match(info.elems, extrArg):
+            mtarg = info
+            if not sub.isLim():
+                mtarg = info.elems
+                
+            if sub.isLim():
+                mt = sub.match(mtarg)
+            else:
+                mt = sub.match(mtarg, extrArg)
+            if mt:
                 cs =  sub
                 break
         if cs and cs.isLim():
             # print('sub lim')
-            cs = cs.find(info.elems)
+            cs = cs.find(info)
         if not cs:
             return False
         # print('co-res! %s' % cs.__class__.__name__)
@@ -238,6 +246,20 @@ class CaseSolidLeft(CaseLim):
         ok, ind = info.solid, info.sid
         # print('$2', ok, ind, ok and ind > 0)
         return (ok and ind > 0), ind
+
+
+class CasePrefBox(CaseLim):
+    ''' pref[ - sub - ] '''
+    
+    def match(self, info:CMatchInfo, ext=None)-> bool:
+        # ok, ind = isSolidExpr(elems, True)
+        ok, ind = info.solid, info.sid
+        # print('$2', ok, ind, ok and ind > 0)
+        if not ok or ind < 1:
+            return False
+        if not isLex(info.elems[-1], Lt.oper, ']') or not isLex(info.elems[ind], Lt.oper, '['):
+            return False
+        return True, ind
 
 
 _numWordTypes = [Lt.word, Lt.num]

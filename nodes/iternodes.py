@@ -702,7 +702,7 @@ class ListComprExpr(ComprehensionGen):
 
 class DictComprExpr(ComprehensionGen):
     '''
-        {k:v ; k, v <- src; expr ; cond}
+        {k:v ; k, v <- src; assign? ; cond}
     '''
     def __init__(self):
         super().__init__()
@@ -720,3 +720,24 @@ class DictComprExpr(ComprehensionGen):
         val = var2val(v)
         # print('D-COMPRH . doElem. rexpr:', self.resExpr, 'res:', k,v) #  'val:', var2val(res)
         self.res.setVal(key, val)
+    
+
+class BytesComprExpr(ComprehensionGen):
+    '''
+        0x[k:v ; k, v <- src; assign? ; cond]
+    '''
+    def __init__(self):
+        super().__init__()
+        self.resExpr:ServPairExpr
+        self.res:DictVal = None
+
+    def resultObject(self):
+        ''' '''
+        self.res = BytesVal()
+    
+    def doElem(self, ctx:Context):
+        self.resExpr.do(ctx)
+        res = self.resExpr.get()
+        # print('B-COMPRH . doElem. rexpr:', self.resExpr, 'res:', res, 'val:', var2val(res))
+        self.res.addVal(var2val(res))
+    

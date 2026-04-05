@@ -92,8 +92,9 @@ Content:
 9. #### Collection generation:
     1. [Iteration generator `[ .. ]`](#91-iteration-generator-)
     2. [Slice `[ : ]`, `tolist()` ](#92-list-features-slice---tolist)
-    2. [`list` generator `[ ; ; ]`](#93-list-comprehension--sequence-generator)
-    3. [`dict` generator `{ ; ; }`](#94-dict-comprehension-generator).
+    3. [`list` generator `[ ; ; ]`](#93-list-comprehension--sequence-generator)
+    4. [`dict` generator `{ ; ; }`](#94-dict-comprehension-generator)
+    5. [`bytes` generator `0x[ ; ; ]`](#95-bytes-comprehension-generator)
 
 10. #### Structs `A{}` 
     1. [Definition of `struct`, base constructor `A{a:b}`, fields](#101-struct)
@@ -940,6 +941,7 @@ r2 = bb1 ^ bb2
 # >> 0x[f0 0f]
 ```
 
+[A `bytes` object can also be created using a bytes-comprehension >>](#95-bytes-comprehension-generator)
 
 
 ### 4 Data type.
@@ -2096,6 +2098,30 @@ res = {
     j <- q; k = ~'{s}-{j}'; i > 1 && j > 2
 }
 ```
+
+### 9.5 Bytes comprehension generator. 
+In the same way as list or dict we can generate sequence of `bytes`.  
+By list on integers: 
+```python
+ss1 = [1..8]
+r = 0x[ n ; n <- ss1]
+```
+Be accurate with elements, it should be in the range: 0 - 255.  
+```python
+ss3 = [0xff8 .. 0xfff]
+r = 0x[n % 255 ; n <- ss3]
+```
+By bytes source, with filtering:
+```python
+bb7 = 0x[1 2 3 4 5 6 7 8 9 a b c d e f]
+r = 0x[xb + b ; b <- bb7 ; xb = b * 16 ; b > 7]
+```
+By converted string:  
+```python
+bb8 = bytes('ABCDEFGHIJKLMNOP')
+r = 0x[bytes([c + 32, 0x20]) ; c <- bb8]
+```
+All options are the same as in `list` generator: multi-source, assignments, filtering, sub-iteration.  
 
 
 ### 14. Builtin functions:  

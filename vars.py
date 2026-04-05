@@ -416,8 +416,10 @@ def strShiftArgs(src, opts=None):
 class BytesVal(ValSequence):
     ''' [11, 22, 33, ff] '''
     
-    def __init__(self, val:bytearray):
+    def __init__(self, val:bytearray=None):
         super().__init__(None, TypeBytes())
+        if val is None:
+            val = bytearray2()
         self.val:bytearray2 = val
     
     def getElem(self, key:Val):
