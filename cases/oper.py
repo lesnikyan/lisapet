@@ -286,21 +286,22 @@ class CaseComprehension(SubCase, SolidCase):
         super().__init__()
         self.spl = OperSplitter.getInst()
         self.cs = CaseSemic()
+        self.splitInds = (1, -1)
 
     def getExpr(self) -> ComprehensionGen:
         return ListComprExpr()
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
-        sub = elems[1:-1]
+        sub = elems[self.splitInds[0]: self.splitInds[1]]
         _, subs = self.cs.split(sub)
         exp = self.getExpr()
         subs = [s for s in subs if len(s)]
         # prels('LC.elems = :', elems, show=1) 
-        # prels('ListComr subs=', subs, show=1)
+        # prels('ComrGen subs=', subs, show=1)
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        # dprint('CaseListComprehension.setSub: ', base, subs)
+        # print('CaseComprehension.setSub: ', base, subs)
         base.setInner(subs)
         return base
 
@@ -365,6 +366,26 @@ class CaseDictComprehension(CaseComprehension):
 
     def getExpr(self) -> ComprehensionGen:
         return DictComprExpr()
+
+
+class CaseBytesComprehension(CaseComprehension):
+    def __init__(self):
+        super().__init__()
+        self.splitInds = (2, -1)
+    
+    def match(self, elems:list[Elem], ind=-1) -> bool:
+        if len(elems) < 7:
+            return False
+        if not isLex(elems[0], Lt.num, '0x'):
+            return False
+        if not isLex(elems[1], Lt.oper, '[') and not isLex(elems[-1], Lt.oper, ']'):
+            return False
+        # print('$1', len(elems), isLex(elems[0], Lt.num, '0x'), isLex(elems[1], Lt.oper, '['), isLex(elems[-1], Lt.oper, ']'))
+        # print('$2', elemStr(elems[2:-1]))
+        return self.cs.match(elems[2:-1])
+    
+    def getExpr(self) -> ComprehensionGen:
+        return BytesComprExpr()
 
 
 _inline_contr_keyws = ['if','for','while']

@@ -271,10 +271,11 @@ def caseMatcher():
     ''' case-tree of common cases '''
     strLim = CaseOption(CaseStr(), [CaseRegexp(), CaseGlif(), CaseString(), CaseMString()])
     wordLim = CaseOption(CaseWord(), [CaseElse(), CaseBreak(), CaseContinue(), CaseReturn(), CaseVar_(), CaseNumVal(), CaseDebug(), CaseVar(), ])
+    prefBoxLim = CaseOptionPrepared(CasePrefBox(), [CaseBytesExplicit(), CaseBytesComprehension(), CaseSlice(), CaseCollectElem(),])
     solidLeft = CaseOptionPrepared(
         CaseSolidLeft(), 
         [CaseFunCall(), CaseStructConstr(), CaseArgExtraList(), CaseDotName(), 
-        CaseRTildArroy(), CaseSlice(), CaseCollectElem(), CaseBytesExplicit()])
+        CaseRTildArroy(), prefBoxLim]) # CaseSlice(), CaseCollectElem(), CaseBytesExplicit()
     
     sqBrkLim = CaseOption(CaseBrkSquare(), [CaseListGen(), CaseBytes(), CaseListComprehension(), CaseList()])
     cvBrLim = CaseOption(CaseBrkCurv(), [CaseDictComprehension(), CaseDictLine()])

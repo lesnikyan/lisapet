@@ -321,24 +321,8 @@ class CaseDictLine(SubCase, SolidCase):
         if len(elems) == 2:
             # dprint('case-dict empty')
             return True
-
-        # ind = bracketsPart(elems)
-        # # print('case-dict ind', ind)
-        # if ind != -1:
-        #     return False
         
-        # r =  isSolidExpr(elems, getLast=True)
-        # if not isinstance(r, tuple):
-        #     return False
-        # ok, pos = r
-        # if not ok or pos != 0:
-        #     return False
-
-        # check CaseCommas into { }
         subel = elems[1:-1]
-        # cs = CaseCommas()
-        # cc = CaseColon()
-        
         if not self.cs.match(subel):
             # guess 1 item, check colon-separeted seq
             return self.checkValidSub(subel, self.cc)
@@ -348,11 +332,6 @@ class CaseDictLine(SubCase, SolidCase):
             if pp:
                 if not self.checkValidSub(pp, self.cc):
                     return False
-                
-        # parts = [n for n in parts if n]
-        # for pp in parts:
-        #     if not self.checkValidSub(pp, self.cc):
-        #         return False
         return True
         # return False
 
