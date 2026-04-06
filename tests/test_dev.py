@@ -215,6 +215,10 @@ class TestDev(TestCase):
         TODO (?): add explicit append operator: list << val, dict << val. to use into comprehensions  
             alters:   <:  <=  <--  <<  
         
+        TODO: interactive mode:
+            $ py lisapet
+            >> code...
+        
         TODO: to think: change const from left-modifier to right-operand of `:`
             var : const = val # const elem
             var : const(int) = val # strict typed const elem
@@ -223,6 +227,8 @@ class TestDev(TestCase):
             delete(x); del(x)
             --- x ; -/- x
             @delete x; @del x
+            
+        TODO: think about pattern matching in comprehention
         
         TODO: match-case: assign val in pattern
             var @ [1, 2, v2 @ _] /: print(var, v2)
@@ -237,39 +243,6 @@ res = []
 
 
     
-    
-
-    
-    def _test_code_mtcase_at_assign(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        ss = []
-        
-        for n <- ss
-            match n
-                a @ ::int
-                    res <- ('int', a, n)
-                [a @ _] 
-                    res ('[int]', a, n)
-                _ /: ('_', n)
-                
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
-        
     
     def _test_code(self):
         ''' '''

@@ -126,7 +126,7 @@ def mtMatcher():
 
     solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidRight, brkLim])
     
-    operLim = CaseOptionPrepared(CaseOperLim(), [MTPtGuard(), MTTypedVal(), MTMultiCase(), MTMultiTyped(), ])
+    operLim = CaseOptionPrepared(CaseOperLim(), [MTPtGuard(), MTTypedVal(), MTMultiCase(), MTMultiTyped(), MTAtAssign()])
     
     nonSolLim = CaseOption(NonSolid(), [MTDuaColon(), operLim, MTMultiTyped(),])
 

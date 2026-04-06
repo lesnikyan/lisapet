@@ -261,6 +261,39 @@ class MCSubVar(MCSub):
         return True
 
 
+# class MCSubAt(MatchingPattern):
+class MCSubAt(MCSub):
+    ''' local subvar assigned by `@` '''
+
+    def __init__(self, expVar:VarExpr, expVal:MCSub,  src=None):
+        super().__init__(src)
+        self.left:VarExpr = expVar
+        self.patrn:MCSub = expVal
+        self.var:Var = None
+        self.ctx = None
+    
+    def do(self, ctx:Context):
+        # just store new context instance
+        # preventing store previous value of var for run of the same pattern
+        self.ctx = ctx
+        self.patrn.do(ctx)
+        self.left.do(self.ctx)
+        var = self.left.get()
+        # print('$1', self.left, var)
+        self.var = var
+
+    def match(self, val:Val):
+        # add new var into sub-context
+        mtres = self.patrn.match(val)
+        # print('mcSubAt',self.patrn, val, mtres)
+        if not mtres:
+            return False
+        self.ctx.addVar(self.var)
+        self.var.set(val)
+        self.var.setType(val.getType())
+        return True
+
+
 class MC_under(MCSub):
     ''' [{( _ )}] '''
 
@@ -581,7 +614,7 @@ class MCDPairAny(MCKVPair):
             return 0, False
         for k, v in vals.items():
             kv = raw2val(k)
-            # print('==',  (kv.get(), v.get()), (self.key.match(kv), self.val.match(v)))
+            # print('=:=',  (kv.get(), v.get()),  (self.key.__class__, self.val.__class__), (self.key.match(kv), self.val.match(v)))
             if self.key.match(kv) and self.val.match(v):
                 vals.pop(k)
                 return vals, True
@@ -648,10 +681,12 @@ class MCDict(MCContr):
         # sort by type
         # 1. const, 2. var, 3. _
         kc = [] # key is const-pattern
+        rxk = [] # regexp key
         tk = [] # key by type
         vrr = [] # key is var-pattern
         _k = [] # key is _
         _v = [] # val is const-pattern
+        rxv = [] # val by regexp
         tv = [] # val by type
         stars = []
         qm = []
@@ -669,13 +704,17 @@ class MCDict(MCContr):
                 continue
             
             eek = ee.key
+            if isinstance(eek, MCSubAt):
+                eek = eek.patrn
             if isinstance(eek, MCTypedElem):
                 eek = eek.left
             eev = ee.val
+            if isinstance(eev, MCSubAt):
+                eev = eev.patrn
             if isinstance(eev, MCTypedElem):
                 eev = eev.left
             # print('MCDict.sort1', eek, eev)
-            
+                
             if isinstance(eek, (MCValue, MCRegexp)):
                 kc.append(ee)
             if isinstance(eek, MCType):
