@@ -65,6 +65,7 @@ class TestInterpretTree(TestCase):
         [:: int,]
         (:: int)
         
+        a @ 12
         
         #= bugs
         
@@ -175,7 +176,7 @@ class TestInterpretTree(TestCase):
         \ x -> x
         \ x, y -> x + y - foo()
         (a, b, c) -> a + b + c
-        @debug 123 Hello debug )
+        @debug 123 Hello debug
         if 1 /:  if 123 /: 2
         while a < 5
         match n

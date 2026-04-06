@@ -30,6 +30,180 @@ class TestMatch(TestCase):
     ''' cases of `match` statement '''
 
 
+    def test_code_mtcase_at_assign(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        # simplect cases
+        ss = [1, 2, [3], [1.2], 'ccc', ('d555',)]
+        r1 = []
+        for n <- ss
+            match n
+                a@ 1
+                    r1 <- (1, a)
+                a @ ::int
+                    r1 <- ('int', a, n)
+                [a @ _::int] 
+                    r1 <- ('[int]', a, n)
+                [a @ ::float]
+                    r1 <- ('[f]', a, n)
+                x @ _ /: r1 <- ('_', n, x)
+        res <- r1
+        
+        # in collection
+        ss2 = [
+            [1,2,3,4,5], [1,2,6,7,5], [55,555], 1234,
+            ('aa','bb','cc','dd', 'hh'), (1,2,1,3,1), (5,7,5,6,8), 
+            {'k1':'abc', 'k2':'def', 'k3':'xyz'}, {'a1':'', 'a2':{2:22}, 'a3':[101, 102]}, {11:111},
+        ]
+        r2 = []
+        for p <- ss2
+            match p
+                # [*]
+                [1, a, b@3, c@_, _]
+                    r2 <- (11, p, [a, b, c])
+                [1, a@_, b@_, 7, c@_]
+                    r2 <- (12, p, [a, b, c])
+                (a@_, _, 'cc', _, b@_) /: r2 <- ('t1', a, b)
+                (a@_, b@_, c@_, d@_, e@_) :? a == e || a != c /: r2 <- ('(abcde)', a,b,c,d,e)
+                t@(*,) /: r2 <- ('t3', t)
+                {'k2' : a@ :: string, k1: b@`abc`, k2:c} /: r2 <- ('d1', a, b, c, k1, k2)
+                {k1 : ::string, k2: a@ {*}, k3: b@[*]} /: r2 <- ('d2', k1, k2, k3, a, b)
+                {*} /: r2 <- ('d3', p)
+                _ @ _ /: r2 <- ('_', p)
+        res <- r2
+        
+        # by regexp
+        ss3 = [
+            'abc', 'abd', 'roma', '', '<103>',
+            ['abbc','321','!11?'], ['super', '_45', 33],
+            {'_quak':121, 'allegro':122, '3':123}, {'amba':131, '_imba':132, '30':133}, {},
+            ('amira','buchin',), ('aha','difen',), ('opanki','odin',),
+        ]
+        r3 = []
+        for n <- ss3
+            match n
+                a@re`^$`
+                    r3 <- (31, n)
+                a@re`ab(c|d)`
+                    r3 <- (32, a)
+                a@ re`[a-z]+`
+                    r3 <- (33, a)
+                [a@re`[a-m]+`, b@re`\d+`, c]
+                    r3 <- (34, a, b, c)
+                [a@re`[n-z]+`, b@re`_\d+`, c]
+                    r3 <- (35, a, b, c)
+                {a @ re`^a.+` : v1, b : v2, c:v3} # re`^\_.+`, b : v2, c: v3
+                    r3 <- (36, a, b, c, v1, v2, v3)
+                (a@ re`a.+`, b@ re`[bdcfhnoeiu]+`)
+                    r3 <- (37, a, b)
+                _ /: r3 <- (333, n)
+        res <- r3
+        
+        # deep nesting
+        
+        ss4 = [
+            [[[1]]], [], 3,
+            (((2.5,),),), (((3,),),), 
+            {'a1':{'a2':{'a3':{'root145':'ping5'}}}}
+        ]
+        r4 = []
+        for k <- ss4
+            match k
+                [[[a@ ::int]]]
+                    r4 <- (41, a)
+                (((b@::float,),),)
+                    r4 <- (42, b)
+                {a:{b:{c:{k1@ re`^r.+`: v1}}}}
+                    r4 <- (43, a, b, c, k1, v1)
+                _ /: r4 <- (444, k)
+        res <- r4
+        
+        # or-case
+        ss5 = [
+            1, 2, 5, 11, 12.5,
+            'aaa','bbb','ccc','xoma', 'Zorro', 'Yum', [1,2],
+            (1,1),
+        ]
+        r5 = []
+        for n <- ss5
+            match n
+                a @ 1|5
+                    r5 <- (51, a)
+                b @ 'aaa' | 'bbb' | re`^[xyz].+`i
+                    r5 <- (52, b)
+                c @ (::int) | (::float)
+                    r5 <- (53, c)
+                d @ :: string | list
+                    r5 <- (54, d)
+                _ /: r5 <- (555, n)
+        res <- r5
+        
+        # struct
+        
+        struct P s:string
+        
+        struct A(P) a:int
+        
+        struct B(P) b:list
+        
+        struct C c:int, t:string
+        
+        ss6 = [
+            A('s1', 1), A('s2',2), A('sa3', 15),
+            B('b3', [1,12,13]), B('sb2', [4,5]),
+            C(31, 'c1'),
+            [A{s:'La1'}, B{s:'Lb1'}], [B{}, C{}],
+            {'mio1': A{s:'La2'}}, {'mao2': B{s:'Lb2'}}, {'nixt':B{s:'Lb3'}}, {'mnom':C{}}, 
+        ]
+        r6 = []
+        for n <- ss6
+            match n
+                inst@ A{a:1}
+                    r6 <- (61, inst)
+                A{a:2, s: x@re`.2`}
+                    r6 <- (62, x)
+                B{b: x@[y@1, _, z@_]}
+                    r6 <- (63, x, y, z)
+                P{s:x@_}
+                    r6 <- (64, x)
+                [P{s: a @ _}, P{s: b @ _}]
+                    r6 <- (65, a, b)
+                {a @ re`^m.+`:P{s: b @ _}}
+                    r6 <- (66, a, b)
+                {a@_: B{s:b @ _}}
+                    r6 <- (67, a, b)
+                _ /: r6 <- ('_', n)
+        
+        res <- r6
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [(1, 1), ('int', 2, 2), ('[int]', 3, [3]), ('[f]', 1.2, [1.2]), ('_', 'ccc', 'ccc'), ('_', ('d555',), ('d555',))],
+            [(11, [1, 2, 3, 4, 5], [2, 3, 4]), (12, [1, 2, 6, 7, 5], [2, 6, 5]), ('_', [55, 555]), ('_', 1234), 
+                ('t1', 'aa', 'hh'), ('(abcde)', 1, 2, 1, 3, 1), ('t3', (5, 7, 5, 6, 8)), 
+                ('d1', 'def', 'abc', 'xyz', 'k1', 'k3'), ('d2', 'a1', 'a2', 'a3', {2: 22}, [101, 102]), ('d3', {11: 111})], 
+            [(32, 'abc'), (32, 'abd'), (33, 'roma'), (31, ''), (333, '<103>'), (34, 'abbc', '321', '!11?'), 
+                (35, 'super', '_45', 33), (36, 'allegro', '_quak', '3', 122, 121, 123), (36, 'amba', '_imba', '30', 131, 132, 133), (333, {}), 
+                (37, 'amira', 'buchin'), (37, 'aha', 'difen'), (333, ('opanki', 'odin'))], 
+            [(41, 1), (444, []), (444, 3), (42, 2.5), (444, (((3,),),)), (43, 'a1', 'a2', 'a3', 'root145', 'ping5')], 
+            [(51, 1), (53, 2), (51, 5), (53, 11), (53, 12.5), (52, 'aaa'), (52, 'bbb'), (54, 'ccc'), (52, 'xoma'), 
+                (52, 'Zorro'), (52, 'Yum'), (54, [1, 2]), (555, (1, 1))], 
+            [(61, 'st@A{s: s1,a: 1}'), (62, 's2'), (64, 'sa3'), (63, [1, 12, 13], 1, 13), (64, 'sb2'), ('_', 'st@C{c: 31,t: c1}'), 
+                (65, 'La1', 'Lb1'), ('_', ['st@B{s: ,b: []}', 'st@C{c: 0,t: }']), (66, 'mio1', 'La2'), 
+                (66, 'mao2', 'Lb2'), (67, 'nixt', 'Lb3'), ('_', {'mnom': 'st@C{c: 0,t: }'})]]
+        self.assertEqual(exv, resv)
+
     def test_enum_matching(self):
         ''' '''
         code = r'''

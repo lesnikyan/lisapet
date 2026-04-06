@@ -227,7 +227,7 @@ class CaseEmpty(ExpCase):
 class CaseDebug(ExpCase):
     def match(self, elems:list[Elem])-> bool:
         # prels('--DEbug', elems)
-        return len(elems) > 0 and elems[0].text == '@debug'
+        return len(elems) > 1 and elems[1].text == 'debug'
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' return base expression, Sub(elems) '''

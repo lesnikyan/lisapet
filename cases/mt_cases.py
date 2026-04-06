@@ -87,6 +87,32 @@ class MTVar(MTCase,CaseVar):
         return ptt
 
 
+class MTAtAssign(MTCase):
+    ''' var @ pattern '''
+    
+    
+    def match(self, elems:list[Elem], n=0) -> bool:
+        ''' '''
+        # print('mt@:', n)
+        if len(elems) < 3:
+            return False
+        if not isLex(elems[n], Lt.oper, '@'):
+            return False
+        # print('mt@2:', elemStr(elems))
+        return True
+        
+    
+    def expr(self, elems:list[Elem])-> tuple[Expression, Expression]:
+        ''' '''
+        ind = 1
+        # lem = elems[:ind]
+        # left = findCase(lem).expr(lem)
+        vexpr = VarExpr(Var(elems[0].text, TypeAny()))
+        rem = elems[ind+1:]
+        right = findCase(rem).expr(rem)
+        return MCSubAt(vexpr, right, src=elems)
+
+
 class MTObjMember(MTCase,CaseDotName):
     ''' Pattern should match value from enum.field 
         or other const/static value field-like (such structures not implemented yet).
@@ -579,6 +605,7 @@ class MTColPair(MTContr, CaseColon):
         # print('MTColPair.expr', parts)
         ekey = findCase(parts[0]).expr(parts[0])
         rval = findCase(parts[1]).expr(parts[1])
+        # print('MT k:v', ekey, rval)
         return ekey, rval
 
     def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
@@ -694,7 +721,7 @@ def innerMatcher():
     solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidRight, brkLim])
     
     wld = CaseOption(CaseAny(), [MTEStar(),  MTEQMark(), MTFail()])
-    operLim = CaseOptionPrepared(CaseOperLim(), [MTTypedVal(), MTMultiCase(), MTMultiTyped(), MTColPair(),])
+    operLim = CaseOptionPrepared(CaseOperLim(), [MTTypedVal(), MTMultiCase(), MTMultiTyped(), MTColPair(), MTAtAssign()])
     
     nonSolLim = CaseOption(NonSolid(), [MTDuaColon(), operLim, MTMultiTyped(), wld,])
 

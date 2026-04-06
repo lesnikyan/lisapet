@@ -179,7 +179,7 @@ class CaseOptionPrepared(CaseOption):
     def find(self, info:CMatchInfo):
         cs:ExpCase|CaseOption = None
         for sub in self.subs:
-            # print('co.find: %s %s' % (self.matcher.__class__.__name__, sub.__class__.__name__))
+            # print('co.find:', elemStr(info.elems), ' %s %s' % (self.matcher.__class__.__name__, sub.__class__.__name__))
             extrArg = None
             if self.found is not None:
                 extrArg = self.found
@@ -417,6 +417,10 @@ class CaseServ(CaseLim):
     def match(self, info:CMatchInfo) -> bool:
         if len(info.elems) == 0:
             return True
-        if len(info.elems[0].text) > 1 and info.elems[0].text[0] == '@':
+        if len(info.elems) < 2 or  not isLex(info.elems[0], Lt.oper, '@'):
+            return False
+        # if len(info.elems) > 1 and info.elems[0].text == '@':
+        #     print('deb:', elemStr(info.elems), info.elems[0].text[0] == '@' and len(info.elems[1].text) > 0)
+        if len(info.elems) > 1 and info.elems[0].text == '@' and len(info.elems[1].text) > 0:
             return True
 

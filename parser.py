@@ -13,22 +13,22 @@ c_esc_map = {'n':'\n', 't':'\t', 'r':'\r', '\\':'\\', '/':'/', '\'':'\'', '\"':'
 c_esc_back = '`'
 c_esc_back_map = {'`':'`', '\\':'\\'}
 c_nums = {n:0  for n in '1234567890'}
-c_oper = {n:0 for n in '+~-*/=%^&!?<>()[]:.;,|${}\\'}
+c_oper = {n:0 for n in '+~-*/=%^&!?<>()[]:.;,|${}@\\'}
 # single-line comment, to and of line
 c_comm = '#'
 # blok-comment, multiline or inline
 c_opcomm = '#@'
 c_ndcomm = '@#'
 c_mlines = '\'\'\' """ ```'.split(' ')
-rxChar = re.compile(r'[a-zA-Z_@\$]')
-nnChar = {n:0 for n in '_@$abcdefghijklmnopqrstuvwxyz' + 'abcdefghijklmnopqrstuvwxyz'.upper()}
+rxChar = re.compile(r'[a-zA-Z_\$]')
+nnChar = {n:0 for n in '_$abcdefghijklmnopqrstuvwxyz' + 'abcdefghijklmnopqrstuvwxyz'.upper()}
 c_quot = "\'\"`"
 c_regex = '| / % '
 
 _opers = [n for n in (
     '; , ... $$ .. ** ++ -- += -= *= /= %=  && || == != <= >= << >>'
     ' => ?> !?> -> <- !- := ?: /: !: :? :> :: =~ ?~ /~ ~> ^/'
-    ' < > = + - * / | \\ { } [ ] . , : ? ~ ! % ^ & * $ ( )').split(' ') if n]
+    ' < > = + - * / | \\ { } [ ] . , : ? ~ ! % ^ & * $ ( ) @').split(' ') if n]
 # ' """ \'\'\' ``` '
 _mopers = { n:1 for n in _opers}
 
