@@ -137,7 +137,7 @@ Content:
 16. [Modules. `import`](#22-import-modules)
 
 17. #### `match`-statement
-    1. [Match, cases, /:`](#23-match-statement)
+    1. [Match, cases, `/:`](#23-match-statement)
     2. [List and tuple `[0,x,_,?,*]` `(_,?,*)`](#232-matching-list-and-tuple)
     3. [Dict pattern `{'a':a, _:_, *}`](#233-matching-dict)
     4. [Struct pattern `N{ }`, `_{ }`](#234-matching-struct)
@@ -146,6 +146,9 @@ Content:
     7. [Mixed patterns: `[]|{}`, `[A{},B{}]`](#237-mixed-nested-patterns)
     8. [Regexp case ```re`abc` ```](#238-regexp-case)
     9. [Type pattern `::`](#239-type-matching-_int)
+    10. [Enum `N.x`](#2310-enum-elements)
+    11. [sub-assignment `x @ pattern`](#2311-assign-sub-value-)
+
 
 18. Regular expression:
     1. [Base syntax ```re`[abc]`i```](#251-regular-expressions-re)
@@ -3339,8 +3342,26 @@ for n <- nn
         A{a: N.e} /: # A{5}
 ```
 
-TODO: Maybe-cases, (?)
+### 23.11 Assign sub-value `@`
+We can assign value of sub-pattern to the local variable combining it with not-var patter.  
+Assigning opreator for matching case is an 'at': `@`.  
+Left-operand is a variable, right-operand shoud be a valid sub-pattern pattern.  
+```python
 
+match n
+    a @ ::int /: res = a
+    [b@_, 2] /: res = b
+    (name @ re`[A-Z][a-z]+`, _) /: res = name
+    {k: v @ [1, _, x@_]} /: res = (k, v, x)
+```
+Sub-pattern assignment is most usable with regexp or included containers, where pure pattern doesn't match to the variable or the full pattern.  
+Const or var patterns doesn't need additional assignment.  
+Underscore can be simply changed on named var.  
+But anyway all of them works with assignment.  
+
+
+
+TODO: Maybe-cases, (?)
 
 
 ### 25.1 Regular expressions. `re`
