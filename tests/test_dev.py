@@ -200,6 +200,10 @@ class TestDev(TestCase):
         
         DONE: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
         
+        DONE: match-case: assign val in pattern
+            var @ [1, 2, v2 @ _] /: print(var, v2)
+            `x @ _` the same as simple var-pattern `x` that matches any single value
+        
         FIXED: if we have predefined list / dict and try to use same name in the iterative assign by `<-` it breaks code
             File "C:\Users\admin\Documents\python_examples\minilang\nodes\oper_nodes.py", line 68, in doRight
                 src.do(ctx)
@@ -214,25 +218,42 @@ class TestDev(TestCase):
         
         TODO (?): add explicit append operator: list << val, dict << val. to use into comprehensions  
             alters:   <:  <=  <--  <<  
+            
+        TODO: think about pattern matching in comprehensions condition
         
         TODO: interactive mode:
             $ py lisapet
             >> code...
         
-        TODO: to think: change const from left-modifier to right-operand of `:`
+        TODO (?): to think: change const from left-modifier to right-operand of `:`
             var : const = val # const elem
             var : const(int) = val # strict typed const elem
         
-        TODO: think about deletion of var by name
-            delete(x); del(x)
-            --- x ; -/- x
-            @delete x; @del x
-            
-        TODO: think about pattern matching in comprehention
+        TODO: var/const in pattern matching:
+            name = 'Vasya'
+            match n
+                {name} /: ...
+                $name /: ...
+                @name /: ...
+                'Vasya' /: ...
         
-        TODO: match-case: assign val in pattern
-            var @ [1, 2, v2 @ _] /: print(var, v2)
-            `x @ _` the same as simple var-pattern `x` that matches any single value
+        TODO: check var is defined 
+            defined(var) # as a function
+            @defined{var}; @defined(var) # as a service feature
+        
+        TODO: define local var instead reassign upper-level var
+        k = 1
+        func foo()
+            local k = 5
+            @! k # delete local only
+        
+        DONE: think about deletion of var by name
+            @! operator has been implemented
+            # delete(x); del(x)
+            # --- x ; -/- x ; -= x ; >< x ;
+            # @delete x; @del x
+            # del x, y, name # non-single expr
+            # @del(x, y, name) # single expr
     '''
 
     _ = r"""
@@ -242,7 +263,6 @@ res = []
 """
 
 
-    
     
     def _test_code(self):
         ''' '''

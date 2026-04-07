@@ -91,7 +91,7 @@ class Context(NSContext):
         # dprint('x.update ====> :', name, val.get(), val.getType().__class__.__name__)
         src = self
         while True:
-            # dprint('#Ctx-upd,name:', name)
+            # print('#Ctx-upd,name:', name)
             # dprint('#Ctx-upd2', src.vars)
             if name in src.vars:
                 # dprint('x.upd:found', name)
@@ -102,6 +102,17 @@ class Context(NSContext):
                 # dprint('-- src.upper == None --', name, val)
                 val.name = name
                 self.addVar(val)
+                break
+            src = src.upper
+        
+    def delVar(self, name):
+        # print('$6', self.vars.keys())
+        src = self
+        while True:
+            if name in src.vars:
+                src.vars.pop(name)
+                return
+            if src.upper is None:
                 break
             src = src.upper
 
@@ -138,7 +149,7 @@ class Context(NSContext):
         tp.funcs.addMethod(func)
 
     def addVar(self, varName:Var|str, vtype:VType=None):
-        # dprint('x.addVar0 >> var:', varName, varName.name)
+        # print('x.addVar0 >> var:', varName, varName.name)
         var = varName
         name = varName
         # dprint('x.addVar1 ====> :', varName, varName.__class__.__name__, vtype, vtype.__class__.__name__)
@@ -175,7 +186,7 @@ class Context(NSContext):
 
         return None
 
-    def find(self, name):
+    def find(self, name, makeUndef=True):
         src = self
         # print('#Ctx.find,:', name)
         while src is not None:
@@ -187,6 +198,8 @@ class Context(NSContext):
                 return res
             if src.upper is None:
                 # raise EvalErr('Can`t find var|type name `%s` in current context' % name)
+                if not makeUndef:
+                    return None
                 var = VarUndefined(name)
                 return var
             src = src.upper
@@ -385,6 +398,13 @@ class Grup(NSContext, Container, Space):
         if not found:
             raise EvalErr('No item in grup', f"Grup {self.name} doesn't have item {name}")
         return found
+    
+    def delVar(self, name):
+        found = self.context.findHere(name)
+        if not found:
+            raise EvalErr('No item to delete in grup', f"Grup {self.name} doesn't have item {name} to delete")
+        
+        self.context.delVar(name)
     
     
     def __str__(self):

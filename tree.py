@@ -304,7 +304,7 @@ def caseMatcher():
     modLim = CaseOptionPrepared(CaseModWord(), [CaseConst()])
 
     # should apply after solid
-    nonSolLim = CaseOption(NonSolid(), [servLim, CaseUnclosedBrackets(), keyrwLim, operLim, modLim, CaseLUnar(StrFormatter()),])
+    nonSolLim = CaseOption(NonSolid(), [servLim, CaseUnclosedBrackets(), keyrwLim, operLim, modLim, CaseLUnar(StrFormatter()), CaseDelVar()])
 
     fullMatcher = CaseMatchcher([solidLim, nonSolLim])
     return fullMatcher

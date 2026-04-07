@@ -23,16 +23,13 @@ NEED FIX:
     # string + string
     # string[a : b] - slice
     TODO:
-    tostr(dictVal, keyOrder) 
-    tostr([a..b]) # gen obj
+    tostr(dictVal, keyOrder) ? 
+    tostr([a..b]) # gen obj  ?
     
-    decode(from bytes) / encode (to bytes) 
-
-
+    DONE by construct or methods, decode(from bytes) / encode (to bytes) 
 
 
 1.01 import python-implemented modules from /libs
-
 
 
 2.0 module math
@@ -46,9 +43,9 @@ NEED FIX:
     from(json_str): data_obj
 
 
-
 2.4 TODO: More types:  
-    byte, common numeric (numb, numer),
+    DONE byte, 
+    common numeric (numb, numer),
     common struct (?), implemented struct
     Maybe (Some, Nothing).
 
@@ -100,42 +97,6 @@ catch crit
 
 
 
-
-1.02 container of functions aka namespace or static methods. 
-# call
-A.foo(a, b)
-# def
-A func foo(a, b)
-    ..
-func A foo(a, b)
-    ..
-
-group A
-func A.foo(a, b)
-    ..
-
--- named group of funcs and consts
-    have own definition block
-    have own context (sub related to module)
-    Think about internal context of group, how function can get access to vals
-    should it be like static class or namespace?
-    should allow making sub-groups?
-
-group Math
-    P = 3.141592653589793
-    E = 2.718281828459045
-
-    func f1(a, b)
-        a + b
-
-    func bar(x) 
-        x ** 2
-
-print(Math.P)
-
-print(Math.f1(2,3))
-
-
 12 Functions: 
     - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but thinkable
     - unused/unnamed var `_` for function args foo(_, x), 
@@ -145,82 +106,6 @@ print(Math.f1(2,3))
 
 
 13. Interfaces as a some list of method signatures.
-
-
-t.1.1 # DONE: add type `glif` - one readable symbol
-            glif should represent any-bytes length symbol, starting ASCII to eastern hieroglyphs
-            solution: symbol or 1-elem string right after backslash \N \'N'
-                \`汉`; \'A'
-                \汉 , \A , \x45 , \' ' , \'\' , \'\'' , \"'" , \\n , \'\n'   
-                \0  \1  \A  \z  
-                \' '  \'  \`'`  \+  \-  \=   \:  
-                n:glif = 'A' # is ok
-            sequence - just string: `汉字`
-            methods:
-                tostring - put glif in string
-                tobytes - make object `bytes` joining all bytes of glif
-                string.glifes() -> list of glifs
-t1.2 #DONE: add bytes.
-            bb = [00 01 fa d8]
-            bb = [^ 00 01 fa d8]
-            bb = &[00 01 fa d8]            
-            bb = [x 00 01 fa d8]
-            b0 = [x 0a] # hex bytes
-            b0 = [d 10] # decimal bytes
-            b0 = [b 10] # bin bytes
-            bX = [11 00 fe] # default - hex
-            b8 = [o 11 22 70] # octa bytes
-            [00] # no spaces - list
-            [0f] -?
-            [x] list
-            [x 0] bytes
-            [0 0] bytes hex
-            [b 0 1] bytes bin
-            Methods bound: 
-                list() # get list of bytes
-                string(encoding=UTF) # convert to string
-                intlist() # group by 4 bytes anf convert to list of integers
-                glifs(encoding=UTF) # interpret bytes as glifs
-                generator by byts [b ; b <- [01 ff 0d]]
-
-
-14.0.1 # DONE Multiline and singleline cases: 
-match val
-    ptr /: x = 1; res = 2 + x
-    ptr2
-        y = 2
-        res = 2 + y
-
-
-14.0.2 Last expression is a result of match
-
-func foo(a)
-    match a
-        ptr1
-            b = 2 + a
-            b
-        _ /: a + a
-
-
-14.0.3 Last result of if-else, if `if` is a last block in func
-    func foo(a, b)
-        if a < b
-            a
-        eise if b < 0
-            a + b
-        else
-            b
-
-
-#== DONE unpack list using it as many vals
-    # def
-    func foo3(args...)
-        for val <- args
-            ...
-
-    # call
-    args = [1,2,3,4,5]
-    foo3(args...)
 
 
 14.9.2 think about transfer matched regexp to sub-expression 
@@ -233,35 +118,14 @@ match s
 
 # transfer found groups
     re`(\d+) (\w+)` :> a, b !- print(a, b)
-# transfer regexp rom pattern
-    ptt@re`(sub)` !- res = ptt ?~ sourceString
 
-14.11 var of whole pattern, or subset
-match nn
-    x@[*] !- # x - ane list == nn
-    [x@[*], y@[*], *] !- # x, y - vars by subpatterns
-    [ a@<_,_,_>, ee@*] !- # sets of subelements, a - subset,  ee - others
-    x@TypeA{} !- # var with struct instance
-
-- regexp-assign should differ from subval-assign
-    for example
-    [a, b@[c, d]] !- 
-    [a@~re``, b@re``] !- # a - regexp, b - value
+# transfer regexp from pattern
+    should be different from `@`-assignment 
+    ptt <?> re`(sub)` !- res = ptt ?~ sourceString 
 
 
-14.13.2 check type pattern, complex check type
-    # DONE questions:
-        ? :: int, x :: (int | float)
-
-    # DONE complex type in args/vars: do it
-        x:int|bool
-        nn:tuple|list 
-        obj:A|B
-    # DONE same for type-pattern
-        x :: A|B
-        nn :: list|tuple
-    
-
+14.13.3 check type if generic or typed collections
+    # not aplicable now
     # complex type (it looks mostly like a generics)
         x :: [int], y :: {string:int}
     # type-collection(to think)
@@ -294,20 +158,6 @@ match nn
     overload('>>', TypeAny, TypeList, handler)
 
     2. new operators by python (not sure) 
-
-
-21.1 reading iterator. read values from sequence in the loop iteration like 
-    val = iter(src) # src is collection or generator
-        it should init iterator and save instance in first call, then call next() method in each iteration
-        it should have reset() method
-        # sugar: val <= src // ?
-    2) solution: put at right part one more collections, so assign more var in left: 
-        aa = [1,2,3]
-        dd = {11:1, 22:2, 33:3}
-        for i, x, key, val <- iter(3), aa, dd
-            print(x, key, val)
-    3) solution: extend iter(), not sure
-        for a, b, c <- iters(list1, list2, list3)
 
 22.1 overload += to avoid copying original list.
     // Looks too complex in current implementation where x += y is the x = (x + y)
@@ -384,14 +234,13 @@ i-- # i -= 1
 
 #== multiline expr
 
-#== possible sugar
-
 #== concat strings
 str = (
     'Hello '
     "new string!"
 )
 
+#== possible sugar
 
 # case if: with no operator between line use && or defined default operator
 #    if (&& ..) if (|| .. ) - definition of default
@@ -425,32 +274,11 @@ foo(a, b)
     a + b
 
 
- 
-2. # DONE default, unnecessary and named function args
-3. # DONE tail-recursion optimization
-5. DONE composition of functions: foo . bar : arg ;; foo . bar < arg
-6. # DONE carrying
-    foo(a,b)
-    foo2 = foo(a;) -> func.carr[foo, a] -> foo2(b)
-    foo(a;) >> | (arg2) -> foo(a, arg2) |
-    foo2(arg2) -> foo(a, arg2) 
-
-#== DONE
-# composition of functions are possible
-    func foo(a)
-    func bar(a)
-    func buz(a)
-
-    buz(bar(foo(12)))
-    foo * bar * buz(12)
-    DONE: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
-        =>> curried_foo(1)(2)(3)
-    DONE: composition foo * bar (x)
-
 
 TODO: prevent overloading of func with default/named args or variadic list args...
 
-TODO: partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
+
+TODO (?): partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
 
 # not sure, partial usage of operator - make lambda:
             (2 +) =>> x -> 2 + x
@@ -488,7 +316,6 @@ _{s name: 'Bob', age: 25}
             expr4
 
 
-
 14.5 extended case of `?>` 'has values'
     thinking, not sure:
     X [*(12, 15)] !- list has values in parentheses with star, other values doesn't matter
@@ -502,6 +329,14 @@ _{s name: 'Bob', age: 25}
 
 
 # LP - projects 
+interactive mode:
+    - write line
+    - eval line
+
+editor mode
+    - edit in console editor
+    - eval code
+
 console game.
 
     - shooter1. 
@@ -548,6 +383,162 @@ Fixes:
 
 # DONE
         
+
+
+1.02 container of functions aka namespace or static methods. 
+# call
+A.foo(a, b)
+# def
+A func foo(a, b)
+    ..
+func A foo(a, b)
+    ..
+
+group A
+func A.foo(a, b)
+    ..
+
+-- named group of funcs and consts
+    have own definition block
+    have own context (sub related to module)
+    Think about internal context of group, how function can get access to vals
+    should it be like static class or namespace?
+    should allow making sub-groups?
+
+group Math
+    P = 3.141592653589793
+    E = 2.718281828459045
+
+    func f1(a, b)
+        a + b
+
+    func bar(x) 
+        x ** 2
+
+print(Math.P)
+
+print(Math.f1(2,3))
+
+
+t.1.1 # DONE: add type `glif` - one readable symbol
+            glif should represent any-bytes length symbol, starting ASCII to eastern hieroglyphs
+            solution: symbol or 1-elem string right after backslash \N \'N'
+                \`汉`; \'A'
+                \汉 , \A , \x45 , \' ' , \'\' , \'\'' , \"'" , \\n , \'\n'   
+                \0  \1  \A  \z  
+                \' '  \'  \`'`  \+  \-  \=   \:  
+                n:glif = 'A' # is ok
+            sequence - just string: `汉字`
+            methods:
+                tostring - put glif in string
+                tobytes - make object `bytes` joining all bytes of glif
+                string.glifes() -> list of glifs
+
+t1.2 #DONE: add bytes.
+            bb = [00 01 fa d8]
+            bb = [^ 00 01 fa d8]
+            bb = &[00 01 fa d8]            
+            bb = [x 00 01 fa d8]
+            b0 = [x 0a] # hex bytes
+            b0 = [d 10] # decimal bytes
+            b0 = [b 10] # bin bytes
+            bX = [11 00 fe] # default - hex
+            b8 = [o 11 22 70] # octa bytes
+            [00] # no spaces - list
+            [0f] -?
+            [x] list
+            [x 0] bytes
+            [0 0] bytes hex
+            [b 0 1] bytes bin
+            Methods bound: 
+                list() # get list of bytes
+                string(encoding=UTF) # convert to string
+                intlist() # group by 4 bytes anf convert to list of integers
+                glifs(encoding=UTF) # interpret bytes as glifs
+                generator by byts [b ; b <- [01 ff 0d]]
+
+
+14.0.1 # DONE Multiline and singleline cases: 
+match val
+    ptr /: x = 1; res = 2 + x
+    ptr2
+        y = 2
+        res = 2 + y
+
+
+14.0.2 DONE Last expression is a result of match
+
+func foo(a)
+    match a
+        ptr1
+            b = 2 + a
+            b
+        _ /: a + a
+
+
+14.0.3 DONE Last result of if-else, if `if` is a last block in func
+    func foo(a, b)
+        if a < b
+            a
+        eise if b < 0
+            a + b
+        else
+            b
+
+
+#== DONE unpack list using it as many vals
+    # def
+    func foo3(args...)
+        for val <- args
+            ...
+
+#== DONE call arg...
+    args = [1,2,3,4,5]
+    foo3(args...)
+
+
+14.11 DONE var of whole pattern, or subset
+match nn
+    x@[*] !- # x - ane list == nn
+    [x@[*], y@[*], *] !- # x, y - vars by subpatterns
+    [ a@<_,_,_>, ee@*] !- # sets of subelements, a - subset,  ee - others
+    x@TypeA{} !- # var with struct instance
+
+- regexp-assign should differ from subval-assign
+    for example
+    [a, b@[c, d]] !- 
+    [a@~re``, b@re``] !- # a - regexp, b - value
+
+
+14.13.2 check type pattern, complex check type
+    # DONE questions:
+        ? :: int, x :: (int | float)
+
+    # DONE complex type in args/vars: do it
+        x:int|bool
+        nn:tuple|list 
+        obj:A|B
+    # DONE same for type-pattern
+        x :: A|B
+        nn :: list|tuple
+    
+
+21.1 DONE: reading iterator. 
+    !! was covered by multi-source iterator :
+        for a, b, c <- s1, s2, s3
+    read values from sequence in the loop iteration like 
+    val = iter(src) # src is collection or generator
+        it should init iterator and save instance in first call, then call next() method in each iteration
+        it should have reset() method
+        # sugar: val <= src // ?
+    2) DONE solution: put at right part one more collections, so assign more var in left: 
+        aa = [1,2,3]
+        dd = {11:1, 22:2, 33:3}
+        for i, x, key, val <- iter(3), aa, dd
+            print(x, key, val)
+    3) solution: extend iter(), not sure
+        for a, b, c <- iters(list1, list2, list3)
+
         
         DONE: refactor tree.py from loops of cases to pattern-tree
         
@@ -634,6 +625,27 @@ Fixes:
             str[index] ->> glif
             
         
+2. # DONE default, unnecessary and named function args
+3. # DONE tail-recursion optimization
+5. DONE composition of functions: foo . bar : arg ;; foo . bar < arg
+6. # DONE carrying
+    foo(a,b)
+    foo2 = foo(a;) -> func.carr[foo, a] -> foo2(b)
+    foo(a;) >> | (arg2) -> foo(a, arg2) |
+    foo2(arg2) -> foo(a, arg2) 
+
+#== DONE
+# composition of functions are possible
+    func foo(a)
+    func bar(a)
+    func buz(a)
+
+    buz(bar(foo(12)))
+    foo * bar * buz(12)
+    DONE: carrying: func foo(1,b,c); 1) curry(foo); 2) @cur foo 3) ~foo $)  
+        =>> curried_foo(1)(2)(3)
+    DONE: composition foo * bar (x)
+
         DONE: list... unpack list/tuple into function 
         nums = [1,2,3]
         1) insert to list
