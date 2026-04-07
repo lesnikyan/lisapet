@@ -695,6 +695,29 @@ y = false
 y :: tN # false
 ```
 
+### 2.9 Delete var `@!` operator
+We can delete previously defined variable using left unary operator `@!`.  
+Operator `@!` is applyed to all variables which has been enumerated in right.  
+```python
+a,b,c = 1,2,3
+d = 11
+grup G
+    d = 4
+    e = 5
+    f = 6
+    g = 7
+
+@! a # delete var `a`
+
+@! b, c # delete 2 vars
+
+@! G.e # detete sub-var `e` in G
+
+@! G.f, G.g, d # mixed example
+
+```
+
+
 
 More about special operators in   
 [one-line `;` `/:`](#20-one-line-block---operators),   

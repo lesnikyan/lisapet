@@ -27,8 +27,17 @@ class TestOper(TestCase):
         grup G
             a = 11
             b = 12
+            c = 13
+            d = 14
+        
+        m1 = 15
+        n1, n2 = 21, 22
         
         @! G.a
+        
+        # complex
+        
+        @! n1, n2, G.c, G.d
         
         '''
         code = norm(code[1:])
@@ -37,11 +46,22 @@ class TestOper(TestCase):
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         
+        data = {
+            'm1': True, 
+            'n1': False, 'n2': False,}
+        for name, exp in data.items():
+            r = ctx.find(name, False)
+            if exp:
+                self.assertIsInstance(r, Var)
+            else:
+                self.assertIsNone(r)
+        
         grg:Grup = ctx.get('G')
         # print('G:', grg.getItem('b'))
         self.assertIsInstance(grg.getItem('b'), Var)
-        with self.assertRaisesRegex(EvalErr, r"Grup G doesn't have item .*") as contx:
-            grg.getItem('a')
+        for name in ['a', 'c', 'd']:
+            with self.assertRaisesRegex(EvalErr, r"Grup G doesn't have item .*") as contx:
+                grg.getItem(name)
     
     def test_delete_var(self):
         ''' '''
