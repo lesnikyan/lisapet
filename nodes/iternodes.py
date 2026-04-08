@@ -199,8 +199,10 @@ class SrcIterator(NIterator):
         if not src:
             return
         match src:
-            case BytesVal():
+            case BytesVal() | StringVal():
                 self.src = src.val
+            # case StringVal():
+            #     self.src
             case ListVal() | TupleVal():
                 self.src = src.elems
             case DictVal():
@@ -236,6 +238,8 @@ class SrcIterator(NIterator):
         # print('IterSrc.get:', val)
         if isinstance(self.src, bytearray):
             val = Val(val, TypeInt())
+        elif isinstance(self.src, str):
+            val = Val(Glif(val), TypeGlif())
         return val
 
 
@@ -525,7 +529,7 @@ class LeftArrowExpr(BinOper):
         # print('Arr <- init4 rtArg:', rtArg)
         # print('Arr <- init4 ltArg:', ltArg)
         itExp = None
-        if isinstance(rtArg, (Collection, BytesVal)):
+        if isinstance(rtArg, (Collection, BytesVal, StringVal)):
             itExp = SrcIterator(rtArg)
         elif rtSet:
             itExp = MultiSrcIterator(rtSet)

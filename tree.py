@@ -8,22 +8,23 @@ from lang import *
 from vars import *
 # from vals import isDefConst, elem2val, isLex
 
+from nodes import *
+from nodes.tnodes import *
+from nodes.oper_nodes import *
+from nodes.control import *
+
 from cases.tcases import *
 from cases.control import *
 from cases.oper import *
 from cases.modifier import *
 from cases.collection import *
-from cases.mt_cases import *
-
-from nodes import *
-from nodes.tnodes import *
 from cases.sequence import *
+from cases.generator import *
 from cases.runar_oper import *
-from nodes.oper_nodes import *
-from nodes.control import *
 from cases.structs import *
 from cases.funcs import *
 from cases.operwords import *
+from cases.mt_cases import *
 from cases.modules import *
 
 from parser import *
