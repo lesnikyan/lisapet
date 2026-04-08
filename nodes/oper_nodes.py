@@ -663,6 +663,37 @@ class UnarSign(UnarOper):
         self.res = Val(num, inVal.getType())
 
 
+class DelVarOper(UnarOper):
+    ''' + - '''
+    def __init__(self, inner:Expression=None):
+        super().__init__('@!', inner)
+
+    def delVar(self, ctx:Context, varExp):
+        if isinstance(varExp, OperDot):
+            varExp.objExp.do(ctx)
+            varOb = varExp.objExp.get()
+            # print('@!4', varExp.objExp, varOb)
+            if isinstance(varOb, Grup):
+                memb = varExp.membExpr
+                varOb.delVar(memb.name)
+        elif isinstance(varExp, VarExpr):
+            ctx.delVar(varExp.name)
+
+    def do(self, ctx:Context):
+        varExp = self.inner
+        vars = []
+        if not isinstance(varExp, SequenceExpr):
+            vars.append(varExp)
+        else:
+            # print('@!3', varExp.getSubs())
+            for tex in varExp.getSubs():
+                vars.append(tex)
+        for vExp in vars:
+            self.delVar(ctx, vExp)
+        
+        
+
+
 class MultiOper(OperCommand):
     ''' All expressions with more than 1 operator: (2 + 5 * 7) '''
     def __init__(self, exp:Expression=None):

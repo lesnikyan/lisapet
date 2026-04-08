@@ -132,7 +132,7 @@ class CaseOption(ExpCase):
         self.matcher:CaseLim = matcher
     
     def match(self, info:CMatchInfo)-> bool:
-        # print('CO.match by %s' % (self.matcher.__class__.__name__), self.matcher.match(info))
+        # print('CO.match by %s' % (self.matcher.__class__.__name__), elemStr(info.elems), self.matcher.match(info))
         return self.matcher.match(info)
     
     def isLim(self):
@@ -141,6 +141,7 @@ class CaseOption(ExpCase):
     def find(self, info:CMatchInfo):
         cs:ExpCase|CaseOption = None
         for sub in self.subs:
+            # print('co.find:', elemStr(info.elems), ' %s %s' % (self.matcher.__class__.__name__, sub.__class__.__name__))
             mtarg = info
             if not sub.isLim():
                 mtarg = info.elems

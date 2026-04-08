@@ -206,6 +206,44 @@ def makeUnary(elem:Elem)->OperCommand:
         return BoolNot(oper)
 
 
+class CaseDelVar(SubCase):
+    ''' @! var
+        @! a, b, c
+    '''
+    
+    def __init__(self):
+        super().__init__()
+        self.cc = CaseCommas()
+        self.subs = None
+    
+    def match(self, elems:list[Elem]) -> bool:
+        elen = len(elems)
+        self.subs = None
+        if elen < 2:
+            return False
+        if not isLex(elems[0], Lt.oper, '@!'):
+            return False
+        if elen == 2:
+            return elems[1].type == Lt.word
+        args = elems[1:]
+        self.subs = args
+        sok, _ = isSolidExpr(args)
+        if sok:
+            return isField(args)
+        
+        return self.cc.match(args)
+        
+    def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        if self.subs:
+            subs = self.subs
+        else:
+            subs = elems[1:]
+        return DelVarOper(), [subs]
+
+    def setSub(self, base:UnarOper, subs:Expression|list[Expression])->Expression:
+        base.setInner(subs[0])
+
+
 class CaseBrackets(SubCase, SolidCase):
     ''' cases:
         math expression,
