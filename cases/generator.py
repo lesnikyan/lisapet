@@ -62,7 +62,7 @@ class CaseComprehension(SubCase, SolidCase):
         exp = self.getExpr()
         subs = [s for s in subs if len(s)]
         # prels('LC.elems = :', elems, show=1) 
-        # prels('ComrGen subs=', subs, show=1)
+        # prels('CompGen subs=', subs, show=1)
         return exp, subs
 
     def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
@@ -151,3 +151,22 @@ class CaseBytesComprehension(CaseComprehension):
     
     def getExpr(self) -> ComprehensionGen:
         return BytesComprExpr()
+
+
+class CaseStringComprehension(CaseComprehension):
+    def __init__(self):
+        super().__init__()
+        self.splitInds = (2, -1)
+    
+    def match(self, elems:list[Elem], ind=-1) -> bool:
+        # print('$SGen:', elemStr(elems))
+        if len(elems) < 6:
+            return False
+        if not isLex(elems[0], Lt.oper, '~'):
+            return False
+        if not isLex(elems[1], Lt.oper, '[') and not isLex(elems[-1], Lt.oper, ']'):
+            return False
+        return self.cs.match(elems[2:-1])
+
+    def getExpr(self) -> ComprehensionGen:
+        return StringComprExpr()

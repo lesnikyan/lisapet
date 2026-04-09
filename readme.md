@@ -43,6 +43,7 @@ Content:
     6. [Ternary `?:` operator](#26-ternary-operator-)
     7. [In `?>`, not in `!?>`](#27-val-in--and-val-not-in--operators)
     8. [Check type `::`](#28-check-type-operator-)
+    9. [Delete operator `@!`](#29-delete-var--operator)
 
 3. Collections.  
     1. [List `[]`](#31-list-array)
@@ -1211,18 +1212,30 @@ r = 0
 for i <- iter(3)
     r = r + arr[i]
 ```
+
 - Iteration by list.  
 ```python
 # by array
 for n <- [1,2,3]
     r += n
 ```
+
 - Iteration by number-sequence generator.  
 ```python
 # Generator [start .. last]
 for x <- [1..10]
     r += x
 ```
+
+- Iteration by string.  
+Reads each symbol as a glif value.  
+```python
+r = ' '
+for s <- 'Hello!'
+    r += ~'{s} '
+r # >> ' H e l l o ! '
+```
+
 - Iteration by dict.  
 Loop-assigning arrow operator assigns a key and a value in each iteration.  
 Note: Unlike ordered sequences, iterating by dict doesn't guarantee order.  
@@ -1231,6 +1244,7 @@ dd = {'a':1, 'b':2}
 for key, val <- dd
     print("%s = %d" << (key, val))
 ```
+
 #### More special cases:  
 - List of lists or tuples tuples.  
 If we doing loop by list of sequences with same size, like list of tuples `(x, x)` we can assign values of inner sequence into local var immediately.  

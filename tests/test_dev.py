@@ -272,23 +272,56 @@ res = []
 
 
     
-    def _test_string_comprehension(self):
+    def test_string_comprehension(self):
         ''' '''
         code = r'''
         res = []
-
-        # list gen
-        # rn = [ g ; g <- 'abc']
         
+        
+        # List by string
+
+        # list gen from string
+        r1 = [ g ; g <- 'abc']
+        res <- r1
         
         # list gen mixed source string, list
+        a2 = [1,2,3]
+        s2 = 'def'
+        r2 = [~'{s}{n}' ; s, n <- s2, a2 ; n > 1]
+        res <- r2
+        
+        
+        # String from glifs
+        
+        # from string ~[;  <- '']
+        r3 = ~[ s ; s <- 'Hello!']
+        res <- r3
         
         # from bytes ~[ ; n <- 0x[]]
+        bb4 = 0x[41 42 43 44 21 61 62 63]
+        r4 = ~[glif(b) ; b <- bb4]
+        res <- r4
         
         # from numbers ~[ ; n <- [41..50]]
+        r5 = ~[ glif(n); n <- [80.. 85]]
+        res <- r5
+        
+        
+        # String from strings
         
         # from list of sttrings ~[wd ; wd <- ['I', 'am', 'coding']]
+        ss6 = ['I', '-', 'am', '-', 'coding']
+        r6 = ~[x ; wd <- ss6; x = wd == '-' ? ' ' : wd]
+        res <- r6
         
+        # from multiline, 2 iterations
+        ss7 = """
+        Hello!
+        What we can do?
+        Let's do it!
+        """
+        r7 = ~[wd + ' ' ; ss <- ss7.split('\n'); wd <- ss.split(re`\b`) ; len(wd) > 0]
+        res <- r7
         
         # print('res = ', res)
         '''
@@ -300,62 +333,11 @@ res = []
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
         resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
-        
-    
-    def test_iter_by_string(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        # simple string
-        r1 = []
-        ss = "abc+-12"
-        for g <- ss
-            r1 <- g
-        res <- r1
-        
-        # in the same expr
-        r2 = []
-        for g <- "Hello!"
-            r2 <- g
-        res <- r2
-        
-        # multi string
-        ss2 = '123'
-        r3 = []
-        for a, b <- ss2, "ABC"
-            r3 <- (a, b, a + b)
-        res <- r3
-        
-        # mixed sources str, list, tuple, dict
-        aa3 = ['aa','bb','cc']
-        ss3 = 'QWE'
-        dd3 = {'x':'-', 'y':'+', 'z':'='}
-        tt3 = (11, 22, 33)
-        r3 = []
-        for a, k, v, s, t  <- aa3, dd3, ss3, tt3
-            r3 <- ~'~ {a} {k}{v} {s}/{t}'
-        res <- r3
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
         # print(resv)
-        exv = [
-            ['g(a)', 'g(b)', 'g(c)', 'g(+)', 'g(-)', 'g(1)', 'g(2)'], ['g(H)', 'g(e)', 'g(l)', 'g(l)', 'g(o)', 'g(!)'], 
-            [('g(1)', 'g(A)', '1A'), ('g(2)', 'g(B)', '2B'), ('g(3)', 'g(C)', '3C')], 
-            ['~ aa x- Q/11', '~ bb y+ W/22', '~ cc z= E/33']]
+        exv = [['g(a)', 'g(b)', 'g(c)'], ['e2', 'f3'], 'Hello!', 'ABCD!abc', 'PQRSTU', 'I am coding', "Hello ! What   we   can   do ? Let ' s   do   it ! "]
         self.assertEqual(exv, resv)
         
+    
 
     
     def _test_code(self):
