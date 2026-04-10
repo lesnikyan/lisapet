@@ -205,9 +205,12 @@ x = maybe(1) # @yep(1), (? val)
 x = nothing # @nop , (?-)
 
 4.1 Duck-type for structs:: func f(arg:struct{foo(int, float), bar(string)}) // ? not sure
+
 4.2 anonimous structs inst = struct{name: 'Abc', num: 123}; possible sugar: ${name: '', num:123}
+
 7. common types: (tree, queue, set, pair ) with operations: applay func to each, clone, merge, insert, fold, map, etc.
-8. ~[s, s <- "..."] gen by string: solution (1) `~` operator as a list-to-string convertor
+
+8. 
 9.
 #== anonimous func object (multiline)
 foo = func (args...)

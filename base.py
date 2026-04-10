@@ -205,6 +205,13 @@ class Var(Base):
 class Glif:
     def __init__(self, char):
         self.val = char
+        
+    def __eq__(self, value):
+        match value:
+            case Glif():
+                return self.val == value.val
+            case _:
+                return False
     
     def __str__(self):
         return 'glif(%s)' % (self.val)

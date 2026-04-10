@@ -87,6 +87,7 @@ class TestDev(TestCase):
             0xff; 0b10000001
         
         TODO: (?) bytes 0x[01 02 0f] oper shift: bb << 4; bb >> 8 # no extend size
+            # we can do the same by slice and adding zero-bytes
         
         TODO:? class Null() -> class Null(Val)
         
@@ -97,7 +98,7 @@ class TestDev(TestCase):
             foo(1,2, :...)
             foo(1,2, |...)
             foo(1,2, /...)
-            Thoughts: lokos like curried function can do the same;
+            Thoughts: looks like curried function can do the same;
             func foo(a,b,c)...
             f = foo(1, 2); f(3) ;; g = foo(1); g(2, 3) # partial call
             f = foo~>(1)(2); f(3) ;; g = foo~>(1); g(2)(3)
@@ -130,9 +131,9 @@ class TestDev(TestCase):
         
         TODO: overload: 
             test overloading for imported functions, 
-                should we disallow overloading function in another module?
+                should we disallow overloading function in another module? yep
                 looks like overloading is a feature within one module
-            (? do we need) overloaded methods of imported structs
+            (? do we need) overloaded methods of imported structs? nop
             
         TODO: override of overload:
                 Think about case with same name func in a child is overloaded for another args in parent
@@ -140,7 +141,8 @@ class TestDev(TestCase):
                     2) child method will add and shoud find func by signature in all parent tree or
                     3) disallow override overloaded func name
         
-        TODO: error if try to curry func with overloading, variadic args. question: how to do with default args.
+        TODO: error if try to curry func with overloading, variadic args. 
+            question: how to do with default args? disable it
         
         TODO: error of composition of functions with more than 1 arg
         
@@ -154,6 +156,10 @@ class TestDev(TestCase):
         TODO: nop. think about type casting by colon; type in left
             x:int = int: true
             # type-constructor is enough 
+        
+        TODO (?): to think: change const from left-modifier to right-operand of `:`
+            var : const = val # const elem
+            var : const(int) = val # strict typed const elem
         
         TODO: add assertion to cases in test_lists
         
@@ -182,7 +188,6 @@ class TestDev(TestCase):
         
         TODO: check and optimize if need Function.checkTail process
          
-
         DONE: 21.1 Multi-reading in loop:
             put at right part one more collections, so assign more var in left: 
             aa = [1,2,3]
@@ -216,6 +221,14 @@ class TestDev(TestCase):
             == solution: deprecate <- for append elem in generator, 
                 add alter oper for explicit append action: << <-- 
         
+        DONE: think about deletion of var by name
+            @! operator has been implemented
+            # delete(x); del(x)
+            # --- x ; -/- x ; -= x ; >< x ;
+            # @delete x; @del x
+            # del x, y, name # non-single expr
+            # @del(x, y, name) # single expr
+        
         TODO (?): add explicit append operator: list << val, dict << val. to use into comprehensions  
             alters:   <:  <=  <--  <<  
             
@@ -225,11 +238,7 @@ class TestDev(TestCase):
             $ py lisapet
             >> code...
         
-        TODO (?): to think: change const from left-modifier to right-operand of `:`
-            var : const = val # const elem
-            var : const(int) = val # strict typed const elem
-        
-        TODO: var/const in pattern matching:
+        TODO: outer value: var/const/regexp in pattern matching:
             name = 'Vasya'
             match n
                 {name} /: ...
@@ -247,13 +256,14 @@ class TestDev(TestCase):
             local k = 5
             @! k # delete local only
         
-        DONE: think about deletion of var by name
-            @! operator has been implemented
-            # delete(x); del(x)
-            # --- x ; -/- x ; -= x ; >< x ;
-            # @delete x; @del x
-            # del x, y, name # non-single expr
-            # @del(x, y, name) # single expr
+        TODO: think about ?> for bytes
+        
+        DONE: ~[s, s <- "..."] gen by string: 
+            solution (1) `~` operator as a list-to-string convertor
+            sol(2): ~[;] # string-generator 
+            s <- "..." # glif stream from string
+            ~[gX ; gX <- string] # join all glifs to string
+            [ gX ; gX <- string ] # list of glifs
     '''
 
     _ = r"""
@@ -262,6 +272,8 @@ res = []
 
 """
 
+
+    
 
     
     def _test_code(self):

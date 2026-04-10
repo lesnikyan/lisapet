@@ -43,6 +43,7 @@ Content:
     6. [Ternary `?:` operator](#26-ternary-operator-)
     7. [In `?>`, not in `!?>`](#27-val-in--and-val-not-in--operators)
     8. [Check type `::`](#28-check-type-operator-)
+    9. [Delete operator `@!`](#29-delete-var--operator)
 
 3. Collections.  
     1. [List `[]`](#31-list-array)
@@ -95,6 +96,7 @@ Content:
     3. [`list` generator `[ ; ; ]`](#93-list-comprehension--sequence-generator)
     4. [`dict` generator `{ ; ; }`](#94-dict-comprehension-generator)
     5. [`bytes` generator `0x[ ; ; ]`](#95-bytes-comprehension-generator)
+    6. [`string` generator `~[ ; ; ]`](#96-string-comprehension-generator)
 
 10. #### Structs `A{}` 
     1. [Definition of `struct`, base constructor `A{a:b}`, fields](#101-struct)
@@ -1211,18 +1213,30 @@ r = 0
 for i <- iter(3)
     r = r + arr[i]
 ```
+
 - Iteration by list.  
 ```python
 # by array
 for n <- [1,2,3]
     r += n
 ```
+
 - Iteration by number-sequence generator.  
 ```python
 # Generator [start .. last]
 for x <- [1..10]
     r += x
 ```
+
+- Iteration by string.  
+Reads each symbol as a glif value.  
+```python
+r = ' '
+for s <- 'Hello!'
+    r += ~'{s} '
+r # >> ' H e l l o ! '
+```
+
 - Iteration by dict.  
 Loop-assigning arrow operator assigns a key and a value in each iteration.  
 Note: Unlike ordered sequences, iterating by dict doesn't guarantee order.  
@@ -1231,6 +1245,7 @@ dd = {'a':1, 'b':2}
 for key, val <- dd
     print("%s = %d" << (key, val))
 ```
+
 #### More special cases:  
 - List of lists or tuples tuples.  
 If we doing loop by list of sequences with same size, like list of tuples `(x, x)` we can assign values of inner sequence into local var immediately.  
@@ -2148,6 +2163,34 @@ bb8 = bytes('ABCDEFGHIJKLMNOP')
 r = 0x[bytes([c + 32, 0x20]) ; c <- bb8]
 ```
 All options are the same as in `list` generator: multi-source, assignments, filtering, sub-iteration.  
+
+
+### 9.6 String comprehension generator.
+String generator looks similar to list gen but with `~` prefix.  
+`~[ elem ; a <- src ; condition]`  
+The `~` here is more the prefix than the operator.  
+Generator can processes string and makes a string as a result.  
+Each elem in 1-st section should be a `glif` or a `string`.  
+```python
+pt = '.,?!'
+r = ~[ s ; s <- 'Hello, dude!' ; s !?> pt]
+# >> 'Hello dude'
+```
+It can process any collection, `string` or `bytes`.  
+Multi-sources, conditions and assign expressions are available too.  
+```python
+# src: string + list
+a2 = [1,2,3]
+s2 = 'def'
+r = ~[~'{s}{n}' ; s, n <- s2, a2 ; n > 1]
+# >> d1e2f3
+
+# src: bytes
+bb4 = 0x[41 42 43 44 21 61 62 63]
+r = ~[s ; b <- bb4 ; s = glif(b)]
+# >> 'ABCD!abc'
+```
+
 
 
 ### 14. Builtin functions:  

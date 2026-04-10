@@ -199,8 +199,10 @@ class SrcIterator(NIterator):
         if not src:
             return
         match src:
-            case BytesVal():
+            case BytesVal() | StringVal():
                 self.src = src.val
+            # case StringVal():
+            #     self.src
             case ListVal() | TupleVal():
                 self.src = src.elems
             case DictVal():
@@ -236,6 +238,8 @@ class SrcIterator(NIterator):
         # print('IterSrc.get:', val)
         if isinstance(self.src, bytearray):
             val = Val(val, TypeInt())
+        elif isinstance(self.src, str):
+            val = Val(Glif(val), TypeGlif())
         return val
 
 
@@ -525,7 +529,7 @@ class LeftArrowExpr(BinOper):
         # print('Arr <- init4 rtArg:', rtArg)
         # print('Arr <- init4 ltArg:', ltArg)
         itExp = None
-        if isinstance(rtArg, (Collection, BytesVal)):
+        if isinstance(rtArg, (Collection, BytesVal, StringVal)):
             itExp = SrcIterator(rtArg)
         elif rtSet:
             itExp = MultiSrcIterator(rtSet)
@@ -655,6 +659,9 @@ class ComprehensionGen(Expression):
                     self.doElem(subCtx)
             inod.step()
 
+    def fin(self):
+        pass
+
     def do(self, ctx:Context):
         # dprint('ListComprExpr.do0')
         self.res = None # reset prev
@@ -662,6 +669,7 @@ class ComprehensionGen(Expression):
         if len(self.iterNodes) == 0:
             return
         self.iterLoop(0, ctx)
+        self.fin()
 
     def get(self):
         return self.res
@@ -724,12 +732,12 @@ class DictComprExpr(ComprehensionGen):
 
 class BytesComprExpr(ComprehensionGen):
     '''
-        0x[k:v ; k, v <- src; assign? ; cond]
+        0x[n ; n <- src; assign? ; cond]
     '''
     def __init__(self):
         super().__init__()
-        self.resExpr:ServPairExpr
-        self.res:DictVal = None
+        self.resExpr:Expression
+        self.res:BytesVal = None
 
     def resultObject(self):
         ''' '''
@@ -740,4 +748,31 @@ class BytesComprExpr(ComprehensionGen):
         res = self.resExpr.get()
         # print('B-COMPRH . doElem. rexpr:', self.resExpr, 'res:', res, 'val:', var2val(res))
         self.res.addVal(var2val(res))
+
+
+class StringComprExpr(ComprehensionGen):
+    '''
+        ~[s ; s <- src; assign? ; cond]
+    '''
+    def __init__(self):
+        super().__init__()
+        self.resExpr:Expression
+        self.vals = []
+        self.res:StringVal = None
+
+    def resultObject(self):
+        ''' '''
+        self.res = None
+    
+    def fin(self):
+        self.res = StringVal(''.join(self.vals))
+    
+    def doElem(self, ctx:Context):
+        self.resExpr.do(ctx)
+        res = self.resExpr.get()
+        rv = var2val(res).getVal()
+        # print('B-COMPRH . doElem. rexpr:', self.resExpr, 'res:', res, 'val:', rv)
+        if isinstance(rv, Glif):
+            rv = rv.val
+        self.vals.append(rv)
     

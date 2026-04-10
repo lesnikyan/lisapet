@@ -57,10 +57,11 @@ def bool_constr(ctx, arg:Val):
     match v:
         case Null():
             v = False
-        case '':
-            v = False
-        case 'false':
-            v = False
+        case str():
+            if v in ['', 'false']:
+                v = False
+            else:
+                v = True
         case bytearray():
             v = sum(int(b) for b in v) != 0
         case Glif():
