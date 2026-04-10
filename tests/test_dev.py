@@ -256,7 +256,9 @@ class TestDev(TestCase):
             local k = 5
             @! k # delete local only
         
-        TODO: ~[s, s <- "..."] gen by string: 
+        TODO: think about ?> for bytes
+        
+        DONE: ~[s, s <- "..."] gen by string: 
             solution (1) `~` operator as a list-to-string convertor
             sol(2): ~[;] # string-generator 
             s <- "..." # glif stream from string
@@ -271,72 +273,6 @@ res = []
 """
 
 
-    
-    def test_string_comprehension(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        
-        # List by string
-
-        # list gen from string
-        r1 = [ g ; g <- 'abc']
-        res <- r1
-        
-        # list gen mixed source string, list
-        a2 = [1,2,3]
-        s2 = 'def'
-        r2 = [~'{s}{n}' ; s, n <- s2, a2 ; n > 1]
-        res <- r2
-        
-        
-        # String from glifs
-        
-        # from string ~[;  <- '']
-        r3 = ~[ s ; s <- 'Hello!']
-        res <- r3
-        
-        # from bytes ~[ ; n <- 0x[]]
-        bb4 = 0x[41 42 43 44 21 61 62 63]
-        r4 = ~[glif(b) ; b <- bb4]
-        res <- r4
-        
-        # from numbers ~[ ; n <- [41..50]]
-        r5 = ~[ glif(n); n <- [80.. 85]]
-        res <- r5
-        
-        
-        # String from strings
-        
-        # from list of sttrings ~[wd ; wd <- ['I', 'am', 'coding']]
-        ss6 = ['I', '-', 'am', '-', 'coding']
-        r6 = ~[x ; wd <- ss6; x = wd == '-' ? ' ' : wd]
-        res <- r6
-        
-        # from multiline, 2 iterations
-        ss7 = """
-        Hello!
-        What we can do?
-        Let's do it!
-        """
-        r7 = ~[wd + ' ' ; ss <- ss7.split('\n'); wd <- ss.split(re`\b`) ; len(wd) > 0]
-        res <- r7
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = [['g(a)', 'g(b)', 'g(c)'], ['e2', 'f3'], 'Hello!', 'ABCD!abc', 'PQRSTU', 'I am coding', "Hello ! What   we   can   do ? Let ' s   do   it ! "]
-        self.assertEqual(exv, resv)
-        
     
 
     

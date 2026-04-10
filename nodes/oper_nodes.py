@@ -828,6 +828,7 @@ class IsInExpr(BinOper):
         if isinstance(coll, (ListVal, DictVal, TupleVal, Maybe)):
             res = coll.has(val)
         if isinstance(coll.getType(), TypeString):
+            # StringVal
             v = val.getVal()
             if isinstance(v, Glif):
                 v = v.val
