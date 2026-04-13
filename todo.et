@@ -387,6 +387,78 @@ Fixes:
 # DONE
         
 
+         
+        DONE: 21.1 Multi-reading in loop:
+            put at right part one more collections, so assign more var in left: 
+            aa = [1,2,3]
+            dd = {11:1, 22:2, 33:3}
+            for i, x, key, val <- iter(3), aa, dd
+                print(i, x, key, val)
+        
+        DONE: 21.2 Mult-reading in list-gen:
+            [ x + y ; x, y <- nn, mm]
+        
+        DONE: deprecate list/dict <- append operator inside of comprehension
+        
+        DONE: dict-gen
+            dict2 = { k: v + 10 ; k, v <- dict1; v > 0 && k != ''}
+        
+        DONE: bytes generator: 0x[(n << 2) % 0xff ; n <- iter(32)]
+        
+        DONE: match-case: assign val in pattern
+            var @ [1, 2, v2 @ _] /: print(var, v2)
+            `x @ _` the same as simple var-pattern `x` that matches any single value
+        
+        FIXED: if we have predefined list / dict and try to use same name in the iterative assign by `<-` it breaks code
+            File "C:\Users\admin\Documents\python_examples\minilang\nodes\oper_nodes.py", line 68, in doRight
+                src.do(ctx)
+            File "C:\Users\admin\Documents\python_examples\minilang\nodes\iternodes.py", line 652, in do
+                self.iterLoop(0, ctx)
+            File "C:\Users\admin\Documents\python_examples\minilang\nodes\iternodes.py", line 623, in iterLoop
+                inod.start()
+            == solution: deprecate use list <- val in the generators.
+            == solution: add alter operator instead of universal <- .
+            == solution: deprecate <- for append elem in generator, 
+                add alter oper for explicit append action: << <-- 
+        
+        DONE: think about deletion of var by name
+            @! operator has been implemented
+            # delete(x); del(x)
+            # --- x ; -/- x ; -= x ; >< x ;
+            # @delete x; @del x
+            # del x, y, name # non-single expr
+            # @del(x, y, name) # single expr
+        
+        DONE: ~[s, s <- "..."] gen by string: 
+            solution (1) `~` operator as a list-to-string convertor
+            sol(2): ~[;] # string-generator 
+            s <- "..." # glif stream from string
+            ~[gX ; gX <- string] # join all glifs to string
+            [ gX ; gX <- string ] # list of glifs
+         
+        DONE: const value
+            const x: int = 10
+        
+        DONE: if conditional expr is a last node of function then
+            last executed expression (sub-part of conditional) should be a result of function
+        func foo()
+            if cond
+                ...
+                expr1 # result
+            else if cond
+                expr2 # result
+            else
+                expr3 # result
+        func foo()
+            match n
+                1 /: 10 # result
+                2
+                    20 # result
+                a :: type
+                    b = f(a)
+                    b + 30 # result
+                _
+                    50 # default result
 
 1.02 container of functions aka namespace or static methods. 
 # call

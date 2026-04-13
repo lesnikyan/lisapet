@@ -20,7 +20,9 @@ def loop_iter(_, *args):
 
 def getVal(arg):
     v = arg
-    # print('getVal:', v)
+    # if not isinstance(v, Base):
+    #     return v
+    # print('getVal:', v, v.getType())
     if isinstance(arg, Var):
         v = arg.get()
     if isinstance(v, (ListVal, TupleVal)):
@@ -138,6 +140,14 @@ def buit_print(ctx:Context,*args):
             pargs.append(str(n))
             continue
         # print('$1 ', n)
+        v = n
+        if isinstance(v, Val):
+            if isinstance(v.getType(), TypeIterator):
+                v = v.getVal()
+            if isinstance(v, ListGenIterator):
+                # print('$1', arg, v)
+                v = v.allVals()
+            n = v
         v = getVal(n)
         # print('$2 ', v)
         if isinstance(v, (list)):

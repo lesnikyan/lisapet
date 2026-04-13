@@ -27,6 +27,103 @@ class TestIter(TestCase):
 
 
     
+    
+    def test_iter_negative(self):
+        '''back iter with negative step '''
+        code = r'''
+        res = []
+        
+        r = []
+        for n <- iter(2,8,2)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(5)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(10, 5, -1)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(5, 0, -1)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(5, -1, -1)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(6, -2, -2)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(6, -5, -2)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(5, -2, -3)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(0, 101, 25)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(100, -1, -25)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(-2, -11, -4)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(2**30, 2 **30+5, 1)
+            r <- n
+        res <- (r)
+        
+        r = []
+        for n <- iter(-1000000, -1000005, -1)
+            r <- n
+        res <- (r)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [2, 4, 6], 
+            [0, 1, 2, 3, 4], 
+            [10, 9, 8, 7, 6], 
+            [5, 4, 3, 2, 1], 
+            [5, 4, 3, 2, 1, 0], 
+            [6, 4, 2, 0], 
+            [6, 4, 2, 0, -2, -4], 
+            [5, 2, -1], 
+            [0, 25, 50, 75, 100], 
+            [100, 75, 50, 25, 0], 
+            [-2, -6, -10],
+            [1073741824, 1073741825, 1073741826, 1073741827, 1073741828],
+            [-1000000, -1000001, -1000002, -1000003, -1000004]]
+        self.assertEqual(exv, resv)
+
     def test_string_comprehension(self):
         ''' '''
         code = r'''
