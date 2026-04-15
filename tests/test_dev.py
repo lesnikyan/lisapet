@@ -190,6 +190,11 @@ class TestDev(TestCase):
             # sol_1: python idlelib ?
         
         DONE: fix iter() for down-iteration and negative step
+        
+        DONE: py -m run -c "print([1..5][:])"
+            Error handling:  'ListGenIterator' object has no attribute 'len'
+            DONE: add constructor list([1..5])
+            DONE: add implicit conversion [..] to list before slice
             
         TODO: think about pattern matching in comprehensions condition
         
@@ -261,11 +266,15 @@ class TestDev(TestCase):
             [2, 1..5] [step, begin .. end]
             [-1, 5 .. 1] # check after positive custom step
         
-        BUG: py -m run -c "print([1..5][:])"
-            Error handling:  'ListGenIterator' object has no attribute 'len'
-            TODO: add constructor list([1..5])
+        TODO: add (;;) lazy generator of sequence, 
+            can be used in loop, comprehention, sequence constructor
+            for n <- (x ; x <- nums ; x > 2)
+            list(((x ; x <- nums ; x > 2))) # think about skippng internal brackets
+            gen = (x ; x <- nums ; x > 2)
+            [n * 10 ; n <- gen]
         
-            TODO: add implicit conversion [..] to list before slice
+        TODO: split comprehensions (should return collection/sequence)
+                and generator (return iterative object)
     '''
 
     _ = r"""
@@ -277,54 +286,6 @@ class TestDev(TestCase):
 
 
     
-    def _test_code_slice_iter_gen(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        ss1 = [1..9]
-        res <- ss1[2:7]
-        
-        res <- [11..19][2:7]
-
-        # res <- [11..19][:]
-        res <- list([11..19])
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
-    
-    def test_list_constr_by_num_gen(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        res <- list([11..19])
-        res <- list([21..29])[:]
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = [[11, 12, 13, 14, 15, 16, 17, 18, 19], [21, 22, 23, 24, 25, 26, 27, 28, 29]]
-        self.assertEqual(exv, resv)
-
     
     def _test_code(self):
         ''' '''

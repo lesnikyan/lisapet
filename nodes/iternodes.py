@@ -321,10 +321,13 @@ class ListGenIterator(NIterator, SequenceGen):
     def get(self):
         return Val(self.val, TypeInt())
     
+    def len(self):
+        return int(abs(self.last - self.first) / abs(self.__step)) + 1
+    
     def getSlice(self, start, end):
         res = ListVal()
         self.start()
-        xlen = int(abs(self.last - self.first) / abs(self.__step)) + 1
+        xlen = self.len()
         if start < 0:
             start = xlen + start
         if end < 0:

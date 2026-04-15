@@ -26,8 +26,43 @@ class TestIter(TestCase):
     ''' iteration cases '''
 
 
-    
-    
+    def test_slice_iter_gen(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        ss1 = [1..9]
+        res <- ss1[2:7]
+        
+        res <- [11..19][2:7]
+
+        res <- [11..19][:]
+        
+        func nns(a, b)
+            return [a..b]
+        
+        res <- nns(3, 8)[1:-1]
+        res <- nns(5,10)[:]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [3, 4, 5, 6, 7], 
+            [13, 14, 15, 16, 17], 
+            [11, 12, 13, 14, 15, 16, 17, 18, 19], 
+            [4, 5, 6, 7], 
+            [5, 6, 7, 8, 9, 10]]
+        self.assertEqual(exv, resv)
+
     def test_iter_negative(self):
         '''back iter with negative step '''
         code = r'''

@@ -20,6 +20,27 @@ class TestLists(TestCase):
     ''' Testing lists, iterators, generators, other collections '''
 
 
+    def test_list_constr_by_num_gen(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        res <- list([11..19])
+        res <- list([21..29])[:]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [[11, 12, 13, 14, 15, 16, 17, 18, 19], [21, 22, 23, 24, 25, 26, 27, 28, 29]]
+        self.assertEqual(exv, resv)
+
     def test_triple_dots_unpack_to_args(self):
         ''' '''
         code = r'''
