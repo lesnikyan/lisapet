@@ -342,14 +342,19 @@ class ListGenIterator(NIterator, SequenceGen):
                 break
         return res
     
-    def allVals(self):
-        res = ListVal()
+    def makeElems(self):
+        ''' method for internal usage, avoid to make unnecessary ListVal '''
+        res = []
         self.start()
         # print('LGI1 (%d, %d)' % (self.first, self.last))
         while(self.hasNext()):
-            res.addVal(self.get())
-            # print('LGI>>', res.vals())
+            res.append(self.get())
             self.step()
+        return res
+    
+    def allVals(self):
+        elems = self.makeElems()
+        res = ListVal(elems = elems)
         return res
 
 

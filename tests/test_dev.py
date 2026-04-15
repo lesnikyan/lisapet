@@ -180,12 +180,6 @@ class TestDev(TestCase):
         func foo()
             local k = 5
             @! k # delete local only
-            
-        TODO: think about pattern matching in comprehensions condition
-        
-        TODO: think about import native lib / module into LP code.
-            eval.py: importLib('math', math)
-            code.et: import python.math
         
         TODO: interactive mode:
             $ py lisapet
@@ -194,36 +188,142 @@ class TestDev(TestCase):
             interpret after and of current top-block
             navigate through code, edit mode (looks like vim)
             # sol_1: python idlelib ?
-            
-        BUG: py -m run -c "print([1..5][:])"
-            Error handling:  'ListGenIterator' object has no attribute 'len'
         
-        TODO: fix iter() for down-iteration and negative step
+        DONE: fix iter() for down-iteration and negative step
+            
+        TODO: think about pattern matching in comprehensions condition
         
-        TODO: add function as generator (like yeald in py)
+        TODO: think about import native lib / module into LP code.
+            eval.py: importLib('math', math)
+            code.et: import python.math
+        
+        TODO: add function / (like yeald in py)
+            func foo(x)
+                for i <- iter(x)
+                    res = i * 2
             
-            struct Generator cur: int
+            for n <- foo(5)
+                n # ...
+        
+        TODO: method / object as a generator 
             
-            struct Gen(Generator)
+            struct Generator
+            func Generator init()
+            func Generator get()
+            func Generator next()
+            # **
+            struct IntGen(Generator) value:int, start:int, fin:int, diff:int 
+            func IntGen(x)
+                IntGen{start:0, fin:x, diff:1}
+            func IntGen(s, f)
+                IntGen{start:s, fin:f, diff:1}
+            func IntGen(s, f, d)
+                IntGen{start:s, fin:f, diff:d}
             
-            func gen:Gen next(x)
-                gen.cur += -1
-                
-            func gen:Gen get()
-                gen.cur
+            func g:Generator init()
+                g.value = g.start
+            func g:Generator get()
+                g.value
+            func g:Generator next()
+                g.value += g.diff
+                g.value < g.fin # hasNext (?)
             
+            # ***
+            struct Gen(Generator) fin:int
+            
+            # func gen:Gen get()
+            #     gen.value
+            
+            func gen:Gen next()
+                if gen.value >= gen.fin
+                    gen.stop()
+                gen.value += -1
+            
+            # ***
             gg = Gen(5)
             for n <- gg
                 n # 0 1 2 3 4 
+            
+            TODO?: yield gen
+                func f()
+                    for n <- [1..5]
+                        yield n
+            
+            TODO?: yield compr gen
+                ( n ; n <- [1..5] ) # generator, not a tuple comprehension 
+                [yield n ; n <- [1..5]] 
+                [: n ; n <- [1..5]] 
+                Looks like (;;) is enough
+        
+        TODO: range syntax (haskell like)
+            lazy producer of numeric sequence
+            [begin .. end] # already done
+            [2, 1..5] [step, begin .. end]
+            [-1, 5 .. 1] # check after positive custom step
+        
+        BUG: py -m run -c "print([1..5][:])"
+            Error handling:  'ListGenIterator' object has no attribute 'len'
+            TODO: add constructor list([1..5])
+        
+            TODO: add implicit conversion [..] to list before slice
     '''
 
     _ = r"""
 # guides
-res = []
+
 
 """
 
 
+
+    
+    def _test_code_slice_iter_gen(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        ss1 = [1..9]
+        res <- ss1[2:7]
+        
+        res <- [11..19][2:7]
+
+        # res <- [11..19][:]
+        res <- list([11..19])
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
+    
+    def test_list_constr_by_num_gen(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        res <- list([11..19])
+        res <- list([21..29])[:]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [[11, 12, 13, 14, 15, 16, 17, 18, 19], [21, 22, 23, 24, 25, 26, 27, 28, 29]]
+        self.assertEqual(exv, resv)
 
     
     def _test_code(self):
@@ -231,10 +331,8 @@ res = []
         code = r'''
         res = []
         
-        r = []
-        for n <- iter(10, 5, -1)
-            r <- n
-        print(r)
+        ss1 = [1..9]
+        res <- ss1[2:7]
         
         # print('res = ', res)
         '''
