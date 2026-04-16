@@ -311,58 +311,6 @@ class TestDev(TestCase):
         
 
 
-    def _test_match_last_expr_of_case_as_result(self):
-        ''' if `match` is a last expression in function. 
-            each sub-case of match will return result of their last expression'''
-        code = r'''
-        res = []
-        
-        func fsubRes(n)
-            # Last expression is a result
-            match n
-                # indent block
-                ::int # some comment
-                    x  = 1
-                    x
-                
-                # inline block
-                ::bool /: x = 2; x
-                
-                # /: but indent (it's ok)
-                {_:_} /:
-                    y = 3
-                    y
-                
-                # block with sub control
-                p::(tuple|list)
-                    r4 = []
-                    for x <- p
-                        r4 <- x
-                        if len(r4) >= 3
-                        # in if/else must use `return`
-                            return (4, r4, p)
-                    -1000
-                # default
-                _ /: 5
-            # end of function
-            
-        nn = [1, true, [1,2,3], (3,4,5), {4:44}, 1.5, [100,200]]
-        
-        for k <- nn
-            res <- fbase(k)
-            
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        # rvar = ctx.get('res').get()
-        # exv = [1, 2, (4, [1, 2, 3], [1, 2, 3]), (4, [3, 4, 5], (3, 4, 5)), 3, 5, -2000]
-        # self.assertEqual(exv, rvar.vals())
-
 
     def _test_barr(self):
         ''' '''
