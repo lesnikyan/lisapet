@@ -1273,10 +1273,11 @@ for item <- dd
 
 ### 6.3 Function `iter()`  
 Function `iter` can be used with several sets of arguments.  
-`iter(start, [last+1 [, step]])`  
 1 arg - means 1) count of numbers from `0`.  
-2 args - means 1) starting number, 2) number after last.  
+2 args - means 1) starting number, 2) limitation value.  
 3 args - means 1,2) like before, 3) step of counter.  
+`iter(start|count, [arg_last [, step]])`  
+For positive step - last element will be nearest value, less than arg_last.  
 ```python
 # One arg iter(last+1)
 iter(3) # >> 0,1,2
@@ -1286,6 +1287,11 @@ iter(1, 5) # >> 1,2,3,4
 
 # args
 iter(1,7,2) # >> 1,3,5
+```
+In case with 3 args `iter` can produce back numeric sequence with negative step.  
+Last element in this case is limited by 2-nd arg from lower.  
+```python
+iter(5, -2, -3) # >> [5, 2, -1]
 ```
 
 

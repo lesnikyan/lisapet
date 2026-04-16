@@ -132,6 +132,7 @@ def copyElems(src:list):
 
 
 def val2Seq(val:Val):
+    # print('$1', val, val.getType())
     r = []
     match val.getType():
         case TypeInt():
@@ -144,11 +145,14 @@ def val2Seq(val:Val):
             r = copyElems(val.elems)
         case TypeList():
             r = copyElems(val.elems)
+        case TypeIterator():
+            r = val.getVal().makeElems()
     return r
 
 
 def list_constr(ctx, arg:Val):
     r = val2Seq(arg)
+    # print('$2', r,)
     return ListVal(elems = r)
 
 

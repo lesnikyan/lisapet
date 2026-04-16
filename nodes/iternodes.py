@@ -160,7 +160,7 @@ class IterAssignExpr(Expression):
 class IndexIterator(NIterator):
     ''' x <- iter(0, 10, 2)'''
     def __init__(self, a, b=None, c=None):
-        # print('IndexIterator:', self, 'a=', a, 'b=', b, 'c=', c)
+        # print('IndexIterator:',  'a=', a, 'b=', b, 'c=', c)
         # raise DebugExpr('')
         if c is None:
             c = 1
@@ -168,11 +168,14 @@ class IndexIterator(NIterator):
             b = a
             a = 0
         self.first = a
-        self.last = b # not last, but next after last
         self.__step = c
         self.index = a
+        self.k = 1
+        if self.__step < 0:
+            self.k = -1
+        self.last = b * self.k # not last, but next to last, depending of step
         self.vtype = TypeIterator()
-    
+
     def start(self):
         self.index = self.first
 
@@ -180,7 +183,12 @@ class IndexIterator(NIterator):
         self.index += self.__step
 
     def hasNext(self):
-        return self.index < self.last
+        # cur = self.index
+        # fin = self.last
+        # df = fin - cur
+        # k = 1 if self.__step > 0 else -1
+        # print('>', df, k, self.__step)
+        return self.index * self.k < self.last
 
     def get(self):
         return Val(self.index, TypeInt())
@@ -313,10 +321,13 @@ class ListGenIterator(NIterator, SequenceGen):
     def get(self):
         return Val(self.val, TypeInt())
     
+    def len(self):
+        return int(abs(self.last - self.first) / abs(self.__step)) + 1
+    
     def getSlice(self, start, end):
         res = ListVal()
         self.start()
-        xlen = int(abs(self.last - self.first) / abs(self.__step)) + 1
+        xlen = self.len()
         if start < 0:
             start = xlen + start
         if end < 0:
@@ -334,14 +345,19 @@ class ListGenIterator(NIterator, SequenceGen):
                 break
         return res
     
-    def allVals(self):
-        res = ListVal()
+    def makeElems(self):
+        ''' method for internal usage, avoid to make unnecessary ListVal '''
+        res = []
         self.start()
         # print('LGI1 (%d, %d)' % (self.first, self.last))
         while(self.hasNext()):
-            res.addVal(self.get())
-            # print('LGI>>', res.vals())
+            res.append(self.get())
             self.step()
+        return res
+    
+    def allVals(self):
+        elems = self.makeElems()
+        res = ListVal(elems = elems)
         return res
 
 

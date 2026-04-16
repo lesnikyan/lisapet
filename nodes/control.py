@@ -183,6 +183,7 @@ class MatchExpr(MatchNode):
 
     def doCases(self, ctx:Context):
         self.lastCase = None
+        self.lastVal = None
         mval = self.match.get()
         vv = mval
         mval = var2val(mval)
@@ -201,6 +202,8 @@ class MatchExpr(MatchNode):
     def get(self):
         if not self.lastCase:
             return None
+        if self.lastVal:
+            return self.lastVal
         return self.lastCase.block.subs[-1].get()
 
 

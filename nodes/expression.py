@@ -236,6 +236,7 @@ class Block(Expression):
             lastInd = i
             # lineRes = None
             lineRes = expr.get()
+            # print(' - return::', expr, lineRes)
             if isinstance(lineRes, FuncRes):
                 # print(' - return::', expr, lineRes)
                 self.lastVal = lineRes
