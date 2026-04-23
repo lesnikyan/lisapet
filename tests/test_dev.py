@@ -29,7 +29,6 @@ from nodes.func_features import *
 import cProfile as prof
 import pdb
 
-
             
 class TestDev(TestCase):
 
@@ -268,6 +267,7 @@ class TestDev(TestCase):
         
         TODO: add (;;) lazy generator of sequence, 
             can be used in loop, comprehention, sequence constructor
+            ( ; ; )
             for n <- (x ; x <- nums ; x > 2)
             list(((x ; x <- nums ; x > 2))) # think about skippng internal brackets
             gen = (x ; x <- nums ; x > 2)
@@ -275,6 +275,25 @@ class TestDev(TestCase):
         
         TODO: split comprehensions (should return collection/sequence)
                 and generator (return iterative object)
+                
+        
+        # BUG: ['1:2-.-.>', '1:3-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.>', '1:3-.-.-.-.-.-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.-.-.-.-.-.>',
+        # g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        
+        #BUG: [[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+        # g7 = (: list(iter(d))  ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        
+        
+        TODO: next test: generator in the comprehensions list, dict, etc
+        
+        TODO: multisource for iteration in generator
+        (: a + b ; a, b <- aa, bb)
+        
+        TODO: operator of divisibility
+        a ?% b :the same as: a % b == 0
+        a !% b :the same as: a % b != 0
+        a and b should be an int, b != 0
+        
     '''
 
     _ = r"""
@@ -285,7 +304,29 @@ class TestDev(TestCase):
 
 
 
-    
+    def _test_code_generator_in_comprh(self):
+        ''' [ ; <- (: <- )] '''
+        code = r'''
+        res = []
+        
+        g1 = (: x ; x <- [1..10] ; x % 2 == 0 )
+        
+        ss1 = [1..9]
+        res <- ss1[2:7]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
+        
     
     def _test_code(self):
         ''' '''
@@ -361,6 +402,71 @@ class TestDev(TestCase):
         rvar = ctx.get('res')
         self.assertEqual(0, rvar.getVal())
 
+
+
+
+
+class TT:
+    def __init__(self):
+        self.nodes = [] # [iter, ]
+        self.ctx = []
+        self.active = True
+        self.val = -1
+    
+    # def start(self):
+    #     self.ctx = 
+    
+    # def preStrp(sel):
+    #     1
+    
+    def add(self, node):
+        self.nodes.append(node)
+    
+    def cond(self, a, b, c):
+        return ((a * c) + b) % 5
+    
+    # def step(self):
+    #     for nc in self.nodes[-1]:
+    #         if 
+        
+    
+    def get(self):
+        return self.val
+
+
+def gen(a, b, c, fn):
+    for ai in a:
+        for bi in b:
+            for ci in c:
+                if fn(ai, bi, ci) % 5 == 0:
+                # if True:
+                    yield (ai, bi, ci, fn(ai, bi, ci))
+
+class T(TestCase):
+    
+    def _test_2(self):
+        # tt = TT()
+        # tt.add(iter(range(5)))
+        # tt.add(iter(range(10, 20, 2)))
+        # tt.add(iter(range(6,9)))
+        
+        r = []
+        
+        def ff(aa, bb, cc):
+            return (aa * cc + bb)
+        
+        a = list(range(5))
+        b = list(range(11, 15))
+        # c = (n for n in [2,3,5,7])
+        c = [2,3,4,5]
+        gg = gen(a, b, c, ff)
+        
+        for n in gg:
+            print('>>', n)
+        
+        # while tt.active:
+        #     r.append(tt.get())
+        #     tt.step()
 
 
 if __name__ == '__main__':

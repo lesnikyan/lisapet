@@ -80,7 +80,7 @@ class IterAssignExpr(Expression):
     #     self._first_iter = True
     
     def setIter(self, itExp:NIterator):
-        # dprint('@# setIter', itExp)
+        # print('@# setIter', itExp)
         self.itExp = itExp
     
     def start(self):
@@ -110,11 +110,11 @@ class IterAssignExpr(Expression):
         
         if self._first_iter:
             self.varsInit(ctx)
-            
         # print('IterAssignExpr.do', self.itExp, self.key, self.val)
-        
+        # import time
+        # time.sleep(1)
         val = self.itExp.get()
-        # print('IterAssignExpr.do2 val=', val)
+        # print('IterAssignExpr.do2 val=', self.itExp, val)
         valSet = []
         
         largLen = len(self.loopVars)
@@ -142,7 +142,7 @@ class IterAssignExpr(Expression):
         
 
         vlen = len(valSet)
-        # print('$1>>', vlen, valSet)
+        # print('ind$1>>', vlen, valSet)
         if vlen != largLen:
             raise EvalErr(f"Arrow assign has different left {largLen} and right {vlen} count of elements.")
 
@@ -151,7 +151,7 @@ class IterAssignExpr(Expression):
             if isinstance(arg, Var_):
                 continue
             elem = valSet[i]
-            # print('for <- arg, val', i , '>>', arg, elem)
+            # print('for <- arg, val', i , '>>', arg,  elem)
             varName = arg.name
             nvar = Var(varName, elem.getType())
             nvar.set(elem)
@@ -180,6 +180,7 @@ class IndexIterator(NIterator):
         self.index = self.first
 
     def step(self):
+        # print('IndexIterator.step', self.index, '+=', self.__step)
         self.index += self.__step
 
     def hasNext(self):
@@ -187,7 +188,7 @@ class IndexIterator(NIterator):
         # fin = self.last
         # df = fin - cur
         # k = 1 if self.__step > 0 else -1
-        # print('>', df, k, self.__step)
+        # print('IIt.nest?:', self.index, '*', self.k , '<', self.last)
         return self.index * self.k < self.last
 
     def get(self):
@@ -291,7 +292,11 @@ class MultiSrcIterator(SrcIterator):
         return res
 
 
-class ListGenIterator(NIterator, SequenceGen):
+class GenIterator(NIterator, SequenceGen):
+    ''' '''
+
+
+class ListGenIterator(GenIterator):
     ''' [a..b] from a to b, step |1| 
         TODO: step !?> (-1, 1)
             [1..10 ; 2]
@@ -582,6 +587,7 @@ class EmptyFilter(Expression):
         return Val(True, TypeBool())
 
 
+# ComprehensionExpr
 class ComprehensionGen(Expression):
     ''' Base functionality of comprehension generator.
         This class can't be used as is.
@@ -791,4 +797,637 @@ class StringComprExpr(ComprehensionGen):
         if isinstance(rv, Glif):
             rv = rv.val
         self.vals.append(rv)
+
+
+class PassNode(Expression):
+    def __init__(self, iter=None, src=None):
+        super().__init__(None, src=src)
+        self.finished = True
+
+    def start(self):
+        pass
     
+    def do(self, ctx=None):
+        pass
+    
+    def cond(self):
+        return True
+    
+    def hasNext(self):
+        return False
+    
+    def step(self):
+        return True
+
+
+class SubIterNode(PassNode):
+    ''' one section in generator (iter ; assign ; cond) '''
+
+    debid = 1
+        
+    def __init__(self, iter=None, src=None):
+        super().__init__(None, src=src)
+        self.did = SubIterNode.debid # debug id
+        SubIterNode.debid += 1
+        self._origIter = iter
+        self.iter:IterAssignExpr = iter
+        self.ctx:Context = None
+        self.subExprs:list[Expression] = []
+        self.ifcond:Expression = None
+        self.finished = True
+        self.subNode:PassNode|SubIterNode = None # PassNode()
+    
+    def addSub(self, sub:Expression):
+        self.subExprs.append(sub)
+    
+    def setSubNode(self, sub:Expression):
+        self.subNode = sub
+    
+    def setCond(self, cond:Expression):
+        self.ifcond = cond
+    
+    def setContext(self, ctx:Context):
+        self.ctx = ctx
+    
+    def start(self):
+        self._origIter = self.iter
+        self.finished = False
+        subCtx = self.ctx
+        if isinstance(self._origIter, LeftArrowExpr):
+            # print(f'\nsubNode.start<{self.did}> iter', f'<={self.did}>', self._origIter)
+            self._origIter.setAssign()
+            self._origIter.init(subCtx)
+            # if isinstance(self._origIter.expr, IterAssignExpr):
+            self.iter = self._origIter.expr
+        # print('subNode iter2', self.iter)
+        # self.iter.init(self.ctx)
+        self.iter.start()
+        self.do()
+        cval = self.ifcond.get()
+        ifres = var2val(cval).get()
+        
+        if not ifres:
+            sres = self.step(curOnly=True)
+            if not sres:
+                return False
+        if self.subNode:
+            stres = self.subNode.start()
+            if not stres:
+                return self.step()
+        return True
+            # if not self.subNode.cond()
+    
+    # def do(self, ctx):
+    #     self.iter.do(self.ctx)
+    #     # check self.ifcond
+    
+    def doSubs(self):
+        for exp in self.subExprs:
+            exp.do(self.ctx)
+    
+    def do(self, ctx=None):
+        # self._origIter.do(self.ctx)
+        self.iter.do(self.ctx)
+        self.doSubs()
+        self.ifcond.do(self.ctx)
+        # print(f'sind<{self.did}>.',  'do:', self.ctx.vars)
+    
+    def hasNext(self):
+        if self.finished:
+            return False
+        return self.iter.cond()
+    
+    def cond(self):
+        cval = self.ifcond.get() # Val(true) # valid condition -> stop loop
+        # print(f'?? subInod<{self.did}>.cond:', var2val(cval).get())
+        return var2val(cval).get()
+        
+    
+    def _step(self):
+        # print('subNode.step')
+        self.iter.step()
+        # print('$11', f'?<?{self.did}>', 'if:', self.iter.cond(), self.finished)
+        if self.finished:
+            return False
+        while self.iter.cond(): # has next
+            # print('$12')
+            self.do()
+            cval = self.ifcond.get()
+            ifres = var2val(cval).get()
+            
+            ccx = self.ctx
+            vvs = []
+            while ccx.upper:
+                vv = [(k, v.getVal()) for k, v in self.ctx.vars.items() if not isinstance(v.getType(), (TypeList, TypeGenerator ))]
+                vvs.append(vv)
+            vv = [(k, v.getVal()) for k, v in self.ctx.vars.items() if not isinstance(v.getType(), (TypeList, TypeGenerator ))]
+            vu = [(k, v.getVal()) for k, v in self.ctx.upper.vars.items() if not isinstance(v.getType(), (TypeList, TypeGenerator ))]
+            # print('ssubNd.step2<', self.did, 'vrs:', vv, vu, '>', self.ifcond, expSrc(self.ifcond),  cval, ifres)
+            if ifres:
+                return True # correct condition has reached
+            self.iter.step()
+            # print('ino.step w-end:', self.iter.cond())
+        # print('inod step.False')
+        self.finished = True
+        return False # iter ended without result
+    
+    def debVV(self):
+            ccx = self.ctx
+            vvs = []
+            while ccx.upper is not None:
+                vv = [(k, v.getVal()) for k, v in ccx.vars.items() if not isinstance(v.getType(), (TypeList, TypeGenerator ))]
+                vvs.append(vv)
+                ccx = ccx.upper
+            return vvs
+    
+    def step(self, curOnly=False):
+        # print(f'~~step <{self.did}>')
+        if not curOnly and self.subNode and not self.subNode.finished:
+            ss = self.subNode.step()
+            if ss:
+                return True
+        # print(f'vv$1<{self.did}>:', expSrc(self.ifcond), self.debVV())
+        self.iter.step()
+        # print('$$ i.cond:', self.iter.cond())
+        while self.iter.cond():
+            # subNode has finished
+            self.do()
+            # print(f'vv$2<{self.did}>:', expSrc(self.ifcond), self.debVV())
+            cval = self.ifcond.get()
+            ifres = var2val(cval).get()
+            if not ifres:
+                self.iter.step()
+                continue
+            if curOnly or not self.subNode:
+                return True
+            if not self.subNode.start():
+                self.iter.step()
+                continue
+            if self.subNode.cond():
+                # print('sind.step$5', self.subNode.cond())
+                return True
+            self.iter.step()
+        # print(f'last step {self.did}')
+        return False
+                # return True # correct condition has reached
+    
+    # def _step(self):
+    #     ctx = self.ctx
+    #     next = True
+    #     while next:
+    #         if not self.iter.cond(): # iterator has finished
+    #             return False
+    #         self.iter.do(self.ctx)
+    #         self.doSubs()
+    #         self.ifcond.do(ctx)
+    #         cval = self.ifcond.get() # Val(true) # valid condition -> stop loop
+    #         next = not var2val(cval).get()
+    
+
+    # def __init__11(self):
+    #     super().__init__()
+    #     self.iter:NIterator = None
+    #     self.iterNodes:IterAssignExpr = [] # 1 or more iterators: listVar, [n..m], iter(size)
+    #     self.declarations:list[list[OpAssign]] = [] # declaration expressions, pre-last part
+    #     self.filter = [] # filter condition, last part
+    #     self.res = None
+
+
+# SequenceGenerator
+class InlineGen(GenIterator):
+    '''
+    '''
+    
+    def __init__(self):
+        super().__init__()
+        self.vtype = TypeGenerator()
+        self.nextVal:Val = None
+        self.ctx:Context = None
+        self.deepCtx:Context = None
+        self.index = 0
+        # self.inod:IterAssignExpr = None
+        self.inodes:list[SubIterNode] = [] # iter segments: [ (n <- nn; v = (n); v = (n); cond?), ..]
+        self.indexes = []
+        self.icount = 0
+        self.resExpr = None # result expression, first in parts
+        self.continued = False
+        self.inode = None
+        self.lastInode = None
+    
+    def getType(self):
+        return self.vtype
+
+    def addIter(self, iterNode:SubIterNode):
+        if self.inode is None:
+            self.inode = iterNode
+            self.lastInode = iterNode
+            return
+        self.lastInode.setSubNode(iterNode)
+        self.lastInode = iterNode
+        self.inodes.append(iterNode)
+        self.icount += 1
+
+    def hasNext(self):
+        ''' if not last position '''
+        return self.continued
+
+    def get(self):
+        ''' get current element '''
+        # deepCtx = self.inodes[-1].ctx
+        if not self.continued:
+            raise EvalErr('LIterGenerator.incorrect get after stop')
+        deepCtx = self.lastInode.ctx
+        # deepCtx.print(forsed=1)
+        # for inn in self.inodes:
+        #     print('inn>', inn.ctx.vars)
+        self.doElem(deepCtx)
+        return self.nextVal
+    
+    def doElem(self, ctx:Context):
+        self.resExpr.do(ctx)
+        res = self.resExpr.get()
+        # print('gi.nextVal:', var2val(res))
+        self.nextVal = var2val(res)
+
+    def _stop(self):
+        # print('gi._stop')
+        self.continued = False
+        return False
+    
+    def toFirst(self, beg=0):
+        # print('$IG.to1:', self.icount, self.indexes)
+        sst = True
+        lastii = self.icount - 1
+        self.inode.start()
+        return
+        for ii in range(beg, self.icount):
+            self.inodes[ii].start()
+            if ii < lastii and not self.inodes[ii].hasNext():
+                # print('@@ start, stop by inode', ii)
+                return self._stop()
+        # print('! ! !')
+        if self.inodes[-1].cond():
+            # print('start is Ok')
+            return True
+        # here 1-st complex condition is false. going to next
+        # print('start, go to Next')
+        return self.toNext()
+        
+        # for inn in self.inodes:
+        #     print('inn>', inn.ctx.vars)
+        
+
+    def start(self):
+        self.nextVal:Val = None
+        # self.index = 0
+        # self.inod:IterAssignExpr|LeftArrowExpr = self.iterNodes[index]
+        self.continued = True
+        self.indexes = [0 for _ in range(self.icount)] # reset indexes
+        # print('@ Start')
+        # started = self.toFirst()
+        self.inode.start()
+        # return started
+            
+
+    
+    def beta1_toNext(self, beg=0, start=0):
+        # print('$IG.toN:', self.icount, self.indexes)
+        sst = True
+        # for ii in range(start, self.icount):
+        #     self.inodes[ii].start()
+        starter = -1
+        for ii in range(self.icount - 2, -1, -1):
+            node = self.inodes[ii]
+            hasn = node.step()
+            if hasn:
+                # next start found
+                starter = ii
+                break
+            continue # to upper iter
+        # print('strtr:', starter)
+        if starter == -1:
+            # first has ended
+            return False
+        for i in range(starter+1, self.icount):
+            self.inodes[i].start()
+        return True
+
+    
+    def n_toNext(self):
+        for i in range(self.icount):
+            node = self.inodes[i]
+            if node.finished:
+                1
+    
+    def toNext(self, beg=0, start=0):
+        # print('\n$IG.toNext:', self.icount, self.indexes)
+        sst = True
+        # for ii in range(start, self.icount):
+        #     self.inodes[ii].start()
+        starter = -1
+        return self.inode.step()
+        if self.inode.finished:
+            return False
+        
+        return
+        for ii in range(self.icount - 2, -1, -1):
+            # print('tN.ii=', ii)
+            node = self.inodes[ii]
+            hasn = node.step()
+            if not  hasn:
+                if ii == 0: # end of first iter
+                    return False
+                continue # to upper level iter
+            #
+            while not node.finished:
+                # print('==> step', ii)
+                for i in range(ii+1, self.icount):
+                    self.inodes[i].start()
+                if self.inodes[-1].cond():
+                    return True
+                # self.inodes[-1].step()
+                # if self.inodes[-1].cond(): # found correct final cond
+                #     return True
+                node.step()
+                # continue
+            # starter = ii
+            # break
+            # continue # to upper iter
+        return False
+        # print('strtr:', starter)
+        # if starter == -1:
+        #     # first has ended
+        #     return False
+        # # for i in range(starter+1, self.icount):
+        # #     self.inodes[i].start()
+        # return True
+
+
+    def nstep(self):
+        cid = -1
+        fid = 0 - self.icount
+        # finod = self.inodes[0]
+        bres = False
+        # print('~~step')
+        self.inode.step()
+        return
+        linod = self.inodes[-1]
+        lst = linod.step()
+        # print('nstep$3:', lst)
+        if lst:
+            return True
+        return self.toNext()
+        
+        # while finod.hasNext():
+        #     # if cid != -1:
+        #     #     for ii in range(cid, -1, 1):
+        #     #         self.inodes[ii].step()
+        #     cinod = self.inodes[cid]
+        #     cst = True
+        #     # if bres:
+        #     #     cst = cinod.step()
+        #     #     bres = False
+        #     cst = cst and cinod.hasNext()
+        #     print('--ns:', cid, cinod.hasNext())
+        #     if cst:
+        #         # if cid < -1: # not last, back-step happened
+        #         #     cid = -1
+        #         #     bres = True
+        #         #     # self.inodes[cid].start()
+        #         #     continue
+        #         return True # success step
+        #     else:
+        #         # if cid == fid: # first has ended
+        #         #     return False
+        #         nhas = self.toNext(cid, cid+1)
+        #         if not nhas:
+        #             return False
+        #         # cid -=1 # back to parent inode
+        # return False # top level iter has finished
+
+    def _nstep(self):
+        cid = -1
+        fid = 0 - self.icount
+        finod = self.inodes[0]
+        bres = False
+        # print('~~step')
+        while finod.hasNext():
+            # if cid != -1:
+            #     for ii in range(cid, -1, 1):
+            #         self.inodes[ii].step()
+            cinod = self.inodes[cid]
+            cst = True
+            # if bres:
+            #     cst = cinod.step()
+            #     bres = False
+            cst = cst and cinod.hasNext()
+            # print('--ns:', cid, cinod.hasNext())
+            if cst:
+                # if cid < -1: # not last, back-step happened
+                #     cid = -1
+                #     bres = True
+                #     # self.inodes[cid].start()
+                #     continue
+                return True # success step
+            else:
+                # if cid == fid: # first has ended
+                #     return False
+                nhas = self.toNext(cid, cid+1)
+                if not nhas:
+                    return False
+                # cid -=1 # back to parent inode
+        return False # top level iter has finished
+
+    def step(self):
+        rst = self.inode.step()
+        # print('gi.rst=', rst)
+        if not rst:
+            self._stop()
+
+    # def ingen(self):
+    #     # for inod in self.inodes:
+    #     for inod in self.inodes:
+    #         while True:
+    #             inod.do()
+    #             if inod.cond():
+    #                 break
+            
+            
+            
+            
+    # '''
+    # for index in indexes # [last, .. , first]
+    #     inode = inodes[index]
+    #     while inode.iter.cond():
+    #         inode.do()
+    #         if inode.cond()
+    #             return True
+    # '''
+    
+    
+    # def stepPrevs(self):
+    #     lastInd = self.icount - 1
+    #     for i in range(lastInd, -1, -1):
+    #         tnode = self.inodes[i]
+    #         if tnode.hasNext():
+    #             if i < lastInd:
+    #                 # not last iter
+    #                 for ii in range(i, self.icount):
+    #                     self.inodes[ii].start()
+    #                     # self.inodes[ii].do()
+    #                     # self.inodes[ii].ifcond.()
+    
+    # def stepToNext(self):
+    #     lnode = self.inodes[-1] # last iter part
+    #     if not lnode.hasNext():
+    #         self.stepPrevs() # step upper iters
+
+    # def _step(self):
+    #     # lastInd = self.indexes[-1]
+    #     lnode = self.inodes[-1]
+    #     if not lnode.hasNext():
+    #         lnode.do()
+    #     # 
+    #     for id in self.indexes:
+    #         1
+
+
+    # def do(self, ctx:Context):
+    #     self.ctx
+
+    # def _step(self):
+    #     ''' move to next pos '''
+    #     self.nextVal:Val = None # clean
+    #     ctx = self.ctx
+    #     index = self.index # index of iteration level
+    #     inod:IterAssignExpr|LeftArrowExpr = self.iterNodes[index]
+        
+    #     if not inod.cond():
+    #         self.continued = False
+            
+    #     if isinstance(inod, LeftArrowExpr):
+    #         inod.init(ctx)
+    #         inod = inod.expr
+    #         inod.start()
+    #     decl = self.declarations[index]
+    #     filt = self.filter[index]
+        
+    #     subCtx = Context(ctx) # ctx for sub-iter
+    #     inod.do(subCtx) # make iterator
+    #     self.doDecl(subCtx, decl)
+
+    #     filt.do(subCtx)
+    #     fcond = filt.get().get()
+    #     if fcond:  
+    #         if index + 1 < len(self.iterNodes):
+    #             # continue dive into iterators chainfilt
+    #             self.iterLoop(index + 1, subCtx)
+    #         else:
+    #             # eval elem result expression
+    #             self.doElem(subCtx)
+    #     inod.step()
+
+
+    # def iterLoop(self, index, ctx:Context):
+    #         raise EvalErr('Generator dont make final result!')
+
+    # def _iterLoop(self, index, ctx:Context):
+        
+    #     self.nextVal:Val = None
+    #     inod:IterAssignExpr|LeftArrowExpr = self.iterNodes[index]
+        
+    #     if isinstance(inod, LeftArrowExpr):
+    #         inod.init(ctx)
+    #         inod = inod.expr
+    #         inod.start()
+    #     decl = self.declarations[index]
+    #     filt = self.filter[index]
+
+    #     while inod.cond(): # NIterator.hasNext()
+    #         subCtx = Context(ctx) # ctx for sub-iter
+    #         inod.do(subCtx) # make iterator
+    #         self.doDecl(subCtx, decl)
+
+    #         filt.do(subCtx)
+    #         fcond = filt.get().get()
+    #         if fcond:  
+    #             if index + 1 < len(self.iterNodes):
+    #                 # continue dive into iterators chainfilt
+    #                 self.iterLoop(index + 1, subCtx)
+    #             else:
+    #                 # eval elem result expression
+    #                 self.doElem(subCtx)
+    #         inod.step()
+
+    
+    
+
+
+
+# InlineGeneratorExpr (: ; ; )
+class InlineGenExpr(GenIterator):
+    ''' expression that return generator InlineGen
+        (= ; ; )
+    '''
+    
+    def __init__(self):
+        super().__init__()
+        self.ingen = None # InlineGen()
+        self.subs = []
+        self.res = None
+    
+    def get(self):
+        return self.res
+    
+    def setInner(self, subs:Expression):
+        ''' set of expression lists
+            1. result-expr
+            2. [IterAssignExpr, ... ]
+            3. declaration-expr (single assign or multi)
+            4. condition-expr
+            e.g.:
+            x + a ; x <- iter , y <- iter; a = y * 10; a < 100
+            x + a ; x <- iter ; x > 2
+        '''
+        self.subs = subs
+    
+    def makeGen(self, ctx:Context):
+        self.ingen = InlineGen()
+        lexp = len(self.subs)
+        if lexp < 2:
+            raise InterpretErr(f'Too little subparts of comprehension: {lexp}')
+        self.ingen.resExpr = self.subs[0]
+        curIt = -1
+        curInode = None
+        # inodes = []
+        subCtx = ctx
+        for exp in self.subs[1:]:
+            # print('LnlGen.setInner' ,exp, type(exp), 'curIt=', curIt)
+            if isinstance(exp, (LeftArrowExpr,IterAssignExpr)):
+                # basic case
+                curIt += 1
+                exp.setAssign()
+                curInode = SubIterNode(exp)
+                subCtx = Context(subCtx)
+                curInode.setContext(subCtx)
+                self.ingen.addIter(curInode)
+                curInode.setCond(EmptyFilter())
+            elif curIt > -1 and isinstance(exp, OpAssign):
+                # declaration|assign part after iterator
+                curInode.addSub(exp)
+            elif curIt > -1:
+                # filter condition here. can`t be before iterator`
+                curInode.setCond(exp)
+
+    def do(self, ctx:Context):
+        # print('IGExp.do1')
+        self.makeGen(ctx)
+        self.res = Val(self.ingen, TypeGenerator())
+        # print('IGExp.do2', self.res.val.inodes)
+        # subCtx = ctx # upper lvl context
+        # for inode in self.ingen.inodes:
+        #     subCtx = Context(subCtx) # next level
+        #     inode.setContext(subCtx)
+        
+
+

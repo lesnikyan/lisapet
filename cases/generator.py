@@ -170,3 +170,23 @@ class CaseStringComprehension(CaseComprehension):
 
     def getExpr(self) -> ComprehensionGen:
         return StringComprExpr()
+
+
+class CaseInlineGen(CaseComprehension):
+    ''' (: n ; n <- nn ; expr...) '''
+    def __init__(self):
+        super().__init__()
+        self.splitInds = (2, -1)
+    
+    def match(self, elems:list[Elem], ind=-1) -> bool:
+        # print('$SGen:', elemStr(elems))
+        if len(elems) < 6:
+            return False
+        if not isLex(elems[1], Lt.oper, ':'):
+            return False
+        if not isLex(elems[0], Lt.oper, '(') and not isLex(elems[-1], Lt.oper, ')'):
+            return False
+        return self.cs.match(elems[2:-1])
+
+    def getExpr(self) -> InlineGenExpr:
+        return InlineGenExpr()

@@ -259,6 +259,12 @@ class TypeIterator(VType):
     th = TH.mk()
 
 
+class TypeGenerator(VType):
+    name = 'generator'
+    _defVal = None
+    th = TH.mk()
+
+
 class ComparT:
     ''' Comparable type'''
     def compare(self, other:'ComparT'):
