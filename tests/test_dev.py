@@ -265,6 +265,11 @@ class TestDev(TestCase):
             [2, 1..5] [step, begin .. end]
             [-1, 5 .. 1] # check after positive custom step
         
+        TODO: operator of divisibility
+        a ?% b :the same as: a % b == 0
+        a !% b :the same as: a % b != 0
+        a and b should be an int, b != 0
+        
         TODO: add (;;) lazy generator of sequence, 
             can be used in loop, comprehention, sequence constructor
             ( ; ; )
@@ -289,10 +294,7 @@ class TestDev(TestCase):
         TODO: multisource for iteration in generator
         (: a + b ; a, b <- aa, bb)
         
-        TODO: operator of divisibility
-        a ?% b :the same as: a % b == 0
-        a !% b :the same as: a % b != 0
-        a and b should be an int, b != 0
+        TODO: list( (: <-) )
         
     '''
 
@@ -304,29 +306,6 @@ class TestDev(TestCase):
 
 
 
-    def _test_code_generator_in_comprh(self):
-        ''' [ ; <- (: <- )] '''
-        code = r'''
-        res = []
-        
-        g1 = (: x ; x <- [1..10] ; x % 2 == 0 )
-        
-        ss1 = [1..9]
-        res <- ss1[2:7]
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
-        
     
     def _test_code(self):
         ''' '''

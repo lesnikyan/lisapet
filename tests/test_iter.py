@@ -26,6 +26,62 @@ class TestIter(TestCase):
     ''' iteration cases '''
 
 
+    def test_code_generator_in_comprh(self):
+        ''' [ ; <- (: <- )] '''
+        code = r'''
+        res = []
+        
+        # gen to list
+        
+        g1 = (: x ; x <- [1..10] ; x % 2 == 0 )
+        
+        res <- [n ; n <- g1]
+        
+        # 3 loops
+        
+        g2 = (: ~'{z}{d}';
+            x <- [3..5];
+            y <- [10,20,30]; d = x + y; d % 3 == 0;
+            z <- ['a', 'b', 'c']; true
+        )
+        
+        res <- [n ; n <- g2]
+        
+        # gen to dict { ; (: )}
+        g3 = (: (k, bytes(v).string()); 
+            n <- [1..3]; n != 2; 
+            m <- [15 .. 17]; k = n * 100 + m; v = [50 + m, 81+n*3+m]; m % 2 > 0)
+        res <- {k:v ;  k, v <- g3}
+        
+        # gen to string
+        
+        s4 = 'hello here, dude!'.split(re`\b`)
+        g4 = (: s ; s <- s4; re`\w+` =~ s)
+        res <- ~[~'<{s}>' ; s <- g4]
+        
+        # bytes
+        s5 = 'abc 123'.bytes()
+        g5 = (: b ; b <- s5 )
+        res <- 0x[t ; t <- g5]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [2, 4, 6, 8, 10], 
+            ['a33', 'b33', 'c33', 'a24', 'b24', 'c24', 'a15', 'b15', 'c15'], 
+            {115: 'Ac', 117: 'Ce', 315: 'Ai', 317: 'Ck'}, 
+            '<hello><here><dude>', 
+            '0x[61 62 63 20 31 32 33]']
+        self.assertEqual(exv, resv)
+
     def test_generator_in_for(self):
         ''' gen = (: n + 5 ; n <- nn ; n > 0 )
         from 1 up to 5 source-iterators (: <- ; <- ; <- ; <- ; <- ;)'''
