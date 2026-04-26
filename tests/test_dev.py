@@ -29,7 +29,6 @@ from nodes.func_features import *
 import cProfile as prof
 import pdb
 
-
             
 class TestDev(TestCase):
 
@@ -40,6 +39,46 @@ class TestDev(TestCase):
         
         
         
+        
+        DONE: fix iter() for down-iteration and negative step
+        
+        DONE: py -m run -c "print([1..5][:])"
+            Error handling:  'ListGenIterator' object has no attribute 'len'
+            DONE: add constructor list([1..5])
+            DONE: add implicit conversion [..] to list before slice
+        
+        DONE: add (;;) lazy generator of sequence, 
+            can be used in loop, comprehention, sequence constructor
+            (: ; ; )
+            for n <- (x ; x <- nums ; x > 2)
+            list(((x ; x <- nums ; x > 2))) # think about skippng internal brackets
+            gen = (x ; x <- nums ; x > 2)
+            [n * 10 ; n <- gen]
+        
+        DONE: split comprehensions (should return collection/sequence)
+                and generator (return iterative object)
+        
+        
+        # FIXED: ['1:2-.-.>', '1:3-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.>', '1:3-.-.-.-.-.-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.-.-.-.-.-.>',
+        # g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        # still bug ['1:2-->', '1:3----->', '1:2------->', '1:3---------->', '1:2------------>', '1:3--------------->', '1:2----------------->', '1:3-------------------->', 
+        g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        res <- [n ; n <- g7]
+        
+        
+        DONE: next test: generator in the comprehensions list, dict, etc
+        
+        DONE: [[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+        # g7 = (: list(iter(d))  ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        note: list wasn't use iterator as an argument, need fix
+        
+        DONE: test multisource for iteration in generator
+        (: a + b ; a, b <- aa, bb)
+        
+        DONE: list( (: <-) )
+        
+        FIXED: empty source in gen make error
+            g2 = (: n ; n <- [])
 
         # (?) features for `enum` - not sure
             TODO: Enum.name(11)
@@ -188,13 +227,6 @@ class TestDev(TestCase):
             interpret after and of current top-block
             navigate through code, edit mode (looks like vim)
             # sol_1: python idlelib ?
-        
-        DONE: fix iter() for down-iteration and negative step
-        
-        DONE: py -m run -c "print([1..5][:])"
-            Error handling:  'ListGenIterator' object has no attribute 'len'
-            DONE: add constructor list([1..5])
-            DONE: add implicit conversion [..] to list before slice
             
         TODO: think about pattern matching in comprehensions condition
         
@@ -248,33 +280,38 @@ class TestDev(TestCase):
             gg = Gen(5)
             for n <- gg
                 n # 0 1 2 3 4 
-            
-            TODO?: yield gen
-                func f()
-                    for n <- [1..5]
-                        yield n
-            
-            TODO?: yield compr gen
-                ( n ; n <- [1..5] ) # generator, not a tuple comprehension 
-                [yield n ; n <- [1..5]] 
-                [: n ; n <- [1..5]] 
-                Looks like (;;) is enough
         
         TODO: range syntax (haskell like)
-            lazy producer of numeric sequence
             [begin .. end] # already done
             [2, 1..5] [step, begin .. end]
             [-1, 5 .. 1] # check after positive custom step
+            
+        TOTHINK: 
+            endless [..] gen
+            endless generator
+            endless source for list compr
         
-        TODO: add (;;) lazy generator of sequence, 
-            can be used in loop, comprehention, sequence constructor
-            for n <- (x ; x <- nums ; x > 2)
-            list(((x ; x <- nums ; x > 2))) # think about skippng internal brackets
-            gen = (x ; x <- nums ; x > 2)
-            [n * 10 ; n <- gen]
         
-        TODO: split comprehensions (should return collection/sequence)
-                and generator (return iterative object)
+        TODO: head(count, list), tail(count, list)
+            nhead = head ~>
+            nhead(5) $ [1..1000]
+            tail(15, [1..100])
+        
+        TODO: operator of divisibility
+        a ?% b :the same as: a % b == 0
+        a !% b :the same as: a % b != 0
+        a and b should be an int, b != 0
+            
+        TODO?: yield gen
+            func f()
+                for n <- [1..5]
+                    yield n
+        
+        TODO?: yield compr gen
+            ( n ; n <- [1..5] ) # generator, not a tuple comprehension 
+            [yield n ; n <- [1..5]] 
+            [: n ; n <- [1..5]] 
+            Looks like (;;) is enough
     '''
 
     _ = r"""
@@ -283,10 +320,6 @@ class TestDev(TestCase):
 
 """
 
-
-
-    
-    
     def _test_code(self):
         ''' '''
         code = r'''
@@ -308,8 +341,6 @@ class TestDev(TestCase):
         print(resv)
         exv = []
         # self.assertEqual(exv, resv)
-        
-
 
 
     def _test_barr(self):
@@ -361,6 +392,71 @@ class TestDev(TestCase):
         rvar = ctx.get('res')
         self.assertEqual(0, rvar.getVal())
 
+
+
+
+
+class TT:
+    def __init__(self):
+        self.nodes = [] # [iter, ]
+        self.ctx = []
+        self.active = True
+        self.val = -1
+    
+    # def start(self):
+    #     self.ctx = 
+    
+    # def preStrp(sel):
+    #     1
+    
+    def add(self, node):
+        self.nodes.append(node)
+    
+    def cond(self, a, b, c):
+        return ((a * c) + b) % 5
+    
+    # def step(self):
+    #     for nc in self.nodes[-1]:
+    #         if 
+        
+    
+    def get(self):
+        return self.val
+
+
+def gen(a, b, c, fn):
+    for ai in a:
+        for bi in b:
+            for ci in c:
+                if fn(ai, bi, ci) % 5 == 0:
+                # if True:
+                    yield (ai, bi, ci, fn(ai, bi, ci))
+
+class T(TestCase):
+    
+    def _test_2(self):
+        # tt = TT()
+        # tt.add(iter(range(5)))
+        # tt.add(iter(range(10, 20, 2)))
+        # tt.add(iter(range(6,9)))
+        
+        r = []
+        
+        def ff(aa, bb, cc):
+            return (aa * cc + bb)
+        
+        a = list(range(5))
+        b = list(range(11, 15))
+        # c = (n for n in [2,3,5,7])
+        c = [2,3,4,5]
+        gg = gen(a, b, c, ff)
+        
+        for n in gg:
+            print('>>', n)
+        
+        # while tt.active:
+        #     r.append(tt.get())
+        #     tt.step()
 
 
 if __name__ == '__main__':

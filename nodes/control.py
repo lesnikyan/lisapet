@@ -245,7 +245,7 @@ class LoopIterExpr(LoopBlock):
                 self.iter = self._origIter.expr
         self.iter.start()
         while self.iter.cond():
-            # print('# loop list iter ----------------------------------')
+            # print('# loop list iter ----------------------------------', self.iter)
             self.iter.do(subCtx)
             self.block.do(subCtx)
             blockRes = self.block.get()

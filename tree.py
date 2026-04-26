@@ -166,7 +166,7 @@ def caseMatcher():
     
     sqBrkLim = CaseOption(CaseBrkSquare(), [CaseListGen(), CaseBytes(), CaseListComprehension(), CaseList()])
     cvBrLim = CaseOption(CaseBrkCurv(), [CaseDictComprehension(), CaseDictLine()])
-    brkLim = CaseOption(CaseGenBrackets(), [sqBrkLim, CaseTuple(), cvBrLim, CaseBrackets()])
+    brkLim = CaseOption(CaseGenBrackets(), [sqBrkLim, cvBrLim, CaseTuple(), CaseInlineGen(), CaseBrackets()])
     
     solidOther = CaseOption(CaseAny(), [])
 
@@ -223,7 +223,7 @@ def elems2expr(elems:list[Elem], blockContext:Expression=None)->Expression:
         expr = makeExpr(foundCase, elems)
         if isinstance(expr, CtrlSubExpr):
             expr = expr.toControl()
-        # print('#post-sub:', expr, '', elemStr(elems))
+        # print('#post-sub:', expr, ' // ', elemStr(elems))
         return expr
     # print('tree:DEBUG: No current ExprCase for `%s` ' % ''.join([n.text for n in elems]))
     raise InterpretErr('No current ExprCase for `%s` ' % '_'.join([n.text for n in elems]))

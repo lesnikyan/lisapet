@@ -26,6 +26,325 @@ class TestIter(TestCase):
     ''' iteration cases '''
 
 
+
+    def test_code_sequence_constr_by_gen(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        # empty src
+        g0 = (: n ; n <- [])
+        res <- list(g0)
+        
+        # 1 iter
+        g1 = (: n ; n <- [1..10]; n % 2 == 0)
+        res <- list(g1)
+        
+        g2 = (: (m, n) ; n <- [1..3]; s <- ['a','b']; m = ~'{s}{n}')
+        res <- dict(g2)
+        
+        g3 = (: n ; n <- [1,2,'ttt', [4,5], {'a':67}])
+        res <- tuple(g3)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [], [2, 4, 6, 8, 10], 
+            {'a1': 1, 'b1': 1, 'a2': 2, 'b2': 2, 'a3': 3, 'b3': 3}, 
+            (1, 2, 'ttt', [4, 5], {'a': 67})]
+        self.assertEqual(exv, resv)
+
+    def test_iter_in_list_constr(self):
+        ''' list(iter(n))
+            (: list(iter(n)) ; n <- src)
+        '''
+        code = r'''
+        res = []
+        
+        res <- list(iter(5))
+        
+        res <- tuple(iter(4))
+        
+        res <- list(iter(3, -5, -2))
+        
+        g1 = (: list(iter(0, d * a, a)) ; a <-[1,2,3]; d <-[2,3])
+        
+        res <- [n; n <- g1]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [[0, 1, 2, 3, 4], (0, 1, 2, 3), 
+               [3, 1, -1, -3], [[0, 1], [0, 1, 2], [0, 2], [0, 2, 4], [0, 3], [0, 3, 6]]]
+        self.assertEqual(exv, resv)
+
+    def test_fix_str_repeate_in_sub_string_compr_in_gen(self):
+        ''' fix of BUG:
+        ['1:2-->', '1:3----->', '1:2------->', '1:3---------->', '1:2------------>','''
+        code = r'''
+        res = []
+        
+        # g1 = (: (~'1:{d}|' + ~['-'; _ <-iter(d)] + '>', d, [n ; n <- iter(d)]) ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        g1 = (: (~'1:{d}{k}' + '>') ; a <-[1,2,3]; d <-[2,3]; k = ~['-'; _ <-iter(d)])
+        res <- [n ; n <- g1]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [['1:2-->', '1:3--->', '1:2-->', '1:3--->', '1:2-->', '1:3--->']]
+        self.assertEqual(exv, resv)
+
+    def test_multisource_for_iter_gen(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        # x3 + bool
+        
+        nn1 = [1..9]
+        ss1 = 'absdefgh'
+        aa1 = [1,2,3,4,5,6,7,8,9,0]
+        g1 = (: ~'{s}{d+c}' ; s, n, a <- ss1, nn1, aa1; d = n * 10 + a; a > 2 && n % 2 > 0; c <- [100, 200])
+        res <- [n ; n <- g1]
+        
+        # 3 x 3
+        
+        g2 = (: (g + h + i, (a*100 + b * 10 + c)*1000 + d*10 + e + f);
+            a, b, c <- [1..3], [4..6], [7..9];
+            d, e, f <- [10,20], [30,40], [5,6];
+            g,h,i <- 'ab', 'cd', 'ef'
+        )
+        
+        # gen to string comprehension
+        res <- ~[ ~'{s}-{n} ' ; s, n <- g2]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            ['s133', 's233', 'e155', 'e255', 'g177', 'g277'], 
+            'ace-147135 bdf-147135 ace-147246 bdf-147246 ace-258135 bdf-258135 ace-258246 bdf-258246 ace-369135 bdf-369135 ace-369246 bdf-369246 ']
+        self.assertEqual(exv, resv)
+
+    def test_code_generator_in_comprh(self):
+        ''' [ ; <- (: <- )] '''
+        code = r'''
+        res = []
+        
+        # gen to list
+        
+        g1 = (: x ; x <- [1..10] ; x % 2 == 0 )
+        
+        res <- [n ; n <- g1]
+        
+        # 3 loops
+        
+        g2 = (: ~'{z}{d}';
+            x <- [3..5];
+            y <- [10,20,30]; d = x + y; d % 3 == 0;
+            z <- ['a', 'b', 'c']; true
+        )
+        
+        res <- [n ; n <- g2]
+        
+        # gen to dict { ; (: )}
+        g3 = (: (k, bytes(v).string()); 
+            n <- [1..3]; n != 2; 
+            m <- [15 .. 17]; k = n * 100 + m; v = [50 + m, 81+n*3+m]; m % 2 > 0)
+        res <- {k:v ;  k, v <- g3}
+        
+        # gen to string
+        
+        s4 = 'hello here, dude!'.split(re`\b`)
+        g4 = (: s ; s <- s4; re`\w+` =~ s)
+        res <- ~[~'<{s}>' ; s <- g4]
+        
+        # bytes
+        s5 = 'abc 123'.bytes()
+        g5 = (: b ; b <- s5 )
+        res <- 0x[t ; t <- g5]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [2, 4, 6, 8, 10], 
+            ['a33', 'b33', 'c33', 'a24', 'b24', 'c24', 'a15', 'b15', 'c15'], 
+            {115: 'Ac', 117: 'Ce', 315: 'Ai', 317: 'Ck'}, 
+            '<hello><here><dude>', 
+            '0x[61 62 63 20 31 32 33]']
+        self.assertEqual(exv, resv)
+
+    def test_generator_in_for(self):
+        ''' gen = (: n + 5 ; n <- nn ; n > 0 )
+        from 1 up to 5 source-iterators (: <- ; <- ; <- ; <- ; <- ;)'''
+        code = r'''
+        res = []
+        
+        # simplest case
+        g0 = (: n *100 + n * 2 ; n <- [1 .. 3])
+        
+        r = []
+        for i <- g0
+            r <- i
+        res <- r
+        
+        # 2 iterations
+        
+        g1 = (: n * 100 + m ; n <- [1 .. 3]; m <- [5 , 6, 7])
+        
+        r1 = []
+        for i <- g1
+            r1 <- i
+        res <- r1
+        
+        # 1 iter with filter
+        
+        g2 = (: n + 10 ; n <- [1..7] ; n % 2 != 0 )
+        r2 = []
+        for i <- g2
+            r2 <- i
+        res <- r2
+        
+        # 2 iters with filter
+        
+        g3 = (: n * 100 + m ; n <- [1 .. 5]; m <- [6 .. 9]; n % 2 != 0 && m % 3 == 0)
+        
+        r3 = []
+        for i <- g3
+            r3 <- i
+        res <- r3
+        
+        # 3 iters
+        
+        g4 = (: n * 1000 + m * 10 + k ; n <- [33 , 44]; m <- [6 .. 7]; k <- [1, 2])
+        
+        r4 = []
+        for i <- g4
+            r4 <- i
+        res <- r4
+        
+        # 3 iters + final filter
+        
+        res <- 'r5'
+        
+        g5 = (: (z) ; n <- [1 .. 3]; m <- [6 .. 9]; k <- [11 .. 17] ; z = (n,m,k); m > 7 && k % 3 == 0 )
+        # n * 1000 + m * 100 + k, 
+        r5 = []
+        for i <- g5
+            r5 <- i
+        res <- r5
+        
+        # 3 iters all with filters
+        
+        g6 = (: 100*a + b + c; 
+            a <- [-1, 1, -2, 2, -3, 3] ; a > 0 ; 
+            b <- [-10, 10, -20, 20, -30, 30]; b > 0; 
+            c <- [-5, 5, -6, 6, -7, 7]; c > 0 )
+        # a * 1000 + b + c , ((a, b, c))
+        r6 = []
+        for i <- g6
+            r6 <- i
+        res <- r6
+        
+        # 4 iters
+        
+        # res = []
+        
+        g7 = (: ~'{a}/{b}/{c}/{d}'  ; a <-[1..3]; a !=2; b <-[5..7]; b !=6; c <-['a','b']; d <-['?','!'] )
+        r7 = []
+        for i <- g7
+            r7 <- i
+        res <- r7
+        
+        # 5 iters
+        
+        # res = []
+        
+        g8 = (: ~'{a}{b}{c}{d}{e}'  ; a <-[1,2,3]; b <-[5,7]; c <-[11,12]; d <-['a','b']; e <- ['d','e']; a !=2 && c + b ?> [16, 19])
+        r8 = []
+        for i <- g8
+            r8 <- i
+        res <- r8
+        
+        # 5 iters with all filters
+        
+        # res = []
+        
+        g9 = (: ~'{a}{b}{c}{d}{e} {t}'  ; 
+            a <-[1,2,3,4]; a != 2 && a < 4;
+            b <-[5..9]; b %2 != 0;
+            c <-[11,12, 13, 14, 15]; c !?>  [13,14,11]; 
+            d <-['a','b']; rc = c % 2; rc == 0 && d =='b' || rc != 0 && d == 'a';
+            e <- ['d','e']; t = b-a; t > 7 )
+        r9 = []
+        for i <- g9
+            r9 <- i
+        res <- r9
+        
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [102, 204, 306], 
+            [105, 106, 107, 205, 206, 207, 305, 306, 307], 
+            [11, 13, 15, 17], 
+            [106, 109, 306, 309, 506, 509], 
+            [33061, 33062, 33071, 33072, 44061, 44062, 44071, 44072], 
+            'r5', [(1, 8, 12), (1, 8, 15), (1, 9, 12), (1, 9, 15), (2, 8, 12), (2, 8, 15), (2, 9, 12), (2, 9, 15), (3, 8, 12), (3, 8, 15), (3, 9, 12), (3, 9, 15)], 
+            [115, 116, 117, 125, 126, 127, 135, 136, 137, 215, 216, 217, 225, 226, 227, 235, 236, 237, 315, 316, 317, 325, 326, 327, 335, 336, 337], 
+            ['1/5/a/?', '1/5/a/!', '1/5/b/?', '1/5/b/!', '1/7/a/?', '1/7/a/!', '1/7/b/?', '1/7/b/!', 
+             '3/5/a/?', '3/5/a/!', '3/5/b/?', '3/5/b/!', '3/7/a/?', '3/7/a/!', '3/7/b/?', '3/7/b/!'], 
+            ['1511ad', '1511ae', '1511bd', '1511be', '1712ad', '1712ae', '1712bd', '1712be', '3511ad', '3511ae', '3511bd', '3511be', '3712ad', '3712ae', '3712bd', '3712be'], 
+            ['1912bd 8', '1912be 8', '1915ad 8', '1915ae 8']]
+        self.assertEqual(exv, resv)
+
     def test_slice_iter_gen(self):
         ''' '''
         code = r'''

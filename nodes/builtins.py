@@ -10,6 +10,7 @@ from objects.func import Function, ObjMethod
 def loop_iter(_, *args):
     beg, over, step = Val(0, None), Val(0, None), Val(1, None)
     # dprint('>>>>>>>>>>>>>>>>> loop_iter function')
+    # print('iter>', args)
     match len(args):
         case 1: over = args[0]
         case 2: beg, over = args
@@ -135,6 +136,7 @@ def buit_print(ctx:Context,*args):
     # print('b-print1:', args)
     # ctx.print(forsed=1)
     for n in args:
+        ttp = None
         # print('b-print:::', n, n.__class__.__name__)
         if isinstance(n, (Function, FuncOverSet)):
             pargs.append(str(n))
@@ -144,9 +146,11 @@ def buit_print(ctx:Context,*args):
         if isinstance(v, Val):
             if isinstance(v.getType(), TypeIterator):
                 v = v.getVal()
+                ttp = 'iter'
             if isinstance(v, ListGenIterator):
                 # print('$1', arg, v)
                 v = v.allVals()
+                ttp = 'range'
             n = v
         v = getVal(n)
         # print('$2 ', v)
@@ -155,6 +159,8 @@ def buit_print(ctx:Context,*args):
         # raise EvalErr('')
         if isinstance(v, StructInstance):
             v = v.istr()
+        if ttp:
+            v = f"{ttp}{v}"
         pargs.append(v)
         # print('b-print2:::', v)
     print(*pargs)

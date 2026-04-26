@@ -147,6 +147,8 @@ def val2Seq(val:Val):
             r = copyElems(val.elems)
         case TypeIterator():
             r = val.getVal().makeElems()
+        case TypeGenerator():
+            r = val.getVal().makeElems()
     return r
 
 
@@ -175,6 +177,11 @@ def dict_constr(ctx, arg:Val):
             # should be list of 2-val tuples
             # print('tpl:', [tt for tt in arg.elems])
             dd = {tt.elems[0].getVal(): tt.elems[1] for tt in arg.elems}
+        case TypeGenerator():
+            elems = arg.getVal().makeElems()
+            # print('$3', elems)
+            dd = {tt.elems[0].getVal(): tt.elems[1] for tt in elems}
+                
     return DictVal(data=dd)
 
 

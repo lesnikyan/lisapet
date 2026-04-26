@@ -91,12 +91,13 @@ Content:
     4. [Triple dots `[]...`](#94-triple-dots)
 
 9. #### Collection generation:
-    1. [Iteration generator `[ .. ]`](#91-iteration-generator-)
+    1. [Range generator `iter()`, `[ .. ]`](#91-iteration-generator-)
     2. [Slice `[ : ]`, `tolist()` ](#92-list-features-slice---tolist)
-    3. [`list` generator `[ ; ; ]`](#93-list-comprehension--sequence-generator)
-    4. [`dict` generator `{ ; ; }`](#94-dict-comprehension-generator)
-    5. [`bytes` generator `0x[ ; ; ]`](#95-bytes-comprehension-generator)
-    6. [`string` generator `~[ ; ; ]`](#96-string-comprehension-generator)
+    3. [`list` comprehension `[ ; ; ]`](#93-list-comprehension)
+    4. [`dict` comprehension `{ ; ; }`](#94-dict-comprehension)
+    5. [`bytes` comprehension `0x[ ; ; ]`](#95-bytes-comprehension)
+    6. [`string` comprehension `~[ ; ; ]`](#96-string-comprehension)
+    7. [Generator `(: ; <- )`](#97-generator)
 
 10. #### Structs `A{}` 
     1. [Definition of `struct`, base constructor `A{a:b}`, fields](#101-struct)
@@ -1979,17 +1980,17 @@ sliced = [1..100][3:10]
 sliced = [x ; x <- src][2:5]
 ```
 
-### 9.3 List comprehension / sequence generator
-Sequence generator (aka list comprehansion) is a shortened syntax (sugar) for making lists by another list or any sourec of sequence.  
+### 9.3 List comprehension
+Sequence producer (aka list comprehension) is a shortened syntax (sugar) for making lists by another list or any sourec of sequence.  
 - Basic syntax:  
 ```python
 [elem; src-expr ;...]
 ```
-- Expressions in the generator is divided by `;`.   
-Generator has such segments / expressions:  
-Second expression is a loop-iterator with arrow-assignment like `for` statement.  
+Expressions in the list comprehension is divided by `;`   
+List conprehension has such segments / expressions:  
+- Second expression is a loop-iterator with arrow-assignment like `for` statement.  
 Note.  
-left-arrow `<-` within a comprehension expression is always interpreted as an iterative assignation.  
+left-arrow `<-` within a comprehension expression is always interpreted as an iterative assignment.  
 ```python
 for x <- src
     ...
@@ -2006,28 +2007,28 @@ for x <- src
 res = [x; x <- src]
 ```
 
-- Generator should contain at least 2 segments:  
+- Conprehension should contain at least 2 segments:  
 ```python
 [n; n <- values]
 ```
-- Generator can have more expressions with one source:
+- Conprehension can have more expressions with one source:
 ```python
 [  
     elem-expr;       # 1) result element expression ;  
     assign-expr;     # 2) read element and assign to local var;  
     additional-expr; # 3) additional expression with assignment;  
-    condition-expr  # 4) filtering condition (aka guard)
+    filter-condition  # 4) filtering condition (aka guard)
 ]  
-# 2-4 is a generator-block.  
+# 2-4 is a loop-block.  
 # 3-4 are optional  
 ```
-- 1st - resulting of each element expression.  
+- 1st - resulting of each element.  
 
 - 2nd - reading current element and assign value to local variable (or variables) using `<-` operator.
 
 - 3-rd segment (actually it can be several expressions) should be an assign operator `v = expr`. Optional.   
 
-- Last segment that isn't an assigning expression will be interpreted as an conditional expression. Optional.  
+- Last segment that isn't an assignment will be interpreted as an conditional expression of filter. Optional.  
 
 Full syntax of 1 iterator:
 ```python
@@ -2040,7 +2041,7 @@ src = [1..5]
 >> [101, 303, 505]
 ```
 
-- Generator can have sub-iterations, i.e. 2-4 is a repeatable parts, using outer or internal sources in next iterative assignations like:
+- List comprehension can have sub-iterations, i.e. 2-4 is a repeatable parts, using outer or internal sources in next iterative assignments like:
 ```python
 arr1, arr2, arr3 # outer source lists
 [aa + bb + c ; 
@@ -2079,7 +2080,7 @@ nums = [ x ; sub <- src ; x <- sub]
 ```
 - Too long expression can be formatted into multiple lines.
 ```python
-# generator: multi-expressions, multiline expression
+# multi-expressions, multiline expression
 nums = [
     {x:a, y:b, z:c}; # element of result
     # 1)
@@ -2124,8 +2125,8 @@ res # >>
 [[0, 1], [0, 1, 2], [0, 1, 2, 3], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5]]
 ```
 
-### 9.4 Dict comprehension generator.  
-Dict can be made by comprehension generator too.  
+### 9.4 Dict comprehension.  
+Dict can be made by comprehension expression too.  
 There is a little different syntax.  
 Unlike the list-gen internal expressions of the dict-gen are covered by curvy brackets.  
 The result expression should be a pair of values around `:` operator, it produces current `key:value` pair of resulting value (dict).  
@@ -2136,7 +2137,7 @@ tt = ('a', 'b', 'c', 'd', 'e')
 
 d2 = { c : n ; n, c <- nn, tt}
 ```
-Other options of comprehensive generator is available: multi source, conditions, pre-assignments, several loop levels.  
+Other options of comprehension is available: multi source, conditions, pre-assignments, several loop levels.  
 ```python
 res = {
     k: i * 100 + j ; 
@@ -2146,7 +2147,7 @@ res = {
 }
 ```
 
-### 9.5 Bytes comprehension generator. 
+### 9.5 Bytes comprehension. 
 In the same way as list or dict we can generate sequence of `bytes`.  
 By list on integers: 
 ```python
@@ -2168,14 +2169,14 @@ By converted string:
 bb8 = bytes('ABCDEFGHIJKLMNOP')
 r = 0x[bytes([c + 32, 0x20]) ; c <- bb8]
 ```
-All options are the same as in `list` generator: multi-source, assignments, filtering, sub-iteration.  
+All options are the same as in `list` comprehension: multi-source, assignments, filtering, sub-iteration.  
 
 
-### 9.6 String comprehension generator.
-String generator looks similar to list gen but with `~` prefix.  
+### 9.6 String comprehension.
+String comprehension looks similar to list gen but with `~` prefix.  
 `~[ elem ; a <- src ; condition]`  
 The `~` here is more the prefix than the operator.  
-Generator can processes string and makes a string as a result.  
+String producer can processes string and makes a string as a result.  
 Each elem in 1-st section should be a `glif` or a `string`.  
 ```python
 pt = '.,?!'
@@ -2197,6 +2198,32 @@ r = ~[s ; b <- bb4 ; s = glif(b)]
 # >> 'ABCD!abc'
 ```
 
+### 9.7 Generator.
+Generator is an iterative source with syntax similar to list comprehension.  
+It makes object that can be called iteratively in loop returning new value in each iteration (like iterator).  
+Basic syntax: generator covered by parentheses with colon `:` after opening bracket. Segments are separated by semicolon `;`.  
+```python
+src = [1,2,3,4,5]
+gen = (: x+10 ; <- src)
+for n <- gen
+    print(n) # 11, 12, 13, 14, 15 
+```
+Generator can containg several loops. Aech loop can have asignment sub-segmet and filtering condition.  
+```python
+gen = (: ~'{z}{d}';
+    x <- [1..5];
+    y <- [10,20,30]; d = x + y; d % 3 == 0;
+    z <- ['a', 'b', 'c']; true
+)
+# >> 'a33', 'b33', 'c33', 'a24', 'b24', 'c24', 'a15', 'b15', 'c15'
+```
+
+Generator can be a source for comprehension expressions.  
+```python
+gen = (: n ; n <- [1 .. 5]; if n % 2 > 0)
+res = {k : v ; n <- gen; k = n + 10; v = n * 100}
+# >> {11:100, 13:300, 15:500}
+```
 
 
 ### 14. Builtin functions:  
@@ -2407,7 +2434,7 @@ n1 = foo(f1, 5)
 n2 = foo( x -> 2 ** x , 5)
 ```
 
-### Experimental: definition as a result.  
+### Definition as a result.  
 If def of function f1 was last expression in another function f2 than f1 will be a result of f2.  
 ```golang
 func getFuu(n)

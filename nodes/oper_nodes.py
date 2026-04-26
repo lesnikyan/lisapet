@@ -62,12 +62,12 @@ class OpAssign(AssignExpr):
         # print('OpAssign.do src', src)
         resSet:list[Var] = []
         if isinstance(src, SequenceExpr):
-            # dprint('## op-assign, SequenceExpr src -> ', src, )
+            # print('## op-assign, SequenceExpr src -> ', src, )
             resSet = src.getVals(ctx)
         else:
             src.do(ctx)
             tVal:Var = src.get() # val (anon var obj) from expression
-            # dprint('## op-assign, src.get() -> ', tVal, ':', tVal.get(), tVal.getType())
+            # print('## op-assign, src.get() -> ', tVal, ':', tVal.get(), tVal.getType())
             resSet.append(tVal)
         # ctx.print()
         if leftSize > 1 and len(resSet) == 1:
@@ -428,7 +428,7 @@ class OpBinBool(BinOper):
         self.right.do(ctx)
         # get val objects from expressions
         a, b = self.left.get(), self.right.get()
-        # dprint(' ( %s )' % self.oper, a.getVal(), b.getVal())
+        # print(' ( %s )' % self.oper, a.getVal(), b.getVal())
         # dprint(' (types)', a.getType(), b.getType())
         # TODOO: type check needs further development
         # vtype = a.getType()
@@ -437,7 +437,7 @@ class OpBinBool(BinOper):
         #     dprint('break comarison because types not equal %s <> %s' % (a.getType(), b.getType()) )
         #     return False
         res = ff[self.oper](bool(a.getVal()), bool(b.getVal()))
-        dprint('# == == OpCompare.do ', res)
+        # print('# == == OpCompare.do ', res)
         self.res = Val(res, TypeBool())
     
     def op_and(self, a, b):

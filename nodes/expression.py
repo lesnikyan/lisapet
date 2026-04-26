@@ -18,6 +18,7 @@ def repr(obj):
 
 
 def takeVal(vv, ctx:Context):
+    # print('takeVal', vv)
     if isinstance(vv, ObjectElem):
         return vv.get(ctx)
     return var2val(vv)

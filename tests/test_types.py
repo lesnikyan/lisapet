@@ -31,7 +31,7 @@ class TestTypes(TestCase):
 
 
 
-    def test_dtruct_field_types_bool_collections_any(self):
+    def test_struct_field_types_bool_collections_any(self):
         ''' type of struct field: list, dict, bool, any '''
         code = r'''
         res = [-111]
@@ -106,6 +106,15 @@ class TestTypes(TestCase):
         nn = (5,6,7)
         res <- nn
         
+        ss = [1, 1.2, '1', [1], (1,)]
+        rr = []
+        for s <- ss
+            if s :: (int | float | string)
+                rr <- ~'{s}'
+            else
+                rr <- s
+        res <- rr
+        
         # print('res = ', res)
         '''
         code = norm(code[1:])
@@ -114,8 +123,8 @@ class TestTypes(TestCase):
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         rvar = ctx.get('res').get()
-        null = Null()
-        exv = [3, 1.5, True, 123, null, [2, 3, 4], (5, 6, 7)]
+        # null = Null()
+        exv = [3, 1.5, True, 123, null, [2, 3, 4], (5, 6, 7), ['1', '1.2', '1', [1], (1,)]]
         self.assertEqual(exv, rvar.vals())
 
     def test_multitype_var(self):

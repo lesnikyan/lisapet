@@ -80,7 +80,7 @@ class IterAssignExpr(Expression):
     #     self._first_iter = True
     
     def setIter(self, itExp:NIterator):
-        # dprint('@# setIter', itExp)
+        # print('@# setIter', itExp)
         self.itExp = itExp
     
     def start(self):
@@ -110,11 +110,11 @@ class IterAssignExpr(Expression):
         
         if self._first_iter:
             self.varsInit(ctx)
-            
         # print('IterAssignExpr.do', self.itExp, self.key, self.val)
-        
+        # import time
+        # time.sleep(1)
         val = self.itExp.get()
-        # print('IterAssignExpr.do2 val=', val)
+        # print('IterAssignExpr.do2 val=', self.itExp, val)
         valSet = []
         
         largLen = len(self.loopVars)
@@ -142,7 +142,7 @@ class IterAssignExpr(Expression):
         
 
         vlen = len(valSet)
-        # print('$1>>', vlen, valSet)
+        # print('ind$1>>', vlen, valSet)
         if vlen != largLen:
             raise EvalErr(f"Arrow assign has different left {largLen} and right {vlen} count of elements.")
 
@@ -151,7 +151,7 @@ class IterAssignExpr(Expression):
             if isinstance(arg, Var_):
                 continue
             elem = valSet[i]
-            # print('for <- arg, val', i , '>>', arg, elem)
+            # print('for <- arg, val', i , '>>', arg,  elem)
             varName = arg.name
             nvar = Var(varName, elem.getType())
             nvar.set(elem)
@@ -175,23 +175,36 @@ class IndexIterator(NIterator):
             self.k = -1
         self.last = b * self.k # not last, but next to last, depending of step
         self.vtype = TypeIterator()
+        # print('InIt', self.getType())
 
     def start(self):
         self.index = self.first
 
     def step(self):
+        # print('IndexIterator.step', self.index, '+=', self.__step)
         self.index += self.__step
 
     def hasNext(self):
-        # cur = self.index
-        # fin = self.last
-        # df = fin - cur
-        # k = 1 if self.__step > 0 else -1
-        # print('>', df, k, self.__step)
+        # print('IIt.next?:', self.index, '*', self.k , '<', self.last)
         return self.index * self.k < self.last
 
     def get(self):
         return Val(self.index, TypeInt())
+    
+    def makeElems(self):
+        ''' method for internal usage, avoid to make unnecessary ListVal '''
+        res = []
+        self.start()
+        # print('LGI1 (%d, %d)' % (self.first, self.last))
+        while(self.hasNext()):
+            res.append(self.get())
+            self.step()
+        return res
+    
+    def allVals(self):
+        elems = self.makeElems()
+        res = ListVal(elems = elems)
+        return res
 
 
 class SrcIterator(NIterator):
@@ -227,7 +240,10 @@ class SrcIterator(NIterator):
         if self._isDict:
             seq = list(seq.keys())
             self._keys = seq
-        self.iter = IndexIterator(0, len(seq))
+        slen = len(seq)
+        # if slen ==0:
+        #     slen = -1
+        self.iter = IndexIterator(0, slen)
 
     def step(self):
         self.iter.step()
@@ -242,6 +258,7 @@ class SrcIterator(NIterator):
             val = self.src[key]
             # dprint('Iter-dict get: key, val', key, val)
             return (raw2val(key), val)
+        # print('IterSrc.get:', key, self.src)
         val = self.src[key]
         # print('IterSrc.get:', val)
         if isinstance(self.src, bytearray):
@@ -291,7 +308,11 @@ class MultiSrcIterator(SrcIterator):
         return res
 
 
-class ListGenIterator(NIterator, SequenceGen):
+class GenIterator(NIterator, SequenceGen):
+    ''' '''
+
+
+class ListGenIterator(GenIterator):
     ''' [a..b] from a to b, step |1| 
         TODO: step !?> (-1, 1)
             [1..10 ; 2]
@@ -582,6 +603,7 @@ class EmptyFilter(Expression):
         return Val(True, TypeBool())
 
 
+# ComprehensionExpr
 class ComprehensionGen(Expression):
     ''' Base functionality of comprehension generator.
         This class can't be used as is.
@@ -679,7 +701,8 @@ class ComprehensionGen(Expression):
         pass
 
     def do(self, ctx:Context):
-        # dprint('ListComprExpr.do0')
+        # print('ListComprExpr.do0', self.iter)
+        
         self.res = None # reset prev
         self.resultObject()
         if len(self.iterNodes) == 0:
@@ -779,6 +802,7 @@ class StringComprExpr(ComprehensionGen):
     def resultObject(self):
         ''' '''
         self.res = None
+        self.vals = []
     
     def fin(self):
         self.res = StringVal(''.join(self.vals))
@@ -791,4 +815,300 @@ class StringComprExpr(ComprehensionGen):
         if isinstance(rv, Glif):
             rv = rv.val
         self.vals.append(rv)
+
+
+class GenSubNode(Expression):
+    def __init__(self, iter=None, src=None):
+        super().__init__(None, src=src)
+        self.finished = True
+
+    def start(self):
+        pass
     
+    def do(self, ctx=None):
+        pass
+    
+    def cond(self):
+        return True
+    
+    def hasNext(self):
+        return False
+    
+    def step(self):
+        return True
+
+
+class SubIterNode(GenSubNode):
+    ''' one section in generator (iter ; assign ; cond) '''
+
+    debid = 1
+        
+    def __init__(self, iter=None, src=None):
+        super().__init__(None, src=src)
+        self.did = SubIterNode.debid # debug id
+        SubIterNode.debid += 1
+        self._origIter = iter
+        self.iter:IterAssignExpr = iter
+        self.ctx:Context = None
+        self.subExprs:list[Expression] = []
+        self.ifcond:Expression = None
+        self.finished = True
+        self.subNode:SubIterNode = None
+    
+    def addSub(self, sub:Expression):
+        self.subExprs.append(sub)
+    
+    def setSubNode(self, sub:Expression):
+        self.subNode = sub
+    
+    def setCond(self, cond:Expression):
+        self.ifcond = cond
+    
+    def setContext(self, ctx:Context):
+        self.ctx = ctx
+    
+    def start(self):
+        self._origIter = self.iter
+        self.finished = False
+        subCtx = self.ctx
+        if isinstance(self._origIter, LeftArrowExpr):
+            # print(f'\nsubNode.start<{self.did}> iter', f'<={self.did}>', self._origIter)
+            self._origIter.setAssign()
+            self._origIter.init(subCtx)
+            # if isinstance(self._origIter.expr, IterAssignExpr):
+            self.iter = self._origIter.expr
+        # print('subNode iter2', self.iter)
+        # self.iter.init(self.ctx)
+        self.iter.start()
+        if not self.iter.cond():
+            return False
+        self.do()
+        cval = self.ifcond.get()
+        ifres = var2val(cval).get()
+        
+        if not ifres:
+            sres = self.step(curOnly=True)
+            if not sres:
+                return False
+        if self.subNode:
+            stres = self.subNode.start()
+            if not stres:
+                return self.step()
+        return True
+            # if not self.subNode.cond()
+    
+    def doSubs(self):
+        for exp in self.subExprs:
+            exp.do(self.ctx)
+    
+    def do(self, ctx=None):
+        # self._origIter.do(self.ctx)
+        self.iter.do(self.ctx)
+        self.doSubs()
+        self.ifcond.do(self.ctx)
+        # print(f'sind<{self.did}>.',  'do:', self.ctx.vars)
+    
+    def hasNext(self):
+        if self.finished:
+            return False
+        return self.iter.cond()
+    
+    def cond(self):
+        cval = self.ifcond.get() # Val(true) # valid condition -> stop loop
+        # print(f'?? subInod<{self.did}>.cond:', var2val(cval).get())
+        return var2val(cval).get()
+        
+    
+    # def _step(self):
+    #     # print('subNode.step')
+    #     self.iter.step()
+    #     # print('$11', f'?<?{self.did}>', 'if:', self.iter.cond(), self.finished)
+    #     if self.finished:
+    #         return False
+    #     while self.iter.cond(): # has next
+    #         # print('$12')
+    #         self.do()
+    #         cval = self.ifcond.get()
+    #         ifres = var2val(cval).get()
+            
+    #         ccx = self.ctx
+    #         vvs = []
+    #         while ccx.upper:
+    #             vv = [(k, v.getVal()) for k, v in self.ctx.vars.items() if not isinstance(v.getType(), (TypeList, TypeGenerator ))]
+    #             vvs.append(vv)
+    #         # vv = [(k, v.getVal()) for k, v in self.ctx.vars.items() if not isinstance(v.getType(), (TypeList, TypeGenerator ))]
+    #         # vu = [(k, v.getVal()) for k, v in self.ctx.upper.vars.items() if not isinstance(v.getType(), (TypeList, TypeGenerator ))]
+    #         # print('ssubNd.step2<', self.did, 'vrs:', vv, vu, '>', self.ifcond, expSrc(self.ifcond),  cval, ifres)
+    #         if ifres:
+    #             return True # correct condition has reached
+    #         self.iter.step()
+    #         # print('ino.step w-end:', self.iter.cond())
+    #     # print('inod step.False')
+    #     self.finished = True
+    #     return False # iter ended without result
+    
+    def debVV(self):
+            ccx = self.ctx
+            vvs = []
+            while ccx.upper is not None:
+                vv = [(k, v.getVal()) for k, v in ccx.vars.items() if not isinstance(v.getType(), (TypeList, TypeGenerator ))]
+                vvs.append(vv)
+                ccx = ccx.upper
+            return vvs
+    
+    def step(self, curOnly=False):
+        # print(f'~~step <{self.did}>')
+        if not curOnly and self.subNode and not self.subNode.finished:
+            ss = self.subNode.step()
+            if ss:
+                return True
+        # print(f'vv$1<{self.did}>:', expSrc(self.ifcond), self.debVV())
+        self.iter.step()
+        # print('$$ i.cond:', self.iter.cond())
+        while self.iter.cond():
+            # subNode has finished
+            self.do()
+            # print(f'vv$2<{self.did}>:', expSrc(self.ifcond), self.debVV())
+            cval = self.ifcond.get()
+            ifres = var2val(cval).get()
+            if not ifres:
+                self.iter.step()
+                continue
+            if curOnly or not self.subNode:
+                return True
+            if not self.subNode.start():
+                self.iter.step()
+                continue
+            if self.subNode.cond():
+                # print('sind.step$5', self.subNode.cond())
+                return True
+            self.iter.step()
+        # print(f'last step {self.did}')
+        return False
+
+
+# SequenceGenerator
+class InlineGen(GenIterator):
+    '''
+    Generator returned from expression:
+    (: n ; n <- src)
+    '''
+    
+    def __init__(self):
+        super().__init__()
+        self.vtype = TypeGenerator()
+        self.ctx:Context = None
+        self.deepCtx:Context = None
+        self.resExpr = None # result expression, first in parts
+        self.continued = False
+        self.root = None
+        self.lastInode = None
+    
+    def getType(self):
+        return self.vtype
+
+    def addIter(self, iterNode:SubIterNode):
+        if self.root is None:
+            self.root = iterNode
+            self.lastInode = iterNode
+            return
+        self.lastInode.setSubNode(iterNode)
+        self.lastInode = iterNode
+        
+    def hasNext(self):
+        ''' if not last position '''
+        return self.continued
+    
+    def doElem(self, ctx:Context):
+        self.resExpr.do(ctx)
+        res = self.resExpr.get()
+        return var2val(res)
+
+    def get(self):
+        ''' get current element '''
+        if not self.continued:
+            raise EvalErr('LIterGenerator.incorrect get after stop')
+        deepCtx = self.lastInode.ctx
+        return self.doElem(deepCtx)
+
+    def start(self):
+        self.continued = False
+        ss = self.root.start()
+        if ss:
+            self.continued = True
+
+    def _stop(self):
+        self.continued = False
+        return False
+
+    def step(self):
+        rst = self.root.step()
+        if not rst:
+            self._stop()
+    
+    def makeElems(self):
+        res = []
+        self.start()
+        while(self.hasNext()):
+            res.append(self.get())
+            self.step()
+        return res
+
+
+class InlineGenExpr(GenIterator):
+    ''' expression like (: ; ; )
+    '''
+    
+    def __init__(self):
+        super().__init__()
+        self.ingen:InlineGen = None
+        self.subs = []
+        self.res = None
+    
+    def get(self):
+        return self.res
+    
+    def setInner(self, subs:Expression):
+        ''' set of expression lists
+            1. result-expr
+            2. [IterAssignExpr, ... ]
+            3. declaration-expr (single assign or multi)
+            4. condition-expr
+            e.g.:
+            x + a ; x <- iter , y <- iter; a = y * 10; a < 100
+            x + a ; x <- iter ; x > 2
+        '''
+        self.subs = subs
+    
+    def makeGen(self, ctx:Context):
+        self.ingen = InlineGen()
+        lexp = len(self.subs)
+        if lexp < 2:
+            raise InterpretErr(f'Too little subparts of comprehension: {lexp}')
+        self.ingen.resExpr = self.subs[0]
+        curIt = -1
+        curInode = None
+        subCtx = ctx
+        for exp in self.subs[1:]:
+            if isinstance(exp, (LeftArrowExpr,IterAssignExpr)):
+                # basic case
+                curIt += 1
+                exp.setAssign()
+                curInode = SubIterNode(exp)
+                subCtx = Context(subCtx)
+                curInode.setContext(subCtx)
+                self.ingen.addIter(curInode)
+                curInode.setCond(EmptyFilter())
+            elif curIt > -1 and isinstance(exp, OpAssign):
+                # declaration|assign part after iterator
+                curInode.addSub(exp)
+            elif curIt > -1:
+                # filter condition here. can`t be before iterator`
+                curInode.setCond(exp)
+
+    def do(self, ctx:Context):
+        self.makeGen(ctx)
+        self.res = Val(self.ingen, TypeGenerator())
+        
+
+

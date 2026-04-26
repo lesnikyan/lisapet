@@ -6,6 +6,7 @@ from bases.ntype import *
 from nodes.expression import *
 from nodes.keywords import *
 from nodes.base_oper import AssignExpr
+from nodes.tnodes import LineBlockExpr
 from nodes.oper_dot import ObjectMember
 from objects.func import Function, Method, ObjMethod
 
@@ -43,6 +44,9 @@ class FuncCallExpr(CallExpr):
                 valExp.do(ctx)
                 named[argName] = valExp
                 continue
+            # elif isinstance(exp, LineBlockExpr):
+                # print('Mhahaha')
+                
             if len(named) != 0:
                 # if not variadic args part:
                 # if len(args) >= func.argNum and not func.extOrdered:
