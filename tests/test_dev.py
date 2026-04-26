@@ -39,6 +39,46 @@ class TestDev(TestCase):
         
         
         
+        
+        DONE: fix iter() for down-iteration and negative step
+        
+        DONE: py -m run -c "print([1..5][:])"
+            Error handling:  'ListGenIterator' object has no attribute 'len'
+            DONE: add constructor list([1..5])
+            DONE: add implicit conversion [..] to list before slice
+        
+        DONE: add (;;) lazy generator of sequence, 
+            can be used in loop, comprehention, sequence constructor
+            (: ; ; )
+            for n <- (x ; x <- nums ; x > 2)
+            list(((x ; x <- nums ; x > 2))) # think about skippng internal brackets
+            gen = (x ; x <- nums ; x > 2)
+            [n * 10 ; n <- gen]
+        
+        DONE: split comprehensions (should return collection/sequence)
+                and generator (return iterative object)
+        
+        
+        # FIXED: ['1:2-.-.>', '1:3-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.>', '1:3-.-.-.-.-.-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.-.-.-.-.-.>',
+        # g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        # still bug ['1:2-->', '1:3----->', '1:2------->', '1:3---------->', '1:2------------>', '1:3--------------->', '1:2----------------->', '1:3-------------------->', 
+        g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        res <- [n ; n <- g7]
+        
+        
+        DONE: next test: generator in the comprehensions list, dict, etc
+        
+        DONE: [[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+        # g7 = (: list(iter(d))  ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        note: list wasn't use iterator as an argument, need fix
+        
+        DONE: test multisource for iteration in generator
+        (: a + b ; a, b <- aa, bb)
+        
+        DONE: list( (: <-) )
+        
+        FIXED: empty source in gen make error
+            g2 = (: n ; n <- [])
 
         # (?) features for `enum` - not sure
             TODO: Enum.name(11)
@@ -187,13 +227,6 @@ class TestDev(TestCase):
             interpret after and of current top-block
             navigate through code, edit mode (looks like vim)
             # sol_1: python idlelib ?
-        
-        DONE: fix iter() for down-iteration and negative step
-        
-        DONE: py -m run -c "print([1..5][:])"
-            Error handling:  'ListGenIterator' object has no attribute 'len'
-            DONE: add constructor list([1..5])
-            DONE: add implicit conversion [..] to list before slice
             
         TODO: think about pattern matching in comprehensions condition
         
@@ -247,17 +280,6 @@ class TestDev(TestCase):
             gg = Gen(5)
             for n <- gg
                 n # 0 1 2 3 4 
-            
-        TODO?: yield gen
-            func f()
-                for n <- [1..5]
-                    yield n
-        
-        TODO?: yield compr gen
-            ( n ; n <- [1..5] ) # generator, not a tuple comprehension 
-            [yield n ; n <- [1..5]] 
-            [: n ; n <- [1..5]] 
-            Looks like (;;) is enough
         
         TODO: range syntax (haskell like)
             [begin .. end] # already done
@@ -270,41 +292,26 @@ class TestDev(TestCase):
             endless source for list compr
         
         
+        TODO: head(count, list), tail(count, list)
+            nhead = head ~>
+            nhead(5) $ [1..1000]
+            tail(15, [1..100])
+        
         TODO: operator of divisibility
         a ?% b :the same as: a % b == 0
         a !% b :the same as: a % b != 0
         a and b should be an int, b != 0
+            
+        TODO?: yield gen
+            func f()
+                for n <- [1..5]
+                    yield n
         
-        DONE: add (;;) lazy generator of sequence, 
-            can be used in loop, comprehention, sequence constructor
-            (: ; ; )
-            for n <- (x ; x <- nums ; x > 2)
-            list(((x ; x <- nums ; x > 2))) # think about skippng internal brackets
-            gen = (x ; x <- nums ; x > 2)
-            [n * 10 ; n <- gen]
-        
-        DONE: split comprehensions (should return collection/sequence)
-                and generator (return iterative object)
-        
-        
-        # FIXED: ['1:2-.-.>', '1:3-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.>', '1:3-.-.-.-.-.-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.-.-.-.-.-.>',
-        # g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
-        # still bug ['1:2-->', '1:3----->', '1:2------->', '1:3---------->', '1:2------------>', '1:3--------------->', '1:2----------------->', '1:3-------------------->', 
-        g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
-        res <- [n ; n <- g7]
-        
-        
-        DONE: next test: generator in the comprehensions list, dict, etc
-        
-        DONE: [[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
-        # g7 = (: list(iter(d))  ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
-        note: list wasn't use iterator as an argument, need fix
-        
-        DONE: test multisource for iteration in generator
-        (: a + b ; a, b <- aa, bb)
-        
-        TODO: list( (: <-) )
-        
+        TODO?: yield compr gen
+            ( n ; n <- [1..5] ) # generator, not a tuple comprehension 
+            [yield n ; n <- [1..5]] 
+            [: n ; n <- [1..5]] 
+            Looks like (;;) is enough
     '''
 
     _ = r"""
@@ -312,9 +319,6 @@ class TestDev(TestCase):
 
 
 """
-
-
-
 
     def _test_code(self):
         ''' '''
@@ -337,8 +341,6 @@ class TestDev(TestCase):
         print(resv)
         exv = []
         # self.assertEqual(exv, resv)
-        
-
 
 
     def _test_barr(self):

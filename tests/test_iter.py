@@ -27,6 +27,42 @@ class TestIter(TestCase):
 
 
 
+    def test_code_sequence_constr_by_gen(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        # empty src
+        g0 = (: n ; n <- [])
+        res <- list(g0)
+        
+        # 1 iter
+        g1 = (: n ; n <- [1..10]; n % 2 == 0)
+        res <- list(g1)
+        
+        g2 = (: (m, n) ; n <- [1..3]; s <- ['a','b']; m = ~'{s}{n}')
+        res <- dict(g2)
+        
+        g3 = (: n ; n <- [1,2,'ttt', [4,5], {'a':67}])
+        res <- tuple(g3)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [], [2, 4, 6, 8, 10], 
+            {'a1': 1, 'b1': 1, 'a2': 2, 'b2': 2, 'a3': 3, 'b3': 3}, 
+            (1, 2, 'ttt', [4, 5], {'a': 67})]
+        self.assertEqual(exv, resv)
+
     def test_iter_in_list_constr(self):
         ''' list(iter(n))
             (: list(iter(n)) ; n <- src)

@@ -185,7 +185,7 @@ class IndexIterator(NIterator):
         self.index += self.__step
 
     def hasNext(self):
-        # print('IIt.nest?:', self.index, '*', self.k , '<', self.last)
+        # print('IIt.next?:', self.index, '*', self.k , '<', self.last)
         return self.index * self.k < self.last
 
     def get(self):
@@ -240,7 +240,10 @@ class SrcIterator(NIterator):
         if self._isDict:
             seq = list(seq.keys())
             self._keys = seq
-        self.iter = IndexIterator(0, len(seq))
+        slen = len(seq)
+        # if slen ==0:
+        #     slen = -1
+        self.iter = IndexIterator(0, slen)
 
     def step(self):
         self.iter.step()
@@ -255,6 +258,7 @@ class SrcIterator(NIterator):
             val = self.src[key]
             # dprint('Iter-dict get: key, val', key, val)
             return (raw2val(key), val)
+        # print('IterSrc.get:', key, self.src)
         val = self.src[key]
         # print('IterSrc.get:', val)
         if isinstance(self.src, bytearray):
@@ -876,6 +880,8 @@ class SubIterNode(GenSubNode):
         # print('subNode iter2', self.iter)
         # self.iter.init(self.ctx)
         self.iter.start()
+        if not self.iter.cond():
+            return False
         self.do()
         cval = self.ifcond.get()
         ifres = var2val(cval).get()
@@ -1026,8 +1032,10 @@ class InlineGen(GenIterator):
         return self.doElem(deepCtx)
 
     def start(self):
-        self.continued = True
-        self.root.start()
+        self.continued = False
+        ss = self.root.start()
+        if ss:
+            self.continued = True
 
     def _stop(self):
         self.continued = False
@@ -1037,6 +1045,14 @@ class InlineGen(GenIterator):
         rst = self.root.step()
         if not rst:
             self._stop()
+    
+    def makeElems(self):
+        res = []
+        self.start()
+        while(self.hasNext()):
+            res.append(self.get())
+            self.step()
+        return res
 
 
 class InlineGenExpr(GenIterator):
