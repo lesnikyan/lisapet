@@ -685,7 +685,8 @@ class ComprehensionGen(Expression):
         pass
 
     def do(self, ctx:Context):
-        # dprint('ListComprExpr.do0')
+        # print('ListComprExpr.do0', self.iter)
+        
         self.res = None # reset prev
         self.resultObject()
         if len(self.iterNodes) == 0:
@@ -785,6 +786,7 @@ class StringComprExpr(ComprehensionGen):
     def resultObject(self):
         ''' '''
         self.res = None
+        self.vals = []
     
     def fin(self):
         self.res = StringVal(''.join(self.vals))

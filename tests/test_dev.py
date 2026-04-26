@@ -285,20 +285,19 @@ class TestDev(TestCase):
         
         DONE: split comprehensions (should return collection/sequence)
                 and generator (return iterative object)
-                
         
-        # BUG: ['1:2-.-.>', '1:3-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.>', '1:3-.-.-.-.-.-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.-.-.-.-.-.>',
+        
+        # FIXED: ['1:2-.-.>', '1:3-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.>', '1:3-.-.-.-.-.-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.-.-.-.-.-.>',
         # g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
-        
-        #BUG: [[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
-        # g7 = (: list(iter(d))  ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
-        
         # still bug ['1:2-->', '1:3----->', '1:2------->', '1:3---------->', '1:2------------>', '1:3--------------->', '1:2----------------->', '1:3-------------------->', 
         g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
         res <- [n ; n <- g7]
         
         
         DONE: next test: generator in the comprehensions list, dict, etc
+        
+        #BUG: [[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+        # g7 = (: list(iter(d))  ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
         
         TODO: list( (: <-) )
         
@@ -314,28 +313,6 @@ class TestDev(TestCase):
 """
 
 
-
-    def _test_fix_(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        g1 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
-        res <- [n ; n <- g1]
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
         
 
     def _test_code(self):

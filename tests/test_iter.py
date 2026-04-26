@@ -26,6 +26,30 @@ class TestIter(TestCase):
     ''' iteration cases '''
 
 
+
+    def test_fix_str_repeate_in_sub_string_compr_in_gen(self):
+        ''' fix of BUG:
+        ['1:2-->', '1:3----->', '1:2------->', '1:3---------->', '1:2------------>','''
+        code = r'''
+        res = []
+        
+        # g1 = (: (~'1:{d}|' + ~['-'; _ <-iter(d)] + '>', d, [n ; n <- iter(d)]) ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        g1 = (: (~'1:{d}{k}' + '>') ; a <-[1,2,3]; d <-[2,3]; k = ~['-'; _ <-iter(d)])
+        res <- [n ; n <- g1]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [['1:2-->', '1:3--->', '1:2-->', '1:3--->', '1:2-->', '1:3--->']]
+        self.assertEqual(exv, resv)
+
     def test_multisource_for_iter_gen(self):
         ''' '''
         code = r'''
