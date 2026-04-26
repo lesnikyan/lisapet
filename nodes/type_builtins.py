@@ -146,6 +146,7 @@ def val2Seq(val:Val):
         case TypeList():
             r = copyElems(val.elems)
         case TypeIterator():
+            # print('$2')
             r = val.getVal().makeElems()
     return r
 

@@ -175,6 +175,7 @@ class IndexIterator(NIterator):
             self.k = -1
         self.last = b * self.k # not last, but next to last, depending of step
         self.vtype = TypeIterator()
+        # print('InIt', self.getType())
 
     def start(self):
         self.index = self.first
@@ -184,15 +185,26 @@ class IndexIterator(NIterator):
         self.index += self.__step
 
     def hasNext(self):
-        # cur = self.index
-        # fin = self.last
-        # df = fin - cur
-        # k = 1 if self.__step > 0 else -1
         # print('IIt.nest?:', self.index, '*', self.k , '<', self.last)
         return self.index * self.k < self.last
 
     def get(self):
         return Val(self.index, TypeInt())
+    
+    def makeElems(self):
+        ''' method for internal usage, avoid to make unnecessary ListVal '''
+        res = []
+        self.start()
+        # print('LGI1 (%d, %d)' % (self.first, self.last))
+        while(self.hasNext()):
+            res.append(self.get())
+            self.step()
+        return res
+    
+    def allVals(self):
+        elems = self.makeElems()
+        res = ListVal(elems = elems)
+        return res
 
 
 class SrcIterator(NIterator):

@@ -296,13 +296,14 @@ class TestDev(TestCase):
         
         DONE: next test: generator in the comprehensions list, dict, etc
         
-        #BUG: [[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+        DONE: [[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
         # g7 = (: list(iter(d))  ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        note: list wasn't use iterator as an argument, need fix
+        
+        DONE: test multisource for iteration in generator
+        (: a + b ; a, b <- aa, bb)
         
         TODO: list( (: <-) )
-        
-        TODO: test multisource for iteration in generator
-        (: a + b ; a, b <- aa, bb)
         
     '''
 
@@ -313,7 +314,7 @@ class TestDev(TestCase):
 """
 
 
-        
+
 
     def _test_code(self):
         ''' '''

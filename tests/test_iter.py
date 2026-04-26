@@ -27,6 +27,38 @@ class TestIter(TestCase):
 
 
 
+    def test_iter_in_list_constr(self):
+        ''' list(iter(n))
+            (: list(iter(n)) ; n <- src)
+        '''
+        code = r'''
+        res = []
+        
+        res <- list(iter(5))
+        
+        res <- tuple(iter(4))
+        
+        res <- list(iter(3, -5, -2))
+        
+        g1 = (: list(iter(0, d * a, a)) ; a <-[1,2,3]; d <-[2,3])
+        
+        res <- [n; n <- g1]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [[0, 1, 2, 3, 4], (0, 1, 2, 3), 
+               [3, 1, -1, -3], [[0, 1], [0, 1, 2], [0, 2], [0, 2, 4], [0, 3], [0, 3, 6]]]
+        self.assertEqual(exv, resv)
+
     def test_fix_str_repeate_in_sub_string_compr_in_gen(self):
         ''' fix of BUG:
         ['1:2-->', '1:3----->', '1:2------->', '1:3---------->', '1:2------------>','''
