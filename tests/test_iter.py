@@ -26,6 +26,45 @@ class TestIter(TestCase):
     ''' iteration cases '''
 
 
+    def test_multisource_for_iter_gen(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        # x3 + bool
+        
+        nn1 = [1..9]
+        ss1 = 'absdefgh'
+        aa1 = [1,2,3,4,5,6,7,8,9,0]
+        g1 = (: ~'{s}{d+c}' ; s, n, a <- ss1, nn1, aa1; d = n * 10 + a; a > 2 && n % 2 > 0; c <- [100, 200])
+        res <- [n ; n <- g1]
+        
+        # 3 x 3
+        
+        g2 = (: (g + h + i, (a*100 + b * 10 + c)*1000 + d*10 + e + f);
+            a, b, c <- [1..3], [4..6], [7..9];
+            d, e, f <- [10,20], [30,40], [5,6];
+            g,h,i <- 'ab', 'cd', 'ef'
+        )
+        
+        # gen to string comprehension
+        res <- ~[ ~'{s}-{n} ' ; s, n <- g2]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            ['s133', 's233', 'e155', 'e255', 'g177', 'g277'], 
+            'ace-147135 bdf-147135 ace-147246 bdf-147246 ace-258135 bdf-258135 ace-258246 bdf-258246 ace-369135 bdf-369135 ace-369246 bdf-369246 ']
+        self.assertEqual(exv, resv)
+
     def test_code_generator_in_comprh(self):
         ''' [ ; <- (: <- )] '''
         code = r'''

@@ -91,7 +91,7 @@ Content:
     4. [Triple dots `[]...`](#94-triple-dots)
 
 9. #### Collection generation:
-    1. [Iteration generator `[ .. ]`](#91-iteration-generator-)
+    1. [Range generator `iter()`, `[ .. ]`](#91-iteration-generator-)
     2. [Slice `[ : ]`, `tolist()` ](#92-list-features-slice---tolist)
     3. [`list` comprehension `[ ; ; ]`](#93-list-comprehension)
     4. [`dict` comprehension `{ ; ; }`](#94-dict-comprehension)
@@ -2204,7 +2204,7 @@ It makes object that can be called iteratively in loop returning new value in ea
 Basic syntax: generator covered by parentheses with colon `:` after opening bracket. Segments are separated by semicolon `;`.  
 ```python
 src = [1,2,3,4,5]
-gen = (: x+10 ; <- 5)
+gen = (: x+10 ; <- src)
 for n <- gen
     print(n) # 11, 12, 13, 14, 15 
 ```
@@ -2434,7 +2434,7 @@ n1 = foo(f1, 5)
 n2 = foo( x -> 2 ** x , 5)
 ```
 
-### Experimental: definition as a result.  
+### Definition as a result.  
 If def of function f1 was last expression in another function f2 than f1 will be a result of f2.  
 ```golang
 func getFuu(n)

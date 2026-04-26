@@ -248,37 +248,42 @@ class TestDev(TestCase):
             for n <- gg
                 n # 0 1 2 3 4 
             
-            TODO?: yield gen
-                func f()
-                    for n <- [1..5]
-                        yield n
-            
-            TODO?: yield compr gen
-                ( n ; n <- [1..5] ) # generator, not a tuple comprehension 
-                [yield n ; n <- [1..5]] 
-                [: n ; n <- [1..5]] 
-                Looks like (;;) is enough
+        TODO?: yield gen
+            func f()
+                for n <- [1..5]
+                    yield n
+        
+        TODO?: yield compr gen
+            ( n ; n <- [1..5] ) # generator, not a tuple comprehension 
+            [yield n ; n <- [1..5]] 
+            [: n ; n <- [1..5]] 
+            Looks like (;;) is enough
         
         TODO: range syntax (haskell like)
-            lazy producer of numeric sequence
             [begin .. end] # already done
             [2, 1..5] [step, begin .. end]
             [-1, 5 .. 1] # check after positive custom step
+            
+        TOTHINK: 
+            endless [..] gen
+            endless generator
+            endless source for list compr
+        
         
         TODO: operator of divisibility
         a ?% b :the same as: a % b == 0
         a !% b :the same as: a % b != 0
         a and b should be an int, b != 0
         
-        TODO: add (;;) lazy generator of sequence, 
+        DONE: add (;;) lazy generator of sequence, 
             can be used in loop, comprehention, sequence constructor
-            ( ; ; )
+            (: ; ; )
             for n <- (x ; x <- nums ; x > 2)
             list(((x ; x <- nums ; x > 2))) # think about skippng internal brackets
             gen = (x ; x <- nums ; x > 2)
             [n * 10 ; n <- gen]
         
-        TODO: split comprehensions (should return collection/sequence)
+        DONE: split comprehensions (should return collection/sequence)
                 and generator (return iterative object)
                 
         
@@ -288,13 +293,17 @@ class TestDev(TestCase):
         #BUG: [[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
         # g7 = (: list(iter(d))  ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
         
+        # still bug ['1:2-->', '1:3----->', '1:2------->', '1:3---------->', '1:2------------>', '1:3--------------->', '1:2----------------->', '1:3-------------------->', 
+        g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        res <- [n ; n <- g7]
         
-        TODO: next test: generator in the comprehensions list, dict, etc
         
-        TODO: multisource for iteration in generator
-        (: a + b ; a, b <- aa, bb)
+        DONE: next test: generator in the comprehensions list, dict, etc
         
         TODO: list( (: <-) )
+        
+        TODO: test multisource for iteration in generator
+        (: a + b ; a, b <- aa, bb)
         
     '''
 
@@ -306,7 +315,29 @@ class TestDev(TestCase):
 
 
 
-    
+    def _test_fix_(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        g1 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        res <- [n ; n <- g1]
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
+        
+
     def _test_code(self):
         ''' '''
         code = r'''
