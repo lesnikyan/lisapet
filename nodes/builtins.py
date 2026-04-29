@@ -132,39 +132,43 @@ def pstr(v):
         v = pBool(v)
     return v
 
+def prepare_fpval(n):
+    ttp = None
+    # print('b-print:::', n, n.__class__.__name__)
+    if isinstance(n, (Function, FuncOverSet)):
+        return str(n)
+    # print('$1 ', n)
+    v = n
+    if isinstance(v, Val):
+        if isinstance(v.getType(), TypeIterator):
+            v = v.getVal()
+            ttp = 'iter'
+        if isinstance(v, ListGenIterator):
+            # print('$1', arg, v)
+            v = v.allVals()
+            ttp = 'range'
+        n = v
+    v = getVal(n)
+    # print('$2 ', v)
+    if isinstance(v, (list)):
+        v = [pstr(e) for e in v]
+    # raise EvalErr('')
+    if isinstance(v, StructInstance):
+        v = v.istr()
+    if ttp:
+        v = f"{ttp}{v}"
+    v = pstr(v)
+    return v
+        
+
 def print_prepare(args):
     pargs = []
     # print('b-print1:', args)
     # ctx.print(forsed=1)
     for n in args:
-        ttp = None
-        # print('b-print:::', n, n.__class__.__name__)
-        if isinstance(n, (Function, FuncOverSet)):
-            pargs.append(str(n))
-            continue
-        # print('$1 ', n)
-        v = n
-        if isinstance(v, Val):
-            if isinstance(v.getType(), TypeIterator):
-                v = v.getVal()
-                ttp = 'iter'
-            if isinstance(v, ListGenIterator):
-                # print('$1', arg, v)
-                v = v.allVals()
-                ttp = 'range'
-            n = v
-        v = getVal(n)
-        # print('$2 ', v)
-        if isinstance(v, (list)):
-            v = [pstr(e) for e in v]
-        # raise EvalErr('')
-        if isinstance(v, StructInstance):
-            v = v.istr()
-        if ttp:
-            v = f"{ttp}{v}"
-        v = pstr(v)
-        pargs.append(v)
         # print('b-print2:::', v)
+        v = prepare_fpval(n)
+        pargs.append(v)
     return pargs
 
 def buit_print(ctx:Context, *args):

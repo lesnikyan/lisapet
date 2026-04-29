@@ -288,8 +288,8 @@ class TestGrup(TestCase):
         # print(resv)
         exv = [
             'Vasya', 12345, 'st@A{a: 1}', 'Petya', 23456, 
-            'st@Point{x: 0.0,y: 0.0}', 'st@Point{x: 1.0,y: 1.0}', 1.4142135623730951, 1.4142135623730951, 
-            'st@Point{x: 5.0,y: -2.0}', 'st@Point{x: 6.0,y: -1.0}', 5.0, 10, 1.4142135623730951]
+            'st@Point{x: 0.0, y: 0.0}', 'st@Point{x: 1.0, y: 1.0}', 1.4142135623730951, 1.4142135623730951, 
+            'st@Point{x: 5.0, y: -2.0}', 'st@Point{x: 6.0, y: -1.0}', 5.0, 10, 1.4142135623730951]
         self.assertEqual(exv, resv)
 
 

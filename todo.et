@@ -3,9 +3,7 @@
 
 NEED FIX:
 
-    1. print struct instance
-        - ',' separator -> ', '
-        - add quotes for strings
+
 
     5. test and fix escape sequences like '\\'
 

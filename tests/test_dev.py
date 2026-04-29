@@ -79,6 +79,14 @@ class TestDev(TestCase):
         
         FIXED: empty source in gen make error
             g2 = (: n ; n <- [])
+        
+        FIXED: print struct instance
+        - ',' separator -> ', '
+        - add quotes for strings
+        
+        DONE: fix print(bool): should be false, true, instead of False, True
+
+
 
         # (?) features for `enum` - not sure
             TODO: Enum.name(11)
@@ -142,6 +150,8 @@ class TestDev(TestCase):
             grup Boo
                 au = Auch
         
+        TODO(?): check print of dict: do we need space between pairs or key:val,
+        
         TODO: overload: 
             test overloading for imported functions, 
                 should we disallow overloading function in another module? yep
@@ -188,8 +198,6 @@ class TestDev(TestCase):
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
         TODO: string.replace({dict}) # check, implement if not
-        
-        TODO: fix print(bool): should be false, true, instead of False, True
         
         TODO: add assertion to cases in test_lists
         
@@ -309,7 +317,10 @@ class TestDev(TestCase):
                 ...
                 yield val
             foo(1,2,3) >> generator
-
+        
+        TODO: print struct: add quoter for inner strings
+        
+        
     '''
 
     _ = r"""

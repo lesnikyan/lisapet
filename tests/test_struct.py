@@ -10,8 +10,9 @@ from vals import numLex
 from context import Context
 from eval import rootContext
 from nodes.tnodes import Var
-from tree import *
 from nodes.structs import *
+from nodes.builtins import prepare_fpval
+from tree import *
 import pdb
 
 
@@ -86,7 +87,7 @@ class TestStructs(TestCase):
         rvar = ctx.get('res').get()
         exv = [
             ['st@A{a: 1}'], ['st@A{a: 0}'], ['st@B{b: 2}'], ['st@B{b: 0}'], ['st@B{b: 1203}'], 
-            ['st@D{b: 0,a: 0,d: 0,e: 0}'], ['st@D{b: 44,a: 33,d: 0,e: 0}'], ['st@D{b: 44,a: 33,d: 55,e: 66.0}']]
+            ['st@D{b: 0, a: 0, d: 0, e: 0}'], ['st@D{b: 44, a: 33, d: 0, e: 0}'], ['st@D{b: 44, a: 33, d: 55, e: 66.0}']]
         self.assertEqual(exv, rvar.vals())
 
     def test_struct_inheritance_without_own_fields(self):
@@ -114,7 +115,7 @@ class TestStructs(TestCase):
         trydo(ex, ctx)
         # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
-        exv = [['st@A{a: 1}'], ['st@B{b: 2}'], ['st@C{a: 11}'], ['st@D{b: 44,a: 33,d: 55,e: 6.6}']]
+        exv = [['st@A{a: 1}'], ['st@B{b: 2}'], ['st@C{a: 11}'], ['st@D{b: 44, a: 33, d: 55, e: 6.6}']]
         self.assertEqual(exv, rvar.vals())
 
     def test_inherined_struct_callable_constr(self):
@@ -189,10 +190,10 @@ class TestStructs(TestCase):
         ex.do(ctx)
         rvar = ctx.get('res').get()
         exv = [
-            ('b1', 'st@B{a: 1,b: 10}', 1, 10), 
-            ('c0', 'st@C{a: 3,b: 30,c: 333,s: Ccc}', 3, 30, 333, 'Ccc'), 
-            ('d0', 'st@D{a: 4,b: 40,c: 444,s: Ddd,d: QWERT,q: 1004}', 4, 40, 444, 'Ddd', 'QWERT'), 
-            ('e0', 'st@E{a: -5,b: 50,c: 555,s: Eee,d: WERTY,q: 1005,e: 5000}', -5, 'WERTY', 5000)]
+            ('b1', 'st@B{a: 1, b: 10}', 1, 10), 
+            ('c0', 'st@C{a: 3, b: 30, c: 333, s: Ccc}', 3, 30, 333, 'Ccc'), 
+            ('d0', 'st@D{a: 4, b: 40, c: 444, s: Ddd, d: QWERT, q: 1004}', 4, 40, 444, 'Ddd', 'QWERT'), 
+            ('e0', 'st@E{a: -5, b: 50, c: 555, s: Eee, d: WERTY, q: 1005, e: 5000}', -5, 'WERTY', 5000)]
         self.assertEqual(exv, rvar.vals())
 
     def test_inherined_struct_wide(self):
@@ -242,10 +243,10 @@ class TestStructs(TestCase):
         ex.do(ctx)
         rvar = ctx.get('res').get()
         exv = [
-            ('c1', 'st@C{b: 100,a: 10,c: 101,s: c-ss}', 10, 100, 101, 'c-ss'), 
-            ('d1', 'st@D{a: 200,b: 20,d: d-dd}', 200, 20, 'd-dd'), 
-            ('f1', 'st@F{a: 3,b: 3033,f: [8, 88]}', 3033), 
-            ('g1', 'st@G{a: 4,b: g44_G,g: (9, 99)}', 'g44_G')]
+            ('c1', 'st@C{b: 100, a: 10, c: 101, s: c-ss}', 10, 100, 101, 'c-ss'), 
+            ('d1', 'st@D{a: 200, b: 20, d: d-dd}', 200, 20, 'd-dd'), 
+            ('f1', 'st@F{a: 3, b: 3033, f: [8, 88]}', 3033), 
+            ('g1', 'st@G{a: 4, b: g44_G, g: (9, 99)}', 'g44_G')]
         self.assertEqual(exv, rvar.vals())
 
     def test_list_dict_in_struct(self):
@@ -444,7 +445,7 @@ class TestStructs(TestCase):
         trydo(ex, ctx)
         
         rvar = ctx.get('r')
-        self.assertEqual('st@Type1{name: New-Name,id: 1}', rvar.getVal())
+        self.assertEqual('st@Type1{name: New-Name, id: 1}', rvar.getVal())
 
     def test_method_typed_args(self):
         ''' make vars and assign vals from tuple  '''
@@ -547,7 +548,7 @@ class TestStructs(TestCase):
         trydo(ex, ctx)
         inst = ctx.get('aa').get()
         self.assertIsInstance(inst, StructInstance)
-        self.assertEqual('Atype{name: Vasya,num: 20,sub: st@Btype{title: BBBBB}}', str(inst))
+        self.assertEqual('st@Atype{name: Vasya, num: 20, sub: st@Btype{title: BBBBB}}', prepare_fpval(inst))
         
 
     def test_struct_block(self):
@@ -592,7 +593,7 @@ class TestStructs(TestCase):
         # print(atype, btype)
         inst = ctx.get('aa').get()
         # self.assertIsInstance(inst, StructInstance)
-        self.assertEqual('Atype{name: Vasya,num: 10,sub: st@Btype{}}', str(inst))
+        self.assertEqual('st@Atype{name: Vasya, num: 10, sub: st@Btype{}}', prepare_fpval(inst))
 
     def test_left_assign_arg(self):
         code='''
@@ -733,7 +734,7 @@ class TestStructs(TestCase):
         trydo(ex, ctx)
         exv = [
             ['a', 'st@Sex{id: 1}'], ['b', 'st@Sex{id: 2}'], 
-            ['c', 'st@User{name: Catod,age: 25,sex: st@Sex{id: 1},phone: 123-45-67}']]
+            ['c', 'st@User{name: Catod, age: 25, sex: st@Sex{id: 1}, phone: 123-45-67}']]
         rvar = ctx.get('res').get()
         self.assertEqual(exv, rvar.vals())
 
@@ -799,7 +800,7 @@ class TestStructs(TestCase):
         
         ex.do(ctx)
         rvar = ctx.get('res').get()
-        expv = [['st@A{a: 123}'], [['st@A{a: 456}']], ('st@A{a: 789}',)]
+        expv = [['st@A{a: 123}'], [['st@A{a: 456}']], ('st@A{a: 789}', )]
         self.assertEqual(expv, rvar.vals())
 
 
