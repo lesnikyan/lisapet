@@ -100,7 +100,7 @@ def tostr(arg):
                 cover = "{%s}"
         # print('cover:', cover)
         rval = cover % (','.join(vals))
-        
+    
     if isinstance(v, StructInstance):
         rval = v.istr()
     if isinstance(v, (Null)):
@@ -127,11 +127,12 @@ def pstr(v):
     # if isinstance(v, (bytearray)):
     #     return '0x[%s]' % ' '.join([f'{b:02x}' for b in v])
     if isinstance(v, (Val|Var)):
-        return str(v)
+        v= str(v)
+    elif isinstance(v, (bool)):
+        v = pBool(v)
     return v
 
-
-def buit_print(ctx:Context,*args):
+def print_prepare(args):
     pargs = []
     # print('b-print1:', args)
     # ctx.print(forsed=1)
@@ -161,9 +162,15 @@ def buit_print(ctx:Context,*args):
             v = v.istr()
         if ttp:
             v = f"{ttp}{v}"
+        v = pstr(v)
         pargs.append(v)
         # print('b-print2:::', v)
+    return pargs
+
+def buit_print(ctx:Context, *args):
+    pargs = print_prepare(args)
     print(*pargs)
+
 
 def built_len(_, arg:Collection|StringVal):
     return  Val(arg.len(), TypeInt())
