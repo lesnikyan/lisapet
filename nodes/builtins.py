@@ -40,16 +40,6 @@ def getVal(arg):
     return v
 
 
-def esc_str(s:str):
-    scov = "'%s'"
-    if s.find("'") > -1:
-        scov = '"%s"'
-        if s.find('"') > -1:
-            s = s.replace('"', '\\"')
-    # print('\\e:', s, scov)
-    return scov % s
-    
-
 def _elem_str(arg, parent=None):
     ''' prepare elem of collection for tostr() '''
     e = arg

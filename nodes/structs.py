@@ -13,7 +13,7 @@ AnonStructConstr *? : create instance of anonymous struct (json-like object)
 from nodes.expression import *
 from context import *
 from nodes.expression import ServPairExpr, defaultValOfType
-from bases.ntype import structTypeCompat
+# from bases.ntype import structTypeCompat
 from objects.func import Function
 
 from bases.ntype import *
@@ -328,10 +328,12 @@ class StructInstance(ObjectInstance, NSContext):
         for f in fns:
             mem = self.get(f)
             v = ''
-            if not isinstance(mem, FuncInst):
-                v = mem.get()
-            else:
+            if isinstance(mem, FuncInst):
                 v = str(mem)
+            else:
+                v = mem.get()
+                if isinstance(mem.getType(), TypeString):
+                    v = esc_str(v)
             
             ffs.append('%s: %s' % (f, v))
         # vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])

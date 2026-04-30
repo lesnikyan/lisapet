@@ -241,19 +241,20 @@ class TestMatch(TestCase):
         resv = resRepr(rvar.vals())
         # print(resv)
         exv = [
-            [(1, 1), ('int', 2, 2), ('[int]', 3, [3]), ('[f]', 1.2, [1.2]), ('_', 'ccc', 'ccc'), ('_', ('d555',), ('d555',))],
+            [(1, 1), ('int', 2, 2), ('[int]', 3, [3]), ('[f]', 1.2, [1.2]), ('_', 'ccc', 'ccc'), ('_', ('d555',), ('d555',))], 
             [(11, [1, 2, 3, 4, 5], [2, 3, 4]), (12, [1, 2, 6, 7, 5], [2, 6, 5]), ('_', [55, 555]), ('_', 1234), 
-                ('t1', 'aa', 'hh'), ('(abcde)', 1, 2, 1, 3, 1), ('t3', (5, 7, 5, 6, 8)), 
-                ('d1', 'def', 'abc', 'xyz', 'k1', 'k3'), ('d2', 'a1', 'a2', 'a3', {2: 22}, [101, 102]), ('d3', {11: 111})], 
-            [(32, 'abc'), (32, 'abd'), (33, 'roma'), (31, ''), (333, '<103>'), (34, 'abbc', '321', '!11?'), 
-                (35, 'super', '_45', 33), (36, 'allegro', '_quak', '3', 122, 121, 123), (36, 'amba', '_imba', '30', 131, 132, 133), (333, {}), 
-                (37, 'amira', 'buchin'), (37, 'aha', 'difen'), (333, ('opanki', 'odin'))], 
+             ('t1', 'aa', 'hh'), ('(abcde)', 1, 2, 1, 3, 1), ('t3', (5, 7, 5, 6, 8)), ('d1', 'def', 'abc', 'xyz', 'k1', 'k3'), 
+             ('d2', 'a1', 'a2', 'a3', {2: 22}, [101, 102]), ('d3', {11: 111})], 
+            [(32, 'abc'), (32, 'abd'), (33, 'roma'), (31, ''), (333, '<103>'), (34, 'abbc', '321', '!11?'), (35, 'super', '_45', 33), 
+             (36, 'allegro', '_quak', '3', 122, 121, 123), (36, 'amba', '_imba', '30', 131, 132, 133), (333, {}), 
+             (37, 'amira', 'buchin'), (37, 'aha', 'difen'), (333, ('opanki', 'odin'))], 
             [(41, 1), (444, []), (444, 3), (42, 2.5), (444, (((3,),),)), (43, 'a1', 'a2', 'a3', 'root145', 'ping5')], 
-            [(51, 1), (53, 2), (51, 5), (53, 11), (53, 12.5), (52, 'aaa'), (52, 'bbb'), (54, 'ccc'), (52, 'xoma'), 
-                (52, 'Zorro'), (52, 'Yum'), (54, [1, 2]), (555, (1, 1))], 
-            [(61, 'st@A{s: s1, a: 1}'), (62, 's2'), (64, 'sa3'), (63, [1, 12, 13], 1, 13), (64, 'sb2'), ('_', 'st@C{c: 31, t: c1}'), 
-                (65, 'La1', 'Lb1'), ('_', ['st@B{s: , b: []}', 'st@C{c: 0, t: }']), (66, 'mio1', 'La2'), 
-                (66, 'mao2', 'Lb2'), (67, 'nixt', 'Lb3'), ('_', {'mnom': 'st@C{c: 0, t: }'})]]
+            [(51, 1), (53, 2), (51, 5), (53, 11), (53, 12.5), (52, 'aaa'), (52, 'bbb'), (54, 'ccc'), 
+             (52, 'xoma'), (52, 'Zorro'), (52, 'Yum'), (54, [1, 2]), (555, (1, 1))], 
+            [(61, "st@A{s: 's1', a: 1}"), (62, 's2'), (64, 'sa3'), (63, [1, 12, 13], 1, 13), 
+             (64, 'sb2'), ('_', "st@C{c: 31, t: 'c1'}"), (65, 'La1', 'Lb1'), ('_', ["st@B{s: '', b: []}", "st@C{c: 0, t: ''}"]), 
+             (66, 'mio1', 'La2'), (66, 'mao2', 'Lb2'), (67, 'nixt', 'Lb3'), ('_', {'mnom': "st@C{c: 0, t: ''}"})]
+            ]
         self.assertEqual(exv, resv)
 
     def test_enum_matching(self):
@@ -528,15 +529,17 @@ class TestMatch(TestCase):
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
         rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
         exv = [
-            -111, (10, 'st@A{a: 0}', 'st@A{a: 0}'), (11, 'st@B{b: 0}'), (16, 'st@C{c: cat}'), (16, 'st@D{}'), 
-            (12, ['st@A{a: 0}', 'st@B{b: 0}'], 'st@A{a: 0}', 'st@B{b: 0}'), (13, ('st@A{a: 0}', 'st@C{c: }'), 'st@A{a: 0}', 'st@C{c: }'), 
+            -111, (10, 'st@A{a: 0}', 'st@A{a: 0}'), (11, 'st@B{b: 0}'), (16, "st@C{c: 'cat'}"), (16, 'st@D{}'), 
+            (12, ['st@A{a: 0}', 'st@B{b: 0}'], 'st@A{a: 0}', 'st@B{b: 0}'), (13, ('st@A{a: 0}', "st@C{c: ''}"), 'st@A{a: 0}', "st@C{c: ''}"), 
             (12, ['st@A{a: 0}', 'st@BB{b: 0, bb: 0}'], 'st@A{a: 0}', 'st@BB{b: 0, bb: 0}'), (14, ['st@A{a: 0}', 'st@A{a: 0}']), 
             (15, ['st@D{}', 'st@D{}'], 'st@D{}'), (15, ['st@D{}', 'st@B{b: 0}'], 'st@D{}'), 
             (18, {11: 'st@A{a: 0}', 22: 'st@B{b: 0}'}, 11, 22, 'st@A{a: 0}', 'st@B{b: 0}'), 
-            (17, {33: 'st@C{c: }', 44: 'st@BB{b: 0, bb: 0}'}), 
+            (17, {33: "st@C{c: ''}", 44: 'st@BB{b: 0, bb: 0}'}), 
             (18, {34: 'st@A{a: 0}', 45: 'st@BB{b: 0, bb: 0}'}, 34, 45, 'st@A{a: 0}', 'st@BB{b: 0, bb: 0}')]
-        self.assertEqual(exv, rvar.vals())
+        self.assertEqual(exv, resv)
 
     def test_match_mixed_with_regexp(self):
         '''  '''
@@ -593,16 +596,17 @@ class TestMatch(TestCase):
         ctx = rCtx.moduleContext()
         ex.do(ctx)
         rvar = ctx.get('res').get()
-        null = Null()
+        resv = resRepr(rvar.vals())
+        # print(resv)
         expv = [
-            (['abc'], 1), (('werq',), 1), (['327'], 2), (('010',), 2), (['0xfed'], 2), 
-            (['56473829', 'amba'], 3), (('samba', 'salsa'), 3), ({'xyz': 1}, 4), 
-            ({'0xfde': 4048}, 51), (['Napoleon543'], 61), (({'Napoleon123': 1002}, 'napo@bumbum.es'), 61), 
+            (['abc'], 1), (('werq',), 1), (['327'], 2), (('010',), 2), (['0xfed'], 2), (['56473829', 'amba'], 3), 
+            (('samba', 'salsa'), 3), ({'xyz': 1}, 4), ({'0xfde': 4048}, 51), (['Napoleon543'], 61), 
+            (({'Napoleon123': 1002}, 'napo@bumbum.es'), 61), 
             ({'Red line': 'alert', 'Green place': 'rest'}, ('alert', 'rest'), 52), 
-            ({'Green tree': 'yield', 'Red wine': 'drink'}, ('drink', 'yield'), 52), 
-            ['st@A{a1: <div>}', 73], ('st@A{a1: <xml>}', 702), ('st@A{a1: ggg}', 74), ('st@B{a1: , b1: 123}', 71), 
-            ('st@B{a1: feed, b1: abc}', 72), ('st@B{a1: food, b1: abc}', 701), (['st@A{a1: xxx}'], 75)]
-        self.assertEqual(expv, rvar.vals())
+            ({'Green tree': 'yield', 'Red wine': 'drink'}, ('drink', 'yield'), 52), ["st@A{a1: '<div>'}", 73], 
+            ("st@A{a1: '<xml>'}", 702), ("st@A{a1: 'ggg'}", 74), ("st@B{a1: '', b1: '123'}", 71), 
+            ("st@B{a1: 'feed', b1: 'abc'}", 72), ("st@B{a1: 'food', b1: 'abc'}", 701), (["st@A{a1: 'xxx'}"], 75)]
+        self.assertEqual(expv, resv)
 
     def test_match_type_in_collections(self):
         ''' test match
@@ -859,18 +863,19 @@ class TestMatch(TestCase):
         ctx = rCtx.moduleContext()
         ex.do(ctx)
         rvar = ctx.get('res').get()
-        null = Null()
+        resv = resRepr(rvar.vals())
+        # print(resv)
         expv = [
             ('', 999), (null, 999), (0, 999), (False, 999), ((), 918), ({}, 919), ([], 917), 
             ([(), ()], 1), (([], []), 2), ([{}, {}], 3), (({}, {}), 4), ({1: [], 2: []}, 9), 
-            ({1: (), 2: ()}, 10), ([{5: 5}, {}], 7), ([{5: 5}, {6: 7, 8: 9}], 7), 
-            (({7: 7}, {}), 8), (({7: 7}, {8: 9, 11: 22}), 8), 
-            ([{1: [(), ()], 2: [(), ()]}, {3: [(), ()], 4: [(), ()]}], 11), ([{1: ()}], 12), 
-            (({1: []},), 13), ([{1: 22}], 41), ([({1: 33},)], 42), (([{1: [44]}],), 43), 
-            (['st@A{a1: 11}'], 141), (['st@A{a1: 11}', 1], 14), ([('st@A{a1: 0}', 11), ('st@B{a1: 0, b1: 0}', 22)], 143),
-            (('st@A{a1: 11}',), 142), ((['st@A{a1: 12}', 'st@B{a1: 0, b1: 13}'], ['st@B{a1: 0, b1: 14}', 'st@C{c1: 015}']), 15), 
+            ({1: (), 2: ()}, 10), ([{5: 5}, {}], 7), ([{5: 5}, {6: 7, 8: 9}], 7), (({7: 7}, {}), 8), 
+            (({7: 7}, {8: 9, 11: 22}), 8), ([{1: [(), ()], 2: [(), ()]}, {3: [(), ()], 4: [(), ()]}], 11), 
+            ([{1: ()}], 12), (({1: []},), 13), ([{1: 22}], 41), ([({1: 33},)], 42), (([{1: [44]}],), 43), 
+            (['st@A{a1: 11}'], 141), (['st@A{a1: 11}', 1], 14), 
+            ([('st@A{a1: 0}', 11), ('st@B{a1: 0, b1: 0}', 22)], 143), (('st@A{a1: 11}',), 142), 
+            ((['st@A{a1: 12}', 'st@B{a1: 0, b1: 13}'], ['st@B{a1: 0, b1: 14}', "st@C{c1: '015'}"]), 15), 
             ({'a': 'st@A{a1: 0}', 'b': 'st@B{a1: 0, b1: 0}'}, 16), ({'a': 'st@A{a1: 22}', 'b': 'st@B{a1: 0, b1: 33}'}, 16)]
-        self.assertEqual(expv, rvar.vals())
+        self.assertEqual(expv, resv)
 
     def test_match_mixed_multicases(self):
         ''' replace(src, rx, repl) '''
@@ -908,11 +913,13 @@ class TestMatch(TestCase):
         ex.do(ctx)
         rvar = ctx.get('res').get()
         null = Null()
+        resv = resRepr(rvar.vals())
+        # print(resv)
         expv = [
-            ('', 0), (null, 0), (0, 0), (False, -100), ((), 888), ({}, 888), ([], 0), (1, 999), ([2], 888), 
-            ([1, 2, 3], 1), ((1, 2, 3), 1), ({'a': 1, 'b': 2, 'c': 3}, 1), 
-            ('st@A{a1: 1}', 2), ('st@B{a1: 0, b1: 2}', 2), ('st@C{c1: c3}', 2)]
-        self.assertEqual(expv, rvar.vals())
+            ('', 0), (null, 0), (0, 0), (False, -100), ((), 888), ({}, 888), ([], 0), 
+            (1, 999), ([2], 888), ([1, 2, 3], 1), ((1, 2, 3), 1), ({'a': 1, 'b': 2, 'c': 3}, 1), 
+            ('st@A{a1: 1}', 2), ('st@B{a1: 0, b1: 2}', 2), ("st@C{c1: 'c3'}", 2)]
+        self.assertEqual(expv, resv)
 
     def test_match_simple_regexp(self):
         ''' pattern of struct, including collections in fields. '''
@@ -1002,18 +1009,18 @@ class TestMatch(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         ex.do(ctx)
-        
-        exp = [
-            [[], 2999], [(), 2999], [{}, 28], ['st@Type1{a: 0, b: 0}', 19], ['st@Type1{a: 10, b: 20}', 19], 
-            ['st@TypeA{color: fff}', ('fff',), 10], 
-            ['st@TypeB{color: fff, name: Aaa, age: 44}', ('fff',), 10], 
-            ['st@TypeC{color: 0}', (0,), 10], ['st@TypeC{color: 4080}', (4080,), 10],
-            [['st@Type1{a: 0, b: 0}', 'st@TypeA{color: }'], 20],
-            [['st@Type1{a: 2, b: 3}', 'st@TypeA{color: red}'], 20],
-            [{'tkey1': 'st@Type1{a: 4, b: 5}'}, 'tkey1', 21], [{'tkey1': 'st@Type1{a: 6, b: 7}', 'tkey2': 'st@TypeA{color: green}'}, 'tkey1', 'tkey2', 22],
-        ]
         rvar = ctx.get('res').get()
-        self.assertEqual(exp, rvar.vals())
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exp = [
+            [[], 2999], [(), 2999], [{}, 28], 
+            ['st@Type1{a: 0, b: 0}', 19], ['st@Type1{a: 10, b: 20}', 19], ["st@TypeA{color: 'fff'}", ('fff',), 10], 
+            ["st@TypeB{color: 'fff', name: 'Aaa', age: 44}", ('fff',), 10], ['st@TypeC{color: 0}', (0,), 10], 
+            ['st@TypeC{color: 4080}', (4080,), 10], [['st@Type1{a: 0, b: 0}', "st@TypeA{color: ''}"], 20], 
+            [['st@Type1{a: 2, b: 3}', "st@TypeA{color: 'red'}"], 20], 
+            [{'tkey1': 'st@Type1{a: 4, b: 5}'}, 'tkey1', 21], 
+            [{'tkey1': 'st@Type1{a: 6, b: 7}', 'tkey2': "st@TypeA{color: 'green'}"}, 'tkey1', 'tkey2', 22]]
+        self.assertEqual(exp, resv)
 
     def test_match_struct(self):
         ''' pattern of struct, including collections in fields. '''
@@ -1073,17 +1080,20 @@ class TestMatch(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
-        
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
         exp = [
             ['st@Type1{a: 0, b: 0}', 10], ['st@Type1{a: 10, b: 20}', 11], ['st@Type1{a: 10, b: 0}', 10], ['st@Type1{a: 10, b: 2}', 12], ['st@Type1{a: 1, b: 2}', 19], 
-            ['st@TypeA{color: 000}', 29], ['st@TypeA{color: fff}', 23], ['st@TypeB{color: fff, name: Aaa, age: 44}', 23], 
-            ['st@TypeB{color: red, name: Bimbo, age: 22}', 'Bimbo', 21], ['st@TypeB{color: , name: , age: 0}', 27], ['st@TypeB{color: green, name: Ambo, age: 33}', ('Ambo', 'green'), 28], 
-            ['st@TypeC{nums: [], a: 1}', 30], ['st@TypeC{nums: [331], a: 2}', 31], ['st@TypeC{nums: [34, 35, 36], a: 3}', (34, 35, 36), 32], 
+            ["st@TypeA{color: '000'}", 29], ["st@TypeA{color: 'fff'}", 23], ["st@TypeB{color: 'fff', name: 'Aaa', age: 44}", 23],
+            ["st@TypeB{color: 'red', name: 'Bimbo', age: 22}", 'Bimbo', 21], ["st@TypeB{color: '', name: '', age: 0}", 27],
+            ["st@TypeB{color: 'green', name: 'Ambo', age: 33}", ('Ambo', 'green'), 28], ['st@TypeC{nums: [], a: 1}', 30], 
+            ['st@TypeC{nums: [331], a: 2}', 31], ['st@TypeC{nums: [34, 35, 36], a: 3}', (34, 35, 36), 32], 
             ["st@TypeD{fd: {'a': 111}, fl: [], ft: ()}", (111,), 41], ['st@TypeD{fd: {}, fl: [22, 33, 44], ft: ()}', (22, 33), 42], 
             ["st@TypeD{fd: {'x': 1111}, fl: [2222], ft: (3333,)}", (3333, 'x', 1111, 2222), 43], ['st@TypeD{fd: {}, fl: [], ft: (555,)}', (555,), 44], 
-            ['st@TypeD{fd: {}, fl: [], ft: (61, 62, 63, 64)}', (61, ), 44], ['st@TypeD{fd: {}, fl: [], ft: ()}', 49], ['st@TypeD{fd: {}, fl: [], ft: ()}', 49]]
-        rvar = ctx.get('res').get()
-        self.assertEqual(exp, rvar.vals())
+            ['st@TypeD{fd: {}, fl: [], ft: (61, 62, 63, 64)}', (61,), 44], ['st@TypeD{fd: {}, fl: [], ft: ()}', 49], ['st@TypeD{fd: {}, fl: [], ft: ()}', 49]]
+        # rvar = ctx.get('res').get()
+        self.assertEqual(exp, resv)
 
     def test_pattern_post_guard(self):
         '''
