@@ -172,8 +172,8 @@ Content:
 It's still on-dev. Most things are done. Small issues and nicer solutions in the order for implementation.  
 Bugs still lives in there. I catching them every time. But they hides very nice.  
 Details see next, in `syntax` section. Here I wrote only completed and working things.  
-As an one-hands made project (withous users) small updates are committed into dev, more complex changes are merged into dev (now dev is a default branch), without version numeration.  
-Tests covers all changes whenever possible.  
+As an one-hands made project (without end-users) small updates are committed into dev, more complex changes are merged into dev (now dev is a default branch), without version numeration.  
+Tests covers all features whenever possible (over 300 unit tests now).  
 Therefore, critical changes to previously added things happen extremely rarely.  
 
 *
@@ -194,6 +194,7 @@ Therefore, critical changes to previously added things happen extremely rarely.
 
 ## Usage.
 Note: `python run` command is one line, splitted in examples just for better readability.   
+`.et` is an extension of files with code.  
 Run the file:  
 ```console
 $ python -m run tests/simple_test.et
@@ -273,7 +274,7 @@ ZeroDivisionError: division by zero
 See examples in the `/tests/..` (a lot of) , `run.py`, `loader.py`, `eval.py` for understanding how to use LP as an embedded engine, add custom python functions for using in LP code, etc.  
 
 ## Syntax.
-The Syntax section is updated as soon as new features are added to the code, so it looks a bit chaotic. Working on it.  
+The Syntax section is updated as soon as new features are added to the project, so it looks a bit chaotic. Working on that from time to time.  
 Done parts:  
 
 ### 0. Comments.
@@ -295,6 +296,7 @@ x = #@ in-line comment @# 2 + 5
 ```
 
 ### 1.1 Vars, vals, lists, assignment.  
+A variable is a basic container for a value that can be changed or read at any time and in any expression.  
 Assigning values ​​to variables.  
 In general, we use the `=` operator to assign a value to a new or already defined variable.  
 
@@ -315,10 +317,11 @@ lastName = names[2]
 a, b, c = 10, 20, 30
 ```
 
-Alternatives see in next sections: [`<-` operator](#91-arrow-appendset-operator--).
+Alternatives see in next sections: [`<-` operator](#91-arrow-appendset-operator--), [`const` modifier](#19-const).
 
 ### 1.2 Execution context.  
-In the mechanics of this language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
+In the mechanics of this language, each block of code (from module level) is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
+Highest level of context is a root-context that contains basic types and modules.  
 Context-object is responsible of search datatypes, variables, functions etc in current execution context.  
 Each context serves its block of code.  
 Sub-blocks have sub-contexts.  
@@ -340,13 +343,14 @@ nums = [
     0.15]   # float
 obj = null
 ```
-Complex numbers have been planned, but haven't been fully implemented.  
+Complex numbers have been planned, but haven't been fully implemented. Thinking about better format and usage.  
 
 ### 1.4 Strings.  
 Strings can be defined by several type of quotes.  
 ```golang
 hello = "hello somebody!"
 us = 'unary-quotes'
+mark = `!`
 ```
 Classic escape sequences work.  
 ```golang

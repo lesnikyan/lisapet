@@ -214,10 +214,10 @@ class Glif:
                 return False
     
     def __str__(self):
-        return 'glif(%s)' % (self.val)
+        return 'g(%s)' % (self.val)
     
     def __repr__(self):
-        return 'glif(%s:%x)' % (self.val, ord(self.val))
+        return 'g(%s:%x)' % (self.val, ord(self.val))
 
 
 class bytearray2(bytearray):
