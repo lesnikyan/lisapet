@@ -80,7 +80,7 @@ class TestTypes(TestCase):
             '-111', 'st@A{nn: [1, 2, 3]}', 'st@B{dd: {11: 22}}', 'st@C{c: True}', 'st@C{c: False}', 
             'st@D{d: 123}', 'st@D{d: 12.3}', 'st@D{d: [1, 2, 3]}', 'st@D{d: {1: 23}}', 
             'st@D{d: st@A{nn: [4, 5]}}', 'st@DD{d: 123}', 'st@DD{d: 12.3}', 'st@DD{d: [1, 2, 3]}', 
-            'st@DD{d: {1: 23}}', 'st@DD{d: st@A{nn: [4, 5]}}', 'st@D{d: st@D{d: st@D{d: st@D{d: st@D{d: st@D{d: null{0}}}}}}}']
+            'st@DD{d: {1: 23}}', 'st@DD{d: st@A{nn: [4, 5]}}', 'st@D{d: st@D{d: st@D{d: st@D{d: st@D{d: st@D{d: null}}}}}}']
         self.assertEqual(exv, rvar.vals())
 
     def test_multitype_in_braces(self):

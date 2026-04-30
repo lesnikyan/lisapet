@@ -15,7 +15,7 @@ from tree import *
 from nodes.func_expr import coverFunc
 from objects.func import Function
 from nodes.func_expr import setNativeFunc
-from nodes.builtins import getVal
+from nodes.builtins import getVal, print_prepare
 from eval import rootContext
 from tests.utils import *
 
@@ -34,10 +34,33 @@ class Alter:
             if isinstance(v, StructInstance):
                 v = v.istr()
             pargs.append(v)
-        self.res.append(pargs)
+        pargs = print_prepare(pargs)
+        self.res.append(str(pargs))
 
 
 class TestEvalFile(TestCase):
+    
+    
+    def test_print_bool(self):
+        code = r'''
+        
+        print(true)
+        print(false)
+        print(true, false, null)
+        print([true, false, null])
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        alt = Alter()
+        ctx.funcs['print'] = coverFunc('print', alt.print, TypeNull)
+        trydo(ex, ctx)
+        # exv = [[true], [false], [true, false, null], [[true, false, null]]]
+        exv = ['[true]', '[false]', '[true, false, null]', '[[true, false, null]]']
+        self.assertEqual(exv, alt.res)
     
     def test_full(self):
         '''' '''
@@ -58,7 +81,7 @@ class TestEvalFile(TestCase):
             exp.do(ctx)
             # r1 = ctx.get('r1').get()
         # print('alt:', alt.res)
-        exv = [
+        _exv = [
             ['n:', 2], ['n:', 2], [33, [1000, 200, 30, 4]], ['Hello print example!'], ['Hello print example!!!'], [25], ['inverted'], [10], 
             ['is prime 11', True], [1234], ['Dude'], ['Lorem ipsum dolor sit amet, consectetur adipiscing elit,'], 
             ['#00ff00'], ['Second day'], ['dict-data', 'red', '#ff0000'], ['dict-data', 'green', '#00ff00'], ['dict-data', 'blue', '#0000ff'], 
@@ -68,6 +91,16 @@ class TestEvalFile(TestCase):
             ['nums2 = ', [5, 1, 5, 2, 5, 3, 6, 1, 6, 2, 6, 3, 7, 1, 7, 2, 7, 3]], 
             ['nums = ', [[3, 27, 81], [4, 64, 256], [5, 125, 625], [6, 216, 1296], [7, 343, 2401]]], 
             ['lambda test:', 32, 504, [2, 5, 10, 17, 26]]]
+        exv = [
+            "['n:', 2]", "['n:', 2]", '[33, [1000, 200, 30, 4]]', "['Hello print example!']", "['Hello print example!!!']", '[25]', "['inverted']", '[10]', 
+            "['is prime 11', true]", '[1234]', "['Dude']", "['Lorem ipsum dolor sit amet, consectetur adipiscing elit,']", 
+            "['#00ff00']", "['Second day']", "['dict-data', 'red', '#ff0000']", "['dict-data', 'green', '#00ff00']", "['dict-data', 'blue', '#0000ff']", 
+            "['Green  gardens', 'Bob Stinger', 100, 10.0]", "['Blue, blue sky', 'Ani Arabesquin', 200, 20.0]", 
+            "['Silver sword of small town', 'Arnold Whiteshvartz', 300, 22.0]", "['tp1 name:', 'New-Name']", 
+            "['nums1 = ', [[25, 1], [25, 2], [25, 3], [36, 1], [36, 2], [36, 3], [49, 1], [49, 2], [49, 3]]]", 
+            "['nums2 = ', [5, 1, 5, 2, 5, 3, 6, 1, 6, 2, 6, 3, 7, 1, 7, 2, 7, 3]]", 
+            "['nums = ', [[3, 27, 81], [4, 64, 256], [5, 125, 625], [6, 216, 1296], [7, 343, 2401]]]", 
+            "['lambda test:', 32, 504, [2, 5, 10, 17, 26]]"]
         self.assertEqual(exv, alt.res)
 
 

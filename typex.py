@@ -382,3 +382,14 @@ def valType(val):
         return tps[tp]
     return Undefined()
 
+
+
+def esc_str(s:str):
+    scov = "'%s'"
+    if s.find("'") > -1:
+        scov = '"%s"'
+        if s.find('"') > -1:
+            s = s.replace('"', '\\"')
+    # print('\\e:', s, scov)
+    return scov % s
+

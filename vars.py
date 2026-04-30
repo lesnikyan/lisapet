@@ -39,7 +39,7 @@ class Null:
         # super().__init__(0, TypeNull())
 
     def __str__(self):
-        return 'null{0}'
+        return 'null'
 
     def __repr__(self):
         return 'null'
@@ -57,6 +57,18 @@ class Null:
     # def setType(self, t:VType):
     #     pass
 
+
+class pBool:
+    def __init__(self, val):
+        assert isinstance(val, bool)
+        self.val = val
+
+    def __str__(self):
+        return str(self.val).lower()
+
+    def __repr__(self):
+        return str(self.val).lower()
+        
 
 def value(val, vtype:VType)->Val:
     return Val(val, vtype)

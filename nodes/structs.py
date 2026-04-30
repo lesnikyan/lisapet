@@ -13,7 +13,7 @@ AnonStructConstr *? : create instance of anonymous struct (json-like object)
 from nodes.expression import *
 from context import *
 from nodes.expression import ServPairExpr, defaultValOfType
-from bases.ntype import structTypeCompat
+# from bases.ntype import structTypeCompat
 from objects.func import Function
 
 from bases.ntype import *
@@ -322,41 +322,22 @@ class StructInstance(ObjectInstance, NSContext):
                 raise EvalErr(f'\n--!-- Error during set field {self.vtype.name}.{fname}:{ftype.name} types: (:{dt} = {st})', val)
         return val
 
-    # def _checkType(self, fname, val:Val):
-    #     valType = val.getType()
-    #     ftype = self.vtype.ntypes[fname] # class inherited of VType or inst of StructInstance
-    #     fclass = ftype.__class__
-    #     # print('Type Check ???1:', fname, ftype.__class__, '<<', valType.__class__, val)
-    #     if ftype == TypeAny:
-    #         return # ok
-    #     # if primitives or collections
-    #     if not isinstance(ftype, StructDef):
-    #         # print('!! Not struct!', fclass)
-    #         if not isinstance(valType, fclass):
-    #             # TODO: add compatibility check
-    #             # print('Str.checkType:', f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
-    #             raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
-    #         return
-    #     # if struct
-    #     # print('@ check type ', valType.name, '!=', self.vtype.name , valType.name != self.vtype.name)
-    #     if valType != ftype:
-    #         if not structTypeCompat(ftype, valType):
-    #             raise TypeErr(f'Incorrect type `{valType.name}` for field {self.vtype.name}.{fname}:{ftype.name}')
-        
     def istr(self):
         fns = self.vtype.nfields
         ffs = []
         for f in fns:
             mem = self.get(f)
             v = ''
-            if not isinstance(mem, FuncInst):
-                v = mem.get()
-            else:
+            if isinstance(mem, FuncInst):
                 v = str(mem)
+            else:
+                v = mem.get()
+                if isinstance(mem.getType(), TypeString):
+                    v = esc_str(v)
             
             ffs.append('%s: %s' % (f, v))
         # vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
-        vals = ','.join(ffs)
+        vals = ', '.join(ffs)
         return vals
 
     def __str__(self):

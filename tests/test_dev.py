@@ -79,6 +79,14 @@ class TestDev(TestCase):
         
         FIXED: empty source in gen make error
             g2 = (: n ; n <- [])
+        
+        FIXED: print struct instance
+        - ',' separator -> ', '
+        - add quotes for strings
+        
+        DONE: fix print(bool): should be false, true, instead of False, True
+
+
 
         # (?) features for `enum` - not sure
             TODO: Enum.name(11)
@@ -142,6 +150,8 @@ class TestDev(TestCase):
             grup Boo
                 au = Auch
         
+        TODO(?): check print of dict: do we need space between pairs or key:val,
+        
         TODO: overload: 
             test overloading for imported functions, 
                 should we disallow overloading function in another module? yep
@@ -189,8 +199,6 @@ class TestDev(TestCase):
         
         TODO: string.replace({dict}) # check, implement if not
         
-        TODO: fix print(bool): should be false, true, instead of False, True
-        
         TODO: add assertion to cases in test_lists
         
         TODO: math functions:
@@ -201,7 +209,19 @@ class TestDev(TestCase):
         
         TODO (?): explicit append operator: list << val, dict << val. to use into comprehensions  
             alters:   <:  <=  <--  <<  
+            note: now <- in comprehension is an iter-assignment only
+            
+        TODO(?): 
+            endless [..] gen
+            endless generator
+            endless source for list compr
         
+        TODO?: head(count, list), tail(count, list)
+            >> make sense with endless list / generator
+            nhead = head ~>
+            nhead(5) $ [1..1000]
+            tail(15, [1..100])
+
         TODO: outer value: var/const/regexp in pattern matching:
             name = 'Vasya'
             match n
@@ -233,14 +253,6 @@ class TestDev(TestCase):
         TODO: think about import native lib / module into LP code.
             eval.py: importLib('math', math)
             code.et: import python.math
-        
-        TODO: add function / (like yeald in py)
-            func foo(x)
-                for i <- iter(x)
-                    res = i * 2
-            
-            for n <- foo(5)
-                n # ...
         
         TODO: method / object as a generator 
             
@@ -285,33 +297,30 @@ class TestDev(TestCase):
             [begin .. end] # already done
             [2, 1..5] [step, begin .. end]
             [-1, 5 .. 1] # check after positive custom step
-            
-        TOTHINK: 
-            endless [..] gen
-            endless generator
-            endless source for list compr
-        
-        
-        TODO: head(count, list), tail(count, list)
-            nhead = head ~>
-            nhead(5) $ [1..1000]
-            tail(15, [1..100])
         
         TODO: operator of divisibility
         a ?% b :the same as: a % b == 0
         a !% b :the same as: a % b != 0
         a and b should be an int, b != 0
-            
+        
+
         TODO?: yield gen
+            if at least 1 yield in func, this function transforms into constructor of generator
+            method too
             func f()
                 for n <- [1..5]
-                    yield n
+                    if n == 3
+                        return # end of generator lifetime
+                    yield n # return current value
+                    
+            func foo(a, b, c)
+                ...
+                yield val
+            foo(1,2,3) >> generator
         
-        TODO?: yield compr gen
-            ( n ; n <- [1..5] ) # generator, not a tuple comprehension 
-            [yield n ; n <- [1..5]] 
-            [: n ; n <- [1..5]] 
-            Looks like (;;) is enough
+        TODO: print struct: add quoter for inner strings
+        
+        
     '''
 
     _ = r"""
@@ -340,6 +349,7 @@ class TestDev(TestCase):
         resv = resRepr(rvar.vals())
         print(resv)
         exv = []
+        
         # self.assertEqual(exv, resv)
 
 

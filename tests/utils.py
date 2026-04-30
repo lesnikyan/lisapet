@@ -10,6 +10,8 @@ from vars import *
 
 
 null = Null()
+true = True
+false = False
 
 def norm(code):
     ''' Normalize input code: 
@@ -92,7 +94,7 @@ def typevals(src:ListVal|TupleVal):
     return r
 
 def resRepr(src):
-    from nodes.builtins import pstr
+    # from nodes.builtins import pstr
     rr = []
     for n in src:
         # print('>>', n, type(n))

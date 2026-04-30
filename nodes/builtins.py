@@ -40,16 +40,6 @@ def getVal(arg):
     return v
 
 
-def esc_str(s:str):
-    scov = "'%s'"
-    if s.find("'") > -1:
-        scov = '"%s"'
-        if s.find('"') > -1:
-            s = s.replace('"', '\\"')
-    # print('\\e:', s, scov)
-    return scov % s
-    
-
 def _elem_str(arg, parent=None):
     ''' prepare elem of collection for tostr() '''
     e = arg
@@ -100,7 +90,7 @@ def tostr(arg):
                 cover = "{%s}"
         # print('cover:', cover)
         rval = cover % (','.join(vals))
-        
+    
     if isinstance(v, StructInstance):
         rval = v.istr()
     if isinstance(v, (Null)):
@@ -127,43 +117,54 @@ def pstr(v):
     # if isinstance(v, (bytearray)):
     #     return '0x[%s]' % ' '.join([f'{b:02x}' for b in v])
     if isinstance(v, (Val|Var)):
-        return str(v)
+        v= str(v)
+    elif isinstance(v, (bool)):
+        v = pBool(v)
     return v
 
+def prepare_fpval(n):
+    ttp = None
+    # print('b-print:::', n, n.__class__.__name__)
+    if isinstance(n, (Function, FuncOverSet)):
+        return str(n)
+    # print('$1 ', n)
+    v = n
+    if isinstance(v, Val):
+        if isinstance(v.getType(), TypeIterator):
+            v = v.getVal()
+            ttp = 'iter'
+        if isinstance(v, ListGenIterator):
+            # print('$1', arg, v)
+            v = v.allVals()
+            ttp = 'range'
+        n = v
+    v = getVal(n)
+    # print('$2 ', v)
+    if isinstance(v, (list)):
+        v = [pstr(e) for e in v]
+    # raise EvalErr('')
+    if isinstance(v, StructInstance):
+        v = v.istr()
+    if ttp:
+        v = f"{ttp}{v}"
+    v = pstr(v)
+    return v
+        
 
-def buit_print(ctx:Context,*args):
+def print_prepare(args):
     pargs = []
     # print('b-print1:', args)
     # ctx.print(forsed=1)
     for n in args:
-        ttp = None
-        # print('b-print:::', n, n.__class__.__name__)
-        if isinstance(n, (Function, FuncOverSet)):
-            pargs.append(str(n))
-            continue
-        # print('$1 ', n)
-        v = n
-        if isinstance(v, Val):
-            if isinstance(v.getType(), TypeIterator):
-                v = v.getVal()
-                ttp = 'iter'
-            if isinstance(v, ListGenIterator):
-                # print('$1', arg, v)
-                v = v.allVals()
-                ttp = 'range'
-            n = v
-        v = getVal(n)
-        # print('$2 ', v)
-        if isinstance(v, (list)):
-            v = [pstr(e) for e in v]
-        # raise EvalErr('')
-        if isinstance(v, StructInstance):
-            v = v.istr()
-        if ttp:
-            v = f"{ttp}{v}"
-        pargs.append(v)
         # print('b-print2:::', v)
+        v = prepare_fpval(n)
+        pargs.append(v)
+    return pargs
+
+def buit_print(ctx:Context, *args):
+    pargs = print_prepare(args)
     print(*pargs)
+
 
 def built_len(_, arg:Collection|StringVal):
     return  Val(arg.len(), TypeInt())
