@@ -98,7 +98,9 @@ catch crit
 
 12 Functions: 
     - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but thinkable
-    - unused/unnamed var `_` for function args foo(_, x), 
+    - unnamed unused positional arg `_` for function foo(_, x), 
+
+
 
     # type-groups: 
         numeric, bool, string, list, tuple, dict, struct, function, regexp, [set, maybe, tree, ...]
@@ -107,7 +109,7 @@ catch crit
 13. Interfaces as a some list of method signatures.
 
 
-14.9.2 think about transfer matched regexp to sub-expression 
+14.9.2 think about transfer matched regexp into sub-expression 
 match s
 
     pattern@re`\d+([a-z]+)` !- res = pattern ?~ s
@@ -322,9 +324,62 @@ foo(a, b)
     a + b
 
 
+        TODO: method / object as a generator 
+            
+            struct Generator
+            func Generator init()
+            func Generator get()
+            func Generator next()
+            # **
+            struct IntGen(Generator) value:int, start:int, fin:int, diff:int 
+            func IntGen(x)
+                IntGen{start:0, fin:x, diff:1}
+            func IntGen(s, f)
+                IntGen{start:s, fin:f, diff:1}
+            func IntGen(s, f, d)
+                IntGen{start:s, fin:f, diff:d}
+            
+            func g:Generator init()
+                g.value = g.start
+            func g:Generator get()
+                g.value
+            func g:Generator next()
+                g.value += g.diff
+                g.value < g.fin # hasNext (?)
+            
+            # ***
+            struct Gen(Generator) fin:int
+            
+            # func gen:Gen get()
+            #     gen.value
+            
+            func gen:Gen next()
+                if gen.value >= gen.fin
+                    gen.stop()
+                gen.value += -1
+            
+            # ***
+            gg = Gen(5)
+            for n <- gg
+                n # 0 1 2 3 4 
+        
+        TODO?: yield gen
+            if at least 1 yield in func, this function transforms into constructor of generator
+            method too
+            func f()
+                for n <- [1..5]
+                    if n == 3
+                        return # end of generator lifetime
+                    yield n # return current value
+                    
+            func foo(a, b, c)
+                ...
+                yield val
+            foo(1,2,3) >> generator
+        
 
-TODO: prevent overloading of func with default/named args or variadic list args...
-
+# -------------------------
+Not sure:
 
 TODO (?): partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _  
 
@@ -335,9 +390,6 @@ TODO (?): partial call. def foo(a, b, c):  1) foo(x, _, _); 2) foo(x) _ _
             looks mostly as a shorten syntax of lambdas
             (2 + _) =>> x -> 2 + x
             (_ - 2) =>> x -> x - 2
-
-# -------------------------
-Not sure:
 
 26. anonimous struct - not sure.
 Idea was make thing object in JS.
@@ -393,6 +445,83 @@ console game.
         - gun - shoot enemies
 
 
+        # (?) features for `enum` - not sure
+            TODO: Enum.name(11)
+            TODO: Enum.value(name)
+            TODO: Enum methods .names(), .values(), .items() > (name, val), .todict()
+            TODO: 22 ?> Enum # after methods
+
+        TODO:? add shorten alias for the struct: stru A a:int
+            shorten of string: name:strn
+        
+        TODO:? to think about things that is not obvious:
+            - instance of function inside function itself
+            - additional properties of function as an object
+        
+        TODO: (?) add byte: int/4, unsigned
+            x:byte = 1 # 0-255
+            x:byte = 0xff ; auto casting
+            x:byte= intVal % 0x100
+            #  optional: explicit byte value
+            x = &01; 8xff; 8b100; &0xff; |xf0; 8d255
+            0xff; 0b10000001
+        
+        TODO: (?) bytes 0x[01 02 0f] oper shift: bb << 4; bb >> 8 # no extend size
+            # we can do the same by slice and adding zero-bytes
+        
+        TODO (?):  # partially called, make function with remined args; can't be applyed to func with arg...
+            foo(1,2, ...>)
+            foo(1,2, ->)
+            foo(1,2, _...)
+            foo(1,2, :...)
+            foo(1,2, |...)
+            foo(1,2, /...)
+            Thoughts: looks like curried function can do the same;
+            func foo(a,b,c)...
+            f = foo(1, 2); f(3) ;; g = foo(1); g(2, 3) # partial call
+            f = foo~>(1)(2); f(3) ;; g = foo~>(1); g(2)(3)
+        
+        TODO:? var type in for-loop 
+            for n:int <- nn
+        
+        TODO: (?) think about ?> for bytes, not sure
+
+        TODO: nop. think about type casting by colon; type in left
+            x:int = int: true
+            # type-constructor is enough 
+        
+        TODO (?): to think: change const from left-modifier to right-operand of `:`
+            var : const = val # const elem
+            var : const(int) = val # strict typed const elem
+        
+        TODO (?): put - inherit / include / mixin of a grup into an another grup
+            grup Auch
+                x = 1
+            
+            grup Boo
+                put Auch # copy and place here all things from Auch
+            
+            # not sure, maybe simple encapsulating will be enough:
+            grup Boo
+                au = Auch
+            ceil(), floor(), round()
+        
+        TODO (?): explicit append operator: list << val, dict << val. to use into comprehensions  
+            alters:   <:  <=  <--  <<  
+            note: now <- in comprehension is an iter-assignment only
+            >> why do we need such feature?
+            
+        TODO(?): 
+            endless [..] gen
+            endless generator
+            endless source for list compr
+        
+        TODO?: head(count, list), tail(count, list)
+            >> make sense with endless list / generator
+            nhead = head ~>
+            nhead(5) $ [1..1000]
+            tail(15, [1..100])
+
 # --- declined ----
 
         
@@ -442,6 +571,55 @@ Fixes:
 
 # DONE
         
+
+        
+        DONE: fix iter() for down-iteration and negative step
+        
+        DONE: py -m run -c "print([1..5][:])"
+            Error handling:  'ListGenIterator' object has no attribute 'len'
+            DONE: add constructor list([1..5])
+            DONE: add implicit conversion [..] to list before slice
+        
+        DONE: add (;;) lazy generator of sequence, 
+            can be used in loop, comprehention, sequence constructor
+            (: ; ; )
+            for n <- (x ; x <- nums ; x > 2)
+            list(((x ; x <- nums ; x > 2))) # think about skippng internal brackets
+            gen = (x ; x <- nums ; x > 2)
+            [n * 10 ; n <- gen]
+        
+        DONE: split comprehensions (should return collection/sequence)
+                and generator (return iterative object)
+        
+        
+        # FIXED: ['1:2-.-.>', '1:3-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.>', '1:3-.-.-.-.-.-.-.-.-.-.>', '1:2-.-.-.-.-.-.-.-.-.-.-.-.>',
+        # g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        # still bug ['1:2-->', '1:3----->', '1:2------->', '1:3---------->', '1:2------------>', '1:3--------------->', '1:2----------------->', '1:3-------------------->', 
+        g7 = (: ~'1:{d}' + ~['-'; _ <-iter(d)] + '>' ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        res <- [n ; n <- g7]
+        
+        
+        DONE: next test: generator in the comprehensions list, dict, etc
+        
+        DONE: [[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+        # g7 = (: list(iter(d))  ; a <-[1,2,3]; b <-[5..7]; c <-['','']; d <-[2,3])
+        note: list wasn't use iterator as an argument, need fix
+        
+        DONE: test multisource for iteration in generator
+        (: a + b ; a, b <- aa, bb)
+        
+        DONE: list( (: <-) )
+        
+        FIXED: empty source in gen make error
+            g2 = (: n ; n <- [])
+        
+        FIXED: print struct instance
+        - ',' separator -> ', '
+        - add quotes for strings
+        
+        DONE: print struct: add quoter for inner strings
+        
+        DONE: fix print(bool): should be false, true, instead of False, True
 
          
         DONE: 21.1 Multi-reading in loop:
