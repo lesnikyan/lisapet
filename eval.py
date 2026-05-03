@@ -42,6 +42,7 @@ def initFuncs(ctx:Context):
     setNativeFunc(ctx, 'dkeys', dc.dict_keys, TypeList())
     setNativeFunc(ctx, 'ditems', dc.dict_items, TypeList())
     setNativeFunc(ctx, 'char_key', char_key, TypeInt())
+    setNativeFunc(ctx, 'some', some_constr, TypeMaybe())
     # print('>>>\n\n~~~!!!!\n\n')
     
     # bind methods
@@ -106,6 +107,8 @@ def initFuncs(ctx:Context):
     setNativeFunc(ctx, 'curry', func_curry, TypeFunc())
     setNativeFunc(ctx, 'compose', func_compose, TypeFunc())
     
+    # maybe
+    bindNativeMethod(ctx, 'maybe', maybe_get, 'get', TypeAny())
     
     
 

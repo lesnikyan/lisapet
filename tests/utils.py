@@ -7,11 +7,13 @@ from tree import lex2tree
 from eval import rootContext
 
 from vars import *
+from nodes.builtins import getVal
 
 
 null = Null()
 true = True
 false = False
+none = NoneVal()
 
 def norm(code):
     ''' Normalize input code: 
@@ -23,6 +25,37 @@ def norm(code):
         else:
             break
     return '\n'.join([s[ind:] for s in code.splitlines()])
+
+
+# class TestSome:
+    
+#     def __init__(self, val):
+#         self.val = val
+
+#     def __eq__(self, other):
+#         if not isinstance(other, Some):
+#             return False
+#         return self.val == other.val
+
+
+class TestSome(Some):
+    def __init__(self, val):
+        super().__init__(val)
+    
+    def __eq__(self, value):
+        vv = getVal(value.val)
+        return self.val == vv
+    
+    def __repr__(self):
+        # print('TMbr', self.val, type(self.val))
+        vv = (self.val)
+        # if isinstance(vv ,(list, tuple, dict)):
+        #     vv = str(vv)
+        return 'some(%r)' % (vv, )
+
+
+def some(val):
+    return TestSome(val)
 
 
 def ivar(name, value):
@@ -93,25 +126,45 @@ def typevals(src:ListVal|TupleVal):
         r = tuple(r)
     return r
 
+
+def reprElem(arg):
+    n = arg
+    # print('>>', n, type(n))
+    if isinstance(n, (ListVal, TupleVal, DictVal)):
+        n = reprElem(n.vals())
+    elif isinstance(n, (list, tuple)):
+        n = resRepr(n)
+    elif isinstance(n, (Maybe)):
+        match n:
+            case NoneVal():
+                n = n
+            case Some():
+                n = TestSome(reprElem(n.get()))
+    elif isinstance(n, (bytearray2, bytearray, bytes)):
+        n = str(n)
+    elif isinstance(n, (ObjectInstance)):
+        n = 'st@%s' % str(n)
+    elif isinstance(n, (Space)):
+        n = '%s' % str(n)
+    elif isinstance(n, (StringVal)):
+        n = '%s' % n.val
+    elif isinstance(n, (Glif)):
+        n = 'g(%s)'%(n.val)
+    elif isinstance(n, (Regexp)):
+        n = '%s'%str(n)
+    
+    if isinstance(arg, tuple):
+        n = tuple(n)
+    return n
+
+
 def resRepr(src):
     # from nodes.builtins import pstr
     rr = []
     for n in src:
-        # print('>>', n, type(n))
-        if isinstance(n, (list, tuple)):
-            n = resRepr(n)
-        elif isinstance(n, (bytearray2, bytearray, bytes)):
-            n = str(n)
-        elif isinstance(n, (ObjectInstance)):
-            n = 'st@%s' % str(n)
-        elif isinstance(n, (Space)):
-            n = '%s' % str(n)
-        elif isinstance(n, (Glif)):
-            n = 'g(%s)'%(n.val)
-        elif isinstance(n, (Regexp)):
-            n = '%s'%str(n)
-        rr.append(n)
+        rr.append(reprElem(n))
     if isinstance(src, tuple):
         rr = tuple(rr)
+    # print('rr>', rr)
     return rr
 

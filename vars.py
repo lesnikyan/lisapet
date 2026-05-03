@@ -215,7 +215,7 @@ class ListVal(Collection):
     def vals(self):
         r = []
         for n in self.elems:
-            if isinstance(n, (FuncInst, ObjectInstance, Regexp)):
+            if isinstance(n, (FuncInst, ObjectInstance, Regexp, Maybe)):
                 r.append(n)
                 continue
             # print('$5', n)
@@ -591,28 +591,77 @@ class FuncBinder(FuncSpace):
 
 # not sure, maybe simple struct will be enough?
 
+# class Maybe(Val):
+#     ''' '''
+
+#     def has(self, val:Val):
+#         return False
+
+
+# class Nothing(Maybe):
+#     ''' x = nop '''
+#     def __init__(self):
+#         super().__init__(None, TypeMaybe())
+
+
+# class Thing(Maybe):
+#     ''' x = yep(1) '''
+#     def __init__(self, val):
+#         super().__init__(val, TypeMaybe())
+
+#     def has(self, val:Val):
+#         return self.val == val
+
+
 class Maybe(Val):
     ''' '''
 
-    def has(self, val:Val):
-        return False
-
-
-class Nothing(Maybe):
-    ''' x = nop '''
     def __init__(self):
-        super().__init__(None, TypeMaybe())
+        super().__init__(None, None)
+        self.vtype = TypeMaybe()
+
+    def isNone(self):
+        return True
 
 
-class Thing(Maybe):
-    ''' x = yep(1) '''
-    def __init__(self, val):
-        super().__init__(val, TypeMaybe())
+class NoneVal(Maybe):
+    
+    def __init__(self):
+        super().__init__()
+    
+    def __str__(self):
+        return 'none'
+    
+    def __repr__(self):
+        return 'none'
+    
+    def __eq__(self, value):
+        return isinstance(value, NoneVal)
 
-    def has(self, val:Val):
-        return self.val == val
 
-vt_01 = (Val, Collection, StringVal, Regexp)
+class Some(Maybe):
+    ''' '''
+    def __init__(self, val:Val):
+        super().__init__()
+        self.val = val
+
+    def get(self):
+        return self.val
+    
+    def isNone(self):
+        return False
+    
+    def __str__(self):
+        return 'some(%s)' % pre_print(self.val)
+    
+    def __repr__(self):
+        # print('Mbr', self.val)
+        vv = var2val(self.val).get()
+        # print('Mbr', self.val, vv)
+        return 'some(%r)' % (vv)
+
+
+vt_01 = (Val, Collection, StringVal, Regexp, Maybe)
 
 def valFrom(src:Var|Val):
     if isinstance(src, vt_01):
@@ -627,7 +676,7 @@ def isBaseTypeMember(var):
     return isinstance(var, ObjectElem) and not isinstance(var.getInst(), ObjectInstance)
         
 
-vt_02 = (Val, Collection, Regexp, StringVal, FuncInst)
+vt_02 = (Val, Collection, Regexp, StringVal, FuncInst, Maybe)
 vt_03 = (Val, Collection, ObjectInstance, BytesVal, FuncInst)
 
 def var2val(var:Var|Val):

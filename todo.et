@@ -219,6 +219,27 @@ x = nothing # @nop , (?-)
                     now it possible only in match cases.
                 2) pattern matching in func declaration looks too complex for adding just for maybe type.
                 3) unpack by operator still doesn't look nice, but it acceptable. 
+                
+                # parts: 
+                1) maybe, some, none
+                2) some(val), none
+                3) match n:
+                    :: maybe
+                    some(v)
+                    p :: some(int)
+                    none
+
+                4) unpack by method:
+                    x = some(12)
+                    x.val() # >> 12
+                    int(x) # >> 12
+                5) maybe().map()
+                6) for
+                    for v <- x
+                        # if x is some.
+                        res <- v # [12]
+                7) maybe().fold()
+
             var: maybe = yep(123) | nop 
             # maybe, yep, nop - LP keyword..
             # Maybe 

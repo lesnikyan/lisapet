@@ -97,3 +97,5 @@ def elem2val(elem:Elem)->Var:
             return Val(bool(elem.text == 'true'), TypeBool())
         if elem.text == 'null':
             return Val(Null(), TypeNull())
+        if elem.text == 'none':
+            return NoneVal()

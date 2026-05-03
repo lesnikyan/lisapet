@@ -75,6 +75,12 @@ def string_constr(ctx, arg:Val):
     return built_tostr(ctx, arg)
 
 
+def some_constr(ctx, arg:Val):
+    val = var2val(arg)
+    # print('$1', val, [val])
+    return Some(val)
+
+
 def regexp_constr(ctx, pattern:Val, flags:Val=None):
     pval = pattern.getVal()
     fval = ''
@@ -82,7 +88,6 @@ def regexp_constr(ctx, pattern:Val, flags:Val=None):
         fval = flags.getVal()
     # print('$1', fval, flags)
     ptr = rexp.compile(pval, rexp.str2flags(fval))
-    
     return Regexp(ptr)
 
 
@@ -493,4 +498,22 @@ def glif_bytes(_, inst:Val):
     r = bytearray2(inst.getVal().val.encode())
     return BytesVal(r)
 
+
+# Maybe
+
+def maybe_get(_, inst:Some):
+    return inst.get()
+
+
+def maybe_map(ctx:Context, inst:Some|NoneVal, fun:Function):
+    match inst:
+        case Some():
+            arg = inst.get()
+            fun.setArgVals([arg])
+            fun.do(ctx)
+            r = fun.get()
+            return Some(r)
+        case NoneVal():
+            return NoneVal()
+    raise EvalErr('Incorrect instance of `maybe_map`')
 

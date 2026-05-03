@@ -130,6 +130,9 @@ class Val(Base):
         tt = self.vtype.name
         return '%s(%s: %s)' % (self.__class__.__name__, self.val, tt)
 
+    def __repr__(self):
+        return '%s' % (self.val)
+
 
 class Container(Val):
     ''' Contaiter Var list, dict, etc '''
@@ -226,4 +229,3 @@ class bytearray2(bytearray):
                                     
     def __repr__(self):
         return '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
-

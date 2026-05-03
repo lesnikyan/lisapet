@@ -35,6 +35,8 @@ def getVal(arg):
         v = {k: getVal(vv) for k,vv in v.data.items()}
     elif isinstance(v, (Function, FuncOverSet, ObjMethod, Regexp)):
         v = str(v)
+    elif isinstance(v, Maybe):
+        v = v
     elif isinstance(v, Val):
         v = v.getVal()
     return v
