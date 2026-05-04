@@ -27,30 +27,18 @@ def norm(code):
     return '\n'.join([s[ind:] for s in code.splitlines()])
 
 
-# class TestSome:
-    
-#     def __init__(self, val):
-#         self.val = val
-
-#     def __eq__(self, other):
-#         if not isinstance(other, Some):
-#             return False
-#         return self.val == other.val
-
-
 class TestSome(Some):
     def __init__(self, val):
         super().__init__(val)
     
     def __eq__(self, value):
+        if not isinstance(value, (Some, TestSome)):
+            return False
         vv = getVal(value.val)
         return self.val == vv
     
     def __repr__(self):
-        # print('TMbr', self.val, type(self.val))
         vv = (self.val)
-        # if isinstance(vv ,(list, tuple, dict)):
-        #     vv = str(vv)
         return 'some(%r)' % (vv, )
 
 
@@ -162,7 +150,9 @@ def resRepr(src):
     # from nodes.builtins import pstr
     rr = []
     for n in src:
-        rr.append(reprElem(n))
+        rn = reprElem(n)
+        # print('n rn', n, rn)
+        rr.append(rn)
     if isinstance(src, tuple):
         rr = tuple(rr)
     # print('rr>', rr)

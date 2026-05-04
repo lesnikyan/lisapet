@@ -206,8 +206,14 @@ class ListVal(Collection):
         return ListVal(elems=self.elems[:])
 
     def get(self):
-        # print('ListVal.get', len(self.elems))
-        return  [n.get() for n in self.elems] # debug
+        r = []
+        for n in self.elems:
+            if isinstance(n, (Maybe)):
+                r.append(n)
+                continue
+            r.append(n.get())
+        return r
+        # return  [n.get() for n in self.elems] # debug
 
     def delete(self, index:Val):
         del self.elems[index.getVal()]
@@ -224,8 +230,6 @@ class ListVal(Collection):
                 nv = n.get()
             r.append(nv)
         return r
-        # return [(n.get()) for n in self.elems]
-        # return [(n.get() if not isinstance(n, Collection) else n.vals()) for n in self.elems]
 
     def rawVals(self):
         return [n for n in self.elems]
@@ -264,7 +268,14 @@ class TupleVal(Collection):
         return len(self.elems)
     
     def get(self):
-        return tuple(n.get() for n in self.elems)
+        r = []
+        for n in self.elems:
+            if isinstance(n, (Maybe)):
+                r.append(n)
+                continue
+            r.append(n.get())
+        return tuple(r)
+        # return tuple(n.get() for n in self.elems)
         # return tuple(self.elems)
 
     def addVal(self, val:Val):
@@ -290,10 +301,12 @@ class TupleVal(Collection):
     def vals(self):
         r = []
         for n in self.elems:
-            if isinstance(n, (FuncInst, ObjectInstance)):
+            # print('$5', n, isinstance(n, (FuncInst, ObjectInstance, Regexp, Maybe)))
+            if isinstance(n, (FuncInst, ObjectInstance, Regexp, Maybe)):
                 r.append(n)
-                continue
-            r.append(n.get())
+            else:
+                r.append(n.get())
+        # print('tuple.vals', r)
         return tuple(r)
 
     def has(self, val:Val):
@@ -304,7 +317,13 @@ class TupleVal(Collection):
         return False
 
     def __str__(self):
-        vals = ', '.join([ '%s' % str(n.get()) for n in self.elems])
+        pp = []
+        for n in self.elems:
+            v = n
+            if not isinstance(n, (Maybe)):
+                v = n.get()
+            pp.append('%s' % str(v)) 
+        vals = ', '.join(pp)
         return 'TupleVal(%s)' %  (vals)
 
 
@@ -379,8 +398,6 @@ class DictVal(Collection):
 class StringVal(ValSequence):
     ''' '', "", ``, etc '''
     def __init__(self, val):
-        # if not stype:
-        #     stype = TypeString()
         super().__init__(val, TypeString())
     
     def getElem(self, key:Val):
@@ -589,30 +606,6 @@ class FuncBinder(FuncSpace):
         return self.__funcs[name]
 
 
-# not sure, maybe simple struct will be enough?
-
-# class Maybe(Val):
-#     ''' '''
-
-#     def has(self, val:Val):
-#         return False
-
-
-# class Nothing(Maybe):
-#     ''' x = nop '''
-#     def __init__(self):
-#         super().__init__(None, TypeMaybe())
-
-
-# class Thing(Maybe):
-#     ''' x = yep(1) '''
-#     def __init__(self, val):
-#         super().__init__(val, TypeMaybe())
-
-#     def has(self, val:Val):
-#         return self.val == val
-
-
 class Maybe(Val):
     ''' '''
 
@@ -647,18 +640,21 @@ class Some(Maybe):
 
     def get(self):
         return self.val
+
+    def getVal(self):
+        return self.val
     
     def isNone(self):
         return False
     
     def __str__(self):
-        return 'some(%s)' % pre_print(self.val)
+        return self.__repr__()
     
     def __repr__(self):
         # print('Mbr', self.val)
         vv = var2val(self.val).get()
         # print('Mbr', self.val, vv)
-        return 'some(%r)' % (vv)
+        return 'some(%r)' % (vv, )
 
 
 vt_01 = (Val, Collection, StringVal, Regexp, Maybe)

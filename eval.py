@@ -43,6 +43,7 @@ def initFuncs(ctx:Context):
     setNativeFunc(ctx, 'ditems', dc.dict_items, TypeList())
     setNativeFunc(ctx, 'char_key', char_key, TypeInt())
     setNativeFunc(ctx, 'some', some_constr, TypeMaybe())
+    setNativeFunc(ctx, 'isNone', is_none, TypeBool())
     # print('>>>\n\n~~~!!!!\n\n')
     
     # bind methods

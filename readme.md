@@ -45,7 +45,7 @@ Content:
     8. [Check type `::`](#28-check-type-operator-)
     9. [Delete operator `@!`](#29-delete-var--operator)
 
-3. Collections.  
+3. Sequenes and containers.  
     1. [List `[]`](#31-list-array)
     2. [Tuple `(,)`](#32-tuple-val-val-val)
     3. [Unpack `a,b = [1,2]`](#33-unpack-of-sequence-by-multi-assignment)
@@ -54,6 +54,7 @@ Content:
     6. [Collection features >>>](#collection-features)
     7. [List `[]` features >>>](#list-features)
     8. [`"string"` features >>>](#string-features)
+    9. [`maybe`: `some()`, `none`](#39-maybe)
 
 4. Data type.
     1. [Strict type `var:type`](#41-typed-var-expression-xtype)
@@ -165,6 +166,8 @@ Content:
     2. [Nested definitions](#192-nested-definitions)  
     3. [Static content vs instances](#193-static-content-vs-instances)  
     4. [Sub level of module](#194-sub-level-of-module)  
+
+20. 
 
 
 *
@@ -975,6 +978,35 @@ r2 = bb1 ^ bb2
 ```
 
 [A `bytes` object can also be created using a bytes-comprehension >>](#95-bytes-comprehension-generator)
+
+
+### 3.9 Maybe.
+Type maybe is a type of possible value.  
+`maybe` have 2 types of instances: `some` and `none`.  
+- `none` is an empty valye of `maybe`, literally it stores nothing.  
+There is `none` lexem that makes `none`.
+```python
+var: maybe = none
+```
+- `some` - is a container for any.  
+To make `some` instance use builtin function  `some(val)`.  
+```python
+var = some(12)
+mbList = some([1,2,3])
+```
+- Builtin methods of `maybe`.  
+```python
+# get()
+x = some('hello')
+s = x.get() # >> 'hello'
+```
+- Function for maybe.  
+```python
+# isNone - check is passed agr is none
+isNone(none) # true
+isNone(some(123)) # false
+```
+
 
 
 ### 4 Data type.

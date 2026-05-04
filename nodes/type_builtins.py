@@ -517,3 +517,9 @@ def maybe_map(ctx:Context, inst:Some|NoneVal, fun:Function):
             return NoneVal()
     raise EvalErr('Incorrect instance of `maybe_map`')
 
+
+def is_none(ctx:Context, inst:Some|NoneVal):
+    res = isinstance(inst, NoneVal)
+    return Val(res, TypeBool())
+
+

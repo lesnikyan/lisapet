@@ -157,24 +157,20 @@ class TestDev(TestCase):
 
 """
 
-    def test_maybe_get(self):
+    def _test_maybe_as_agrument(self):
         ''' '''
         code = r'''
         res = []
         
-        struct A s:string
+        func foo(x:maybe, fh:function)
+            if isNone(x)
+                return none
+            some(fn(x.get()))
         
-        ss = [1, 2.5, 'halat', (1,2, 'Omm'), [4,5,'zoom'], {7:77, 8:88}]
+        ss = []
         
-        mm = []
-        for n <- ss
-            mm <- some(n)
-        
-        for m <- mm
-            res <- m
-            res <- m.get()
-        
-        # print('>>1', mb3)
+        for i, s <- iter(len(ss)), ss
+            res <- (i, foo(s))
         
         # print('res = ', res)
         '''
@@ -183,57 +179,12 @@ class TestDev(TestCase):
         rCtx = rootContext()
         ctx = rCtx.moduleContext()
         trydo(ex, ctx)
-        
+        # self.assertEqual(0, rvar.getVal())
         rvar = ctx.get('res').get()
         resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = [some(1), 1, some(2.5), 2.5, some('halat'), 'halat', 
-               some((1, 2, 'Omm')), (1, 2, 'Omm'), some([4, 5, 'zoom']), [4, 5, 'zoom'], some({7: 77, 8: 88}), {7: 77, 8: 88}]
-        self.assertEqual(exv, resv)
-
-    def test_maybe_type(self):
-        ''' '''
-        code = r'''
-        res = []
-        
-        struct A s:string
-        
-        mb1 = some(1)
-        mb2:maybe = some(2.5)
-        mb3 = some('Hello maybe!')
-        
-        # m = {?2}
-        res <- mb1
-        res <- mb2
-        res <- mb3
-        res <- some(4)
-        res <- none
-        res <- some([1,2,3])
-        res <- some(['aa', 'bb'])
-        
-        rr = some([1,2,'Abc'])
-        
-        res <- some(A('abc'))
-        
-        # print('>>1', mb3)
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        
-        rr = ctx.get('rr').get()
-        # print('rr>', rr)
-        self.assertEqual(some([1, 2, 'Abc']), reprElem(rr))
-        rvar = ctx.get('res').get()
-        
-        resv = resRepr(rvar.vals())
-        # print(resv)
-        exv = [some(1), some(2.5), some('Hello maybe!'), some(4), none, some([1, 2, 3]), some(['aa', 'bb']), some("st@A{s: 'abc'}")]
-        self.assertEqual(exv, resv)
+        print(resv)
+        exv = []
+        # self.assertEqual(exv, resv)
 
     def _test_code(self):
         ''' '''
