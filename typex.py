@@ -398,8 +398,11 @@ def esc_str(s:str):
 
 def pre_print(mem):
     v = ''
+    tt = mem.getType()
     if isinstance(mem, FuncInst):
         v = str(mem)
+    elif isinstance(tt, TypeMaybe):
+        v = repr(mem)
     else:
         v = mem.get()
         if isinstance(mem.getType(), TypeString):

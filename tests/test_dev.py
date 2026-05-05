@@ -151,10 +151,14 @@ class TestDev(TestCase):
         
         DONE: maybe:
             isNone(), 
-            .get(), .map(), .maybe()[like fold]
+            .get(), .map(), .maybe()
             func foo(x: maybe)
         
         TODO: isSome
+        
+        TODO: maybe.fold:
+            some(val).fold(accumulator, func) => func(acc, val)
+            none.fold(accumulator, func) => acc
         
         TODO: match maybe
             match: 
@@ -177,29 +181,6 @@ class TestDev(TestCase):
 
 
 """
-
-    def _test_maybe_match_some_sub(self):
-        ''' some(sub): some(::int), some(var), some([a, b, s]), some(N{s: var}) '''
-
-    def _test_maybe_match_simple(self):
-        ''' none, ::maybe, some(), [none, some(), var@some()] '''
-        code = r'''
-        res = []
-        
-        
-        # print('res = ', res)
-        '''
-        code = norm(code[1:])
-        ex = tryParse(code)
-        rCtx = rootContext()
-        ctx = rCtx.moduleContext()
-        trydo(ex, ctx)
-        # self.assertEqual(0, rvar.getVal())
-        rvar = ctx.get('res').get()
-        resv = resRepr(rvar.vals())
-        print(resv)
-        exv = []
-        # self.assertEqual(exv, resv)
 
 
     def _test_code(self):

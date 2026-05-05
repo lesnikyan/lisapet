@@ -996,8 +996,8 @@ mbList = some([1,2,3])
 ```
 - Builtin methods of `maybe`.  
 `.get()` - returen value from `some`.  
-`.map(function)` - if it is `some` then applies function to inner value and returns some with result, otherwise returns none.  
-`.maybe(default, function)` - if it s`some` then returns result of function, applied to inner value, otherwise returns default value.
+`.map(function)` - if it is `some` then applies function to inner value and returns some with result, otherwise returns `none`.  
+`.maybe(default, function)` - if it is `some` then returns result of function, applied to inner value, otherwise returns default value.
 
 ```python
 # get()
@@ -3515,9 +3515,31 @@ Const or var patterns doesn't need additional assignment.
 Underscore can be simply changed on named var.  
 But anyway all of them works with assignment.  
 
+### 23.12 Maybe
+Maybe-case matches type `maybe`.  
+It can be simple `none` - means empty `maybe` value, or `some` with subvalue.  
+`some()` pattern looks like constructor function of `some` value.  
+Sub pattern in the parentheses works like other sub-patterns in containers.  
+Maybe case can be combined with other patterns: types, vars, containers, values, regexp, etc.  
+```python
+match n
+    none /: # means: none
+    some(::int) /: # some with int
+    some(val :: float) /: # val - float sub value
+    [some(a)] /: # some in list with 1 elem, a - value from some
+    some([a,b,c]) /: # a,b,c - values of elements in sub-list
+    some({k: v::string}) /: 
+        # 1-pair dict in some, k - key, v - string value 
+    some(Abc{name: x}) /: 
+        # struct instance in some, x - value of field name
+    MayVal{n: none} /: # struct with none in field
+    MayVal{n: some(val)} /: # struct with some, val - value in some
+    (vv @ some(), ) /: # tuple with 1 sub some, some obj assigned to vv
+    vv @ some() /: # any some object assigns to vv
+    some() /: # means any some
 
+```
 
-TODO: Maybe-cases, (?)
 
 
 ### 25.1 Regular expressions. `re`

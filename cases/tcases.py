@@ -297,6 +297,8 @@ class CaseNumVal(CaseVal, SolidCase):
         # prels('CaseVal.match:', elems, show=1)
         if elems[0].type in [Lt.num]:
             return True
+        # or isLex(elems[0], Lt.word, 'none')
+        # print(elemStr(elems), isLex(elems[0], Lt.word, _numConsts))
         return  isLex(elems[0], Lt.word, _numConsts)
     
     def expr(self, elems:list[Elem])-> Expression:

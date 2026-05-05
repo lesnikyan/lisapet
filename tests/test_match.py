@@ -2007,53 +2007,5 @@ class TestMatch(TestCase):
         self.assertEqual([1001, 10, 22, 121, 48, 115, 37, 120, 118], rvar.vals())
 
 
-    # deprecated by refactoring of match cases
-    # def _test_CaseMatchSub_match(self):
-    #     cs = CaseMatchCase()
-    #     rrs = []
-    #     def checkRes(code, exp):
-    #         dprint('$$ run test ------------------')
-    #         dprint('CODE:','\n'+code)
-    #         # code = lines[0]
-    #         tlines = splitLexems(code)
-    #         clines:CLine = elemStream(tlines)
-    #         elems = clines[0].code
-    #         res = cs.match(elems)
-    #         dprint('#tt >>> ', code, res)
-    #         msg = 'Tried use code: %s' % code
-    #         if exp:
-    #             self.assertTrue(res, msg)
-    #         else:
-    #             self.assertFalse(res, msg)
-            
-    #     src = ''''
-    #     val /: expr
-    #     123 /: a + b
-    #     234 /: r = 2 + 3
-    #     3 /: res = 4
-    #     user(123) /: res
-    #     '''
-    #     src = norm(src[1:].rstrip())
-    #     data = src.splitlines()
-    #     for code in data:
-    #         if code.strip() == '':
-    #             continue
-    #         checkRes(code, True)
-        
-    #     src = ''''
-    #     val 123 -> expr
-    #     1,2,3 -> a + b
-    #     x <- src
-    #     -> expr ...
-    #     user(123) + 0 -> res
-    #     '''
-    #     src = norm(src[1:].rstrip())
-    #     data = src.splitlines()
-    #     for code in data:
-    #         if code.strip() == '':
-    #             continue
-    #         checkRes(code, False)
-
-
 if __name__ == '__main__':
     main()
