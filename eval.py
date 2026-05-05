@@ -67,6 +67,8 @@ def initFuncs(ctx:Context):
     bindNativeMethod(ctx, 'tuple', tuple_map, 'map', TypeTuple)
     bindNativeMethod(ctx, 'string', str_map, 'map', TypeString)
     bindNativeMethod(ctx, 'bytes', bytes_map, 'map', TypeBytes)
+    bindNativeMethod(ctx, 'maybe', maybe_map, 'map', TypeMaybe)
+    
     # fold
     bindNativeMethod(ctx, 'list', list_fold, 'fold', TypeList)
     bindNativeMethod(ctx, 'tuple', tuple_fold, 'fold', TypeTuple)
@@ -110,6 +112,7 @@ def initFuncs(ctx:Context):
     
     # maybe
     bindNativeMethod(ctx, 'maybe', maybe_get, 'get', TypeAny())
+    bindNativeMethod(ctx, 'maybe', maybe_maybe, 'maybe', TypeAny())
     
     
 

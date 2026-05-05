@@ -995,16 +995,37 @@ var = some(12)
 mbList = some([1,2,3])
 ```
 - Builtin methods of `maybe`.  
+`.get()` - returen value from `some`.  
+`.map(function)` - if it is `some` then applies function to inner value and returns some with result, otherwise returns none.  
+`.maybe(default, function)` - if it s`some` then returns result of function, applied to inner value, otherwise returns default value.
+
 ```python
 # get()
 x = some('hello')
 s = x.get() # >> 'hello'
+
+# map
+nn = [some(1), some(2), none]
+rr = []
+for mn <- nn
+    rr <- mn.map(\ a -> a + 100)
+rr # [some(101), some(102), none]
+
+# maybe
+rr <- some((1,2,3))
+pp = []
+fp = \ t -> [t]
+for r <- rr
+    pp <- r.maybe(-1, fp)
+pp # [[101], [102], -1, [(1, 2, 3)]]
 ```
-- Function for maybe.  
+- Global functions for maybe.  
 ```python
 # isNone - check is passed agr is none
 isNone(none) # true
 isNone(some(123)) # false
+
+# isSome - in dev
 ```
 
 

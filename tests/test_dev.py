@@ -149,6 +149,27 @@ class TestDev(TestCase):
             a < b < c
             a > b > c
         
+        DONE: maybe:
+            isNone(), 
+            .get(), .map(), .maybe()[like fold]
+            func foo(x: maybe)
+        
+        TODO: isSome
+        
+        TODO: match maybe
+            match: 
+                case ::maybe, case none, 
+                case some() # empty as an any-sub
+                case some(sub)
+        
+        TODO?: complex type: some(int)
+            it looks hard to implement, 
+            in fact it should be a fully implemented type-system with generics
+            
+        TODO: dict.map(func) # looks meaningful
+            {1:11, 2:22}.map(\k, v -> (k, v + 10) )
+            keyMap: {...}.keyMap(func)
+            valmap: {...}.valMap(func)
     '''
 
     _ = r"""
@@ -157,20 +178,14 @@ class TestDev(TestCase):
 
 """
 
-    def _test_maybe_as_agrument(self):
-        ''' '''
+    def _test_maybe_match_some_sub(self):
+        ''' some(sub): some(::int), some(var), some([a, b, s]), some(N{s: var}) '''
+
+    def _test_maybe_match_simple(self):
+        ''' none, ::maybe, some(), [none, some(), var@some()] '''
         code = r'''
         res = []
         
-        func foo(x:maybe, fh:function)
-            if isNone(x)
-                return none
-            some(fn(x.get()))
-        
-        ss = []
-        
-        for i, s <- iter(len(ss)), ss
-            res <- (i, foo(s))
         
         # print('res = ', res)
         '''
@@ -185,6 +200,7 @@ class TestDev(TestCase):
         print(resv)
         exv = []
         # self.assertEqual(exv, resv)
+
 
     def _test_code(self):
         ''' '''

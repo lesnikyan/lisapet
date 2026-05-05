@@ -14,6 +14,151 @@ class TestMaybe(TestCase):
     ''' '''
 
 
+    def test_maybe_maybe(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        f1 = \x -> [x]
+        res <- some(1).maybe([], f1)
+        res <- none.maybe([], f1)
+        
+        f1 = \ x -> 101 * x
+        
+        func f2(x)
+            match x
+                ::int /: 200 + x
+                ::glif /: ~'/{x}/'
+                re`^_.+` /: x.map(f2)
+                :: string /: ~'<{x}>'
+                [::int, ::int] /: x.map(f1)
+                :: list /: x.map(f2)
+                none /: none # need to fix
+                :: maybe /: x.map(f2)
+                {*} /: dict(x.items().map(\kv -> (f2(kv[0]), f2(kv[1]+5000))))
+                _ /: ('_', x)
+            
+        ss = [
+            some(0), none, 
+            some(17), some(null), some('Hello!'), some('128'), 
+            some([3,4,5]), some([16,27]), some(4.4), some({'ax':11, 'bx':22}),
+            some(none), some(some('ich bin')), some('_yellow_')
+        ]
+        
+        k = len(res)
+        for s, i <- ss, iter(len(ss))
+            res <- (i + k, s.maybe((null,), f2))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [1], [], 
+            (2, 200), (3, (null,)), (4, 217), (5, ('_', null)), (6, '<Hello!>'), (7, '<128>'), 
+            (8, [203, 204, 205]), (9, [1616, 2727]), (10, ('_', 4.4)), (11, {'<ax>': 5211, '<bx>': 5222}), 
+            (12, none), (13, some('<ich bin>')), (14, '<_><y><e><l><l><o><w><_>')]
+        self.assertEqual(exv, resv)
+
+    def test_maybe_map(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        m1 = some(1)
+        m0 = none
+        f1 = \ x -> 101 * x
+        
+        res <- (0, m0.map(f1))
+        res <- (1, m1.map(f1))
+        
+        func f2(x)
+            match x
+                ::int /: 200 + x
+                ::glif /: ~'/{x}/'
+                re`^_.+` /: x.map(f2)
+                :: string /: ~'<{x}>'
+                [::int, ::int] /: x.map(f1)
+                :: list /: x.map(f2)
+                none /: none # need to fix
+                :: maybe /: x.map(f2)
+                {*} /: dict(x.items().map(\kv -> (f2(kv[0]), f2(kv[1]+5000))))
+                _ /: ('_', x)
+            
+        ss = [
+            some(0), none, 
+            some(5), some(null), some('Hello!'), some('128'), 
+            some([3,4,5]), some([6,7]), some(3.2), some({'ax':11, 'bx':22}),
+            some(none), some(some('ich bin')), some('_green_')
+        ]
+        
+        k = len(res)
+        for s, i <- ss, iter(len(ss))
+            res <- (i + k, s.map(f2))
+        
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            (0, none), (1, some(101)), (2, some(200)), (3, none), (4, some(205)), 
+            (5, some(('_', null))), (6, some('<Hello!>')), (7, some('<128>')), 
+            (8, some([203, 204, 205])), (9, some([606, 707])), (10, some(('_', 3.2))), 
+            (11, some({'<ax>': 5211, '<bx>': 5222})), (12, some(none)), 
+            (13, some(some('<ich bin>'))), (14, some('<_><g><r><e><e><n><_>'))]
+        self.assertEqual(exv, resv)
+
+    def test_maybe_as_agrument(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        struct A a: int
+        struct N n:any
+        
+        func someMap(x:maybe, fn:function)
+            if isNone(x)
+                return null
+            fn(x.get())
+        
+        ss = [
+            none, some(1), some(2.5), 
+            some([1,2,3]), some((4,5,6)), 
+            some(A(7)), some(some(8)), some([some(11), some(12)])
+        ]
+        
+        for i, s <- iter(len(ss)), ss
+            res <- (i, someMap(s, \x -> [x]))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [(0, null), (1, [1]), (2, [2.5]), (3, [[1, 2, 3]]), (4, [(4, 5, 6)]), (5, ['st@A{a: 7}']), (6, [some(8)]), (7, [[some(11), some(12)]])]
+        self.assertEqual(exv, resv)
+
     def test_maybe_isNone(self):
         ''' '''
         code = r'''

@@ -190,10 +190,6 @@ def dict_constr(ctx, arg:Val):
     return DictVal(data=dd)
 
 
-# def _constr(ctx, arg:Val):
-#     v = arg.getVal()
-#     return Val(float(v), Type())
-
 # General
 
 
@@ -516,6 +512,21 @@ def maybe_map(ctx:Context, inst:Some|NoneVal, fun:Function):
         case NoneVal():
             return NoneVal()
     raise EvalErr('Incorrect instance of `maybe_map`')
+
+
+def maybe_maybe(ctx:Context, inst:Some|NoneVal, defVal:Val, fun:Function):
+    ''' return result from fun(inst.get()) if some, otherwise return defVal '''
+    match inst:
+        case Some():
+            arg = inst.get()
+            fun.setArgVals([arg])
+            fun.do(ctx)
+            r = fun.get()
+            return r
+        case NoneVal():
+            return defVal
+    raise EvalErr('Incorrect instance of `maybe_maybe`')
+    
 
 
 def is_none(ctx:Context, inst:Some|NoneVal):
