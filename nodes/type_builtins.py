@@ -526,6 +526,24 @@ def maybe_maybe(ctx:Context, inst:Some|NoneVal, defVal:Val, fun:Function):
         case NoneVal():
             return defVal
     raise EvalErr('Incorrect instance of `maybe_maybe`')
+
+
+def maybe_fold(ctx:Context, inst:Some|NoneVal, acc:Val, fun:Function):
+    ''' 
+        inst - some | none
+        acc - accumulator val
+        fun - func (acc, val)
+        return result some(fun(, acc, inst.get())) if some, otherwise return acc '''
+    match inst:
+        case Some():
+            arg = inst.get()
+            fun.setArgVals([acc, arg])
+            fun.do(ctx)
+            r = fun.get()
+            return r
+        case NoneVal():
+            return acc
+    raise EvalErr('Incorrect instance of `maybe_maybe`')
     
 
 

@@ -154,26 +154,26 @@ class TestDev(TestCase):
             .get(), .map(), .maybe()
             func foo(x: maybe)
         
-        TODO: isSome
-        
-        TODO: maybe.fold:
-            some(val).fold(accumulator, func) => func(acc, val)
-            none.fold(accumulator, func) => acc
-        
-        TODO: match maybe
+        DONE: match maybe
             match: 
                 case ::maybe, case none, 
                 case some() # empty as an any-sub
                 case some(sub)
         
+        DONE: maybe.fold:
+            some(val).fold(accumulator, func) => func(acc, val)
+            none.fold(accumulator, func) => acc
+        
         TODO?: complex type: some(int)
             it looks hard to implement, 
-            in fact it should be a fully implemented type-system with generics
+            in fact it should be a fully implemented type-system with generics or typed type
             
         TODO: dict.map(func) # looks meaningful
             {1:11, 2:22}.map(\k, v -> (k, v + 10) )
             keyMap: {...}.keyMap(func)
             valmap: {...}.valMap(func)
+        
+        TODO: isSome
     '''
 
     _ = r"""

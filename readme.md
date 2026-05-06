@@ -997,7 +997,8 @@ mbList = some([1,2,3])
 - Builtin methods of `maybe`.  
 `.get()` - returen value from `some`.  
 `.map(function)` - if it is `some` then applies function to inner value and returns some with result, otherwise returns `none`.  
-`.maybe(default, function)` - if it is `some` then returns result of function, applied to inner value, otherwise returns default value.
+`.maybe(default, function(val))` - if it is `some` then returns result of function, applied to inner value, otherwise returns default value.  
+`.fold(accumulator, function(acc, val))` - if instance is `some` it apply function to accumulator and inner value and returns result, otherwise if `none` it returns accumulator. 
 
 ```python
 # get()
@@ -1018,6 +1019,14 @@ fp = \ t -> [t]
 for r <- rr
     pp <- r.maybe(-1, fp)
 pp # [[101], [102], -1, [(1, 2, 3)]]
+
+# fold
+
+func sum(a, b)
+    a + b
+
+some(5).fold(2, sum) # 7
+none.fold(3, sum) # 3
 ```
 - Global functions for maybe.  
 ```python

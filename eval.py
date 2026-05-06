@@ -113,6 +113,7 @@ def initFuncs(ctx:Context):
     # maybe
     bindNativeMethod(ctx, 'maybe', maybe_get, 'get', TypeAny())
     bindNativeMethod(ctx, 'maybe', maybe_maybe, 'maybe', TypeAny())
+    bindNativeMethod(ctx, 'maybe', maybe_fold, 'fold', TypeMaybe())
     
     
 

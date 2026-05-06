@@ -14,6 +14,47 @@ class TestMaybe(TestCase):
     ''' '''
 
 
+    def test_maybe_fold(self):
+        ''' functional feature: fold for maybe type '''
+        code = r'''
+        res = []
+        
+        # some(int)
+        func sum(a, b)
+            a + b
+        
+        res <- some(5).fold(2, sum)
+        res <- none.fold(3, sum)
+        
+        # some(string)
+        
+        func pref(acc:string, val:string)
+            ~'{acc}{val}'
+        
+        res <- some('fit').fold('pro', pref)
+        res <- none.fold('arc', pref)
+        
+        # some(list)
+        func listSum(base, nn)
+            nn.fold(base, sum)
+        
+        res <- some([1,2,3]).fold(10, listSum)
+        res <- none.fold(5, listSum)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [7, 3, 'profit', 'arc', 16, 5]
+        self.assertEqual(exv, resv)
+
     def test_maybe_maybe(self):
         ''' '''
         code = r'''
