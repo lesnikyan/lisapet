@@ -14,6 +14,47 @@ class TestMaybe(TestCase):
     ''' '''
 
 
+    def test_maybe_is_some(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        ss = [
+            0, 1, null, none, [],
+            some(1), some(null), some(none),
+            some(some(1)), some([]), some('a')
+        ]
+        
+        for n <- ss
+            res <- n
+            res <- isNone(n)
+            res <- isSome(n)
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            0, False, False, 
+            1, False, False, 
+            null, False, False, 
+            none, True, False, 
+            [], False, False, 
+            some(1), False, True, 
+            some(null), False, True, 
+            some(none), False, True, 
+            some(some(1)), False, True, 
+            some([]), False, True, 
+            some('a'), False, True]
+        self.assertEqual(exv, resv)
+
     def test_maybe_fold(self):
         ''' functional feature: fold for maybe type '''
         code = r'''

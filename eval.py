@@ -44,6 +44,7 @@ def initFuncs(ctx:Context):
     setNativeFunc(ctx, 'char_key', char_key, TypeInt())
     setNativeFunc(ctx, 'some', some_constr, TypeMaybe())
     setNativeFunc(ctx, 'isNone', is_none, TypeBool())
+    setNativeFunc(ctx, 'isSome', is_some, TypeBool())
     # print('>>>\n\n~~~!!!!\n\n')
     
     # bind methods

@@ -552,3 +552,8 @@ def is_none(ctx:Context, inst:Some|NoneVal):
     return Val(res, TypeBool())
 
 
+def is_some(ctx:Context, inst:Some|NoneVal):
+    res = isinstance(inst, Some)
+    return Val(res, TypeBool())
+
+
