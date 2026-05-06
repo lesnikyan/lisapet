@@ -35,6 +35,8 @@ def getVal(arg):
         v = {k: getVal(vv) for k,vv in v.data.items()}
     elif isinstance(v, (Function, FuncOverSet, ObjMethod, Regexp)):
         v = str(v)
+    elif isinstance(v, Maybe):
+        v = v
     elif isinstance(v, Val):
         v = v.getVal()
     return v
@@ -106,8 +108,6 @@ def tostr(arg):
 
 
 def built_tostr(_, arg):
-    # pargs = []
-    # print('_tostr:', args)
     rval = tostr(arg)
     # print('_tostr3::', rval, rval.__class__.__name__)
     return StringVal(rval)
@@ -142,7 +142,6 @@ def prepare_fpval(n):
     # print('$2 ', v)
     if isinstance(v, (list)):
         v = [pstr(e) for e in v]
-    # raise EvalErr('')
     if isinstance(v, StructInstance):
         v = v.istr()
     if ttp:
@@ -154,7 +153,6 @@ def prepare_fpval(n):
 def print_prepare(args):
     pargs = []
     # print('b-print1:', args)
-    # ctx.print(forsed=1)
     for n in args:
         # print('b-print2:::', v)
         v = prepare_fpval(n)

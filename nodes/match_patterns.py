@@ -52,7 +52,7 @@ class MCValue(MatchingPattern):
         # if not scalar or string
         # print('MCValue match', 'expr:', self.exp, val)
         vtype = val.getType()
-        if not isinstance(vtype, (TypeNum, TypeInt, TypeNull, TypeBool, TypeString)):
+        if not isinstance(vtype, (TypeNum, TypeInt, TypeNull, TypeBool, TypeString, TypeMaybe)):
             # print('MCVal.match bad type', vtype, isinstance(vtype, TypeInt))
             return False
         if not isinstance(self.exp.get().getType(), vtype.__class__):
@@ -184,6 +184,26 @@ class MTGroup(MatchingPattern):
 
 class MCElem(MatchingPattern):
     ''' element of complex pattern '''
+
+
+class MCSome(MatchingPattern):
+    ''' some(), some(sub) '''
+    
+    def __init__(self, sub = None, src=None):
+        super().__init__(src)
+        self.sub = sub
+        
+    def do(self, ctx:Context):
+        if self.sub is not None:
+            self.sub.do(ctx)
+        
+    def match(self, val:Some|Val):
+        if not isinstance(val, Some):
+            return False
+        # empty case: some()
+        if self.sub is None:
+            return True
+        return self.sub.match(val.get())
 
 
 # ------------------------ Sub-elements of sequence ---------------------- #

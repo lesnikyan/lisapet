@@ -557,9 +557,11 @@ def defaultValOfType(tp: VType):
         case TypeInt() | TypeFloat() | TypeComplex():
             return Val(0, tp) 
         case TypeString():
-            return Val('', tp)
+            return StringVal('')
         case TypeList():
             return ListVal()
+        case TypeMaybe():
+            return NoneVal()
         case TypeDict():
             return DictVal()
         case TypeTuple():

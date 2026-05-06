@@ -13,6 +13,7 @@ from cases.oper import CaseBrackets, CaseBinOper, CaseVar
 from cases.collection import *
 from cases.structs import *
 from cases.operwords import CaseRegexp
+from cases.funcs import CaseFunCall
 from cases.matcher import *
 
 
@@ -50,6 +51,7 @@ class MTVal(MTCase, CaseNumVal):
     '''
     def expr(self, elems:list[Elem])-> Expression:
         ''' Pattern: val '''
+        # print('MTVal', elemStr(elems))
         subEx = super().expr(elems)
         expr = MCValue(subEx, elems[0].text)
         return expr
@@ -692,6 +694,41 @@ class MTStruct(MTContr):
         return exp
 
 
+class MTFuncLike(MTCase):
+    ''' prefix([sub]) '''
+    
+    def __init__(self, prefix='###'):
+        super().__init__()
+        self.prefix = prefix
+        self.fcall = CaseFunCall()
+        
+    def match(self, elems:list[Elem], opInd=None) -> bool:
+        # print('MTFunc.mt', elemStr(elems), opInd)
+        if len(elems) < 3:
+            return False
+        if not self.fcall.match(elems):
+            return False
+        if not isLex(elems[0], Lt.word, self.prefix):
+            return False
+        return opInd == 1
+        
+    def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        pass
+
+
+class MTSome(MTFuncLike):
+    ''' some(), some(sub) '''
+    def __init__(self):
+        super().__init__('some')
+        
+    def expr(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
+        if len(elems) == 3:
+            # empty case
+            return MCSome()
+        rem = elems[1:]
+        sub = findCase(rem).expr(rem)
+        return MCSome(sub)
+
 
 class MTFail(MTCase):
     ''' case of incorrect pattern-syntax '''
@@ -716,7 +753,7 @@ def innerMatcher():
     wordLim = CaseOption(CaseWord(), [MTVal(), MTE_(), MTVar(), ])
     brkLim = CaseOption(CaseGenBrackets(), [MTList(), MTTuple(), MTParenth(), MTDict(),])
     strLim = CaseOption(CaseStr(), [MTString(), MTRegexp(),])
-    solidRight = CaseOptionPrepared(CaseSolidLeft(), [MTStruct(), MTObjMember(),])
+    solidRight = CaseOptionPrepared(CaseSolidLeft(), [MTStruct(), MTObjMember(), MTSome(),])
 
     solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidRight, brkLim])
     

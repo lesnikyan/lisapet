@@ -130,6 +130,9 @@ class Val(Base):
         tt = self.vtype.name
         return '%s(%s: %s)' % (self.__class__.__name__, self.val, tt)
 
+    def __repr__(self):
+        return '%s' % (self.val)
+
 
 class Container(Val):
     ''' Contaiter Var list, dict, etc '''
@@ -214,10 +217,10 @@ class Glif:
                 return False
     
     def __str__(self):
-        return 'glif(%s)' % (self.val)
+        return 'g(%s)' % (self.val)
     
     def __repr__(self):
-        return 'glif(%s:%x)' % (self.val, ord(self.val))
+        return 'g(%s:%x)' % (self.val, ord(self.val))
 
 
 class bytearray2(bytearray):
@@ -226,4 +229,3 @@ class bytearray2(bytearray):
                                     
     def __repr__(self):
         return '0x[%s]' % ' '.join([f'{b:02x}' for b in self])
-

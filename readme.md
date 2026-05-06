@@ -45,7 +45,7 @@ Content:
     8. [Check type `::`](#28-check-type-operator-)
     9. [Delete operator `@!`](#29-delete-var--operator)
 
-3. Collections.  
+3. Sequenes and containers.  
     1. [List `[]`](#31-list-array)
     2. [Tuple `(,)`](#32-tuple-val-val-val)
     3. [Unpack `a,b = [1,2]`](#33-unpack-of-sequence-by-multi-assignment)
@@ -54,6 +54,7 @@ Content:
     6. [Collection features >>>](#collection-features)
     7. [List `[]` features >>>](#list-features)
     8. [`"string"` features >>>](#string-features)
+    9. [`maybe`: `some()`, `none`](#39-maybe)
 
 4. Data type.
     1. [Strict type `var:type`](#41-typed-var-expression-xtype)
@@ -166,14 +167,16 @@ Content:
     3. [Static content vs instances](#193-static-content-vs-instances)  
     4. [Sub level of module](#194-sub-level-of-module)  
 
+20. 
+
 
 *
 ## Status.
 It's still on-dev. Most things are done. Small issues and nicer solutions in the order for implementation.  
 Bugs still lives in there. I catching them every time. But they hides very nice.  
 Details see next, in `syntax` section. Here I wrote only completed and working things.  
-As an one-hands made project (withous users) small updates are committed into dev, more complex changes are merged into dev (now dev is a default branch), without version numeration.  
-Tests covers all changes whenever possible.  
+As an one-hands made project (without end-users) small updates are committed into dev, more complex changes are merged into dev (now dev is a default branch), without version numeration.  
+Tests covers all features whenever possible (over 300 unit tests now).  
 Therefore, critical changes to previously added things happen extremely rarely.  
 
 *
@@ -194,6 +197,7 @@ Therefore, critical changes to previously added things happen extremely rarely.
 
 ## Usage.
 Note: `python run` command is one line, splitted in examples just for better readability.   
+`.et` is an extension of files with code.  
 Run the file:  
 ```console
 $ python -m run tests/simple_test.et
@@ -273,7 +277,7 @@ ZeroDivisionError: division by zero
 See examples in the `/tests/..` (a lot of) , `run.py`, `loader.py`, `eval.py` for understanding how to use LP as an embedded engine, add custom python functions for using in LP code, etc.  
 
 ## Syntax.
-The Syntax section is updated as soon as new features are added to the code, so it looks a bit chaotic. Working on it.  
+The Syntax section is updated as soon as new features are added to the project, so it looks a bit chaotic. Working on that from time to time.  
 Done parts:  
 
 ### 0. Comments.
@@ -295,6 +299,7 @@ x = #@ in-line comment @# 2 + 5
 ```
 
 ### 1.1 Vars, vals, lists, assignment.  
+A variable is a basic container for a value that can be changed or read at any time and in any expression.  
 Assigning values ​​to variables.  
 In general, we use the `=` operator to assign a value to a new or already defined variable.  
 
@@ -315,10 +320,11 @@ lastName = names[2]
 a, b, c = 10, 20, 30
 ```
 
-Alternatives see in next sections: [`<-` operator](#91-arrow-appendset-operator--).
+Alternatives see in next sections: [`<-` operator](#91-arrow-appendset-operator--), [`const` modifier](#19-const).
 
 ### 1.2 Execution context.  
-In the mechanics of this language, each block of code is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
+In the mechanics of this language, each block of code (from module level) is executed in specific data-context. Execution context is a dictionary-like object that contains all local things (types, vars, functions) including imported modules and parent context.  
+Highest level of context is a root-context that contains basic types and modules.  
 Context-object is responsible of search datatypes, variables, functions etc in current execution context.  
 Each context serves its block of code.  
 Sub-blocks have sub-contexts.  
@@ -340,13 +346,14 @@ nums = [
     0.15]   # float
 obj = null
 ```
-Complex numbers have been planned, but haven't been fully implemented.  
+Complex numbers have been planned, but haven't been fully implemented. Thinking about better format and usage.  
 
 ### 1.4 Strings.  
 Strings can be defined by several type of quotes.  
 ```golang
 hello = "hello somebody!"
 us = 'unary-quotes'
+mark = `!`
 ```
 Classic escape sequences work.  
 ```golang
@@ -971,6 +978,65 @@ r2 = bb1 ^ bb2
 ```
 
 [A `bytes` object can also be created using a bytes-comprehension >>](#95-bytes-comprehension-generator)
+
+
+### 3.9 Maybe.
+Type maybe is a type of possible value.  
+`maybe` have 2 types of instances: `some` and `none`.  
+- `none` is an empty valye of `maybe`, literally it stores nothing.  
+There is `none` lexem that makes `none`.
+```python
+var: maybe = none
+```
+- `some` - is a container for any.  
+To make `some` instance use builtin function  `some(val)`.  
+```python
+var = some(12)
+mbList = some([1,2,3])
+```
+- Builtin methods of `maybe`.  
+`.get()` - returen value from `some`.  
+`.map(function)` - if it is `some` then applies function to inner value and returns some with result, otherwise returns `none`.  
+`.maybe(default, function(val))` - if it is `some` then returns result of function, applied to inner value, otherwise returns default value.  
+`.fold(accumulator, function(acc, val))` - if instance is `some` it apply function to accumulator and inner value and returns result, otherwise if `none` it returns accumulator. 
+
+```python
+# get()
+x = some('hello')
+s = x.get() # >> 'hello'
+
+# map
+nn = [some(1), some(2), none]
+rr = []
+for mn <- nn
+    rr <- mn.map(\ a -> a + 100)
+rr # [some(101), some(102), none]
+
+# maybe
+rr <- some((1,2,3))
+pp = []
+fp = \ t -> [t]
+for r <- rr
+    pp <- r.maybe(-1, fp)
+pp # [[101], [102], -1, [(1, 2, 3)]]
+
+# fold
+
+func sum(a, b)
+    a + b
+
+some(5).fold(2, sum) # 7
+none.fold(3, sum) # 3
+```
+- Global functions for maybe.  
+```python
+# isNone - check is passed agr is none
+isNone(none) # true
+isNone(some(123)) # false
+
+# isSome - in dev
+```
+
 
 
 ### 4 Data type.
@@ -3458,9 +3524,31 @@ Const or var patterns doesn't need additional assignment.
 Underscore can be simply changed on named var.  
 But anyway all of them works with assignment.  
 
+### 23.12 Maybe
+Maybe-case matches type `maybe`.  
+It can be simple `none` - means empty `maybe` value, or `some` with subvalue.  
+`some()` pattern looks like constructor function of `some` value.  
+Sub pattern in the parentheses works like other sub-patterns in containers.  
+Maybe case can be combined with other patterns: types, vars, containers, values, regexp, etc.  
+```python
+match n
+    none /: # means: none
+    some(::int) /: # some with int
+    some(val :: float) /: # val - float sub value
+    [some(a)] /: # some in list with 1 elem, a - value from some
+    some([a,b,c]) /: # a,b,c - values of elements in sub-list
+    some({k: v::string}) /: 
+        # 1-pair dict in some, k - key, v - string value 
+    some(Abc{name: x}) /: 
+        # struct instance in some, x - value of field name
+    MayVal{n: none} /: # struct with none in field
+    MayVal{n: some(val)} /: # struct with some, val - value in some
+    (vv @ some(), ) /: # tuple with 1 sub some, some obj assigned to vv
+    vv @ some() /: # any some object assigns to vv
+    some() /: # means any some
 
+```
 
-TODO: Maybe-cases, (?)
 
 
 ### 25.1 Regular expressions. `re`

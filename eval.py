@@ -42,6 +42,9 @@ def initFuncs(ctx:Context):
     setNativeFunc(ctx, 'dkeys', dc.dict_keys, TypeList())
     setNativeFunc(ctx, 'ditems', dc.dict_items, TypeList())
     setNativeFunc(ctx, 'char_key', char_key, TypeInt())
+    setNativeFunc(ctx, 'some', some_constr, TypeMaybe())
+    setNativeFunc(ctx, 'isNone', is_none, TypeBool())
+    setNativeFunc(ctx, 'isSome', is_some, TypeBool())
     # print('>>>\n\n~~~!!!!\n\n')
     
     # bind methods
@@ -65,6 +68,8 @@ def initFuncs(ctx:Context):
     bindNativeMethod(ctx, 'tuple', tuple_map, 'map', TypeTuple)
     bindNativeMethod(ctx, 'string', str_map, 'map', TypeString)
     bindNativeMethod(ctx, 'bytes', bytes_map, 'map', TypeBytes)
+    bindNativeMethod(ctx, 'maybe', maybe_map, 'map', TypeMaybe)
+    
     # fold
     bindNativeMethod(ctx, 'list', list_fold, 'fold', TypeList)
     bindNativeMethod(ctx, 'tuple', tuple_fold, 'fold', TypeTuple)
@@ -106,6 +111,10 @@ def initFuncs(ctx:Context):
     setNativeFunc(ctx, 'curry', func_curry, TypeFunc())
     setNativeFunc(ctx, 'compose', func_compose, TypeFunc())
     
+    # maybe
+    bindNativeMethod(ctx, 'maybe', maybe_get, 'get', TypeAny())
+    bindNativeMethod(ctx, 'maybe', maybe_maybe, 'maybe', TypeAny())
+    bindNativeMethod(ctx, 'maybe', maybe_fold, 'fold', TypeMaybe())
     
     
 

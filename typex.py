@@ -54,6 +54,7 @@ class TypeBool(VType):
 
 class TypeMaybe(VType):
     name='maybe'
+    _defVal = None
     th = TH.mk()
 
 
@@ -284,7 +285,7 @@ def find(self, name)->Base:
 def builtinTypes()->list[VType]:
     return [TypeAny, TypeBool, TypeInt, TypeFloat, TypeComplex, 
             TypeString, TypeList, TypeDict, TypeStruct, TypeTuple, TypeFunc,
-            TypeBytes, TypeGlif, TypeGrup, TypeRegexp]
+            TypeBytes, TypeGlif, TypeGrup, TypeRegexp, TypeMaybe]
 
 
 class MultiType(VType):
@@ -325,6 +326,7 @@ def typeCompat(dest:VType, stype:VType):
         case 'int': return sclass in [TypeBool, TypeNull]
         case 'glif': return sclass in [TypeInt]
         case 'grup': return sclass in [TypeNull]
+        case 'maybe': return sclass in [TypeMaybe]
         case 'list'|'dict'|'struct': return sclass in [TypeNull]
         case _: return False
 
@@ -393,3 +395,16 @@ def esc_str(s:str):
     # print('\\e:', s, scov)
     return scov % s
 
+
+def pre_print(mem):
+    v = ''
+    tt = mem.getType()
+    if isinstance(mem, FuncInst):
+        v = str(mem)
+    elif isinstance(tt, TypeMaybe):
+        v = repr(mem)
+    else:
+        v = mem.get()
+        if isinstance(mem.getType(), TypeString):
+            v = esc_str(v)
+    return v

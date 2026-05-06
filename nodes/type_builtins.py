@@ -75,6 +75,12 @@ def string_constr(ctx, arg:Val):
     return built_tostr(ctx, arg)
 
 
+def some_constr(ctx, arg:Val):
+    val = var2val(arg)
+    # print('$1', val, [val])
+    return Some(val)
+
+
 def regexp_constr(ctx, pattern:Val, flags:Val=None):
     pval = pattern.getVal()
     fval = ''
@@ -82,7 +88,6 @@ def regexp_constr(ctx, pattern:Val, flags:Val=None):
         fval = flags.getVal()
     # print('$1', fval, flags)
     ptr = rexp.compile(pval, rexp.str2flags(fval))
-    
     return Regexp(ptr)
 
 
@@ -184,10 +189,6 @@ def dict_constr(ctx, arg:Val):
                 
     return DictVal(data=dd)
 
-
-# def _constr(ctx, arg:Val):
-#     v = arg.getVal()
-#     return Val(float(v), Type())
 
 # General
 
@@ -492,5 +493,67 @@ def glif_int(_, inst:Val):
 def glif_bytes(_, inst:Val):
     r = bytearray2(inst.getVal().val.encode())
     return BytesVal(r)
+
+
+# Maybe
+
+def maybe_get(_, inst:Some):
+    return inst.get()
+
+
+def maybe_map(ctx:Context, inst:Some|NoneVal, fun:Function):
+    match inst:
+        case Some():
+            arg = inst.get()
+            fun.setArgVals([arg])
+            fun.do(ctx)
+            r = fun.get()
+            return Some(r)
+        case NoneVal():
+            return NoneVal()
+    raise EvalErr('Incorrect instance of `maybe_map`')
+
+
+def maybe_maybe(ctx:Context, inst:Some|NoneVal, defVal:Val, fun:Function):
+    ''' return result from fun(inst.get()) if some, otherwise return defVal '''
+    match inst:
+        case Some():
+            arg = inst.get()
+            fun.setArgVals([arg])
+            fun.do(ctx)
+            r = fun.get()
+            return r
+        case NoneVal():
+            return defVal
+    raise EvalErr('Incorrect instance of `maybe_maybe`')
+
+
+def maybe_fold(ctx:Context, inst:Some|NoneVal, acc:Val, fun:Function):
+    ''' 
+        inst - some | none
+        acc - accumulator val
+        fun - func (acc, val)
+        return result some(fun(, acc, inst.get())) if some, otherwise return acc '''
+    match inst:
+        case Some():
+            arg = inst.get()
+            fun.setArgVals([acc, arg])
+            fun.do(ctx)
+            r = fun.get()
+            return r
+        case NoneVal():
+            return acc
+    raise EvalErr('Incorrect instance of `maybe_maybe`')
+    
+
+
+def is_none(ctx:Context, inst:Some|NoneVal):
+    res = isinstance(inst, NoneVal)
+    return Val(res, TypeBool())
+
+
+def is_some(ctx:Context, inst:Some|NoneVal):
+    res = isinstance(inst, Some)
+    return Val(res, TypeBool())
 
 

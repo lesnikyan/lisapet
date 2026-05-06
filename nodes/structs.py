@@ -327,22 +327,17 @@ class StructInstance(ObjectInstance, NSContext):
         ffs = []
         for f in fns:
             mem = self.get(f)
-            v = ''
-            if isinstance(mem, FuncInst):
-                v = str(mem)
-            else:
-                v = mem.get()
-                if isinstance(mem.getType(), TypeString):
-                    v = esc_str(v)
-            
+            v = pre_print(mem)
             ffs.append('%s: %s' % (f, v))
-        # vals = ','.join(['%s: %s' % (f, self.get(f).get()) for f in fns])
         vals = ', '.join(ffs)
         return vals
 
     def __str__(self):
         vals = self.istr()
         return '%s{%s}' % (self.vtype.name, vals)
+
+    def __repr__(self):
+        return self.__str__()
 
 # Expressions
 

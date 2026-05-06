@@ -73,7 +73,7 @@ def mtMatcher():
     wordLim = CaseOption(CaseWord(), [MT_Other(), MTVal()])
     brkLim = CaseOption(CaseGenBrackets(), [MTList(), MTTuple(), MTDict(), MTParenth(), ])
     strLim = CaseOption(CaseStr(), [MTString(), MTRegexp(),])
-    solidRight = CaseOptionPrepared(CaseSolidLeft(), [MTStruct(), MTObjMember(),])
+    solidRight = CaseOptionPrepared(CaseSolidLeft(), [MTStruct(), MTObjMember(), MTSome(),])
 
     solidLim = CaseOption(CaseSolid(), [wordLim, strLim, solidRight, brkLim])
     

@@ -14,16 +14,26 @@ from eval import rootContext, moduleContext
 from tree import *
 from context import Context
 
-# from cases.utils import *
-# from nodes.tnodes import Var
-# from objects.func import Function
-# from nodes.func_expr import setNativeFunc
-# from nodes.structs import *
-
-
 
 class TestIter(TestCase):
     ''' iteration cases '''
+
+    def _test_list_compr_2_levels(self):
+        '''
+        example of few yeilds equal linear generator
+        func foo()
+            for n <- [10..16]
+                m = n * 10
+                yeild m + 1
+                yeild m + 3
+                yeild m + 5
+        '''
+        code = r'''
+        gen = (: m + k ; n <- [10..16]; m = n * 10; k <- [1,3,5])
+        res = list(gen)
+        # exp = [101, 103, 105, 111, 113, 115, 121, 123, 125, 131, 133, 135, 141, 143, 145, 151, 153, 155, 161, 163, 165]
+        '''
+
 
 
 

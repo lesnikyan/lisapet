@@ -281,12 +281,13 @@ class CaseVal(ExpCase, SolidCase):
     
     def expr(self, elems:list[Elem])-> Expression:
         ''' Value rom local const'''
-        # prels('CaseVal.expr:', elems, show=1)
+        prels('CaseVal.expr:', elems, show=1)
         res = ValExpr(elem2val(elems[0]))
         # print('## CaseVal', res.get().getVal(), res.get().vtype.__class__.__name__)
         return res
 
-_numConsts = ['true', 'false', 'null']
+
+_numConsts = ['true', 'false', 'null', 'none']
 
 class CaseNumVal(CaseVal, SolidCase):
     ''' '''
@@ -296,6 +297,8 @@ class CaseNumVal(CaseVal, SolidCase):
         # prels('CaseVal.match:', elems, show=1)
         if elems[0].type in [Lt.num]:
             return True
+        # or isLex(elems[0], Lt.word, 'none')
+        # print(elemStr(elems), isLex(elems[0], Lt.word, _numConsts))
         return  isLex(elems[0], Lt.word, _numConsts)
     
     def expr(self, elems:list[Elem])-> Expression:
