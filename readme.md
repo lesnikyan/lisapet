@@ -68,8 +68,8 @@ Content:
     4. [See also `match` statement >>>](#match-statement)
 
 6. `while`, `for`-statement 
-    1. [Classic `for` loop by counter](#6-while-for-statement)
-    2. [`for i <- [1..5]`](#62-for-iterator-arrow-assign-operator--)
+    1. [`while` and classic `for ; ; `](#6-while-for-statement)
+    2. [`for i <- [1,2,3]`](#62-for-iterator-arrow-assign-operator--)
     3. [`for i <- iter(n)`](#63-function-iter)
     4. [`for a, b <- s1, s2` by multi-source](#64-multi-source-iterator-in-for-loop)
     5. [Keywords `continue`, `break`](#65-keywords-continue-break)
@@ -997,8 +997,8 @@ mbList = some([1,2,3])
 - Builtin methods of `maybe`.  
 `.get()` - returen value from `some`.  
 `.map(function)` - if it is `some` then applies function to inner value and returns some with result, otherwise returns `none`.  
-`.maybe(default, function(val))` - if it is `some` then returns result of function, applied to inner value, otherwise returns default value.  
-`.fold(accumulator, function(acc, val))` - if instance is `some` it apply function to accumulator and inner value and returns result, otherwise if `none` it returns accumulator. 
+`.maybe(default, function(val))` - if it is `some` then returns result of function, applied to the inner value, otherwise returns default value.  
+`.fold(accumulator, function(acc, val))` - if instance is `some` it applies function to the accumulator and the inner value and returns result, otherwise if instace is `none` it returns accumulator. 
 
 ```python
 # get()
