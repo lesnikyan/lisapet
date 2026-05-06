@@ -40,6 +40,23 @@ Fixes:
         
 
         
+        DONE: maybe:
+            isNone(), 
+            .get(), .map(), .maybe()
+            func foo(x: maybe)
+        
+        DONE: match maybe
+            match: 
+                case ::maybe, case none, 
+                case some() # empty as an any-sub
+                case some(sub)
+        
+        DONE: maybe.fold:
+            some(val).fold(accumulator, func) => func(acc, val)
+            none.fold(accumulator, func) => acc
+        
+        DONE: isSome
+        
         DONE: fix iter() for down-iteration and negative step
         
         DONE: py -m run -c "print([1..5][:])"

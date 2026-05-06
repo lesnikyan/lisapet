@@ -115,6 +115,10 @@ class TestDev(TestCase):
             log(x, base), ln(x), lg(x),
             abs(), sum(list), prod(list), rem(a, b)->>(int, int)
             sin(), cos(), tg(), ctg(), atg(), actg(), asin(), acos(),...
+        
+        TODO: think about import native lib / module into LP code.
+            eval.py: importLib('math', math)
+            code.et: import python.math
             
         TODO: think about pattern matching in comprehensions condition
 
@@ -125,10 +129,6 @@ class TestDev(TestCase):
                 $name /: ...
                 @name /: ...
                 'Vasya' /: ...
-        
-        TODO: think about import native lib / module into LP code.
-            eval.py: importLib('math', math)
-            code.et: import python.math
         
         TODO: range syntax (haskell like)
             [begin .. end] # already done
@@ -149,31 +149,20 @@ class TestDev(TestCase):
             a < b < c
             a > b > c
         
-        DONE: maybe:
-            isNone(), 
-            .get(), .map(), .maybe()
-            func foo(x: maybe)
-        
-        DONE: match maybe
-            match: 
-                case ::maybe, case none, 
-                case some() # empty as an any-sub
-                case some(sub)
-        
-        DONE: maybe.fold:
-            some(val).fold(accumulator, func) => func(acc, val)
-            none.fold(accumulator, func) => acc
-        
         TODO?: complex type: some(int)
             it looks hard to implement, 
-            in fact it should be a fully implemented type-system with generics or typed type
+            in fact it should be a fully implemented type-system with generics or parameterized types.
+            More reasons are needed for beginning to work of such complex feature.
+            reasons:
+            1) maybe(type) / maybe<int> / maybe[int], maybe{int}, maybe int, 
+            2) list(int) / [int], dict(type, type) / {string: int} / [string: int],
+            3) function(int, string) / function[int, string]
+             
             
         TODO: dict.map(func) # looks meaningful
             {1:11, 2:22}.map(\k, v -> (k, v + 10) )
             keyMap: {...}.keyMap(func)
             valmap: {...}.valMap(func)
-        
-        TODO: isSome
     '''
 
     _ = r"""
