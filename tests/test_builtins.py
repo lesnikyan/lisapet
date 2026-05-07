@@ -26,6 +26,93 @@ from tests.utils import *
 class TestBoundFuncs(TestCase):
 
 
+    def test_dict_key_map(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        dd = {1:11, 2:22, 3:33}
+        res <- dd.keyMap(\k -> k+100)
+        
+        d2 = {'a': 111, 'b':222, 'c': 333}
+        res <- d2.keyMap(\k -> ~'_{k.upper()}_')
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [{101: 11, 102: 22, 103: 33}, {'_A_': 111, '_B_': 222, '_C_': 333}]
+        self.assertEqual(exv, resv)
+
+    def test_dict_val_map(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        dd = {1:11, 2:22, 3:33}
+        res <- dd.valMap(\v -> v + 100)
+        
+        d2 = {'aa':'abba', 'bb':'buba', 'cc':'cuba', 'dd':'doba', }
+        res <- d2.valMap(\n -> ~`|{n}|`)
+        
+        d3 = {11:[1,2,3], 22:[2, 20, 200], 33:[110, 211, 321]}
+        res <- d3.valMap(\ n -> n.fold(0, \p, n -> p+n))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            {1: 111, 2: 122, 3: 133}, 
+            {'aa': '|abba|', 'bb': '|buba|', 'cc': '|cuba|', 'dd': '|doba|'}, 
+            {11: 6, 22: 222, 33: 642}]
+        self.assertEqual(exv, resv)
+
+    def test_dict_map(self):
+        ''' '''
+        code = r'''
+        res = []
+        
+        dd = {1:11, 2:22, 3:33}
+        res <- dd.map(\k, v -> (k + 10, v * 2))
+        
+        d2 = {'a':'any', 'b':'book', 'c':'cat', 'd':'do', 'e':'even', 'f':'fox', 'g':'grass', 'h':'home', 'i':'ice'}
+        res <- d2.map(\k, v -> (~'{k}-', '='+v))
+        
+        d3 = {'aa': 10, 'bb': 11, 'cc': 12, 'dd': 13, 'ee': 14, }
+        res <- d3.map(\k, v -> (k, [v, 0, k]))
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            {11: 22, 12: 44, 13: 66}, 
+            {'a-': '=any', 'b-': '=book', 'c-': '=cat', 'd-': '=do', 
+             'e-': '=even', 'f-': '=fox', 'g-': '=grass', 'h-': '=home', 'i-': '=ice'}, 
+            {'aa': [10, 0, 'aa'], 'bb': [11, 0, 'bb'], 'cc': [12, 0, 'cc'], 'dd': [13, 0, 'dd'], 'ee': [14, 0, 'ee']}]
+        self.assertEqual(exv, resv)
+
     def test_dict_filter_k_v(self):
         ''' '''
         code = r'''

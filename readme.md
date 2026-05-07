@@ -115,7 +115,7 @@ Content:
 12. #### Builtin (native) functions and methods
     1. [Global functions: print, iter, etc.](#141-global-native-functions)
     2. [Bind native function as a method `[1,2].join(',')`](#142-binding-method-for-type)
-    3. [Methods are already bound](#143-methods--are-already-bound-to-types)
+    3. [Methods are already bound](#143-methods-are-already-bound-to-types)
 
 13. #### [Functional features](#15-functional-programming-features)  
     1. [Lambdas `x -> x ** 2`](#151-lambda-functions-right-arrow--)  
@@ -994,7 +994,7 @@ To make `some` instance use builtin function  `some(val)`.
 var = some(12)
 mbList = some([1,2,3])
 ```
-- Builtin methods of `maybe`.  
+- #### Builtin methods of `maybe`.  
 `.get()` - returen value from `some`.  
 `.map(function)` - if it is `some` then applies function to inner value and returns some with result, otherwise returns `none`.  
 `.maybe(default, function(val))` - if it is `some` then returns result of function, applied to the inner value, otherwise returns default value.  
@@ -2391,9 +2391,12 @@ See `eval.py` for more examples.
     .sort(`function(a,b)`)  
     .filter(`function`)  
 3. `dict`:  
-    .keys()  
-    .items()  
-    .filter(`function(key, val)`)
+    .keys() => `list`  
+    .items() => `list(tuple,)`  
+    .filter(`function(key, val)`) => `dict`  
+    .map(`function(key, val)`) => `dict`  
+    .keyMap(`function(key)`) => `dict`  
+    .valMap(`function(val)`) => `dict`  
 4. `string`:  
     .split(`string`|`regexp`)  
     .replace(`string`|`regexr`, `string`)
@@ -2402,6 +2405,7 @@ See `eval.py` for more examples.
     .bytes()
     .upper()  
     .lower()  
+5. `maybe` [>>>](#builtin-methods-of-maybe)
 
 Example of usage: 
 ```python
