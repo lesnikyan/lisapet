@@ -121,6 +121,17 @@ class TestDev(TestCase):
         TODO: think about import native lib / module into LP code.
             eval.py: importLib('math', math)
             code.et: import python.math
+        
+        TODO?: complex type: some(int)
+            it looks hard to implement, 
+            in fact it should be a fully implemented type-system with generics or parameterized types.
+            More reasons are needed for beginning to work of such complex feature.
+            reasons:
+            1) maybe(type) / maybe<int> / maybe[int], maybe{int}, maybe int, 
+            2) list(int) / [int], dict(type, type) / {string: int} / [string: int],
+            3) function(int, string) / function[int, string]
+                func type, generic example:
+                function(a, b) / function[a, b] # function with 2 args both of any type, not equal
             
         TODO: think about pattern matching in comprehensions condition
 
@@ -157,23 +168,7 @@ class TestDev(TestCase):
             or 
             a > b, c # and-condition
             a, b > b, c # each left compared to each right
-        
-        TODO?: complex type: some(int)
-            it looks hard to implement, 
-            in fact it should be a fully implemented type-system with generics or parameterized types.
-            More reasons are needed for beginning to work of such complex feature.
-            reasons:
-            1) maybe(type) / maybe<int> / maybe[int], maybe{int}, maybe int, 
-            2) list(int) / [int], dict(type, type) / {string: int} / [string: int],
-            3) function(int, string) / function[int, string]
-                func type, generic example:
-                function(a, b) / function[a, b] # function with 2 args both of any type, not equal
              
-            
-        DONE: dict.map(func) # looks meaningful
-            {1:11, 2:22}.map(\k, v -> (k, v + 10) ) # change both
-            keyMap: {...}.keyMap(func) # modify keys only
-            valmap: {...}.valMap(func) # modify values
     '''
 
     _ = r"""
