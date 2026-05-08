@@ -69,11 +69,15 @@ def initFuncs(ctx:Context):
     bindNativeMethod(ctx, 'string', str_map, 'map', TypeString)
     bindNativeMethod(ctx, 'bytes', bytes_map, 'map', TypeBytes)
     bindNativeMethod(ctx, 'maybe', maybe_map, 'map', TypeMaybe)
+    bindNativeMethod(ctx, 'dict', dict_map, 'map', TypeMaybe)
+    bindNativeMethod(ctx, 'dict', dict_val_map, 'valMap', TypeMaybe)
+    bindNativeMethod(ctx, 'dict', dict_key_map, 'keyMap', TypeMaybe)
     
     # fold
     bindNativeMethod(ctx, 'list', list_fold, 'fold', TypeList)
     bindNativeMethod(ctx, 'tuple', tuple_fold, 'fold', TypeTuple)
     bindNativeMethod(ctx, 'bytes', bytes_fold, 'fold', TypeBytes)
+
     # each
     bindNativeMethod(ctx, 'list', seq_each, 'each', None)
     bindNativeMethod(ctx, 'tuple', seq_each, 'each', None)

@@ -39,6 +39,11 @@ Fixes:
 # DONE
         
 
+            
+        DONE: dict.map(func) # looks meaningful
+            {1:11, 2:22}.map(\k, v -> (k, v + 10) ) # change both
+            keyMap: {...}.keyMap(func) # modify keys only
+            valmap: {...}.valMap(func) # modify values
         
         DONE: maybe:
             isNone(), 

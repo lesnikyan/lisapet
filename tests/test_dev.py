@@ -108,6 +108,8 @@ class TestDev(TestCase):
         TODO: add builtin compare() for base type: string, tuple, bytes.
         
         TODO: string.replace({dict}) # check, implement if not
+            key replaced to val:
+            '1 2 3 2 5'.replace({'2': 'bb', '3':'t'}) => '1 bb t bb 5'
         
         TODO: add assertion to cases in test_lists
         
@@ -119,6 +121,17 @@ class TestDev(TestCase):
         TODO: think about import native lib / module into LP code.
             eval.py: importLib('math', math)
             code.et: import python.math
+        
+        TODO?: complex type: some(int)
+            it looks hard to implement, 
+            in fact it should be a fully implemented type-system with generics or parameterized types.
+            More reasons are needed for beginning to work of such complex feature.
+            reasons:
+            1) maybe(type) / maybe<int> / maybe[int], maybe{int}, maybe int, 
+            2) list(int) / [int], dict(type, type) / {string: int} / [string: int],
+            3) function(int, string) / function[int, string]
+                func type, generic example:
+                function(a, b) / function[a, b] # function with 2 args both of any type, not equal
             
         TODO: think about pattern matching in comprehensions condition
 
@@ -127,7 +140,7 @@ class TestDev(TestCase):
             match n
                 {name} /: ...
                 $name /: ...
-                @name /: ...
+                @name /: ... # looks like var-case, decline
                 'Vasya' /: ...
         
         TODO: range syntax (haskell like)
@@ -148,21 +161,14 @@ class TestDev(TestCase):
             x <= 5 < y
             a < b < c
             a > b > c
-        
-        TODO?: complex type: some(int)
-            it looks hard to implement, 
-            in fact it should be a fully implemented type-system with generics or parameterized types.
-            More reasons are needed for beginning to work of such complex feature.
-            reasons:
-            1) maybe(type) / maybe<int> / maybe[int], maybe{int}, maybe int, 
-            2) list(int) / [int], dict(type, type) / {string: int} / [string: int],
-            3) function(int, string) / function[int, string]
+            or comparison chain:
+            a < b < c < d
+            or multi-compare
+            a < b > c
+            or 
+            a > b, c # and-condition
+            a, b > b, c # each left compared to each right
              
-            
-        TODO: dict.map(func) # looks meaningful
-            {1:11, 2:22}.map(\k, v -> (k, v + 10) )
-            keyMap: {...}.keyMap(func)
-            valmap: {...}.valMap(func)
     '''
 
     _ = r"""
@@ -173,13 +179,12 @@ class TestDev(TestCase):
 
 
 
+
     def _test_code(self):
         ''' '''
         code = r'''
         res = []
         
-        ss1 = [1..9]
-        res <- ss1[2:7]
         
         # print('res = ', res)
         '''

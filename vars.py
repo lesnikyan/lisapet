@@ -326,6 +326,9 @@ class TupleVal(Collection):
         vals = ', '.join(pp)
         return 'TupleVal(%s)' %  (vals)
 
+    def __repr__(self):
+        return self.__str__()
+
 
 def dkeyCover(k):
       if isinstance(k, str):
@@ -373,6 +376,10 @@ class DictVal(Collection):
     def keys(self) -> ListVal:
         kk = [dkeyCover(k) for k in self.data.keys()]
         return ListVal(elems=kk)
+    
+    def itemPairs(self):
+        return [(dkeyCover(k), v)
+            for k,v in self.data.items()]
     
     def items(self):
         kv = [TupleVal(elems=[dkeyCover(k), v])

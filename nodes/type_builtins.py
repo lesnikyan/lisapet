@@ -316,6 +316,42 @@ def dict_items(_, inst:DictVal):
     return kvals
 
 
+def dict_map(ctx:Context, inst:DictVal, fun:Function):
+    ''''''
+    elems = inst.itemPairs()
+    eres = []
+    for n in elems:
+        k, v = n
+        fun.setArgVals([k, v])
+        fun.do(ctx)
+        r = fun.get()
+        eres.append(r.elems)
+    # print('$dm-1', [(n, type(n)) for n in eres])
+    res = {k.get(): v for k, v in eres}
+    return DictVal(data = res)
+
+
+def dict_val_map(ctx:Context, inst:DictVal, fun:Function):
+    ''''''
+    res = {}
+    for k, v in inst.data.items():
+        fun.setArgVals([v])
+        fun.do(ctx)
+        r = fun.get()
+        res[k] = r
+    return DictVal(data = res)
+
+
+def dict_key_map(ctx:Context, inst:DictVal, fun:Function):
+    ''''''
+    res = {}
+    for k, v in inst.data.items():
+        fun.setArgVals([dkeyCover(k)])
+        fun.do(ctx)
+        r = fun.get()
+        res[r.get()] = v
+    return DictVal(data = res)
+
 # String
 
 def str_split(_, inst:StringVal, sep):
