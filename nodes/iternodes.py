@@ -315,19 +315,28 @@ class GenIterator(NIterator, SequenceGen):
 class ListGenIterator(GenIterator):
     ''' [a..b] from a to b, step |1| 
         TODO: step !?> (-1, 1)
-            [1..10 ; 2]
+        [n1, nn]
+        [n1, n2 .. nn]
     '''
 
-    def __init__(self, a, b):
+    def __init__(self, n1, nn, n2 = None):
         ''' a - begin, 
             b - end '''
         c = 1
-        if b < a:
-            c *= -1
-        self.first = a
-        self.last = b # last val
+        k = 1
+        if n2 is None:
+            c = 1
+            if nn < n1:
+                k = -1
+            c *= k
+        else:
+            c = n2 - n1
+        self.first = n1
+        self.last = nn # last val
         self.__step = c
-        self.val = a
+        self.dir = k
+        self.fin = nn * c + n1
+        self.val = n1
         self.vtype = TypeIterator()
 
     def start(self):
@@ -337,7 +346,11 @@ class ListGenIterator(GenIterator):
         self.val += self.__step
 
     def hasNext(self):
-        return self.val <= self.last
+        # return self.val * self.dir <= self.fin
+        if self.__step > 0:
+            return self.val <= self.last
+        return self.val >= self.last
+        
 
     def get(self):
         return Val(self.val, TypeInt())
@@ -404,23 +417,34 @@ class TwoDotsOper(Expression):
 
 
 class ListGenExpr(Expression):
-    ''' [a .. b] '''
+    ''' [a .. b], [a1, a2 .. an] '''
     def __init__(self):
         self.iter:NIterator = None
         self.beginExpr = None
+        self.secondExpr = None
         self.endExpr = None
+        # self.step = 1
 
     def setArgs(self, a:Expression, b:Expression):
-        self.beginExpr = a
+        begin = a
+        if isinstance(a, SequenceExpr):
+            # if expr has 2-nd member of sequence: [n1, n2 .. nn]
+            begin = a.subs[0]
+            self.secondExpr = a.subs[1]
+        self.beginExpr = begin
         self.endExpr = b
 
     def do(self, ctx:Context):
         # dprint('ListGenExpr.do1:', self.beginExpr, self.endExpr)
         self.beginExpr.do(ctx)
         self.endExpr.do(ctx)
+        second = None
+        if self.secondExpr:
+            self.secondExpr.do(ctx)
+            second = self.secondExpr.get().getVal()
         a = self.beginExpr.get()
         b = self.endExpr.get()
-        self.iter = ListGenIterator(a.getVal(), b.getVal())
+        self.iter = ListGenIterator(a.getVal(), b.getVal(), second)
         
     def get(self):
         return Val(self.iter, TypeIterator())

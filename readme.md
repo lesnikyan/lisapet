@@ -92,7 +92,7 @@ Content:
     4. [Triple dots `[]...`](#94-triple-dots)
 
 9. #### Collection generation:
-    1. [Range generator `iter()`, `[ .. ]`](#91-iteration-generator-)
+    1. [Arithmetic sequence `[ .. ]`](#91-arithmetic-sequence-)
     2. [Slice `[ : ]`, `tolist()` ](#92-list-features-slice---tolist)
     3. [`list` comprehension `[ ; ; ]`](#93-list-comprehension)
     4. [`dict` comprehension `{ ; ; }`](#94-dict-comprehension)
@@ -138,7 +138,9 @@ Content:
     2. [include `~"{x}"`](#212-format-by-including-expressions)
     3. [base functions](#213-string-functions)
 
-16. [Modules. `import`](#22-import-modules)
+16. Modules.
+    1. [`import`, names `m > n, k`, aliases.](#22-import-modules)
+    2. [Preload by console args.](#221-module-preload)
 
 17. #### `match`-statement
     1. [Match, cases, `/:`](#23-match-statement)
@@ -149,9 +151,10 @@ Content:
     6. [Guard with pattern `[a] :? a > 5`](#236-bool-guard-in-case)
     7. [Mixed patterns: `[]|{}`, `[A{},B{}]`](#237-mixed-nested-patterns)
     8. [Regexp case ```re`abc` ```](#238-regexp-case)
-    9. [Type pattern `::`](#239-type-matching-_int)
+    9. [Type pattern `::`, multitype `::A|B`](#239-type-matching-_int)
     10. [Enum `N.x`](#2310-enum-elements)
     11. [sub-assignment `x @ pattern`](#2311-assign-sub-value-)
+    12. [`maybe` case: `none`, `some(n)`](#2312-maybe)
 
 
 18. Regular expression:
@@ -2009,11 +2012,25 @@ for n <- [Num.one .. Num.five]
 
 ### 9 Collection generation.  
 
-### 9.1 Iteration generator `[..]`.  
-Iteration generator `[a .. b]` returns generator object thar makes sequence of int numbers from a to b.  
+### 9.1 Arithmetic sequence `[..]`.  
+Generator of arithmetic sequence `[a .. b]` returns generator object that makes sequence of int numbers from a to b.  
 ```python
 # syntax: [startVal .. endVal]
-nums = [1..5] # -->> [1,2,3,4,5]
+nums = [1..5] 
+r = []
+for n <- nums
+    r <- n
+r # [1,2,3,4,5]
+```
+By default this generator have step = 1. But we can set second member of sequence and expression will calculate step automatically. Last number just limits value in such case if last argument is out of sequence.  
+```python
+nn = [1, 3 .. 10]
+for n <- nn
+    print(n) # 1, 3, 5, 7, 9
+```
+Negative step works too.
+```python
+nn = list([2, 0 .. -4]) # [2, 0, -2, -4]
 ```
 
 ### 9.2 List features: slice `[:]` , `tolist()`.  

@@ -15,11 +15,15 @@ from nodes.datanodes import *
 
 
 class CaseListGen(SubCase, SolidCase):
-    ''' [startVal..endVal] '''
+    ''' Arithmetic sequence 
+        [a .. b]
+        [a, b .. c]
+    '''
     
     def __init__(self):
         super().__init__()
         self.cs = CaseSeq('..')
+        self.cc = CaseCommas()
     
     def match(self, elems:list[Elem]) -> bool:
         if not isLex(elems[-1], Lt.oper, ']'):
@@ -28,15 +32,13 @@ class CaseListGen(SubCase, SolidCase):
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         sub = elems[1:-1]
-        # cs = CaseSeq('..')
         subs = [sub]
         if self.cs.match(sub):
             _, subs = self.cs.split(sub)
         exp = ListGenExpr()
         return exp, subs
 
-    def setSub(self, base:Block, subs:Expression|list[Expression])->Expression:
-        # dprint('ListGenExpr.setSub: ', base, subs)
+    def setSub(self, base:ListGenExpr, subs:Expression|list[Expression])->Expression:
         base.setArgs(*subs)
         return base
 

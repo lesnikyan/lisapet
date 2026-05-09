@@ -37,7 +37,58 @@ class TestIter(TestCase):
 
 
 
-    def test_code_sequence_constr_by_gen(self):
+    def test_arithmetic_sequense(self):
+        ''' [n1 .. nn], [n1, n2 .. nn] '''
+        code = r'''
+        res = []
+        
+        nn1 = [1 .. 5]
+        res <- list(nn1)
+        res <- [n ; n <- [1..4]]
+        
+        nn2 = [1, 3 .. 9]
+        res <- list(nn2)
+        
+        res <- [n ; n <- [1, 3 .. 6]]
+        
+        a, b, c = 2, 5, 13
+        res <- [n ; n <- [a, b .. c]]
+        
+        func foo(x)
+            x + 10
+            
+        res <- list([foo(1), foo(5) .. foo(20)])
+        
+        nn = [7, 9, 15]
+        res <- list([nn[0], nn[1] .. nn[2]])
+        
+        # negative
+        
+        res <- list([1, 0 .. -3])
+        
+        # print('res = ', res)
+        '''
+        code = norm(code[1:])
+        ex = tryParse(code)
+        rCtx = rootContext()
+        ctx = rCtx.moduleContext()
+        trydo(ex, ctx)
+        # self.assertEqual(0, rvar.getVal())
+        rvar = ctx.get('res').get()
+        resv = resRepr(rvar.vals())
+        # print(resv)
+        exv = [
+            [1, 2, 3, 4, 5], 
+            [1, 2, 3, 4], 
+            [1, 3, 5, 7, 9], 
+            [1, 3, 5], 
+            [2, 5, 8, 11], 
+            [11, 15, 19, 23, 27], 
+            [7, 9, 11, 13, 15], 
+            [1, 0, -1, -2, -3]]
+        self.assertEqual(exv, resv)
+
+    def test_sequence_constr_by_gen(self):
         ''' '''
         code = r'''
         res = []
