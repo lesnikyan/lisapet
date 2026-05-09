@@ -3,8 +3,6 @@
 
 NEED FIX:
 
-
-
     5. test and fix escape sequences like '\\'
 
 # Necessary things: 
@@ -40,17 +38,10 @@ NEED FIX:
     to(data_obj): json_str
     from(json_str): data_obj
 
-
-2.4 TODO: More types:  
-    DONE byte, 
-    common numeric (numb, numer),
-    common struct (?), implemented struct
-    Maybe (Some, Nothing).
-
-
 2.5 OpAssing:
     # TODO: think about multiresult expressions: a, b, c = triple_vals(); // return 11, 22, 'ccc'
     # TODO: think about one way of assignment: (something) = (something)
+
 
 4. save code-source into expression as some metadata, and debug/error info (at least whole line)
 
@@ -95,15 +86,16 @@ catch crit
     2) executive tree (prepared exec file)
 
 
+2.4 TODO: More types:  
+    DONE byte, 
+    DONE: Maybe (some, none).
+    common numeric (numb, number),
+    common struct (?), implemented struct
 
-12 Functions: 
-    - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but thinkable
-    - unnamed unused positional arg `_` for function foo(_, x), 
+7. common types: (tree, queue, set, pair ) with operations: applay func to each, clone, merge, insert, fold, map, etc.
 
-
-
-    # type-groups: 
-        numeric, bool, string, list, tuple, dict, struct, function, regexp, [set, maybe, tree, ...]
+# type-groups: 
+    numeric, bool, string, list, tuple, dict, struct, function, regexp, maybe, [set, tree, ...]
 
 
 13. Interfaces as a some list of method signatures.
@@ -173,6 +165,7 @@ match s
 
 23. Common filesystem-location of installed libraries for importing (not sure we need it now).  
 
+
 24. TODO: Should we implement full inline block syntax?   
 Like `for a <- b /: expr :/ ; next-block`  
 if cond /: expr :/ else /: expr :/
@@ -208,80 +201,20 @@ func d:D f1(x, y)
 0. build.py - builder of *.et files with resulting binary files (serialized executable object).
 
 
-1. Maybe type 
-#==
-# Maybe type: Nothing, Thing
-x = maybe(1) # @yep(1), (? val)
-x = nothing # @nop , (?-)
-        TODO: maybe
-            >> now it looks too complicated for fast implementation.
-                1) I don't see sence with maybe type without auto-uncovering internal value,
-                    now it possible only in match cases.
-                2) pattern matching in func declaration looks too complex for adding just for maybe type.
-                3) unpack by operator still doesn't look nice, but it acceptable. 
-                
-                # parts: 
-                1) maybe, some, none
-                2) some(val), none
-                3) match n:
-                    :: maybe
-                    some(v)
-                    p :: some(int)
-                    none
-
-                4) unpack by method:
-                    x = some(12)
-                    x.val() # >> 12
-                    int(x) # >> 12
-                5) maybe().map()
-                6) for
-                    for v <- x
-                        # if x is some.
-                        res <- v # [12]
-                7) maybe().fold()
-
-            var: maybe = yep(123) | nop 
-            # maybe, yep, nop - LP keyword..
-            # Maybe 
-            # some, just, thing, Just
-            # noth[ing], nope, none, None
-            # get inner val ?
-                var... 
-                <- var
-                < var
-                ~ var
-                var.get()
-                var.val
-            if var :: maybe
-            if var :: yep
-                res = <- var # unary L-arrow
-            match n
-                nop /: ...
-                var @ yep /: res = <- var ;; var... 
-                yep(var) /: res = var
-            
-            func foo(arg:yep)
-                val = <- arg
-            func foo(arg:nop)
-                val = 0
-            
-            # pattern matching in function (?)
-            func foo(yep(arg)) 
-                ...
-            func foo(nop)
-                ...
-            
-
 4.1 Duck-type for structs:: func f(arg:struct{foo(int, float), bar(string)}) // ? not sure
 
 4.2 anonimous structs inst = struct{name: 'Abc', num: 123}; possible sugar: ${name: '', num:123}
 
-7. common types: (tree, queue, set, pair ) with operations: applay func to each, clone, merge, insert, fold, map, etc.
-
 8. 
+
+
+12 Functions: 
+    - shortening syntax with obvious-arg in lambda (like scala) `x -> x + 2` => `_ * 2`: not necessary but thinkable
+    - unnamed unused positional arg `_` for function foo(_, x), 
 9.
 #== anonimous func object (multiline)
 foo = func (args...)
+
 
 
 #== works as is by native pythons functionality

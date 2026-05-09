@@ -142,14 +142,7 @@ class TestDev(TestCase):
                 $name /: ...
                 @name /: ... # looks like var-case, decline
                 'Vasya' /: ...
-        
-        TODO: range syntax (haskell like)
-            [begin .. end] # already done
-            [2, 1..5] [step, begin .. end]
-            [-1, 5 .. 1] # check after positive custom step
-            or
-            [a .. b; 2] # [start .. end ; step]
-        
+            
         TODO: operator of divisibility
         a ?% b :the same as: a % b == 0
         a !% b :the same as: a % b != 0
@@ -168,7 +161,14 @@ class TestDev(TestCase):
             or 
             a > b, c # and-condition
             a, b > b, c # each left compared to each right
-             
+        
+        DONE: range syntax (haskell like)
+            [begin .. end] # already done
+            [n1, n2 .. end] # 2 first numbers make a step = n2 - n1 
+        
+        TODO: data structs: 
+            deque(): push, pop, v <- q, q <- v 
+            tree(): add(node), find(key), map(func) -> new tree, walk(func) -> change nodes, fold(acc, func).
     '''
 
     _ = r"""
@@ -176,6 +176,7 @@ class TestDev(TestCase):
 
 
 """
+
 
 
 

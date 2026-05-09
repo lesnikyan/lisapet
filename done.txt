@@ -61,7 +61,70 @@ Fixes:
             none.fold(accumulator, func) => acc
         
         DONE: isSome
-        
+
+1. Maybe type 
+#==
+# Maybe type: Nothing, Thing
+x = maybe(1) # @yep(1), (? val)
+x = nothing # @nop , (?-)
+        TODO: maybe
+            >> now it looks too complicated for fast implementation.
+                1) I don't see sence with maybe type without auto-uncovering internal value,
+                    now it possible only in match cases.
+                2) pattern matching in func declaration looks too complex for adding just for maybe type.
+                3) unpack by operator still doesn't look nice, but it acceptable. 
+                
+                # parts: 
+                1) maybe, some, none
+                2) some(val), none
+                3) match n:
+                    :: maybe
+                    some(v)
+                    p :: some(int)
+                    none
+
+                4) unpack by method:
+                    x = some(12)
+                    x.val() # >> 12
+                    int(x) # >> 12
+                5) maybe().map()
+                6) for
+                    for v <- x
+                        # if x is some.
+                        res <- v # [12]
+                7) maybe().fold()
+
+            var: maybe = yep(123) | nop 
+            # maybe, yep, nop - LP keyword..
+            # Maybe 
+            # some, just, thing, Just
+            # noth[ing], nope, none, None
+            # get inner val ?
+                var... 
+                <- var
+                < var
+                ~ var
+                var.get()
+                var.val
+            if var :: maybe
+            if var :: yep
+                res = <- var # unary L-arrow
+            match n
+                nop /: ...
+                var @ yep /: res = <- var ;; var... 
+                yep(var) /: res = var
+            
+            func foo(arg:yep)
+                val = <- arg
+            func foo(arg:nop)
+                val = 0
+            
+            # pattern matching in function (?)
+            func foo(yep(arg)) 
+                ...
+            func foo(nop)
+                ...
+
         DONE: fix iter() for down-iteration and negative step
         
         DONE: py -m run -c "print([1..5][:])"

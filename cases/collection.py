@@ -34,30 +34,15 @@ class CaseTuple(SubCase, SolidCase):
     def __init__(self):
         super().__init__()
         self.cs = CaseCommas()
-        
 
     def match(self, elems:list[Elem]) -> bool:
-        # trivial check
-        # TODO: change to usage of OperSplitter
         if not (isLex(elems[0], Lt.oper, '(') and isLex(elems[-1], Lt.oper, ')')):
             return False
-        
-        # r =  isSolidExpr(elems, getLast=True)
-        # if not isinstance(r, tuple):
-        #     return False
-        # ok, pos = r
-        # if not ok or pos != 0:
-        #     return False
-        # print('Tuple. lastFound:', ok, pos, 'lenEl:%d' % len(elems), elems[pos].text)
-        # cs = CaseCommas()
         return self.cs.match(elems[1:-1])
 
     def split(self, elems:list[Elem])-> tuple[Expression, list[list[Elem]]]:
         sub = elems[1:-1]
-        # cs = CaseCommas()
         subs = [sub]
-        # if self.cs.match(sub):
-        #     _, subs = self.cs.split(sub)
         if len(sub) > 0:
             _, subs = self.cs.split(sub)
         exp = TupleExpr()
@@ -99,39 +84,13 @@ class CaseList(SubCase, SolidCase):
             return True
         if lem == 3:
             return elems[1].type != Lt.oper or elems[1].text != ','
-        
-        # r =  isSolidExpr(elems, getLast=True)
-        # # print('CaseList.of solid:', r)
-        # if not isinstance(r, tuple):
-        #     return False
-        
-        # ok, pos = r
-        # if not ok or pos != 0:
-        #     return False
+
         
         inElems = elems[1:-1]
         # many items case
-        # cs = CaseCommas()
-        # smc = CaseSemic()
-        # print(' $$$$$$$$$$$$$$$$$$$$ CL.comm', cres)
-        
-        # if [;]
-        # if self.csemic.match(inElems):
-        #     return False
-        
         cres = self.cs.match(inElems)
-        # return cres
         if cres:
             return True
-
-        # expr .. expr - is ok, in setSub wil be fixed
-        # print('@', elemStr(elems))
-        # TODO: refactor all [subs] cases as top CaseSquareBr, then: List, IterGen, ListGen, Slice
-        
-        # begn = 1
-        # if isLex(elems[1], Lt.oper, ['-','~','!']):
-        #     begn = 2
-        # return isSolidExpr(elems[begn:-1])
         
         if isHexBytes(inElems):
             # print('CL.isHexBytes')
@@ -149,8 +108,6 @@ class CaseList(SubCase, SolidCase):
         sub = elems[1:-1]
         # cs = CaseCommas()
         subs = [sub]
-        # if self.cs.match(sub):
-        #     _, subs = self.cs.split(sub)
         # need to check comma-separated
         if len(sub) > 1:
             _, subs = self.cs.split(sub)
@@ -201,13 +158,6 @@ class CaseCollectElem(SubCase, SolidCase):
         
         if elems[0].type == Lt.num:
             return False
-        
-        # if ind is not None:
-            # print('$2:', ind)
-        
-        # if not isGetValExpr(elems):
-        #     print('$1', elemStr(elems))
-        #     return False
 
         opInd = ind
         if ind is None:
@@ -217,8 +167,6 @@ class CaseCollectElem(SubCase, SolidCase):
             # means only brackets, no collection var before
             return False
 
-        # prels('CaseCollectElem match1:', elems, opInd)
-        # prels('CaseCollectElem match2:', elems[opInd+1 : -1])
         # filtering slice
         hasColon = self.ccolon.match(elems[opInd+1 : -1])
         # dprint('CaseCollectElem hasColon', hasColon)
@@ -260,15 +208,14 @@ class CaseSlice(SubCase, SolidCase):
         ''' arr.expr[start-expr : end-expr] 
             TODO: super[key-expr][start : end]
         '''
-        # if not CaseCollectElem().matchOuter(elems):
-        #     return False
+
         self.lastInd = None
         
         if len(elems) < 4:
             return False
         
         if not isLex(elems[-1], Lt.oper, ']'):
-            # not [] brackets
+            # not [***]
             return False
         
         opInd = ind
@@ -276,7 +223,6 @@ class CaseSlice(SubCase, SolidCase):
             opInd = findLastBrackets(elems)
         self.lastInd = opInd
 
-        # cc = CaseColon()
         subPart = elems[opInd+1 : -1]
         hasColon = self.ccolon.match(subPart)
         if not hasColon:
