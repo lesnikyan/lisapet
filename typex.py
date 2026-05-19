@@ -78,6 +78,12 @@ class TypeTuple(TypeContainer):
     th = TH.mk()
 
 
+class TypeChan(VType):
+    name = 'chan'
+    _defVal = None
+    th = TH.mk()
+
+
 class TypeString(VType):
     name = 'string'
     _defVal = ''

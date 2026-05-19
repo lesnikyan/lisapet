@@ -156,6 +156,8 @@ class Function(FuncInst):
 
     def checkTailSame(self,  ctx: Context, lastExpr:Expression):
         isTail = False
+        if not ctx:
+            return False
         if not isinstance(lastExpr, CallExpr):
             return False
         # print('F.do last callExpr', self, 'obj:', self.objInst, 'name:', lastExpr, lastExpr.name, 'n-don pos:', lastExpr.name.find('.'))

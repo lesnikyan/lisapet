@@ -138,7 +138,6 @@ class ValSequence(Val):
         pass
 
 
-
 class Collection(Container, ValSequence):
 
     def setVal(self, key:Var, val:Var):
@@ -158,6 +157,23 @@ class SequenceGen:
 
     def allVals(self):
         pass
+
+
+class ValQueue(Val):
+    
+    def put(self, val:Val):
+        ''' put elem to the end '''
+        pass
+
+    def get(self):
+        ''' return first elem '''
+        pass
+    
+    def isEmpty(self):
+        ''' '''
+    
+    def len(self):
+        ''' count of elems '''
 
 
 class ListVal(Collection):

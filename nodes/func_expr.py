@@ -330,6 +330,7 @@ def setNativeFunc(ctx:Context, name:str, fn:Callable, rtype:VType=TypeAny):
     func.resType = rtype
     # func.callFunc = fn
     ctx.addFunc(func)
+    return func
 
 
 def typeConstrName(rtype:VType):

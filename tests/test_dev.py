@@ -169,6 +169,17 @@ class TestDev(TestCase):
         TODO: data structs: 
             deque(): push, pop, v <- q, q <- v 
             tree(): add(node), find(key), map(func) -> new tree, walk(func) -> change nodes, fold(acc, func).
+            
+        TODO: <- <--
+        <-
+        for, gen, comprehension
+            var <- iter | gen | list | dict | chan # get-assign
+        list|dict|chan <- val # append / put
+        var = <- chan # get
+        list <- chan # append
+        <- chan # get, need to make <- oper as binary and left-unary
+        <--
+        list|dict|chan <-- chan | iter | gen # get-and-put elem from right to left
     '''
 
     _ = r"""
